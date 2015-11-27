@@ -4,11 +4,6 @@ use warnings;
 use base 'Test::Class';
 use Test::More;
 use Test::Deep;
-
-use File::Basename;
-BEGIN {
-    push @INC, dirname(__FILE__) . "/..";
-}
 use Comic;
 
 __PACKAGE__->runtests() unless caller;
