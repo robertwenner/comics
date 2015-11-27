@@ -141,8 +141,16 @@ sub _sanityChecks {
     my ($self, $lang) = @_;
 
     my $title = $self->{metaData}->{title}->{$lang};
-    croak("Duplicated title '$title' in $titles{$title} and $self->{file}") if ($titles{$title});
-    $titles{$title} = $self->{file};
+    my $key = lc("$lang\n$title");
+    $key =~ s/^\s+//;
+    $key =~ s/\s+$//;
+    $key =~ s/\s+/ /g;
+    if (defined($titles{$key})) {
+        if ($titles{$key} ne $self->{file}) {
+            croak("Duplicated $lang title '$title' in $titles{$key} and $self->{file}");
+        }
+    }
+    $titles{$key} = $self->{file};
 }
 
 
