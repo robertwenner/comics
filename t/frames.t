@@ -10,6 +10,9 @@ use Comic;
 __PACKAGE__->runtests() unless caller;
 
 
+my $comic;
+
+
 sub makeFrames {
     my (@frames) = @_;
 
@@ -61,7 +64,7 @@ XML
 XML
         return $xml;
     };
-    my $comic = Comic->new('whatever');
+    $comic = Comic->new('whatever');
     $comic->_findFrames();
     return $comic->{frameTops};
 }
@@ -112,4 +115,19 @@ sub threeRowsOfFrames : Test {
         0, 0, 0, 0,
         0, 0, 0, 200,
         0, 0, 0, 100));
+}
+
+
+sub posToFrame : Tests {
+    makeFrames(
+        0, 0, 0, 0,
+        0, 0, 0, 100,
+        0, 0, 0, 200);
+    is(0, $comic->_posToFrame(-1));
+    is(1, $comic->_posToFrame(1));
+    is(1, $comic->_posToFrame(99));
+    is(2, $comic->_posToFrame(100));
+    is(2, $comic->_posToFrame(199));
+    is(3, $comic->_posToFrame(200));
+    is(3, $comic->_posToFrame(1000));
 }
