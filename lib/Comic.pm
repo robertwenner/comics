@@ -187,7 +187,7 @@ sub _flipLanguageLayers {
     }
     unless ($hadLang) {
         if ($self->{file} =~ m@/([a-z]{2,3})/[^/]+.svg$@) {
-            next if ($1 ne $languages{$lang} || $1 eq "div");
+            return if ($1 ne $languages{$lang} || $1 eq "div");
         }
         croak "No $lang layer";
     }
