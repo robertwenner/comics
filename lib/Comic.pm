@@ -291,6 +291,7 @@ sub _textsFor {
         while ($tspan);
         $text =~ s/-\s+/-/mg;
         $text =~ s/ +/ /mg;
+        $text =~ s/^\s+//mg;
         $text =~ s/\s+$//mg;
         push @texts, $text;
     }
