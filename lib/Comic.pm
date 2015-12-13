@@ -53,6 +53,14 @@ use constant {
     FRAME_TOLERANCE => 5,
 };
 
+our %options = (
+    # Whether to transform SVG coordinates if the transform atttribute is used.
+    # This may be needed for fancy texts (tilted or on a path) so that the new
+    # translated coordinates can be sorted as expected for the comic's transcript.
+    # However, it may be easier to just add invisible frames to force a text
+    # order in the comic.
+    TRANSFORM => 0,
+);
 
 my %people;
 my %tags;
@@ -322,9 +330,39 @@ sub _findFrames {
 sub _textPosSort {
     my ($self, $a, $b) = @_;    
     # Inkscape coordinate system has 0/0 as bottom left corner
-    my $ya = $self->_posToFrame($a->getAttribute("y"));
-    my $yb = $self->_posToFrame($b->getAttribute("y"));
-    return $ya <=> $yb || $a->getAttribute("x") <=> $b->getAttribute("x");
+    my $ya = $self->_posToFrame(_transformed($a, "y"));
+    my $yb = $self->_posToFrame(_transformed($b, "y"));
+    return $ya <=> $yb || _transformed($a, "x") <=> _transformed($b, "x");
+}
+
+
+sub _transformed {
+    my ($node, $attribute) = @_;
+
+    my $transform = $node->getAttribute("transform");
+    return $node->getAttribute($attribute) if (!$options{TRANSFORM} || !$transform);
+
+    my ($operation, $params) = $transform =~ m/(\w+)\(([^)]+)\)/;
+    my ($a, $b, $c, $d, $e, $f);
+    if ($operation eq "matrix") {
+        ($a, $b, $c, $d, $e, $f) = split /,/, $params;
+    }
+    elsif ($operation eq "scale") {
+        my ($sx, $sy) = split /,/, $params;
+        ($a, $b, $c, $d, $e, $f) = ($sx, 0, 0, $sy, 0, 0);
+    }
+    else {
+        croak "Unsupported operation $operation";
+    }
+    my $x = $node->getAttribute("x");
+    my $y = $node->getAttribute("y");
+    # http://www.w3.org/TR/SVG/coords.html#TransformMatrixDefined
+    # a c e   x
+    # b d f * y
+    # 0 0 1   1
+    return $a * $x + $c * $y if ($attribute eq "x");
+    return $b * $x + $d * $y if ($attribute eq "y");
+    croak "Unsupported attribute $attribute to transform";
 }
 
 
