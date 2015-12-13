@@ -108,7 +108,7 @@ sub _slurp {
     open my $F, "<", $file or croak "Cannot open $file: $!";
     local $/ = undef;
     my $contents = <$F>;
-    close $F or die "Cannot close $file: $!";
+    close $F or croak "Cannot close $file: $!";
     return $contents;
 }
 
@@ -275,12 +275,12 @@ sub _exportLanguageHtml {
 
     my $dir = $self->_makeComicsPath($lang);
     my $page = $dir . basename($self->{file}, ".svg") . ".html";
-    open my $F, ">", $page or die "Cannot write $page: $!";
+    open my $F, ">", $page or croak "Cannot write $page: $!";
     foreach my $t ($self->_textsFor($language)) {
         print $F "<p>$t</p>\n\n";
     }
     print $F "\n";
-    close $F or die "Cannot close $page: $!";
+    close $F or croak "Cannot close $page: $!";
 }
 
 
