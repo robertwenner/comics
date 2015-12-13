@@ -59,7 +59,7 @@ our %options = (
     # translated coordinates can be sorted as expected for the comic's transcript.
     # However, it may be easier to just add invisible frames to force a text
     # order in the comic.
-    TRANSFORM => 0,
+    TRANSFORM => 1,
 );
 
 my %people;
