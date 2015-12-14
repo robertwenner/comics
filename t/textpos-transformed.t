@@ -45,3 +45,12 @@ sub scale : Test {
         '<text x="5" y="7" transform="scale(7,9)"/>'), "x"),
     5 * 7);
 }
+
+
+sub multipleOperations : Test {
+    eval {
+        Comic::_transformed(
+            makeNode('<text x="1" y="1" transform="scale(1,2) scale(3,4)"/>'), "foo");
+    };
+    like($@, qr/cannot handle multiple/i);
+}

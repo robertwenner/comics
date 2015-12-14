@@ -342,7 +342,8 @@ sub _transformed {
     my $transform = $node->getAttribute("transform");
     return $node->getAttribute($attribute) if (!$options{TRANSFORM} || !$transform);
 
-    my ($operation, $params) = $transform =~ m/(\w+)\(([^)]+)\)/;
+    croak "Cannot handle multiple transformations" if ($transform !~ m/^(\w+)\(([^)]+)\)$/);
+    my ($operation, $params) = ($1, $2);
     my ($a, $b, $c, $d, $e, $f);
     if ($operation eq "matrix") {
         ($a, $b, $c, $d, $e, $f) = split /,/, $params;
