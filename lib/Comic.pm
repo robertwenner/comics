@@ -345,6 +345,9 @@ sub _transformed {
     croak "Cannot handle multiple transformations" if ($transform !~ m/^(\w+)\(([^)]+)\)$/);
     my ($operation, $params) = ($1, $2);
     my ($a, $b, $c, $d, $e, $f);
+    # Inkscape sources:
+    # Operations in Inkscape's src/cvg/svg-affine.cpp
+    # Actual matrix math in src/2geom/affine.cpp
     if ($operation eq "matrix") {
         ($a, $b, $c, $d, $e, $f) = split /,/, $params;
     }
@@ -361,6 +364,8 @@ sub _transformed {
     # a c e   x
     # b d f * y
     # 0 0 1   1
+    # FIXME: Ignores inkscape:transform-center-x and inkscape:transform-center-y
+    # attributes.
     return $a * $x + $c * $y if ($attribute eq "x");
     return $b * $x + $d * $y if ($attribute eq "y");
     croak "Unsupported attribute $attribute to transform";
