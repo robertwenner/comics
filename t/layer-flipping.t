@@ -96,6 +96,10 @@ sub assertVisible {
         else {
             ok($style !~ m/inline/, "$label should not be visible");
         }
+        $expected{$label} = 0;
+    }
+    foreach my $notseen (keys %expected) {
+        ok($expected{$notseen} == 0, "Layer $notseen not in DOM");
     }
 }
 
