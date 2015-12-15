@@ -183,12 +183,12 @@ sub _flipLanguageLayers {
         my $label = $layer->{"inkscape:label"};
         foreach my $otherLang (keys(%languages)) {
             # Turn off all meta layers and all other languages
-            if ($label =~ m/$otherLang/ || $label =~ m/^Meta/) {
+            if ($label =~ m/$otherLang$/ || $label =~ m/^Meta/) {
                 $layer->{"style"} = "display:none";
             }
         }
         # Make sure the right language layer is visible
-        if ($label =~ m/$lang/ && $label !~ m/Meta/) {
+        if ($label =~ m/$lang$/ && $label !~ m/Meta/) {
             $layer->{"style"} = "display:inline";
             $hadLang = 1;
         }
