@@ -39,7 +39,7 @@ sub escapesXmlSpecialCharactersText : Test {
 </svg>
 XML
     };
-    
+
     my $comic = new Comic('whatever');
     my $wrote = "";
     open(my $F, '>', \$wrote) or die "Cannot open memory handle: $!";
@@ -72,7 +72,7 @@ sub escapesXmlSpecialCharactersJson : Test {
 </svg>
 XML
     };
-    
+
     my $comic = new Comic('whatever');
     my $wrote = "";
     open(my $F, '>', \$wrote) or die "Cannot open memory handle: $!";
