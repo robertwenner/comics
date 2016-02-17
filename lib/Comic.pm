@@ -13,6 +13,7 @@ use open ':std', ':encoding(UTF-8)'; # to handle e.g., umlauts correctly
 use XML::LibXML;
 use XML::LibXML::XPathContext;
 use JSON;
+use HTML::Entities;
 
 use version; our $VERSION = qv('0.0.2');
 
@@ -276,11 +277,23 @@ sub _exportLanguageHtml {
     my $dir = $self->_makeComicsPath($lang);
     my $page = $dir . basename($self->{file}, ".svg") . ".html";
     open my $F, ">", $page or croak "Cannot write $page: $!";
+    $self->_exportHtml(\$F, $lang, $language);
+    close $F or croak "Cannot close $page: $!";
+}
+
+
+sub _exportHtml {
+    my ($self, $F, $lang, $language) = @_;
+
+    # SVG, being XML, needs to encode XML special characters, but does not do
+    # HTML encoding. So first reverse the XML encoding, then apply ah HTML
+    # encoding.
+    my $title = decode_entities($self->{metaData}->{title}->{$lang});
+    print $F "<h1>", encode_entities($title), "</h1>\n\n";
     foreach my $t ($self->_textsFor($language)) {
-        print $F "<p>$t</p>\n\n";
+        print $F "<p>", encode_entities($t), "</p>\n\n";
     }
     print $F "\n";
-    close $F or croak "Cannot close $page: $!";
 }
 
 
