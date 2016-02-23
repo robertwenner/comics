@@ -52,6 +52,9 @@ use constant {
     DEFAULT_NAMESPACE => "defNs",
     # Tolerance in Inkscape units when looking for frames.
     FRAME_TOLERANCE => 5,
+    # How to mark a comic as not publishable, so that the converter can flag
+    # it.
+    DONT_PUBLISH => 'DONT_PUBLISH',
 };
 
 our %options = (
@@ -138,8 +141,11 @@ sub exportPng {
 
     foreach my $lang (keys(%languages)) {
         $self->_sanityChecks($languages{$lang});
+        $self->_checkDontPublish($languages{$lang});
+
         $self->_count("tags", $languages{$lang}, \%tags);
         $self->_count("who", $languages{$lang}, \%people);
+
         $self->_flipLanguageLayers($lang, %languages);
         $self->_svgToPng($languages{$lang}, $self->_writeTempSvgFile());
     }
@@ -160,6 +166,45 @@ sub _sanityChecks {
         }
     }
     $titles{$key} = $self->{file};
+}
+
+
+sub _checkDontPublish {
+    my ($self) = @_;
+
+    _checkHash("", %{$self->{metaData}});
+    
+    my $allLayers = _buildXpath('g[@inkscape:groupmode="layer"]');
+    foreach my $layer ($self->{xpath}->findnodes($allLayers)) {
+        my $text = $layer->textContent();
+        my $label = $layer->{"inkscape:label"};
+        if ($text =~ m/(\bDONT_PUBLISH\b[^\n\r]*)/m) {
+            croak "In layer $label: $1";
+        }
+    }
+}
+
+
+sub _checkHash {
+    my ($where, %hash) = @_;
+
+    foreach my $key (keys(%hash)) {
+        my $marker = $where eq "" ? $key : "$where > $key";
+        my $val = $hash{$key};
+        if (ref($val) eq 'HASH') {
+            _checkHash("$marker", %{$val});
+        }
+        elsif (ref($val) eq 'ARRAY') {
+            foreach my $v (@{$val}) {
+                _checkHash("$marker", $v);
+            }
+        }
+        else {
+            if ($val =~ m/DONT_PUBLISH/m) {
+                croak "In JSON $marker: $val";
+            }
+        }
+    }
 }
 
 
