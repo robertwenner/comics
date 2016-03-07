@@ -322,7 +322,7 @@ sub _exportLanguageHtml {
     my $dir = $self->_makeComicsPath($lang);
     my $page = $dir . basename($self->{file}, ".svg") . ".html";
     open my $F, ">", $page or croak "Cannot write $page: $!";
-    $self->_exportHtml(\$F, $lang, $language);
+    $self->_exportHtml($F, $lang, $language);
     close $F or croak "Cannot close $page: $!";
 }
 
@@ -331,7 +331,7 @@ sub _exportHtml {
     my ($self, $F, $lang, $language) = @_;
 
     # SVG, being XML, needs to encode XML special characters, but does not do
-    # HTML encoding. So first reverse the XML encoding, then apply ah HTML
+    # HTML encoding. So first reverse the XML encoding, then apply any HTML
     # encoding.
     my $title = decode_entities($self->{metaData}->{title}->{$lang});
     print $F "<h1>", encode_entities($title), "</h1>\n\n";
