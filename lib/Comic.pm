@@ -6,6 +6,7 @@ use warnings;
 use base qw(Exporter);
 use POSIX;
 use Carp;
+use autodie;
 use File::Path qw(make_path);
 use File::Basename;
 use File::Temp qw/tempfile/;
@@ -172,8 +173,8 @@ sub _sanityChecks {
 sub _checkDontPublish {
     my ($self) = @_;
 
-    _checkHash("", %{$self->{metaData}});
-    
+    _checkJson("", $self->{metaData});
+
     my $allLayers = _buildXpath('g[@inkscape:groupmode="layer"]');
     foreach my $layer ($self->{xpath}->findnodes($allLayers)) {
         my $text = $layer->textContent();
@@ -185,25 +186,21 @@ sub _checkDontPublish {
 }
 
 
-sub _checkHash {
-    my ($where, %hash) = @_;
+sub _checkJson {
+    my ($where, $what) = @_;
 
-    foreach my $key (keys(%hash)) {
-        my $marker = $where eq "" ? $key : "$where > $key";
-        my $val = $hash{$key};
-        if (ref($val) eq 'HASH') {
-            _checkHash("$marker", %{$val});
+    if (ref($what) eq 'HASH') {
+        foreach my $key (keys %$what) {
+            _checkJson("$where > $key", $what->{$key});
         }
-        elsif (ref($val) eq 'ARRAY') {
-            foreach my $v (@{$val}) {
-                _checkHash("$marker", $v);
-            }
+    }
+    elsif (ref($what) eq 'ARRAY') {
+        for my $i (0 .. $#{$what}) {
+            _checkJson("$where" . "[" . ($i + 1) . "]", $what->[$i]);
         }
-        else {
-            if ($val =~ m/DONT_PUBLISH/m) {
-                croak "In JSON $marker: $val";
-            }
-        }
+    }
+    elsif ($what =~ m/DONT_PUBLISH/m) {
+        croak "In JSON$where: $what";
     }
 }
 

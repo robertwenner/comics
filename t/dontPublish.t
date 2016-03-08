@@ -10,7 +10,9 @@ use Comic;
 __PACKAGE__->runtests() unless caller;
 
 
-sub inJson : Test {
+sub makeComic {
+    my ($json) = @_;
+
     *Comic::_slurp = sub {
         return <<XML;
 <svg
@@ -21,22 +23,53 @@ sub inJson : Test {
   <metadata id="metadata7">
     <rdf:RDF>
       <cc:Work rdf:about="">
-        <dc:description>
-{&quot;title&quot;: {
-    &quot;en&quot;: &quot;DONT_PUBLISH fix me&quot;
-}}</dc:description>
+        <dc:description>$json</dc:description>
       </cc:Work>
     </rdf:RDF>
   </metadata>
 </svg>
 XML
     };
-    my $comic = Comic->new('whatever');
+    return Comic->new('whatever');
+}
 
+
+sub inJsonHash : Test {
+    my $comic = makeComic(<<JSON);
+{&quot;title&quot;: {
+    &quot;en&quot;: &quot;DONT_PUBLISH fix me&quot;
+}}
+JSON
     eval {
         $comic->_checkDontPublish();
     };
-    like($@, qr{In JSON title > en: DONT_PUBLISH fix me});
+    like($@, qr{In JSON > title > en: DONT_PUBLISH fix me});
+}
+
+
+sub inJsonArray : Test {
+    my $comic = makeComic(<<JSON);
+{&quot;who&quot;: {
+    &quot;en&quot;: [
+        &quot;one&quot;, &quot;two&quot;, &quot;three DONT_PUBLISH&quot;, &quot;four&quot;
+   ]
+}}
+JSON
+    eval {
+        $comic->_checkDontPublish();
+    };
+    like($@, qr{In JSON > who > en\[3\]: three DONT_PUBLISH});
+}
+
+
+sub inJsonTopLevelElement : Test {
+    my $comic = makeComic(<<JSON);
+{&quot;who&quot;: &quot;DONT_PUBLISH top level&quot;}
+JSON
+    eval {
+        $comic->_checkDontPublish();
+    };
+    like($@, qr{In JSON > who: DONT_PUBLISH top level});
 }
 
 
