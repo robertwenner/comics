@@ -356,6 +356,11 @@ sub _textsFor {
         $text =~ s/ +/ /mg;
         $text =~ s/^\s+//mg;
         $text =~ s/\s+$//mg;
+        
+        if ($text eq "") {
+            my $layer = $node->parentNode->{'inkscape:label'};
+            croak "Empty text in $layer with ID $node->{id}\n";
+        }
         push @texts, $text;
     }
     return @texts;
