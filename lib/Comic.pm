@@ -130,8 +130,13 @@ Parameters:
 
 =over 4
 
-    =item B<%languages> hash of short language name (e.g., en for English and
-        de for German) to long language name.
+    =item B<%languages> hash of long language name (e.g., "English") to
+        short language name (e.g., "en"). The long language name must be
+        used in the Inkscape layer names, the short name in the JSON meta
+        data. This code will only work on the languages passed in this hash,
+        even if additional languages are present in the SVG. Specifying a
+        language that the SVG does not have is fine, you just don't get
+        any output (png, transcript) for it.
 
 =back
 
@@ -141,6 +146,8 @@ sub exportPng {
     my ($self, %languages) = @_;
 
     foreach my $lang (keys(%languages)) {
+        next if $self->_notFor($languages{$lang});
+
         $self->_sanityChecks($languages{$lang});
         $self->_checkDontPublish($languages{$lang});
 
@@ -316,6 +323,10 @@ sub exportHtml {
 sub _exportLanguageHtml {
     my ($self, $lang, $language) = @_;
 
+    # If the comic has no title for the given language, assume it does not
+    # have language layers either and don't export a transcript.
+    return if $self->_notFor($lang);
+
     my $dir = $self->_makeComicsPath($lang);
     my $page = $dir . basename($self->{file}, ".svg") . ".html";
     open my $F, ">", $page or croak "Cannot write $page: $!";
@@ -324,14 +335,21 @@ sub _exportLanguageHtml {
 }
 
 
+sub _notFor {
+    my ($self, $lang) = @_;
+    return !$self->{metaData}->{title}->{$lang};
+}
+
+
 sub _exportHtml {
     my ($self, $F, $lang, $language) = @_;
 
+    my $title = $self->{metaData}->{title}->{$lang};
     # SVG, being XML, needs to encode XML special characters, but does not do
     # HTML encoding. So first reverse the XML encoding, then apply any HTML
     # encoding.
-    my $title = decode_entities($self->{metaData}->{title}->{$lang});
-    print $F "<h1>", encode_entities($title), "</h1>\n\n";
+    $title = encode_entities(decode_entities($title));
+    print $F "<h1>$title</h1>\n\n";
     foreach my $t ($self->_textsFor($language)) {
         print $F "<p>", encode_entities($t), "</p>\n\n";
     }
