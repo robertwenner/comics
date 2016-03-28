@@ -3,18 +3,22 @@ package Comic;
 use strict;
 use warnings;
 
+use utf8;
 use base qw(Exporter);
 use POSIX;
 use Carp;
+use Devel::StackTrace;
 use autodie;
 use File::Path qw(make_path);
-use File::Basename;
 use File::Temp qw/tempfile/;
+use File::stat;
 use open ':std', ':encoding(UTF-8)'; # to handle e.g., umlauts correctly
 use XML::LibXML;
 use XML::LibXML::XPathContext;
 use JSON;
 use HTML::Entities;
+use Image::PNG;
+
 
 use version; our $VERSION = qv('0.0.2');
 
@@ -67,6 +71,34 @@ our %options = (
     TRANSFORM => 1,
 );
 
+my %text = (
+    title => {
+        "en" => "Beer comic",
+        "de" => "Biercomic",
+        "es" => "Cerveza cómic",
+    },
+    domain => {
+        "en" => "beercomics.com",
+        "de" => "biercomics.de",
+    },
+    prev => {
+        "en" => "previous comic",
+        "de" => "vorheriges Comic",
+    },
+    "next" => {
+        "en" => "next comic",
+        "de" => "nächstes Comic",    
+    },
+    langLink => {
+        "en" => "english version of this comic",
+        "de" => "deutsche Version dieses Comics",
+    },
+    keywords => {
+        "en" => "beer, comic",
+        "de" => "Bier, Comic",
+    },
+);
+
 my %people;
 my %tags;
 my %titles;
@@ -98,7 +130,7 @@ sub _load {
     my ($self, $file) = @_;
     
     $self->{file} = $file;
-    $self->{dom} = XML::LibXML->load_xml(string => _slurp($file));
+    $self->{dom} = XML::LibXML->load_xml(string => $self->_slurp($file));
     $self->{xpath} = XML::LibXML::XPathContext->new($self->{dom});
     $self->{xpath}->registerNs(DEFAULT_NAMESPACE, 'http://www.w3.org/2000/svg'); 
     my $metaXpath = _buildXpath('metadata/rdf:RDF/cc:Work/dc:description/text()');
@@ -108,9 +140,11 @@ sub _load {
 
 
 sub _slurp {
-    my ($file) = @_;
+    my ($self, $file) = @_;
 
     open my $F, "<", $file or croak "Cannot open $file: $!";
+    $self->{modified} = ctime(stat($F)->mtime);
+    $self->{modified} =~ s/[\r\n]+$//;
     local $/ = undef;
     my $contents = <$F>;
     close $F or croak "Cannot close $file: $!";
@@ -271,16 +305,31 @@ sub _writeTempSvgFile {
 
 
 sub _svgToPng {
-    my ($self, $language, $svgFile) = @_;
+    my ($self, $lang, $svgFile) = @_;
 
-    my $dir = $self->_makeComicsPath($language);
-    my $png = $dir . basename($self->{file}, ".svg") . ".png";
+    my $dir = $self->_makeComicsPath($lang);
+    my $pngFile = $dir . $self->_makeFileName($lang, "png");
     my $cmd = "inkscape --without-gui --file=$svgFile";
     $cmd .= " --g-fatal-warnings";
-    $cmd .= " --export-png=$png --export-area-drawing --export-background=#ffffff";
+    $cmd .= " --export-png=$pngFile --export-area-drawing --export-background=#ffffff";
     system($cmd) && croak("Could not run $cmd: $!");
+    
+    my $png = Image::PNG->new();
+    $png->read($pngFile);
+    $self->{height} = $png->height;
+    $self->{width} = $png->width;
 }
 
+
+sub _makeFileName {
+    my ($self, $lang, $ext) = @_;
+
+    my $title = lc($self->{metaData}->{title}->{$lang});
+    $title =~ s/\s/-/g;
+    $title =~ s/[^a-z0-9-_]//g;
+    return $title . ".$ext";
+}
+    
 
 sub _makeComicsPath {
     my ($self, $language) = @_;
@@ -315,22 +364,22 @@ sub exportHtml {
     my ($self, %languages) = @_;
 
     foreach my $lang (keys(%languages)) {
-        $self->_exportLanguageHtml($languages{$lang}, $lang);
+        $self->_exportLanguageHtml($languages{$lang}, $lang, %languages);
     }
 }
 
 
 sub _exportLanguageHtml {
-    my ($self, $lang, $language) = @_;
+    my ($self, $lang, $language, %languages) = @_;
 
     # If the comic has no title for the given language, assume it does not
     # have language layers either and don't export a transcript.
     return if $self->_notFor($lang);
 
     my $dir = $self->_makeComicsPath($lang);
-    my $page = $dir . basename($self->{file}, ".svg") . ".html";
+    my $page = $dir . $self->_makeFileName($lang, "html");
     open my $F, ">", $page or croak "Cannot write $page: $!";
-    $self->_exportHtml($F, $lang, $language);
+    $self->_exportHtml($F, $lang, $language, %languages);
     close $F or croak "Cannot close $page: $!";
 }
 
@@ -342,18 +391,58 @@ sub _notFor {
 
 
 sub _exportHtml {
-    my ($self, $F, $lang, $language) = @_;
+    my ($self, $F, $lang, $language, %languages) = @_;
 
     my $title = $self->{metaData}->{title}->{$lang};
     # SVG, being XML, needs to encode XML special characters, but does not do
     # HTML encoding. So first reverse the XML encoding, then apply any HTML
     # encoding.
     $title = encode_entities(decode_entities($title));
-    print $F "<h1>$title</h1>\n\n";
-    foreach my $t ($self->_textsFor($language)) {
-        print $F "<p>", encode_entities($t), "</p>\n\n";
+
+    my $languageLinks = "";
+    foreach my $l (sort(keys(%languages))) {
+        next if ($l eq $lang);
+        
+        my $title = $self->{metaData}->{title}->{$l};
+        if ($title) {
+            my $href = $text{domain}{$l} . "/" . $self->_makeFileName($l, "png");
+            my $alt = $text{landLink}{$l};
+            my $linkText = uc($l);
+            $languageLinks .= "<a href=\"$href\" alt=\"$alt\">$linkText</a> ";
+        }
     }
-    print $F "\n";
+
+    my $transcriptHtml = "";
+    foreach my $t ($self->_textsFor($language)) {
+        $transcriptHtml .= "<p>" . encode_entities($t) . "</p>\n";
+    }
+
+    my $keywords = $self->{metaData}->{tags}->{$lang} || "";
+    $keywords = ", " . encode_entities($keywords) if ($keywords);
+
+    my $png = $self->_makeFileName($lang, "png");
+
+    print $F <<HEAD;
+<!DOCTYPE html>
+<html lang="$lang">
+<head>
+<title>$text{title}{$lang}: $title</title>
+<meta charset="utf-8"/>
+<meta name="author" content="Robert Wenner"/>
+<meta name="last-modified" content="$self->{modified}"/>
+<meta name="description" content="$text{keywords}{$lang}$keywords"/>
+</head>
+<body>
+$languageLinks
+<h1>$text{title}{$lang}: $title</h1>
+<object data="$png" type="image/png" width="$self->{width}" height="$self->{height}">
+$transcriptHtml
+</object>
+HEAD
+    print $F <<FOOT;
+</body>
+</html>
+FOOT
 }
 
 

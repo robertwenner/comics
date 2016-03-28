@@ -10,7 +10,7 @@ use Comic;
 __PACKAGE__->runtests() unless caller;
 
 
-sub makeXml {
+sub makeEnglishComic {
     my ($title, $content) = @_;
 
     local *Comic::_slurp = sub {
@@ -28,6 +28,9 @@ sub makeXml {
         <dc:description>{
 &quot;title&quot;: {
     &quot;en&quot;: &quot;$title&quot;
+},
+&quot;tags&quot;: {
+    &quot;en&quot;: &quot;JSON, tags, ähm&quot;
 }
 }</dc:description>
       </cc:Work>
@@ -41,33 +44,171 @@ sub makeXml {
 </svg>
 XML
     };
-
-    return new Comic('whatever');
+    return withFakedAttributes(new Comic('whatever'));
 }
-    
 
-sub escapesXmlSpecialCharactersText : Test {
-    my $wrote = "";
-    open(my $F, '>', \$wrote) or die "Cannot open memory handle: $!";
-    my $comic = makeXml("title", "bläh-bläh");
+
+sub makeEnglishGermanComic {
+    my ($titleEn, $contentEn, $titleDe, $contentDe) = @_;
+
+    local *Comic::_slurp = sub {
+        return <<XML;
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns="http://www.w3.org/2000/svg">
+  <metadata id="metadata7">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:description>{
+&quot;title&quot;: {
+    &quot;en&quot;: &quot;$titleEn&quot;,
+    &quot;de&quot;: &quot;$titleDe&quot;
+},
+}</dc:description>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g inkscape:groupmode="layer" inkscape:label="English">
+    <text x="-138.3909" y="1118.5272">
+       <tspan id="tspan4153" x="-138.3909" y="1118.5272">$contentEn</tspan>
+    </text>
+  </g>
+  <g inkscape:groupmode="layer" inkscape:label="Deutsch">
+    <text x="-138.3909" y="1118.5272">
+       <tspan id="tspan4153" x="-138.3909" y="1118.5272">$contentDe</tspan>
+    </text>
+  </g>
+</svg>
+XML
+    };
+    return withFakedAttributes(new Comic('whatever'));
+}
+
+
+sub withFakedAttributes {
+    my ($comic) = @_;    
+    $comic->{modified} = "today";
+    $comic->{height} = 200;
+    $comic->{width} = 600;
+    return $comic;
+}
+
+
+my $wrote;
+my $F;
+
+
+sub before : Test(setup) {
+    $wrote = "";
+    open($F, '>', \$wrote) or die "Cannot open memory handle: $!";
+} 
+
+
+sub escapesXmlSpecialCharactersFromText : Test {
+    my $comic = makeEnglishComic("title", "bläh-bläh");
     $comic->_exportHtml($F, "en", "English");
-    ok($wrote =~ m{<p>bl&auml;h-bl&auml;h</p>}m);
+    ok($wrote =~ m{bl&auml;h-bl&auml;h}m);
 }
 
 
-sub escapesXmlSpecialCharactersJson : Test {
-    my $wrote = "";
-    open(my $F, '>', \$wrote) or die "Cannot open memory handle: $!";
-    my $comic = makeXml('&lt;title \&quot;quoted\&quot; &amp; umläüted&gt;', "content");
+sub escapesXmlSpecialCharactersFromJson : Test {
+    my $comic = makeEnglishComic('&lt;title \&quot;quoted\&quot; &amp; umläüted&gt;', "content");
     $comic->_exportHtml($F, "en", "English");
     ok($wrote =~
-        m{<h1>&lt;title &quot;quoted&quot; &amp; uml&auml;&uuml;ted&gt;</h1>}m);
+        m{<h1>Beer comic: &lt;title &quot;quoted&quot; &amp; uml&auml;&uuml;ted&gt;</h1>}m);
 }
 
 
 sub noExportIfNotMetaForThatLanguage : Test {
     local *Comic::_makeComicsPath = sub { die("should not make a path"); };
-    my $comic = makeXml('title', 'content');
+    my $comic = makeEnglishComic('title', 'content');
     $comic->_exportLanguageHtml('de', 'Deutsch');
     ok(1); # Would have failed above
+}
+
+
+sub doctype : Test {
+    my $comic = makeEnglishComic('Tötle!', "content");
+    $comic->_exportHtml($F, "en", "English");
+    ok($wrote =~
+        m{^<!DOCTYPE html>}g);
+}
+
+
+sub image : Tests {
+    my $comic = makeEnglishComic('Tötle!', "content");
+    $comic->_exportHtml($F, "en", "English");
+    ok($wrote =~
+        m{<object[^>]*\bdata="ttle.png"[^>]*>}m,
+        "data missing in $wrote");
+    ok($wrote =~
+        m{<object[^>]*\btype="image/png"[^>]*>}m,
+        "type missing in $wrote");
+}
+
+
+sub imageDimensions : Tests {
+    my $comic = makeEnglishComic("title", "content");
+    $comic->_exportHtml($F, "en", "English");
+    ok($wrote =~
+        m{<object[^>]*\bwidth="600"[^>]*>}m,
+        "width missing in $wrote");
+    ok($wrote =~
+        m{<object[^>]*\bheight="200"[^>]*>}m,
+        "height missing in $wrote");
+}
+
+
+sub imageTranscript : Test {
+    my $comic = makeEnglishComic("title", "content");
+    $comic->_exportHtml($F, "en", "English");
+    ok($wrote =~
+        m{<object[^>]+>\s*<p>content</p>\s*</object>}m);
+}
+
+
+sub title : Tests {
+    my $comic = makeEnglishComic('Drinking Beer', "content");
+    $comic->_exportHtml($F, "en", "English");
+    ok($wrote =~ m{<h1>Beer comic: Drinking Beer</h1>});
+    ok($wrote =~ m{<title>Beer comic: Drinking Beer</title>});
+}
+
+
+sub metaDescription : Test {
+    my $comic = makeEnglishComic('title', 'content');
+    $comic->_exportHtml($F, "en", "English");
+    ok($wrote =~ m{<meta name="description" content="beer, comic, JSON, tags, &auml;hm"/>}m);
+}
+
+
+sub metaAuthor : Test {
+    my $comic = makeEnglishComic('title', 'content');
+    $comic->_exportHtml($F, "en", "English");
+    ok($wrote =~ m{<meta name="author" content="Robert Wenner"/>}m);
+}
+
+
+sub metaLastModified : Test {
+    my $comic = makeEnglishComic('title', 'content');
+    $comic->_exportHtml($F, "en", "English");
+    ok($wrote =~ m{<meta name="last-modified" content="today"/>}m);
+}
+
+
+sub metaCharset : Test {
+    my $comic = makeEnglishComic('title', 'content');
+    $comic->_exportHtml($F, "en", "English");
+    ok($wrote =~ m{<meta charset="utf-8"/>}m);
+}
+
+
+sub language : Test {
+    my $comic = makeEnglishComic('title', 'content');
+    $comic->_exportHtml($F, "en", "English");
+    ok($wrote =~ m{<html lang="en">}m);
 }
