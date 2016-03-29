@@ -25,12 +25,12 @@ sub makeComic {
       <cc:Work rdf:about="">
         <dc:description>{
 &quot;title&quot;: {
-    &quot;en&quot;: &quot;title&quot;,
-    &quot;de&quot;: &quot;Titel&quot;
+    &quot;English&quot;: &quot;title&quot;,
+    &quot;Deutsch&quot;: &quot;Titel&quot;
 },
 &quot;tags&quot;: {
-    &quot;en&quot;: [&quot;en1&quot;, &quot;en2&quot;],
-    &quot;de&quot;: [&quot;de1&quot;]
+    &quot;English&quot;: [&quot;en1&quot;, &quot;en2&quot;],
+    &quot;Deutsch&quot;: [&quot;de1&quot;]
 }
 }</dc:description>
       </cc:Work>
@@ -50,14 +50,14 @@ sub before : Test(setup) {
 
 sub tagsUnknownLanguage : Test {
     makeComic()->_countTags();
-    is(Comic::tags("foo"), undef);
+    is(Comic::countsOfIn("tags", "Pimperanto"), undef);
 }
 
 
 sub tagsPerLanguage : Tests {
     makeComic()->_countTags();
-    is_deeply(Comic::tags("en"), { "en1" => 1, "en2", => 1 });
-    is_deeply(Comic::tags("de"), { "de1" => 1 });
+    is_deeply(Comic::countsOfIn("tags", "English"), { "en1" => 1, "en2", => 1 });
+    is_deeply(Comic::countsOfIn("tags", "Deutsch"), { "de1" => 1 });
 }
 
 
@@ -65,5 +65,5 @@ sub tagsMultipleTimes : Test {
     makeComic()->_countTags();
     makeComic()->_countTags();
     makeComic()->_countTags();
-    is_deeply(Comic::tags("en"), { "en1" => 3, "en2", => 3 });
+    is_deeply(Comic::countsOfIn("tags", "English"), { "en1" => 3, "en2", => 3 });
 }

@@ -73,29 +73,29 @@ our %options = (
 
 my %text = (
     title => {
-        "en" => "Beer comic",
-        "de" => "Biercomic",
+        "English" => "Beer comic",
+        "Deutsch" => "Biercomic",
         "es" => "Cerveza cómic",
     },
     domain => {
-        "en" => "beercomics.com",
-        "de" => "biercomics.de",
+        "English" => "beercomics.com",
+        "Deutsch" => "biercomics.de",
     },
     prev => {
-        "en" => "previous comic",
-        "de" => "vorheriges Comic",
+        "English" => "previous comic",
+        "Deutsch" => "vorheriges Comic",
     },
     "next" => {
-        "en" => "next comic",
-        "de" => "nächstes Comic",    
+        "English" => "next comic",
+        "Deutsch" => "nächstes Comic",    
     },
     langLink => {
-        "en" => "english version of this comic",
-        "de" => "deutsche Version dieses Comics",
+        "English" => "english version of this comic",
+        "Deutsch" => "deutsche Version dieses Comics",
     },
     keywords => {
-        "en" => "beer, comic",
-        "de" => "Bier, Comic",
+        "English" => "beer, comic",
+        "Deutsch" => "Bier, Comic",
     },
 );
 
@@ -153,9 +153,9 @@ sub _slurp {
 
 =head2 exportPng
 
-Exports PNGs for all languages found in this Comic.
+Exports PNGs for the given languages.
 
-The png file will be the same name as the input SVG, with a PNG extension.
+The png file will be the lowercased asciified title of the comic.
 It will be placed in F<generated/$lang/> where $lang is a 2 letter language
 shortcut.
 
@@ -165,8 +165,9 @@ Parameters:
 
     =item B<%languages> hash of long language name (e.g., "English") to
         short language name (e.g., "en"). The long language name must be
-        used in the Inkscape layer names, the short name in the JSON meta
-        data. This code will only work on the languages passed in this hash,
+        used in the Inkscape layer names and the JSON meta data. 
+
+        This code will only work on the languages passed in this hash,
         even if additional languages are present in the SVG. Specifying a
         language that the SVG does not have is fine, you just don't get
         any output (png, transcript) for it.
@@ -178,32 +179,32 @@ Parameters:
 sub exportPng {
     my ($self, %languages) = @_;
 
-    foreach my $lang (keys(%languages)) {
-        next if $self->_notFor($languages{$lang});
+    foreach my $language (keys %languages) {
+        next if $self->_notFor($language);
 
-        $self->_sanityChecks($languages{$lang});
-        $self->_checkDontPublish($languages{$lang});
-        $self->_checkTags("tags", $languages{$lang});
-        $self->_checkTags("people", $languages{$lang});
+        $self->_sanityChecks($language);
+        $self->_checkDontPublish($language);
+        $self->_checkTags("tags", $language);
+        $self->_checkTags("people", $language);
 
-        $self->_flipLanguageLayers($lang, %languages);
-        $self->_svgToPng($languages{$lang}, $self->_writeTempSvgFile());
+        $self->_flipLanguageLayers($language, keys (%languages));
+        $self->_svgToPng($language, $self->_writeTempSvgFile());
     }
     $self->_countTags();
 }
 
 
 sub _sanityChecks {
-    my ($self, $lang) = @_;
+    my ($self, $language) = @_;
 
-    my $title = $self->{metaData}->{title}->{$lang};
-    my $key = lc("$lang\n$title");
+    my $title = $self->{metaData}->{title}->{$language};
+    my $key = lc("$language\n$title");
     $key =~ s/^\s+//;
     $key =~ s/\s+$//;
     $key =~ s/\s+/ /g;
     if (defined($titles{$key})) {
         if ($titles{$key} ne $self->{file}) {
-            croak("Duplicated $lang title '$title' in $titles{$key} and $self->{file}");
+            croak("Duplicated $language title '$title' in $titles{$key} and $self->{file}");
         }
     }
     $titles{$key} = $self->{file};
@@ -246,11 +247,11 @@ sub _checkJson {
 
 
 sub _checkTags {
-    my ($self, $what, $lang) = @_;
+    my ($self, $what, $language) = @_;
 
-    foreach my $tag (@{$self->{metaData}->{$what}->{$lang}}) {
-        croak("No $lang $what") unless(defined($tag));
-        croak("Empty $lang $what") if ($tag =~ m/^\s*$/);
+    foreach my $tag (@{$self->{metaData}->{$what}->{$language}}) {
+        croak("No $language $what") unless(defined($tag));
+        croak("Empty $language $what") if ($tag =~ m/^\s*$/);
     }
 }
 
@@ -259,9 +260,9 @@ sub _countTags {
     my ($self) = @_;
 
     foreach my $what ("tags", "people") {
-        foreach my $lang (keys %{$self->{metaData}->{$what}}) {
-            foreach my $val (@{$self->{metaData}->{$what}->{$lang}}) {
-                $counts{$what}{$lang}{$val}++;
+        foreach my $language (keys %{$self->{metaData}->{$what}}) {
+            foreach my $val (@{$self->{metaData}->{$what}->{$language}}) {
+                $counts{$what}{$language}{$val}++;
             }
         }
     }
@@ -269,30 +270,30 @@ sub _countTags {
 
 
 sub _flipLanguageLayers {
-    my ($self, $lang, %languages) = @_;
+    my ($self, $language, @languages) = @_;
 
     # Hide all but current language layers
     my $hadLang = 0;
     my $allLayers = _buildXpath('g[@inkscape:groupmode="layer"]');
     foreach my $layer ($self->{xpath}->findnodes($allLayers)) {
         my $label = $layer->{"inkscape:label"};
-        foreach my $otherLang (keys(%languages)) {
+        foreach my $otherLang (@languages) {
             # Turn off all meta layers and all other languages
             if ($label =~ m/$otherLang$/ || $label =~ m/^Meta/) {
                 $layer->{"style"} = "display:none";
             }
         }
         # Make sure the right language layer is visible
-        if ($label =~ m/$lang$/ && $label !~ m/Meta/) {
+        if ($label =~ m/$language$/ && $label !~ m/Meta/) {
             $layer->{"style"} = "display:inline";
             $hadLang = 1;
         }
     }
     unless ($hadLang) {
         if ($self->{file} =~ m@/([a-z]{2,3})/[^/]+.svg$@) {
-            return if ($1 ne $languages{$lang} || $1 eq "div");
+            return if ($1 ne $language || $1 eq "div");
         }
-        croak "No $lang layer";
+        croak "No $language layer";
     }
 }
 
@@ -316,15 +317,15 @@ sub _writeTempSvgFile {
 
 
 sub _svgToPng {
-    my ($self, $lang, $svgFile) = @_;
+    my ($self, $language, $svgFile) = @_;
 
-    my $dir = $self->_makeComicsPath($lang);
-    my $pngFile = $dir . $self->_makeFileName($lang, "png");
+    my $dir = $self->_makeComicsPath($language);
+    my $pngFile = $dir . $self->_makeFileName($language, "png");
     my $cmd = "inkscape --without-gui --file=$svgFile";
     $cmd .= " --g-fatal-warnings";
     $cmd .= " --export-png=$pngFile --export-area-drawing --export-background=#ffffff";
     system($cmd) && croak("Could not run $cmd: $!");
-    
+
     my $png = Image::PNG->new();
     $png->read($pngFile);
     $self->{height} = $png->height;
@@ -333,9 +334,9 @@ sub _svgToPng {
 
 
 sub _makeFileName {
-    my ($self, $lang, $ext) = @_;
+    my ($self, $language, $ext) = @_;
 
-    my $title = lc($self->{metaData}->{title}->{$lang});
+    my $title = lc($self->{metaData}->{title}->{$language});
     $title =~ s/\s/-/g;
     $title =~ s/[^a-z0-9-_]//g;
     return $title . ".$ext";
@@ -346,7 +347,7 @@ sub _makeComicsPath {
     my ($self, $language) = @_;
 
     my $pages = "generated/comics/";
-    my $dir = "$pages/$language/";
+    my $dir = "$pages/" . lc($language) . "/";
     make_path($dir) or croak("Cannot mkdirs $dir: $!") unless(-d $dir);
     return $dir;
 }
@@ -356,9 +357,8 @@ sub _makeComicsPath {
 
 Exports a HTML transcript of this Comic's texts per language.
 
-The HTML transcript file will be the same name as the input SVG, with a
-.html extension. It will be placed in F<generated/$lang/> where $lang is a 2
-letter language shortcut.
+The HTML page will be the same name as the generated PNG, with a .html
+extension and will be placed next to it.
 
 Parameters:
 
@@ -374,37 +374,37 @@ Parameters:
 sub exportHtml {
     my ($self, %languages) = @_;
 
-    foreach my $lang (keys(%languages)) {
-        $self->_exportLanguageHtml($languages{$lang}, $lang, %languages);
+    foreach my $language (keys %languages) {
+        $self->_exportLanguageHtml($language, %languages);
     }
 }
 
 
 sub _exportLanguageHtml {
-    my ($self, $lang, $language, %languages) = @_;
+    my ($self, $language, %languages) = @_;
 
     # If the comic has no title for the given language, assume it does not
     # have language layers either and don't export a transcript.
-    return if $self->_notFor($lang);
+    return if $self->_notFor($language);
 
-    my $dir = $self->_makeComicsPath($lang);
-    my $page = $dir . $self->_makeFileName($lang, "html");
+    my $dir = $self->_makeComicsPath($language);
+    my $page = $dir . $self->_makeFileName($language, "html");
     open my $F, ">", $page or croak "Cannot write $page: $!";
-    $self->_exportHtml($F, $lang, $language, %languages);
+    $self->_exportHtml($F, $language, %languages);
     close $F or croak "Cannot close $page: $!";
 }
 
 
 sub _notFor {
-    my ($self, $lang) = @_;
-    return !$self->{metaData}->{title}->{$lang};
+    my ($self, $language) = @_;
+    return !$self->{metaData}->{title}->{$language};
 }
 
 
 sub _exportHtml {
-    my ($self, $F, $lang, $language, %languages) = @_;
+    my ($self, $F, $language, %languages) = @_;
 
-    my $title = $self->{metaData}->{title}->{$lang};
+    my $title = $self->{metaData}->{title}->{$language};
     # SVG, being XML, needs to encode XML special characters, but does not do
     # HTML encoding. So first reverse the XML encoding, then apply any HTML
     # encoding.
@@ -412,12 +412,12 @@ sub _exportHtml {
 
     my $languageLinks = "";
     foreach my $l (sort(keys(%languages))) {
-        next if ($l eq $lang);
+        next if ($l eq $language);
         
         my $title = $self->{metaData}->{title}->{$l};
         if ($title) {
             my $href = $text{domain}{$l} . "/" . $self->_makeFileName($l, "png");
-            my $alt = $text{landLink}{$l};
+            my $alt = $text{langLink}{$l};
             my $linkText = uc($l);
             $languageLinks .= "<a href=\"$href\" alt=\"$alt\">$linkText</a> ";
         }
@@ -428,24 +428,25 @@ sub _exportHtml {
         $transcriptHtml .= "<p>" . encode_entities($t) . "</p>\n";
     }
 
-    my $keywords = $self->{metaData}->{tags}->{$lang} || "";
+    my $keywords = $self->{metaData}->{tags}->{$language} || "";
     $keywords = ", " . encode_entities($keywords) if ($keywords);
 
-    my $png = $self->_makeFileName($lang, "png");
+    my $png = $self->_makeFileName($language, "png");
+    my $langCode = $languages{$language};
 
     print $F <<HEAD;
 <!DOCTYPE html>
-<html lang="$lang">
+<html lang="$langCode">
 <head>
-<title>$text{title}{$lang}: $title</title>
+<title>$text{title}{$language}: $title</title>
 <meta charset="utf-8"/>
 <meta name="author" content="Robert Wenner"/>
 <meta name="last-modified" content="$self->{modified}"/>
-<meta name="description" content="$text{keywords}{$lang}$keywords"/>
+<meta name="description" content="$text{keywords}{$language}$keywords"/>
 </head>
 <body>
 $languageLinks
-<h1>$text{title}{$lang}: $title</h1>
+<h1>$text{title}{$language}: $title</h1>
 <object data="$png" type="image/png" width="$self->{width}" height="$self->{height}">
 $transcriptHtml
 </object>
@@ -458,11 +459,11 @@ FOOT
 
 
 sub _textsFor {
-    my ($self, $lang) = @_;
+    my ($self, $language) = @_;
 
     $self->_findFrames();
     my @texts;
-    foreach my $node (sort { $self->_textPosSort($a, $b) } $self->{xpath}->findnodes(_text($lang))) {
+    foreach my $node (sort { $self->_textPosSort($a, $b) } $self->{xpath}->findnodes(_text($language))) {
         my XML::LibXML::Node $tspan = $node->firstChild();
         my $text = "";
         do {
@@ -567,45 +568,26 @@ sub _posToFrame {
 }
 
 
-=head2 people
+=head2 countsOfIn
 
-Returns a hash of people names to counts in all comics processed. 
+Returns the counts of all x in the given language.
 This can be used for a tag cloud.
 
 Parameters:
 
 =over 4
 
-    =item B<$lang> short language name.
+    =item B<$what> what counts to get, e.g., "tags" or "people".
+
+    =item B<$language> for what language, e.g., "English".
 
 =back
 
 =cut
 
-sub people {
-    my ($lang) = @_;
-    return $counts{people}{$lang};
-}
-
-
-=head2 tags 
-
-Returns a hash of tags to counts in all comics processed.
-This can be used for a tag cloud.
-
-Parameters:
-
-=over 4
-
-    =item B<$lang> short language name.
-
-=back
-
-=cut
-
-sub tags {
-    my ($lang) = @_;
-    return $counts{tags}{$lang};
+sub countsOfIn {
+    my ($what, $language) = @_;
+    return $counts{$what}{$language};
 }
 
 

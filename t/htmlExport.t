@@ -27,10 +27,10 @@ sub makeEnglishComic {
       <cc:Work rdf:about="">
         <dc:description>{
 &quot;title&quot;: {
-    &quot;en&quot;: &quot;$title&quot;
+    &quot;English&quot;: &quot;$title&quot;
 },
 &quot;tags&quot;: {
-    &quot;en&quot;: &quot;JSON, tags, ähm&quot;
+    &quot;English&quot;: &quot;JSON, tags, ähm&quot;
 }
 }</dc:description>
       </cc:Work>
@@ -65,8 +65,8 @@ sub makeEnglishGermanComic {
       <cc:Work rdf:about="">
         <dc:description>{
 &quot;title&quot;: {
-    &quot;en&quot;: &quot;$titleEn&quot;,
-    &quot;de&quot;: &quot;$titleDe&quot;
+    &quot;English&quot;: &quot;$titleEn&quot;,
+    &quot;Deutsch&quot;: &quot;$titleDe&quot;
 },
 }</dc:description>
       </cc:Work>
@@ -110,14 +110,14 @@ sub before : Test(setup) {
 
 sub escapesXmlSpecialCharactersFromText : Test {
     my $comic = makeEnglishComic("title", "bläh-bläh");
-    $comic->_exportHtml($F, "en", "English");
+    $comic->_exportHtml($F, "English", ("English" => "en"));
     ok($wrote =~ m{bl&auml;h-bl&auml;h}m);
 }
 
 
 sub escapesXmlSpecialCharactersFromJson : Test {
     my $comic = makeEnglishComic('&lt;title \&quot;quoted\&quot; &amp; umläüted&gt;', "content");
-    $comic->_exportHtml($F, "en", "English");
+    $comic->_exportHtml($F, "English", ("English" => "en"));
     ok($wrote =~
         m{<h1>Beer comic: &lt;title &quot;quoted&quot; &amp; uml&auml;&uuml;ted&gt;</h1>}m);
 }
@@ -126,14 +126,14 @@ sub escapesXmlSpecialCharactersFromJson : Test {
 sub noExportIfNotMetaForThatLanguage : Test {
     local *Comic::_makeComicsPath = sub { die("should not make a path"); };
     my $comic = makeEnglishComic('title', 'content');
-    $comic->_exportLanguageHtml('de', 'Deutsch');
+    $comic->_exportLanguageHtml('Deutsch', ("Deutsch" => "de"));
     ok(1); # Would have failed above
 }
 
 
 sub doctype : Test {
     my $comic = makeEnglishComic('Tötle!', "content");
-    $comic->_exportHtml($F, "en", "English");
+    $comic->_exportHtml($F, "English", ("English" => "en"));
     ok($wrote =~
         m{^<!DOCTYPE html>}g);
 }
@@ -141,7 +141,7 @@ sub doctype : Test {
 
 sub image : Tests {
     my $comic = makeEnglishComic('Tötle!', "content");
-    $comic->_exportHtml($F, "en", "English");
+    $comic->_exportHtml($F, "English", ("English" => "en"));
     ok($wrote =~
         m{<object[^>]*\bdata="ttle.png"[^>]*>}m,
         "data missing in $wrote");
@@ -153,7 +153,7 @@ sub image : Tests {
 
 sub imageDimensions : Tests {
     my $comic = makeEnglishComic("title", "content");
-    $comic->_exportHtml($F, "en", "English");
+    $comic->_exportHtml($F, "English", ("English" => "en"));
     ok($wrote =~
         m{<object[^>]*\bwidth="600"[^>]*>}m,
         "width missing in $wrote");
@@ -165,7 +165,7 @@ sub imageDimensions : Tests {
 
 sub imageTranscript : Test {
     my $comic = makeEnglishComic("title", "content");
-    $comic->_exportHtml($F, "en", "English");
+    $comic->_exportHtml($F, "English", ("English" => "en"));
     ok($wrote =~
         m{<object[^>]+>\s*<p>content</p>\s*</object>}m);
 }
@@ -173,7 +173,7 @@ sub imageTranscript : Test {
 
 sub title : Tests {
     my $comic = makeEnglishComic('Drinking Beer', "content");
-    $comic->_exportHtml($F, "en", "English");
+    $comic->_exportHtml($F, "English", ("English" => "en"));
     ok($wrote =~ m{<h1>Beer comic: Drinking Beer</h1>});
     ok($wrote =~ m{<title>Beer comic: Drinking Beer</title>});
 }
@@ -181,34 +181,34 @@ sub title : Tests {
 
 sub metaDescription : Test {
     my $comic = makeEnglishComic('title', 'content');
-    $comic->_exportHtml($F, "en", "English");
+    $comic->_exportHtml($F, "English", ("English" => "en"));
     ok($wrote =~ m{<meta name="description" content="beer, comic, JSON, tags, &auml;hm"/>}m);
 }
 
 
 sub metaAuthor : Test {
     my $comic = makeEnglishComic('title', 'content');
-    $comic->_exportHtml($F, "en", "English");
+    $comic->_exportHtml($F, "English", ("English" => "en"));
     ok($wrote =~ m{<meta name="author" content="Robert Wenner"/>}m);
 }
 
 
 sub metaLastModified : Test {
     my $comic = makeEnglishComic('title', 'content');
-    $comic->_exportHtml($F, "en", "English");
+    $comic->_exportHtml($F, "English", ("English" => "en"));
     ok($wrote =~ m{<meta name="last-modified" content="today"/>}m);
 }
 
 
 sub metaCharset : Test {
     my $comic = makeEnglishComic('title', 'content');
-    $comic->_exportHtml($F, "en", "English");
+    $comic->_exportHtml($F, "English", ("English" => "en"));
     ok($wrote =~ m{<meta charset="utf-8"/>}m);
 }
 
 
 sub language : Test {
     my $comic = makeEnglishComic('title', 'content');
-    $comic->_exportHtml($F, "en", "English");
+    $comic->_exportHtml($F, "English", ("English" => "en"));
     ok($wrote =~ m{<html lang="en">}m);
 }

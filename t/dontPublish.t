@@ -37,20 +37,20 @@ XML
 sub inJsonHash : Test {
     my $comic = makeComic(<<JSON);
 {&quot;title&quot;: {
-    &quot;en&quot;: &quot;DONT_PUBLISH fix me&quot;
+    &quot;English&quot;: &quot;DONT_PUBLISH fix me&quot;
 }}
 JSON
     eval {
         $comic->_checkDontPublish();
     };
-    like($@, qr{In JSON > title > en: DONT_PUBLISH fix me});
+    like($@, qr{In JSON > title > English: DONT_PUBLISH fix me});
 }
 
 
 sub inJsonArray : Test {
     my $comic = makeComic(<<JSON);
 {&quot;who&quot;: {
-    &quot;en&quot;: [
+    &quot;English&quot;: [
         &quot;one&quot;, &quot;two&quot;, &quot;three DONT_PUBLISH&quot;, &quot;four&quot;
    ]
 }}
@@ -58,7 +58,7 @@ JSON
     eval {
         $comic->_checkDontPublish();
     };
-    like($@, qr{In JSON > who > en\[3\]: three DONT_PUBLISH});
+    like($@, qr{In JSON > who > English\[3\]: three DONT_PUBLISH});
 }
 
 
@@ -100,9 +100,9 @@ sub inText : Test {
 XML
     };
     my $comic = Comic->new('whatever');
-    
+
     eval {
-        $comic->_checkDontPublish("en");
+        $comic->_checkDontPublish("English");
     };
     like($@, qr{In layer Deutsch: DONT_PUBLISH oops});
 }

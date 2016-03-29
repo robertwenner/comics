@@ -33,8 +33,8 @@ sub before : Test(setup) {
       <cc:Work rdf:about="">
         <dc:description>{
 &quot;title&quot;: {
-    &quot;en&quot;: &quot;$titleEn&quot;,
-    &quot;de&quot;: &quot;$titleDe&quot;
+    &quot;English&quot;: &quot;$titleEn&quot;,
+    &quot;Deutsch&quot;: &quot;$titleDe&quot;
 }
 }</dc:description>
       </cc:Work>
@@ -49,38 +49,38 @@ XML
 sub duplicatedTitle : Test {
     $titleEn = "duplicated title";
     my $c1 = Comic->new("one file");
-    $c1->_sanityChecks("en");
+    $c1->_sanityChecks("English");
     my $c2 = Comic->new("other file");
     eval {
-        $c2->_sanityChecks("en");
+        $c2->_sanityChecks("English");
     };
-    like($@, qr/Duplicated en title/i);
+    like($@, qr/Duplicated English title/i);
 }
 
 
 sub duplicatedTitleCaseInsensitive : Test {
     $titleEn = "clever title";
     my $c1 = Comic->new("one file");
-    $c1->_sanityChecks("en");
+    $c1->_sanityChecks("English");
     $titleEn = "Clever Title";
     my $c2 = Comic->new("other file");
     eval {
-        $c2->_sanityChecks("en");
+        $c2->_sanityChecks("English");
     };
-    like($@, qr/Duplicated en title/i);
+    like($@, qr/Duplicated English title/i);
 }
 
 
 sub duplicatedTitleWhitespace : Test {
     $titleEn = " white spaced";
     my $c1 = Comic->new("one file");
-    $c1->_sanityChecks("en");
+    $c1->_sanityChecks("English");
     $titleEn = "white   spaced ";
     my $c2 = Comic->new("other file");
     eval {
-        $c2->_sanityChecks("en");
+        $c2->_sanityChecks("English");
     };
-    like($@, qr/Duplicated en title/i);
+    like($@, qr/Duplicated English title/i);
 }
 
 
@@ -88,10 +88,10 @@ sub duplicateTitleAllowedInDifferentLanguages : Test {
     $titleEn = "language title";
     $titleDe = "language title";
     my $c1 = Comic->new("one file");
-    $c1->_sanityChecks("en");
+    $c1->_sanityChecks("English");
     my $c2 = Comic->new("other file");
     # This would throw if it failed
-    $c2->_sanityChecks("de");
+    $c2->_sanityChecks("Deutsch");
     ok(1);
 }
 
@@ -99,8 +99,8 @@ sub duplicateTitleAllowedInDifferentLanguages : Test {
 sub idempotent : Test {
     $titleEn = "idempotent";
     my $c = Comic->new("idempotent");
-    $c->_sanityChecks("en");
+    $c->_sanityChecks("English");
     # This would throw if it failed
-    $c->_sanityChecks("en");
+    $c->_sanityChecks("English");
     ok(1);
 }
