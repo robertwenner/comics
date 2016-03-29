@@ -99,8 +99,7 @@ my %text = (
     },
 );
 
-my %people;
-my %tags;
+our %counts; # our so that tests can reset it
 my %titles;
 
 
@@ -184,13 +183,13 @@ sub exportPng {
 
         $self->_sanityChecks($languages{$lang});
         $self->_checkDontPublish($languages{$lang});
-
-        $self->_count("tags", $languages{$lang}, \%tags);
-        $self->_count("who", $languages{$lang}, \%people);
+        $self->_checkTags("tags", $languages{$lang});
+        $self->_checkTags("people", $languages{$lang});
 
         $self->_flipLanguageLayers($lang, %languages);
         $self->_svgToPng($languages{$lang}, $self->_writeTempSvgFile());
     }
+    $self->_countTags();
 }
 
 
@@ -246,13 +245,25 @@ sub _checkJson {
 }
 
 
-sub _count {
-    my ($self, $what, $lang, $counts) = @_;
+sub _checkTags {
+    my ($self, $what, $lang) = @_;
 
     foreach my $tag (@{$self->{metaData}->{$what}->{$lang}}) {
-        croak("No $lang tag") unless(defined($tag));
-        croak("Empty $lang tag") if ($tag =~ m/^\s*$/);
-        $$counts{$tag}++;
+        croak("No $lang $what") unless(defined($tag));
+        croak("Empty $lang $what") if ($tag =~ m/^\s*$/);
+    }
+}
+
+
+sub _countTags {
+    my ($self) = @_;
+
+    foreach my $what ("tags", "people") {
+        foreach my $lang (keys %{$self->{metaData}->{$what}}) {
+            foreach my $val (@{$self->{metaData}->{$what}->{$lang}}) {
+                $counts{$what}{$lang}{$val}++;
+            }
+        }
     }
 }
 
@@ -558,35 +569,43 @@ sub _posToFrame {
 
 =head2 people
 
-Prints how often people's names were seen in the people tag in all comics
-processed. This can be used for a tag cloud.
+Returns a hash of people names to counts in all comics processed. 
+This can be used for a tag cloud.
+
+Parameters:
+
+=over 4
+
+    =item B<$lang> short language name.
+
+=back
 
 =cut
 
 sub people {
-    _printSortedHash("People", %people);
+    my ($lang) = @_;
+    return $counts{people}{$lang};
 }
 
 
 =head2 tags 
 
-Prints how often tags were seen in the people tag in all comics processed.
+Returns a hash of tags to counts in all comics processed.
 This can be used for a tag cloud.
+
+Parameters:
+
+=over 4
+
+    =item B<$lang> short language name.
+
+=back
 
 =cut
 
 sub tags {
-    _printSortedHash("Tags", %tags);
-}
-
-
-sub _printSortedHash {
-    my ($heading, %hash) = @_;
-
-    print "$heading:\n";
-    foreach my $p (sort { $hash{$b} cmp $hash{$a} } keys(%hash)) {
-        print "\t$p: $hash{$p}\n";
-    }
+    my ($lang) = @_;
+    return $counts{tags}{$lang};
 }
 
 
