@@ -7,7 +7,6 @@ use utf8;
 use base qw(Exporter);
 use POSIX;
 use Carp;
-use Devel::StackTrace;
 use autodie;
 use File::Path qw(make_path);
 use File::Temp qw/tempfile/;
@@ -346,7 +345,7 @@ sub _makeFileName {
 sub _makeComicsPath {
     my ($self, $language) = @_;
 
-    my $pages = "generated/comics/";
+    my $pages = "generated/";
     my $dir = "$pages/" . lc($language) . "/";
     make_path($dir) or croak("Cannot mkdirs $dir: $!") unless(-d $dir);
     return $dir;
