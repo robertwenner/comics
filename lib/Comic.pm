@@ -8,9 +8,9 @@ use base qw(Exporter);
 use POSIX;
 use Carp;
 use autodie;
+use DateTime;
 use File::Path qw(make_path);
 use File::Temp qw/tempfile/;
-use File::stat;
 use open ':std', ':encoding(UTF-8)'; # to handle e.g., umlauts correctly
 use XML::LibXML;
 use XML::LibXML::XPathContext;
@@ -132,7 +132,7 @@ sub new {
 
 sub _load {
     my ($self, $file) = @_;
-    
+
     $self->{file} = $file;
     $self->{dom} = XML::LibXML->load_xml(string => $self->_slurp($file));
     $self->{xpath} = XML::LibXML::XPathContext->new($self->{dom});
@@ -147,12 +147,20 @@ sub _slurp {
     my ($self, $file) = @_;
 
     open my $F, "<", $file or croak "Cannot open $file: $!";
-    $self->{modified} = ctime(stat($F)->mtime);
-    $self->{modified} =~ s/[\r\n]+$//;
     local $/ = undef;
     my $contents = <$F>;
     close $F or croak "Cannot close $file: $!";
+    $self->{modified} = _mtime($file);
     return $contents;
+}
+
+
+
+sub _mtime {
+    my ($file) = @_;
+
+    my $mtime = (stat $file)[9];
+    return DateTime->from_epoch(epoch => $mtime)->ymd;
 }
 
 
