@@ -653,7 +653,7 @@ sub writeSitemapXml {
     foreach my $language (@languages) {
         my $sitemap = "generated/" . lc($language) . "/sitemap.xml";
         open my $F, ">", "$sitemap" or croak "Cannot open $sitemap: $!";
-        _writeSiteMapXml($F, $language);
+        _writeSitemapXml($F, $language);
         close $F or croak "Cannot close $sitemap: $!";
     }
 }
