@@ -96,10 +96,16 @@ my %text = (
         "English" => "beer, comic",
         "Deutsch" => "Bier, Comic",
     },
+    licensePage => {
+        "English" => "license.html",
+        "Deutsch" => "lizenz.html",
+    },
 );
 
-our %counts; # our so that tests can reset it
+# our so that tests can reset these
+our %counts;
 my %titles;
+our %sitemapXml;
 
 
 =head1 SUBROUTINES/METHODS
@@ -376,6 +382,7 @@ sub exportHtml {
     foreach my $language (keys %languages) {
         $self->_exportLanguageHtml($language, %languages);
     }
+    $self->_addToSitemapXml();
 }
 
 
@@ -567,6 +574,29 @@ sub _posToFrame {
 }
 
 
+sub _addToSitemapXml {
+    my ($self) = @_;
+
+    foreach my $language (keys %{$self->{metaData}->{title}}) {
+        my $url = "https://$text{domain}{$language}/";
+        my $html = $self->_makeFileName($language, "html");
+        my $png = $self->_makeFileName($language, "png");
+        my $title = $self->{metaData}->{title}{$language};
+        $sitemapXml{$language} .= <<XML;
+<url>
+<loc>$url$html</loc>
+<image:image>
+<image:loc>$url$png</image:loc>
+<image:title>$title</image:title>
+<image:license>$url$text{licensePage}{$language}</image:license>
+</image:image>
+<lastmod>$self->{modified}</lastmod>
+</url>
+XML
+    }
+}
+
+
 =head2 countsOfIn
 
 Returns the counts of all x in the given language.
@@ -587,6 +617,44 @@ Parameters:
 sub countsOfIn {
     my ($what, $language) = @_;
     return $counts{$what}{$language};
+}
+
+
+=head2 writeSitemapXml
+
+Generates sitemap XML entries for all the comics processed.
+
+Parameters:
+
+=over 4
+
+    =item B<@language> lists of languages for which to generate a sitemap.
+    Sitemap fragments will be placed in generated/$language/sitemap-comics.xml
+
+=back
+
+=cut
+
+sub writeSitemapXml {
+    my (@languages) = @_;
+
+    # FIXME: always overwrites... could write the fragment for each page,
+    # and then merge these with the static stuff into a sitemap...
+    # That way you could convert a single comic again and still keep a
+    # sitemap of all comics, not just the last batch done.
+    foreach my $language (@languages) {
+        my $sitemap = "generated/" . lc($language) . "/sitemap.xml";
+        open my $F, ">", "$sitemap" or croak "Cannot open $sitemap: $!";
+        _writeSiteMapXml($F, $language);
+        close $F or croak "Cannot close $sitemap: $!";
+    }
+}
+
+
+sub _writeSitemapXml {
+    my ($F, $language) = @_;
+
+    print $F ($sitemapXml{$language} || "");
 }
 
 
