@@ -332,7 +332,7 @@ sub _writeTempSvgFile {
 sub _svgToPng {
     my ($self, $language, $svgFile) = @_;
 
-    my $dir = $self->_makeComicsPath($language);
+    my $dir = _makeComicsPath($language);
     my $pngFile = $dir . $self->_makeFileName($language, "png");
     my $cmd = "inkscape --without-gui --file=$svgFile";
     $cmd .= " --g-fatal-warnings";
@@ -357,7 +357,7 @@ sub _makeFileName {
     
 
 sub _makeComicsPath {
-    my ($self, $language) = @_;
+    my ($language) = @_;
 
     my $pages = "generated/";
     my $dir = "$pages/" . lc($language) . "/";
@@ -401,7 +401,7 @@ sub _exportLanguageHtml {
     # have language layers either and don't export a transcript.
     return if $self->_notFor($language);
 
-    my $dir = $self->_makeComicsPath($language);
+    my $dir = _makeComicsPath($language);
     my $page = $dir . $self->_makeFileName($language, "html");
     open my $F, ">", $page or croak "Cannot write $page: $!";
     $self->_exportHtml($F, $language, %languages);
@@ -651,6 +651,7 @@ sub writeSitemapXml {
     # That way you could convert a single comic again and still keep a
     # sitemap of all comics, not just the last batch done.
     foreach my $language (@languages) {
+        _makeComicsPath($language);
         my $sitemap = "generated/" . lc($language) . "/sitemap.xml";
         open my $F, ">", "$sitemap" or croak "Cannot open $sitemap: $!";
         _writeSitemapXml($F, $language);
