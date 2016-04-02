@@ -10,8 +10,10 @@ use Comic;
 __PACKAGE__->runtests() unless caller;
 
 
+my $comic;
+
+
 sub before : Test(setup) {
-    %Comic::sitemapXml = ();
     local *Comic::_slurp = sub {
         return <<XML;
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -26,8 +28,7 @@ sub before : Test(setup) {
       <cc:Work rdf:about="">
         <dc:description>{
 &quot;title&quot;: {
-    &quot;English&quot;: &quot;Drinking beer&quot;,
-    &quot;Deutsch&quot;: &quot;Bier trinken&quot;
+    &quot;English&quot;: &quot;Drinking beer&quot;
 }
 }</dc:description>
       </cc:Work>
@@ -36,57 +37,46 @@ sub before : Test(setup) {
 </svg>
 XML
     };
-    my ($comic) =  Comic->new('whatever');
+    $comic = Comic->new('whatever');
     $comic->{modified} = "today";
-    $comic->_addToSitemapXml();
 }
 
 
 sub assertWrote {
-    my ($language, $xml) = @_;
+    my ($contentsExpected) = @_;
 
-    my $wrote = "";
-    open(my $F, '>', \$wrote) or die "Cannot open memory handle: $!";
-    Comic::_writeSitemapXml($F, $language);
-    like($wrote, qr{$xml}m);
+    my $fileNameIs;   
+    my $contentsIs;
+
+    local *Comic::_writeFile = sub {
+        ($fileNameIs, $contentsIs) = @_;
+    };
+    $comic->_writeSitemapXmlFragment("English");
+    is("generated/tmp/english/drinking-beer.xml", $fileNameIs);
+    like($contentsIs, qr{$contentsExpected}m);
 }
 
 
-sub unknownLanguage : Test {
-    assertWrote("Pimperanto", "");
+sub page : Tests {
+    assertWrote('<loc>https://beercomics.com/comics/drinking-beer.html</loc>');
 }
 
 
-sub page : Test {
-    assertWrote("English", <<XML);
-<loc>https://beercomics.com/drinking-beer.html</loc>
-XML
+sub lastModified : Tests {
+    assertWrote('<lastmod>today</lastmod>');
 }
 
 
-sub lastModified : Test {
-    assertWrote("English", <<XML);
-<lastmod>today</lastmod>
-XML
+sub image : Tests {
+    assertWrote('<image:loc>https://beercomics.com/comics/drinking-beer.png</image:loc>');
 }
 
 
-sub image : Test {
-    assertWrote("English", <<XML);
-<image:loc>https://beercomics.com/drinking-beer.png</image:loc>
-XML
+sub imageTitle : Tests {
+    assertWrote('<image:title>Drinking beer</image:title>');
 }
 
 
-sub imageTitle : Test {
-    assertWrote("English", <<XML);
-<image:title>Drinking beer</image:title>
-XML
-}
-
-
-sub imageLicense : Test {
-    assertWrote("English", <<XML);
-<image:license>https://beercomics.com/license.html</image:license>
-XML
+sub imageLicense : Tests {
+    assertWrote('<image:license>https://beercomics.com/license.html</image:license>');
 }

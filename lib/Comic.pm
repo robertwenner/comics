@@ -105,7 +105,6 @@ my %text = (
 # our so that tests can reset these
 our %counts;
 my %titles;
-our %sitemapXml;
 
 
 =head1 SUBROUTINES/METHODS
@@ -169,8 +168,7 @@ sub _mtime {
 Exports PNGs for the given languages.
 
 The png file will be the lowercased asciified title of the comic.
-It will be placed in F<generated/$lang/> where $lang is a 2 letter language
-shortcut.
+It will be placed in F<generated/web/$language/>.
 
 Parameters:
 
@@ -332,8 +330,7 @@ sub _writeTempSvgFile {
 sub _svgToPng {
     my ($self, $language, $svgFile) = @_;
 
-    my $dir = _makeComicsPath($language);
-    my $pngFile = $dir . $self->_makeFileName($language, "png");
+    my $pngFile = $self->_makeFileName($language, "web", "png");
     my $cmd = "inkscape --without-gui --file=$svgFile";
     $cmd .= " --g-fatal-warnings";
     $cmd .= " --export-png=$pngFile --export-area-drawing --export-background=#ffffff";
@@ -347,22 +344,31 @@ sub _svgToPng {
 
 
 sub _makeFileName {
+    my ($self, $language, $where, $ext) = @_;
+
+    my $dir = "generated/$where/" . lc($language);
+    make_path($dir) or croak("Cannot mkdirs $dir: $!") unless(-d $dir);
+
+    return "$dir/" . $self->_normalizedTitle($language) . ".$ext";
+}
+
+
+sub _makeUrl {
     my ($self, $language, $ext) = @_;
 
+    return "https://$text{domain}{$language}/comics/" 
+        . $self->_normalizedTitle($language) . ".$ext";
+}        
+
+
+sub _normalizedTitle {
+    my ($self, $language) = @_;
+    
     my $title = lc($self->{metaData}->{title}->{$language});
+    croak "No title in $language" unless($title);
     $title =~ s/\s/-/g;
     $title =~ s/[^a-z0-9-_]//g;
-    return $title . ".$ext";
-}
-    
-
-sub _makeComicsPath {
-    my ($language) = @_;
-
-    my $pages = "generated/";
-    my $dir = "$pages/" . lc($language) . "/";
-    make_path($dir) or croak("Cannot mkdirs $dir: $!") unless(-d $dir);
-    return $dir;
+    return $title;
 }
 
 
@@ -388,9 +394,11 @@ sub exportHtml {
     my ($self, %languages) = @_;
 
     foreach my $language (keys %languages) {
+        next if $self->_notFor($language);
+
         $self->_exportLanguageHtml($language, %languages);
+        $self->_writeSitemapXmlFragment($language);
     }
-    $self->_addToSitemapXml();
 }
 
 
@@ -401,8 +409,7 @@ sub _exportLanguageHtml {
     # have language layers either and don't export a transcript.
     return if $self->_notFor($language);
 
-    my $dir = _makeComicsPath($language);
-    my $page = $dir . $self->_makeFileName($language, "html");
+    my $page = $self->_makeFileName($language, "web", "html");
     open my $F, ">", $page or croak "Cannot write $page: $!";
     $self->_exportHtml($F, $language, %languages);
     close $F or croak "Cannot close $page: $!";
@@ -430,7 +437,7 @@ sub _exportHtml {
         
         my $title = $self->{metaData}->{title}->{$l};
         if ($title) {
-            my $href = $text{domain}{$l} . "/" . $self->_makeFileName($l, "png");
+            my $href = $self->_makeUrl($l, "png");
             my $alt = $text{langLink}{$l};
             my $linkText = uc($l);
             $languageLinks .= "<a href=\"$href\" alt=\"$alt\">$linkText</a> ";
@@ -445,7 +452,7 @@ sub _exportHtml {
     my $keywords = $self->{metaData}->{tags}->{$language} || "";
     $keywords = ", " . encode_entities($keywords) if ($keywords);
 
-    my $png = $self->_makeFileName($language, "png");
+    my $png = $self->_makeUrl($language, "png");
     my $langCode = $languages{$language};
 
     print $F <<HEAD;
@@ -582,26 +589,35 @@ sub _posToFrame {
 }
 
 
-sub _addToSitemapXml {
-    my ($self) = @_;
+sub _writeSitemapXmlFragment {
+    my ($self, $language) = @_;
 
-    foreach my $language (keys %{$self->{metaData}->{title}}) {
-        my $url = "https://$text{domain}{$language}/";
-        my $html = $self->_makeFileName($language, "html");
-        my $png = $self->_makeFileName($language, "png");
-        my $title = $self->{metaData}->{title}{$language};
-        $sitemapXml{$language} .= <<XML;
+    my $html = $self->_makeUrl($language, "html");
+    my $png = $self->_makeUrl($language, "png");
+    my $licensePage = "https://$text{domain}{$language}/$text{licensePage}{$language}";
+    my $title = $self->{metaData}->{title}{$language};
+    my $fragment = $self->_makeFileName($language, "tmp", "xml");
+
+    _writeFile($fragment, <<XML);
 <url>
-<loc>$url$html</loc>
+<loc>$html</loc>
 <image:image>
-<image:loc>$url$png</image:loc>
+<image:loc>$png</image:loc>
 <image:title>$title</image:title>
-<image:license>$url$text{licensePage}{$language}</image:license>
+<image:license>$licensePage</image:license>
 </image:image>
 <lastmod>$self->{modified}</lastmod>
 </url>
 XML
-    }
+}
+
+
+sub _writeFile {
+    my ($fileName, $contents) = @_;
+
+    open my $F, ">", $fileName or croak "Cannot write $fileName: $!";
+    print $F $contents;
+    close $F or croak "Cannot close $fileName: $!";
 }
 
 
@@ -625,45 +641,6 @@ Parameters:
 sub countsOfIn {
     my ($what, $language) = @_;
     return $counts{$what}{$language};
-}
-
-
-=head2 writeSitemapXml
-
-Generates sitemap XML entries for all the comics processed.
-
-Parameters:
-
-=over 4
-
-    =item B<@language> lists of languages for which to generate a sitemap.
-    Sitemap fragments will be placed in generated/$language/sitemap-comics.xml
-
-=back
-
-=cut
-
-sub writeSitemapXml {
-    my (@languages) = @_;
-
-    # FIXME: always overwrites... could write the fragment for each page,
-    # and then merge these with the static stuff into a sitemap...
-    # That way you could convert a single comic again and still keep a
-    # sitemap of all comics, not just the last batch done.
-    foreach my $language (@languages) {
-        _makeComicsPath($language);
-        my $sitemap = "generated/" . lc($language) . "/sitemap.xml";
-        open my $F, ">", "$sitemap" or croak "Cannot open $sitemap: $!";
-        _writeSitemapXml($F, $language);
-        close $F or croak "Cannot close $sitemap: $!";
-    }
-}
-
-
-sub _writeSitemapXml {
-    my ($F, $language) = @_;
-
-    print $F ($sitemapXml{$language} || "");
 }
 
 
