@@ -143,7 +143,7 @@ sub image : Tests {
     my $comic = makeEnglishComic('Tötle!', "content");
     $comic->_exportHtml($F, "English", ("English" => "en"));
     ok($wrote =~
-        m{<object[^>]*\bdata="ttle.png"[^>]*>}m,
+        m{<object[^>]*\bdata="https://beercomics.com/comics/ttle.png"[^>]*>}m,
         "data missing in $wrote");
     ok($wrote =~
         m{<object[^>]*\btype="image/png"[^>]*>}m,
@@ -212,3 +212,82 @@ sub language : Test {
     $comic->_exportHtml($F, "English", ("English" => "en"));
     ok($wrote =~ m{<html lang="en">}m);
 }
+
+
+__END__
+sub header : Test {
+    # About / imprint / license
+}
+
+
+sub footer : Test {
+    # About / imprint / license
+}
+
+
+sub prevNextLinks : Test {
+}
+
+
+sub seriesLink : Test {
+}
+
+
+sub siteMapLink : Test {
+}
+
+
+sub siteMapXmlLink : Test {
+}
+
+
+sub directImageLinkForEmbedding : Test {
+}
+
+
+sub imageWidthAndHeight : Test {
+}
+
+
+sub otherLanguagesLinks : Tests {
+    my $comic = makeEnglishGermanComic('Beer', 'Beer here', 'Bier', 'Bier hier');
+    $comic->_exportHtml($F, "en", "English");
+    ok($wrote =~ m{<a href="https://www.biercomic.de/bier.html" alt="Deutsche Version">DE</a>});
+    ok($wrote !~ m{<a href="https://www.beercomic.com/beer.html" alt="English version">EN</a>});
+    ok(0, "check for nav block");
+}
+
+
+sub licenseText : Test {
+}
+
+
+sub relAuthor : Test {
+}
+
+
+sub relArchives : Test {
+}
+
+
+sub relRssFeed : Test {
+}
+
+
+sub relStartPrevPost : Test {
+    # for series
+}
+
+
+sub relFavIcon : Test {
+}
+
+
+sub relLicense : Test {
+}
+
+
+sub pubDate : Test {
+    # <time> element --- needed?
+}
+
