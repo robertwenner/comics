@@ -30,7 +30,7 @@ sub makeEnglishComic {
     &quot;English&quot;: &quot;$title&quot;
 },
 &quot;tags&quot;: {
-    &quot;English&quot;: &quot;JSON, tags, ähm&quot;
+    &quot;English&quot;: [ &quot;JSON, tags, ähm&quot; ]
 }
 }</dc:description>
       </cc:Work>
@@ -68,6 +68,11 @@ sub makeEnglishGermanComic {
     &quot;English&quot;: &quot;$titleEn&quot;,
     &quot;Deutsch&quot;: &quot;$titleDe&quot;
 },
+&quot;tags&quot;: {
+    &quot;English&quot;: [ &quot;tag one&quot;, &quot;tag two&quot;],
+    &quot;Deutsch&quot;: [ &quot;tag de&quot; ]
+},
+
 }</dc:description>
       </cc:Work>
     </rdf:RDF>

@@ -449,8 +449,9 @@ sub _exportHtml {
         $transcriptHtml .= "<p>" . encode_entities($t) . "</p>\n";
     }
 
-    my $keywords = $self->{metaData}->{tags}->{$language} || "";
-    $keywords = ", " . encode_entities($keywords) if ($keywords);
+    my $keywords = encode_entities(
+        $text{keywords}{$language} . ", " .
+        join(", ", @{$self->{metaData}->{tags}->{$language}}));
 
     my $png = $self->_makeUrl($language, "png");
     my $langCode = $languages{$language};
@@ -463,7 +464,7 @@ sub _exportHtml {
 <meta charset="utf-8"/>
 <meta name="author" content="Robert Wenner"/>
 <meta name="last-modified" content="$self->{modified}"/>
-<meta name="description" content="$text{keywords}{$language}$keywords"/>
+<meta name="description" content="$keywords"/>
 </head>
 <body>
 $languageLinks
