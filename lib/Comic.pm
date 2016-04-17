@@ -17,6 +17,7 @@ use XML::LibXML::XPathContext;
 use JSON;
 use HTML::Entities;
 use Image::PNG;
+use Template;
 
 
 use version; our $VERSION = qv('0.0.2');
@@ -71,22 +72,9 @@ our %options = (
 );
 
 my %text = (
-    title => {
-        "English" => "Beer comic",
-        "Deutsch" => "Biercomic",
-        "es" => "Cerveza cómic",
-    },
     domain => {
         "English" => "beercomics.com",
         "Deutsch" => "biercomics.de",
-    },
-    prev => {
-        "English" => "previous comic",
-        "Deutsch" => "vorheriges Comic",
-    },
-    "next" => {
-        "English" => "next comic",
-        "Deutsch" => "nächstes Comic",    
     },
     langLink => {
         "English" => "english version of this comic",
@@ -96,9 +84,13 @@ my %text = (
         "English" => "beer, comic",
         "Deutsch" => "Bier, Comic",
     },
+    templateFile => {
+        "English" => "web/english/comic-page.templ",
+        "Deutsch" => "web/deutsch/comic-page.templ",
+    },
     licensePage => {
-        "English" => "license.html",
-        "Deutsch" => "lizenz.html",
+        "English" => "about/license.html",
+        "Deutsch" => "ueber/lizenz.html",
     },
 );
 
@@ -345,8 +337,7 @@ sub _makeFileName {
     my ($self, $language, $where, $ext) = @_;
 
     my $dir = "generated/$where/" . lc($language);
-    make_path($dir) or croak("Cannot mkdirs $dir: $!") unless(-d $dir);
-
+    File::Path::make_path($dir) or croak("Cannot mkdirs $dir: $!") unless(-d $dir);
     return "$dir/" . $self->_normalizedTitle($language) . ".$ext";
 }
 
@@ -423,11 +414,16 @@ sub _notFor {
 sub _exportHtml {
     my ($self, $F, $language, %languages) = @_;
 
+    my %vars;
     my $title = $self->{metaData}->{title}->{$language};
     # SVG, being XML, needs to encode XML special characters, but does not do
     # HTML encoding. So first reverse the XML encoding, then apply any HTML
     # encoding.
-    $title = encode_entities(decode_entities($title));
+    $vars{title} = encode_entities(decode_entities($title));
+    $vars{pngFile} = $self->_makeFileName($language, "web", "png");
+    $vars{modified} = $self->{modified};
+    $vars{height} = $self->{height};
+    $vars{width} = $self->{width};
 
     my $languageLinks = "";
     foreach my $l (sort(keys(%languages))) {
@@ -442,39 +438,16 @@ sub _exportHtml {
         }
     }
 
-    my $transcriptHtml = "";
+    $vars{transcript} = "";
     foreach my $t ($self->_textsFor($language)) {
-        $transcriptHtml .= "<p>" . encode_entities($t) . "</p>\n";
+        $vars{transcript} .= "<p>" . encode_entities($t) . "</p>\n";
     }
 
-    my $keywords = encode_entities(
+    $vars{description} = encode_entities(
         $text{keywords}{$language} . ", " .
         join(", ", @{$self->{metaData}->{tags}->{$language}}));
 
-    my $png = $self->_makeUrl($language, "png");
-    my $langCode = $languages{$language};
-
-    print $F <<HEAD;
-<!DOCTYPE html>
-<html lang="$langCode">
-<head>
-<title>$text{title}{$language}: $title</title>
-<meta charset="utf-8"/>
-<meta name="author" content="Robert Wenner"/>
-<meta name="last-modified" content="$self->{modified}"/>
-<meta name="description" content="$keywords"/>
-</head>
-<body>
-$languageLinks
-<h1>$text{title}{$language}: $title</h1>
-<object data="$png" type="image/png" width="$self->{width}" height="$self->{height}">
-$transcriptHtml
-</object>
-HEAD
-    print $F <<FOOT;
-</body>
-</html>
-FOOT
+    print $F $self->_templatize(_slurp($text{templateFile}{$language}), %vars);
 }
 
 
@@ -588,12 +561,28 @@ sub _posToFrame {
 }
 
 
+sub _templatize {
+    my ($self, $template, %vars) = @_;
+
+    my %options = (
+        STRICT => 1,
+    );
+    my $t = Template->new(%options) || 
+        croak("Cannot construct template:: " . Template->error());
+    my $output = "";
+    $t->process(\$template, \%vars, \$output) || croak $t->error();
+    if ($output =~ m/(\[%\S*)/m) {
+        croak "Unresolved template marker $1";
+    }
+    return $output;
+}
+
+
 sub _writeSitemapXmlFragment {
     my ($self, $language) = @_;
 
     my $html = $self->_makeUrl($language, "html");
-    my $png = $self->_makeUrl($language, "png");
-    my $licensePage = "https://$text{domain}{$language}/$text{licensePage}{$language}";
+    my $path = "https://$text{domain}{$language}/";
     my $title = $self->{metaData}->{title}{$language};
     my $fragment = $self->_makeFileName($language, "tmp", "xml");
 
@@ -601,9 +590,9 @@ sub _writeSitemapXmlFragment {
 <url>
 <loc>$html</loc>
 <image:image>
-<image:loc>$png</image:loc>
+<image:loc>${path}comics/$self->{pngFile}</image:loc>
 <image:title>$title</image:title>
-<image:license>$licensePage</image:license>
+<image:license>$path$text{licensePage}{$language}</image:license>
 </image:image>
 <lastmod>$self->{modified}</lastmod>
 </url>
