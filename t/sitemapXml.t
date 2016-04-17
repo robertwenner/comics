@@ -14,7 +14,7 @@ my $comic;
 
 
 sub before : Test(setup) {
-    local *Comic::_slurp = sub {
+    *Comic::_slurp = sub {
         return <<XML;
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
@@ -37,8 +37,15 @@ sub before : Test(setup) {
 </svg>
 XML
     };
+    *Comic::_mtime = sub {
+        return 0;
+    };
+    *File::Path::make_path = sub {
+        return 1;
+    };
     $comic = Comic->new('whatever');
     $comic->{modified} = "today";
+    $comic->{pngFile} = "drinking-beer.png";
 }
 
 
@@ -48,7 +55,7 @@ sub assertWrote {
     my $fileNameIs;   
     my $contentsIs;
 
-    local *Comic::_writeFile = sub {
+    *Comic::_writeFile = sub {
         ($fileNameIs, $contentsIs) = @_;
     };
     $comic->_writeSitemapXmlFragment("English");
@@ -78,5 +85,5 @@ sub imageTitle : Tests {
 
 
 sub imageLicense : Tests {
-    assertWrote('<image:license>https://beercomics.com/license.html</image:license>');
+    assertWrote('<image:license>https://beercomics.com/about/license.html</image:license>');
 }
