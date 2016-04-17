@@ -44,6 +44,9 @@ sub makeEnglishComic {
 </svg>
 XML
     };
+    *Comic::_mtime = sub {
+        return 0;
+    };
     return withFakedAttributes(new Comic('whatever'));
 }
 
@@ -90,6 +93,9 @@ sub makeEnglishGermanComic {
 </svg>
 XML
     };
+    *Comic::_mtime = sub {
+        return 0;
+    };
     return withFakedAttributes(new Comic('whatever'));
 }
 
@@ -112,7 +118,7 @@ sub before : Test(setup) {
     open($F, '>', \$wrote) or die "Cannot open memory handle: $!";
 } 
 
-
+__END__
 sub escapesXmlSpecialCharactersFromText : Test {
     my $comic = makeEnglishComic("title", "bläh-bläh");
     $comic->_exportHtml($F, "English", ("English" => "en"));

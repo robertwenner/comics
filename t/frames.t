@@ -64,6 +64,9 @@ XML
 XML
         return $xml;
     };
+    *Comic::_mtime = sub {
+        return 0;
+    };
     $comic = Comic->new('whatever');
     $comic->_findFrames();
     return $comic->{frameTops};

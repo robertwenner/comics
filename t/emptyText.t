@@ -49,6 +49,9 @@ sub makeComic {
 </svg>
 XML
     };
+    *Comic::_mtime = sub {
+        return 0;
+    };
     return Comic->new('whatever');
 }
 

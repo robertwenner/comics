@@ -43,6 +43,9 @@ sub before : Test(setup) {
 </svg>
 XML
     };
+    *Comic::_mtime = sub {
+        return 0;
+    };
 }
 
 

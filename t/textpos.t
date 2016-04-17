@@ -88,6 +88,9 @@ $xml .= <<XML;
 XML
         return $xml;
     };
+    local *Comic::_mtime = sub {
+        return 0;
+    };
     $comic = Comic->new('whatever');
     $comic->_findFrames();
     return $comic;

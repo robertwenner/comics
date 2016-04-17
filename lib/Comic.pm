@@ -133,33 +133,31 @@ sub _load {
     my ($self, $file) = @_;
 
     $self->{file} = $file;
-    $self->{dom} = XML::LibXML->load_xml(string => $self->_slurp($file));
+    $self->{dom} = XML::LibXML->load_xml(string => _slurp($file));
     $self->{xpath} = XML::LibXML::XPathContext->new($self->{dom});
     $self->{xpath}->registerNs(DEFAULT_NAMESPACE, 'http://www.w3.org/2000/svg'); 
     my $metaXpath = _buildXpath('metadata/rdf:RDF/cc:Work/dc:description/text()');
     my $metaData = join(" ", $self->{xpath}->findnodes($metaXpath));
     $self->{metaData} = from_json($metaData);
+    $self->{modified} = DateTime->from_epoch(epoch => _mtime($file))->ymd;
 }
 
 
 sub _slurp {
-    my ($self, $file) = @_;
+    my ($file) = @_;
 
     open my $F, "<", $file or croak "Cannot open $file: $!";
     local $/ = undef;
     my $contents = <$F>;
     close $F or croak "Cannot close $file: $!";
-    $self->{modified} = _mtime($file);
     return $contents;
 }
-
 
 
 sub _mtime {
     my ($file) = @_;
 
-    my $mtime = (stat $file)[9];
-    return DateTime->from_epoch(epoch => $mtime)->ymd;
+    return (stat $file)[9];
 }
 
 
