@@ -11,6 +11,7 @@ use autodie;
 use DateTime;
 use File::Path qw(make_path);
 use File::Temp qw/tempfile/;
+use File::Basename;
 use open ':std', ':encoding(UTF-8)'; # to handle e.g., umlauts correctly
 use XML::LibXML;
 use XML::LibXML::XPathContext;
@@ -420,10 +421,14 @@ sub _exportHtml {
     # HTML encoding. So first reverse the XML encoding, then apply any HTML
     # encoding.
     $vars{title} = encode_entities(decode_entities($title));
-    $vars{pngFile} = $self->_makeFileName($language, "web", "png");
+    $vars{pngFile} = basename($self->_makeFileName($language, "web", "png"));
     $vars{modified} = $self->{modified};
     $vars{height} = $self->{height};
     $vars{width} = $self->{width};
+    $vars{'first'} = "FIRST";
+    $vars{'prev'} = "PREV";
+    $vars{'next'} = "NEXT";
+    $vars{'last'} = "LAST";
 
     my $languageLinks = "";
     foreach my $l (sort(keys(%languages))) {
@@ -583,6 +588,7 @@ sub _writeSitemapXmlFragment {
 
     my $html = $self->_makeUrl($language, "html");
     my $path = "https://$text{domain}{$language}/";
+    my $pngFile = basename($self->_makeFileName($language, "web", "png"));
     my $title = $self->{metaData}->{title}{$language};
     my $fragment = $self->_makeFileName($language, "tmp", "xml");
 
@@ -590,7 +596,7 @@ sub _writeSitemapXmlFragment {
 <url>
 <loc>$html</loc>
 <image:image>
-<image:loc>${path}comics/$self->{pngFile}</image:loc>
+<image:loc>${path}comics/$pngFile</image:loc>
 <image:title>$title</image:title>
 <image:license>$path$text{licensePage}{$language}</image:license>
 </image:image>
