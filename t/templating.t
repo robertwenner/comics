@@ -60,6 +60,9 @@ TEMPLATE
     local *Comic::_mtime = sub {
         return 0;
     };
+    *File::Path::make_path = sub {
+        return 1;
+    };
     $comic = new Comic('first');
     $comic->{height} = 200;
     $comic->{width} = 600;
