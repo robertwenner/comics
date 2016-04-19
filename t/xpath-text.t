@@ -10,15 +10,15 @@ __PACKAGE__->runtests() unless caller;
 
 
 sub oneElement : Test {
-    is('/defNs:svg/defNs:x', Comic::_buildXpath("x"));
+    is('/defNs:svg/defNs:x', Comic::_build_xpath("x"));
 }
 
 
 sub multipleElements : Test {
-    is('/defNs:svg/defNs:x', Comic::_buildXpath("x"));
+    is('/defNs:svg/defNs:x', Comic::_build_xpath("x"));
 }
 
 
 sub attribute : Test {
-    is('/defNs:svg/defNs:x/defNs:y/defNs:z', Comic::_buildXpath('x', 'y', 'z'));
+    is('/defNs:svg/defNs:x/defNs:y/defNs:z', Comic::_build_xpath('x', 'y', 'z'));
 }

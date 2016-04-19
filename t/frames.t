@@ -13,7 +13,7 @@ __PACKAGE__->runtests() unless caller;
 my $comic;
 
 
-sub makeFrames {
+sub make_frames {
     my (@frames) = @_;
 
     *Comic::_slurp = sub {
@@ -68,42 +68,42 @@ XML
         return 0;
     };
     $comic = Comic->new('whatever');
-    $comic->_findFrames();
-    return $comic->{frameTops};
+    $comic->_find_frames();
+    return $comic->{frame_tops};
 }
 
 
-sub noFrame : Test {
-    is_deeply([], makeFrames());
+sub no_frame : Test {
+    is_deeply([], make_frames());
 }
 
 
-sub singleFrame : Test {
-    is_deeply([0], makeFrames(
+sub single_frame : Test {
+    is_deeply([0], make_frames(
         # height, width, x, y
         0, 0, 0, 0));
 }
 
 
-sub framesSameHeight : Test {
-    is_deeply([0], makeFrames(
+sub frames_same_height : Test {
+    is_deeply([0], make_frames(
         # height, width, x, y
         0, 0, 0, 0,
         0, 0, 0, 0));
 }
 
 
-sub framesAlmostSameHeight : Test {
-    is_deeply([0], makeFrames(
+sub frames_almost_same_height : Test {
+    is_deeply([0], make_frames(
         # height, width, x, y
         0, 0, 0, 0,   
-        0, 0, 0, Comic::FRAME_TOLERANCE - 1,   
-        0, 0, 0, -1 * Comic::FRAME_TOLERANCE + 1));
+        0, 0, 0, $Comic::FRAME_TOLERANCE - 1,   
+        0, 0, 0, -1 * $Comic::FRAME_TOLERANCE + 1));
 }
 
 
-sub twoRowsOfFrames : Test {
-    is_deeply([0, 100], makeFrames(
+sub two_rows_of_frames : Test {
+    is_deeply([0, 100], make_frames(
         # height, width, x, y
         0, 0, 0, 0,     
         0, 0, 0, 0,
@@ -112,8 +112,8 @@ sub twoRowsOfFrames : Test {
 }
 
 
-sub threeRowsOfFrames : Test {
-    is_deeply([0, 100, 200], makeFrames(
+sub three_rows_of_frames : Test {
+    is_deeply([0, 100, 200], make_frames(
         # height, width, x, y
         0, 0, 0, 0,
         0, 0, 0, 200,
@@ -121,16 +121,16 @@ sub threeRowsOfFrames : Test {
 }
 
 
-sub posToFrame : Tests {
-    makeFrames(
+sub pos_to_frame : Tests {
+    make_frames(
         0, 0, 0, 0,
         0, 0, 0, 100,
         0, 0, 0, 200);
-    is(0, $comic->_posToFrame(-1));
-    is(1, $comic->_posToFrame(1));
-    is(1, $comic->_posToFrame(99));
-    is(2, $comic->_posToFrame(100));
-    is(2, $comic->_posToFrame(199));
-    is(3, $comic->_posToFrame(200));
-    is(3, $comic->_posToFrame(1000));
+    is(0, $comic->_pos_to_frame(-1));
+    is(1, $comic->_pos_to_frame(1));
+    is(1, $comic->_pos_to_frame(99));
+    is(2, $comic->_pos_to_frame(100));
+    is(2, $comic->_pos_to_frame(199));
+    is(3, $comic->_pos_to_frame(200));
+    is(3, $comic->_pos_to_frame(1000));
 }

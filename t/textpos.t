@@ -13,7 +13,7 @@ __PACKAGE__->runtests() unless caller;
 my $comic;
 
 
-sub makeTexts {
+sub make_texts {
     my (@texts) = @_;
 
     *Comic::_slurp = sub {
@@ -92,36 +92,36 @@ XML
         return 0;
     };
     $comic = Comic->new('whatever');
-    $comic->_findFrames();
+    $comic->_find_frames();
     return $comic;
 }
 
 
 sub oneText : Test {
-    is_deeply([makeTexts(0, 0)->_textsFor("Deutsch")], 
+    is_deeply([make_texts(0, 0)->_texts_for("Deutsch")], 
         ["Text 0 / 0"]);
 }
 
 
 sub differentX : Test {
-    is_deeply([makeTexts(0, 0, 10, 0)->_textsFor("Deutsch")],
+    is_deeply([make_texts(0, 0, 10, 0)->_texts_for("Deutsch")],
         ["Text 0 / 0", "Text 10 / 0"]);
 }
 
 
 sub differentY : Test {
-    is_deeply([makeTexts(0, 0, 0, 10)->_textsFor("Deutsch")],
+    is_deeply([make_texts(0, 0, 0, 10)->_texts_for("Deutsch")],
         ["Text 0 / 0", "Text 0 / 10"]);
 }
 
 
 sub differentXandY : Test {
-    is_deeply([makeTexts(0, 0, 10, 10)->_textsFor("Deutsch")],
+    is_deeply([make_texts(0, 0, 10, 10)->_texts_for("Deutsch")],
         ["Text 0 / 0", "Text 10 / 10"]);
 }
 
 
 sub differentFrames : Test {
-    is_deeply([makeTexts(0, 110, 10, 10)->_textsFor("Deutsch")],
+    is_deeply([make_texts(0, 110, 10, 10)->_texts_for("Deutsch")],
         ["Text 10 / 10", "Text 0 / 110"]);
 }

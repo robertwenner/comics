@@ -47,26 +47,26 @@ XML
 
 
 sub before : Test(setup) {
-    %Comic::counts = ();
+    Comic::reset_statics();
 }
 
 
 sub tagsUnknownLanguage : Test {
-    makeComic()->_countTags();
-    is(Comic::countsOfIn("tags", "Pimperanto"), undef);
+    makeComic()->_count_tags();
+    is(Comic::counts_of_in("tags", "Pimperanto"), undef);
 }
 
 
 sub tagsPerLanguage : Tests {
-    makeComic()->_countTags();
-    is_deeply(Comic::countsOfIn("tags", "English"), { "en1" => 1, "en2", => 1 });
-    is_deeply(Comic::countsOfIn("tags", "Deutsch"), { "de1" => 1 });
+    makeComic()->_count_tags();
+    is_deeply(Comic::counts_of_in("tags", "English"), { "en1" => 1, "en2", => 1 });
+    is_deeply(Comic::counts_of_in("tags", "Deutsch"), { "de1" => 1 });
 }
 
 
 sub tagsMultipleTimes : Test {
-    makeComic()->_countTags();
-    makeComic()->_countTags();
-    makeComic()->_countTags();
-    is_deeply(Comic::countsOfIn("tags", "English"), { "en1" => 3, "en2", => 3 });
+    makeComic()->_count_tags();
+    makeComic()->_count_tags();
+    makeComic()->_count_tags();
+    is_deeply(Comic::counts_of_in("tags", "English"), { "en1" => 3, "en2", => 3 });
 }

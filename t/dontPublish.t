@@ -10,7 +10,7 @@ use Comic;
 __PACKAGE__->runtests() unless caller;
 
 
-sub makeComic {
+sub make_comic {
     my ($json) = @_;
 
     *Comic::_slurp = sub {
@@ -37,21 +37,21 @@ XML
 }
 
 
-sub inJsonHash : Test {
-    my $comic = makeComic(<<JSON);
+sub in_json_hash : Test {
+    my $comic = make_comic(<<JSON);
 {&quot;title&quot;: {
     &quot;English&quot;: &quot;DONT_PUBLISH fix me&quot;
 }}
 JSON
     eval {
-        $comic->_checkDontPublish();
+        $comic->_check_dont_publish();
     };
     like($@, qr{In JSON > title > English: DONT_PUBLISH fix me});
 }
 
 
-sub inJsonArray : Test {
-    my $comic = makeComic(<<JSON);
+sub in_json_array : Test {
+    my $comic = make_comic(<<JSON);
 {&quot;who&quot;: {
     &quot;English&quot;: [
         &quot;one&quot;, &quot;two&quot;, &quot;three DONT_PUBLISH&quot;, &quot;four&quot;
@@ -59,24 +59,24 @@ sub inJsonArray : Test {
 }}
 JSON
     eval {
-        $comic->_checkDontPublish();
+        $comic->_check_dont_publish();
     };
     like($@, qr{In JSON > who > English\[3\]: three DONT_PUBLISH});
 }
 
 
-sub inJsonTopLevelElement : Test {
-    my $comic = makeComic(<<JSON);
+sub in_json_top_level_element : Test {
+    my $comic = make_comic(<<JSON);
 {&quot;who&quot;: &quot;DONT_PUBLISH top level&quot;}
 JSON
     eval {
-        $comic->_checkDontPublish();
+        $comic->_check_dont_publish();
     };
     like($@, qr{In JSON > who: DONT_PUBLISH top level});
 }
 
 
-sub inText : Test {
+sub in_text : Test {
     *Comic::_slurp = sub {
         return <<XML;
 <svg
@@ -105,7 +105,7 @@ XML
     my $comic = Comic->new('whatever');
 
     eval {
-        $comic->_checkDontPublish("English");
+        $comic->_check_dont_publish("English");
     };
     like($@, qr{In layer Deutsch: DONT_PUBLISH oops});
 }

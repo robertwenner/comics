@@ -53,7 +53,7 @@ XML
 sub noExportIfNotMetaForThatLanguage : Test {
     local *Comic::_makeComicsPath = sub { die("should not make a path"); };
     my $comic = makeEnglishComic('title', 'content');
-    $comic->_exportLanguageHtml('Deutsch', ("Deutsch" => "de"));
+    $comic->_export_language_html('Deutsch', ("Deutsch" => "de"));
     ok(1); # Would have failed above
 }
 

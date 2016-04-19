@@ -13,7 +13,7 @@ __PACKAGE__->runtests() unless caller;
 my $comic;
 
 
-sub setUp {
+sub setup {
     my ($xml) = shift || "";
     *Comic::_slurp = sub {
         return <<XML;
@@ -87,11 +87,11 @@ XML
 }
 
 
-sub assertVisible {
+sub assert_visible {
     my %expected = map {$_ => 1} @_;
     my $xpath = XML::LibXML::XPathContext->new($comic->{dom});
-    $xpath->registerNs(Comic::DEFAULT_NAMESPACE, 'http://www.w3.org/2000/svg');
-    my $allLayers = Comic::_buildXpath('g[@inkscape:groupmode="layer"]');
+    $xpath->registerNs($Comic::DEFAULT_NAMESPACE, 'http://www.w3.org/2000/svg');
+    my $allLayers = Comic::_build_xpath('g[@inkscape:groupmode="layer"]');
     foreach my $layer ($comic->{xpath}->findnodes($allLayers)) {
         my $label = $layer->{"inkscape:label"};
         my $style = $layer->{"style"};
@@ -110,37 +110,37 @@ sub assertVisible {
 
 
 sub germanOnly : Tests {
-    setUp();
-    $comic->_flipLanguageLayers("Deutsch", ("Deutsch", "English"));
-    assertVisible(qw(Deutsch Rahmen Figuren Hintergrund));
+    setup();
+    $comic->_flip_language_layers("Deutsch", ("Deutsch", "English"));
+    assert_visible(qw(Deutsch Rahmen Figuren Hintergrund));
 }
 
 
 sub englishOnly : Tests {
-    setUp();
-    $comic->_flipLanguageLayers("English", ("Deutsch", "English"));
-    assertVisible(qw(English Rahmen Figuren Hintergrund));
+    setup();
+    $comic->_flip_language_layers("English", ("Deutsch", "English"));
+    assert_visible(qw(English Rahmen Figuren Hintergrund));
 }
 
 
 sub failsOnUnknownLanguage : Test {
-    setUp();
+    setup();
     eval {
-        $comic->_flipLanguageLayers("Pimperanto", ("Deutsch", "English"));
+        $comic->_flip_language_layers("Pimperanto", ("Deutsch", "English"));
     };
     like($@, qr/no Pimperanto layer/i);
 }
 
 
 sub flipsUnknownLayerWithTrailingLanguageName : Tests {
-    setUp('<g inkscape:groupmode="layer" id="layer18" inkscape:label="HintergrundDeutsch" style="display:none"/>');
-    $comic->_flipLanguageLayers("Deutsch", ("Deutsch", "English"));
-    assertVisible(qw(Deutsch Rahmen Figuren Hintergrund HintergrundDeutsch));
+    setup('<g inkscape:groupmode="layer" id="layer18" inkscape:label="HintergrundDeutsch" style="display:none"/>');
+    $comic->_flip_language_layers("Deutsch", ("Deutsch", "English"));
+    assert_visible(qw(Deutsch Rahmen Figuren Hintergrund HintergrundDeutsch));
 }
 
 
 sub ignoresUnknownLayerWithEmbeddedLanguageName : Tests {
-    setUp('<g inkscape:groupmode="layer" id="layer18" inkscape:label="HintergrundDeutschUndSo" style="display:none"/>');
-    $comic->_flipLanguageLayers("Deutsch", ("Deutsch", "English"));
-    assertVisible(qw(Deutsch Rahmen Figuren Hintergrund));
+    setup('<g inkscape:groupmode="layer" id="layer18" inkscape:label="HintergrundDeutschUndSo" style="display:none"/>');
+    $comic->_flip_language_layers("Deutsch", ("Deutsch", "English"));
+    assert_visible(qw(Deutsch Rahmen Figuren Hintergrund));
 }

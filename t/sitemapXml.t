@@ -55,10 +55,10 @@ sub assertWrote {
     my $fileNameIs;   
     my $contentsIs;
 
-    *Comic::_writeFile = sub {
+    *Comic::_write_file = sub {
         ($fileNameIs, $contentsIs) = @_;
     };
-    $comic->_writeSitemapXmlFragment("English");
+    $comic->_write_sitemap_xml_fragment("English");
     is("generated/tmp/english/drinking-beer.xml", $fileNameIs);
     like($contentsIs, qr{$contentsExpected}m);
 }
@@ -69,7 +69,7 @@ sub page : Tests {
 }
 
 
-sub lastModified : Tests {
+sub last_modified : Tests {
     assertWrote('<lastmod>today</lastmod>');
 }
 
@@ -79,11 +79,11 @@ sub image : Tests {
 }
 
 
-sub imageTitle : Tests {
+sub image_title : Tests {
     assertWrote('<image:title>Drinking beer</image:title>');
 }
 
 
-sub imageLicense : Tests {
+sub image_license : Tests {
     assertWrote('<image:license>https://beercomics.com/about/license.html</image:license>');
 }

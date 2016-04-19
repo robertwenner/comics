@@ -13,7 +13,7 @@ __PACKAGE__->runtests() unless caller;
 my $comic;
 
 
-sub makeComic {
+sub make_comic {
     *Comic::_slurp = sub {
         return <<XML;
 <svg
@@ -56,19 +56,19 @@ XML
 }
 
 
-sub emptyTextFound : Test {
-    my $comic = makeComic();
+sub empty_text_found : Test {
+    my $comic = make_comic();
     eval {
-        $comic->_textsFor("Deutsch");
+        $comic->_texts_for("Deutsch");
     };
     like($@, qr{Empty text in MetaDeutsch with ID text16220}i);
 }
 
 
-sub emptyTextOtherLanguageIgnored : Test {
-    my $comic = makeComic();
+sub empty_text_other_language_ignored : Test {
+    my $comic = make_comic();
     eval {
-        $comic->_textsFor("English");
+        $comic->_texts_for("English");
     };
     is($@, '');
 }

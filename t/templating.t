@@ -15,7 +15,7 @@ my $F;
 my $comic;
 
 
-sub setUp : Test(setup) {
+sub setup : Test(setup) {
     *Comic::_slurp = sub {
         my ($fileName) = @_;
         if ($fileName eq "first") {
@@ -49,7 +49,7 @@ Biercomics: [% title %]
 last-modified: [% modified %]
 description: [% description %]
 [% title %]
-[% pngFile %] [% height %] by [% width %]
+[% png_file %] [% height %] by [% width %]
 [% transcript %]
 % first %]
 % prev %]
@@ -112,7 +112,7 @@ sub unknownVariable : Test {
 
 
 sub fromComic : Tests {
-    $comic->_exportHtml($F, "Deutsch", ());
+    $comic->_export_html($F, "Deutsch", ());
     like($wrote, qr/Bier trinken/m);
     like($wrote, qr/1970-01-01/m);
     like($wrote, qr/bier-trinken\.png/m);
