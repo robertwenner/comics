@@ -615,6 +615,23 @@ sub _writeFile {
 }
 
 
+## no critic
+# Perl::Critic complains about the use of prototypes, and I agree, but this
+# case is special, mentioned in perldoc -f sort:
+#   # using a prototype allows you to use any comparison subroutine
+#   # as a sort subroutine (including other package's subroutines)
+#   package other;
+#   sub backwards ($$) { $_[1] cmp $_[0]; }  # $a and $b are
+#                                            # not set here
+#   package main;
+#   @new = sort other::backwards @old;
+#
+sub _compare($$) {
+## use critic
+    return $_[0]->{metaData}->{published}{when} cmp $_[1]->{metaData}->{published}{when};
+}
+
+
 =head2 countsOfIn
 
 Returns the counts of all x in the given language.
