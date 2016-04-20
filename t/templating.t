@@ -112,7 +112,7 @@ sub unknownVariable : Test {
 
 
 sub fromComic : Tests {
-    $comic->_export_html($F, "Deutsch", ());
+    $comic->_do_export_html($F, "Deutsch", ());
     like($wrote, qr/Bier trinken/m);
     like($wrote, qr/1970-01-01/m);
     like($wrote, qr/bier-trinken\.png/m);

@@ -424,7 +424,7 @@ sub _export_language_html {
 
     my $page = $self->_make_file_name($language, 'web', 'html');
     open my $F, '>', $page or croak "Cannot write $page: $OS_ERROR";
-    $self->_export_html($F, $language, %languages);
+    $self->_do_export_html($F, $language, %languages);
     close $F or croak "Cannot close $page: $OS_ERROR";
     return;
 }
@@ -436,7 +436,7 @@ sub _not_for {
 }
 
 
-sub _export_html {
+sub _do_export_html {
     my ($self, $F, $language, %languages) = @ARG;
 
     my %vars;
