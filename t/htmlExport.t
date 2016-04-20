@@ -10,8 +10,13 @@ use Comic;
 __PACKAGE__->runtests() unless caller;
 
 
-sub makeEnglishComic {
-    my ($title, $content) = @_;
+sub set_up : Test(setup) {
+    Comic::reset_statics();
+}
+
+
+sub make_comic {
+    my ($language, $title, $published) = @_;
 
     local *Comic::_slurp = sub {
         return <<XML;
@@ -27,10 +32,13 @@ sub makeEnglishComic {
       <cc:Work rdf:about="">
         <dc:description>{
 &quot;title&quot;: {
-    &quot;English&quot;: &quot;$title&quot;
+    &quot;$language&quot;: &quot;$title&quot;
 },
 &quot;tags&quot;: {
-    &quot;English&quot;: [ &quot;JSON, tags, ähm&quot; ]
+    &quot;$language&quot;: [ &quot;JSON, tags&quot; ]
+},
+&quot;published&quot;: {
+    &quot;when&quot;: &quot;$published&quot;
 }
 }</dc:description>
       </cc:Work>
@@ -45,15 +53,93 @@ XML
     *File::Path::make_path = sub {
         return 1;
     };
+    *Comic::_export_language_html = sub {
+        return;
+    };
+    *Comic::_write_sitemap_xml_fragment = sub {
+        return;
+    };
     my $comic = new Comic('whatever');
     return $comic;
 }
 
 
-sub noExportIfNotMetaForThatLanguage : Test {
-    local *Comic::_makeComicsPath = sub { die("should not make a path"); };
-    my $comic = makeEnglishComic('title', 'content');
+sub export_only_if_meta_title_for_language : Test {
+    local *Comic::_make_comics_path = sub { die("should not make a path"); };
+    my $comic = make_comic('English', 'title', '2016-04-19');
     $comic->_export_language_html('Deutsch', ("Deutsch" => "de"));
     ok(1); # Would have failed above
 }
 
+
+sub navigation_links_first : Tests {
+    my $jan = make_comic('English', 'Jan', '2016-01-01');
+    my $feb = make_comic('English', 'Feb', '2016-02-01');
+    my $mar = make_comic('English', 'Mar', '2016-03-01');
+
+    Comic::export_all_html("English" => "en");
+
+    is($jan->{'first'}, 0, "Jan first");
+    is($jan->{'prev'}, 0, "Jan prev");
+    is($jan->{'next'}, "feb.html", "Jan next");
+    is($jan->{'last'}, "mar.html", "Jan last");
+}
+
+
+sub navigation_links_middle : Tests {
+    my $jan = make_comic('English', 'Jan', '2016-01-01');
+    my $feb = make_comic('English', 'Feb', '2016-02-01');
+    my $mar = make_comic('English', 'Mar', '2016-03-01');
+
+    Comic::export_all_html("English" => "en");
+
+    is($feb->{'first'}, "jan.html", "Feb first");
+    is($feb->{'prev'}, "jan.html", "Feb prev");
+    is($feb->{'next'}, "mar.html", "Feb next");
+    is($feb->{'last'}, "mar.html", "Feb last");
+}
+
+
+sub navigation_links_last : Tests {
+    my $jan = make_comic('English', 'Jan', '2016-01-01');
+    my $feb = make_comic('English', 'Feb', '2016-02-01');
+    my $mar = make_comic('English', 'Mar', '2016-03-01');
+
+    Comic::export_all_html("English" => "en");
+
+    is($mar->{'first'}, "jan.html", "Mar first");
+    is($mar->{'prev'}, "feb.html", "Mar prev");
+    is($mar->{'next'}, 0, "Mar next");
+    is($mar->{'last'}, 0, "Mar last");
+}
+
+
+sub ignores_unknown_language : Test {
+    my $comic = make_comic('English', 'Jan', '2016-01-01'),
+    Comic::export_all_html("Deutsch" => "de");
+    is($comic->{pref}, undef);
+}
+
+
+sub hops_over_comic_without_that_language : Tests {
+    my $jan = make_comic('English', 'jan', '2016-01-01');
+    my $feb = make_comic('Deutsch', 'feb', '2016-02-01');
+    my $mar = make_comic('English', 'mar', '2016-03-01');
+
+    Comic::export_all_html("English" => "en", "Deutsch" => "de");
+
+    is($jan->{'first'}, 0, "Jan first");
+    is($jan->{'prev'}, 0, "Jan first");
+    is($jan->{'next'}, 'mar.html', "Jan next");
+    is($jan->{'last'}, 'mar.html', "Jan last");
+
+    is($mar->{'first'}, 'jan.html', "Mar first");
+    is($mar->{'prev'}, 'jan.html', "Mar first");
+    is($mar->{'next'}, 0, "Mar next");
+    is($mar->{'last'}, 0, "Mar last");
+
+    is($feb->{'first'}, 0, "Feb first");
+    is($feb->{'prev'}, 0, "Feb prev");
+    is($feb->{'next'}, 0, "Feb next");
+    is($feb->{'last'}, 0, "Feb last");
+}

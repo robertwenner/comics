@@ -104,6 +104,7 @@ my %text = (
 
 my %counts;
 my %titles;
+my @comics;
 
 
 =head1 SUBROUTINES/METHODS
@@ -143,6 +144,7 @@ sub _load {
     my $meta_data = join ' ', $self->{xpath}->findnodes($meta_xpath);
     $self->{meta_data} = from_json($meta_data);
     $self->{modified} = DateTime->from_epoch(epoch => _mtime($file))->ymd;
+    push @comics, $self;
     return;
 }
 
@@ -376,17 +378,17 @@ sub _make_url {
 sub _normalized_title {
     my ($self, $language) = @ARG;
 
-    my $title = lc($self->{meta_data}->{title}->{$language});
-    croak "No title in $language" unless($title);
+    my $title = $self->{meta_data}->{title}->{$language};
+    croak "No $language title in $self->{file}" unless($title);
     $title =~ s/\s/-/g;
-    $title =~ s/[^\w\d_-]//g;
-    return $title;
+    $title =~ s/[^\w\d_-]//gi;
+    return lc $title;
 }
 
 
-=head2 export_html
+=head2 export_all_html
 
-Exports a HTML transcript of this Comic's texts per language.
+Generates a HTML page for each Comics that have been loaded.
 
 The HTML page will be the same name as the generated PNG, with a .html
 extension and will be placed next to it.
@@ -402,16 +404,95 @@ Parameters:
 
 =cut
 
-sub export_html {
-    my ($self, %languages) = @ARG;
+sub export_all_html {
+    my (%languages) = @ARG;
 
-    foreach my $language (keys %languages) {
-        next if $self->_not_for($language);
+    my @sorted = sort _compare @comics;
+    # Would be nice to do this incrementally...
+    foreach my $i (0..@sorted - 1) {
+        my $comic = $sorted[$i];
+        foreach my $language (keys %languages) {
+            next if ($comic->_not_for($language));
 
-        $self->_export_language_html($language, %languages);
-        $self->_write_sitemap_xml_fragment($language);
+            my $first_comic = _find_first($language, $i, @sorted);
+            my $prev_comic = _find_prev($language, $i, @sorted);
+            my $next_comic = _find_next($language, $i, @sorted);
+            my $last_comic = _find_last($language, $i, @sorted);
+            # FIXME replace all these basename(make_file...) calls with $self->{basename}
+            if ($first_comic) {
+                $comic->{'first'} = basename($first_comic->_make_file_name($language, '', 'html'));
+            }
+            else {
+                $comic->{'first'} = 0;
+            }
+            if ($prev_comic) {
+                $comic->{'prev'} = basename($prev_comic->_make_file_name($language, '', 'html'));
+            }
+            else {
+                $comic->{'prev'} = 0;
+            }
+            if ($next_comic) {
+                $comic->{'next'} = basename($next_comic->_make_file_name($language, '', 'html'));
+            }
+            else {
+                $comic->{'next'} = 0;
+            }
+            if ($last_comic) {
+                $comic->{'last'} = basename($last_comic->_make_file_name($language, '', 'html'));
+            }
+            else {
+                $comic->{'last'} = 0;
+            }
+
+            $comic->_export_language_html($language, %languages);
+            $comic->_write_sitemap_xml_fragment($language);
+        }
     }
     return;
+}
+
+
+sub _find_first {
+    my ($language, $pos, @sorted) = @_;
+
+    foreach my $i (0 .. $pos - 1) {
+        my $comic = $sorted[$i];
+        return $comic unless ($comic->_not_for($language));
+    }
+    return 0;
+}
+
+
+sub _find_prev {
+    my ($language, $pos, @sorted) = @_;
+
+    while (--$pos >= 0) {
+        my $comic = $sorted[$pos];
+        return $comic unless ($comic->_not_for($language));
+    }
+    return 0;
+}
+
+
+sub _find_next {
+    my ($language, $pos, @sorted) = @_;
+
+    while (++$pos < @sorted) {
+        my $comic = $sorted[$pos];
+        return $comic unless ($comic->_not_for($language));
+    }
+    return 0;
+}
+
+
+sub _find_last {
+    my ($language, $pos, @sorted) = @_;
+
+    foreach my $i (reverse $pos + 1 .. @sorted - 1) {
+        my $comic = $sorted[$i];
+        return $comic unless ($comic->_not_for($language));
+    }
+    return 0;
 }
 
 
@@ -449,10 +530,10 @@ sub _do_export_html {
     $vars{modified} = $self->{modified};
     $vars{height} = $self->{height};
     $vars{width} = $self->{width};
-    $vars{'first'} = 'FIRST';
-    $vars{'prev'} = 'PREV';
-    $vars{'next'} = 'NEXT';
-    $vars{'last'} = 'LAST';
+    $vars{'first'} = $self->{'first'};
+    $vars{'prev'} = $self->{'prev'};
+    $vars{'next'} = $self->{'next'};
+    $vars{'last'} = $self->{'last'};
 
     my $language_links = '';
     foreach my $l (sort keys %languages) {
@@ -670,7 +751,9 @@ sub _write_file {
 #
 sub _compare($$) {
 ## use critic
-    return $_[0]->{meta_data}->{published}{when} cmp $_[1]->{meta_data}->{published}{when};
+    my $pub_a = $_[0]->{meta_data}->{published}{when} || '3000-01-01';
+    my $pub_b = $_[1]->{meta_data}->{published}{when} || '3000-01-01';
+    return $pub_a cmp $pub_b;
 }
 
 
@@ -682,6 +765,7 @@ Helper to allow tests to clear internal static state.
 
 sub reset_statics {
     %counts = ();
+    @comics = ();
     return;
 }
 

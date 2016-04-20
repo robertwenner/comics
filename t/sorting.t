@@ -53,11 +53,19 @@ sub sortEquals : Test {
 }
 
 
-sub sortPubDate : Tests {
+sub sortByPubDate : Tests {
     my $today = makeComic("2016-04-17");
     my $yesterday = makeComic("2016-04-16");
     ok(Comic::_compare($today, $yesterday) > 0);
     ok(Comic::_compare($yesterday, $today) < 0);
+}
+
+
+sub sortByUndefinedPubDate : Tests {
+    my $today = makeComic("2016-04-17");
+    my $oops = makeComic("");
+    ok(Comic::_compare($today, $oops) < 0);
+    ok(Comic::_compare($oops, $today) > 0);
 }
 
 
