@@ -198,6 +198,8 @@ sub export_png {
     foreach my $language (keys %languages) {
         next if $self->_not_for($language);
 
+        $counts{'comics'}{$language}++;
+
         $self->_sanity_checks($language);
         $self->_check_dont_publish($language);
         $self->_check_tags('tags', $language);
@@ -772,7 +774,7 @@ sub reset_statics {
 
 =head2 counts_of_in
 
-Returns the counts of all x in the given language.
+Returns the counts of all 'what' in the given language.
 This can be used for a tag cloud.
 
 Parameters:
@@ -784,6 +786,11 @@ Parameters:
     =item B<$language> for what language, e.g., "English".
 
 =back
+
+Returned data depends on what was asked for. If asked for tags or people,
+the result will be a hash of tag and person's name, respectively, to counts.
+If asked for 'comics', it will return a single number (the number of comics
+in that language).
 
 =cut
 
