@@ -363,7 +363,7 @@ sub _svg_to_png {
 sub _make_file_name {
     my ($self, $language, $where, $ext) = @ARG;
 
-    my $dir = "generated/" . lc $language . "/$where/";
+    my $dir = 'generated/' . lc $language . "/$where";
     File::Path::make_path($dir) or croak("Cannot mkdirs $dir: $OS_ERROR") unless(-d $dir);
     return "$dir/" . $self->_normalized_title($language) . ".$ext";
 }
@@ -710,7 +710,7 @@ sub _write_sitemap_xml_fragment {
     my ($self, $language) = @ARG;
 
     my $html = $self->_make_url($language, 'html');
-    my $path = "https://$text{domain}{$language}/";
+    my $path = "https://$text{domain}{$language}";
     my $png_file = basename($self->_make_file_name($language, 'web', 'png'));
     my $title = $self->{meta_data}->{title}{$language};
     my $fragment = $self->_make_file_name($language, 'tmp', 'xml');
@@ -719,9 +719,9 @@ sub _write_sitemap_xml_fragment {
 <url>
 <loc>$html</loc>
 <image:image>
-<image:loc>${path}comics/$png_file</image:loc>
+<image:loc>${path}/comics/$png_file</image:loc>
 <image:title>$title</image:title>
-<image:license>$path$text{licensePage}{$language}</image:license>
+<image:license>$path/$text{licensePage}{$language}</image:license>
 </image:image>
 <lastmod>$self->{modified}</lastmod>
 </url>

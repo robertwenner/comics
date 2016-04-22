@@ -59,7 +59,7 @@ sub assertWrote {
         ($fileNameIs, $contentsIs) = @_;
     };
     $comic->_write_sitemap_xml_fragment("English");
-    is("generated/tmp/english/drinking-beer.xml", $fileNameIs);
+    is("generated/english/tmp/drinking-beer.xml", $fileNameIs);
     like($contentsIs, qr{$contentsExpected}m);
 }
 
@@ -85,5 +85,5 @@ sub image_title : Tests {
 
 
 sub image_license : Tests {
-    assertWrote('<image:license>https://beercomics.com/about/license.html</image:license>');
+    assertWrote('<image:license>https://beercomics.com/imprint.html</image:license>');
 }
