@@ -96,8 +96,8 @@ my %text = (
         'Deutsch' => 'web/deutsch/comic-page.templ',
     },
     licensePage => {
-        'English' => 'about/license.html',
-        'Deutsch' => 'ueber/lizenz.html',
+        'English' => 'imprint.html',
+        'Deutsch' => 'impressum.html',
     },
 );
 
@@ -346,7 +346,7 @@ sub _write_temp_svg_file {
 sub _svg_to_png {
     my ($self, $language, $svg_file) = @ARG;
 
-    my $png_file = $self->_make_file_name($language, 'web', 'png');
+    my $png_file = $self->_make_file_name($language, 'web/comics', 'png');
     my $cmd = "inkscape --without-gui --file=$svg_file";
     $cmd .= ' --g-fatal-warnings';
     $cmd .= " --export-png=$png_file --export-area-drawing --export-background=#ffffff";
@@ -363,7 +363,7 @@ sub _svg_to_png {
 sub _make_file_name {
     my ($self, $language, $where, $ext) = @ARG;
 
-    my $dir = "generated/$where/" . lc $language;
+    my $dir = "generated/" . lc $language . "/$where/";
     File::Path::make_path($dir) or croak("Cannot mkdirs $dir: $OS_ERROR") unless(-d $dir);
     return "$dir/" . $self->_normalized_title($language) . ".$ext";
 }
@@ -505,7 +505,7 @@ sub _export_language_html {
     # have language layers either and don't export a transcript.
     return if $self->_not_for($language);
 
-    my $page = $self->_make_file_name($language, 'web', 'html');
+    my $page = $self->_make_file_name($language, 'web/comics', 'html');
     open my $F, '>', $page or croak "Cannot write $page: $OS_ERROR";
     $self->_do_export_html($F, $language, %languages);
     close $F or croak "Cannot close $page: $OS_ERROR";
@@ -528,7 +528,7 @@ sub _do_export_html {
     # HTML encoding. So first reverse the XML encoding, then apply any HTML
     # encoding.
     $vars{title} = encode_entities(decode_entities($title));
-    $vars{png_file} = basename($self->_make_file_name($language, 'web', 'png'));
+    $vars{png_file} = basename($self->_make_file_name($language, 'web/comics', 'png'));
     $vars{modified} = $self->{modified};
     $vars{height} = $self->{height};
     $vars{width} = $self->{width};
