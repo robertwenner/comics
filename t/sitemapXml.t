@@ -45,7 +45,7 @@ XML
     };
     $comic = Comic->new('whatever');
     $comic->{modified} = "today";
-    $comic->{pngFile} = "drinking-beer.png";
+    $comic->{pngFile}{'English'} = "drinking-beer.png";
 }
 
 
