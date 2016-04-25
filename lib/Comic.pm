@@ -91,11 +91,19 @@ my %text = (
         'English' => 'beer, comic',
         'Deutsch' => 'Bier, Comic',
     },
-    templateFile => {
+    comicTemplateFile => {
         'English' => 'web/english/comic-page.templ',
         'Deutsch' => 'web/deutsch/comic-page.templ',
     },
-    licensePage => {
+    archiveTemplateFile => {
+        'English' => 'web/english/archive.templ',
+        'Deutsch' => 'web/deutsch/archiv.templ',
+    },
+    archivePage => {
+        'English' => 'archive.html',
+        'Deutsch' => 'archiv.html',
+    },
+    imprintPage => {
         'English' => 'imprint.html',
         'Deutsch' => 'impressum.html',
     },
