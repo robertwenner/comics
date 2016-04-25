@@ -208,7 +208,7 @@ sub export_png {
 
         $counts{'comics'}{$language}++;
 
-        $self->_sanity_checks($language);
+        $self->_check_title($language);
         $self->_check_dont_publish($language);
         $self->_check_tags('tags', $language);
         $self->_check_tags('people', $language);
@@ -221,7 +221,7 @@ sub export_png {
 }
 
 
-sub _sanity_checks {
+sub _check_title {
     my ($self, $language) = @ARG;
 
     my $title = $self->{meta_data}->{title}->{$language};
@@ -355,6 +355,7 @@ sub _svg_to_png {
     my ($self, $language, $svg_file) = @ARG;
 
     my $png_file = $self->_make_file_name($language, 'web/comics', 'png');
+    $self->{pngFile}{$language} = basename($png_file);
     my $cmd = "inkscape --without-gui --file=$svg_file";
     $cmd .= ' --g-fatal-warnings';
     $cmd .= " --export-png=$png_file --export-area-drawing --export-background=#ffffff";
@@ -417,42 +418,29 @@ Parameters:
 sub export_all_html {
     my (%languages) = @ARG;
 
+    foreach my $c (@comics) {
+        foreach my $language (keys %languages) {
+            next if $c->_not_for($language);
+            my $name = $c->_make_file_name($language, 'web/comics', 'html');
+            $c->{htmlFile}{$language} = basename($name);
+        }
+    }
+
     my @sorted = sort _compare @comics;
     # Would be nice to do this incrementally...
-    foreach my $i (0..@sorted - 1) {
+    foreach my $i (0 .. @sorted - 1) {
         my $comic = $sorted[$i];
         foreach my $language (keys %languages) {
             next if ($comic->_not_for($language));
 
             my $first_comic = _find_first($language, $i, @sorted);
+            $comic->{'first'} = $first_comic ? $first_comic->{htmlFile}{$language} : 0;
             my $prev_comic = _find_prev($language, $i, @sorted);
+            $comic->{'prev'} = $prev_comic ? $prev_comic->{htmlFile}{$language} : 0;
             my $next_comic = _find_next($language, $i, @sorted);
+            $comic->{'next'} = $next_comic ? $next_comic->{htmlFile}{$language} : 0;
             my $last_comic = _find_last($language, $i, @sorted);
-            # FIXME replace all these basename(make_file...) calls with $self->{basename}
-            if ($first_comic) {
-                $comic->{'first'} = basename($first_comic->_make_file_name($language, '', 'html'));
-            }
-            else {
-                $comic->{'first'} = 0;
-            }
-            if ($prev_comic) {
-                $comic->{'prev'} = basename($prev_comic->_make_file_name($language, '', 'html'));
-            }
-            else {
-                $comic->{'prev'} = 0;
-            }
-            if ($next_comic) {
-                $comic->{'next'} = basename($next_comic->_make_file_name($language, '', 'html'));
-            }
-            else {
-                $comic->{'next'} = 0;
-            }
-            if ($last_comic) {
-                $comic->{'last'} = basename($last_comic->_make_file_name($language, '', 'html'));
-            }
-            else {
-                $comic->{'last'} = 0;
-            }
+            $comic->{'last'} = $last_comic ? $last_comic->{htmlFile}{$language} : 0;
 
             $comic->_export_language_html($language, %languages);
             $comic->_write_sitemap_xml_fragment($language);
@@ -514,21 +502,18 @@ sub _export_language_html {
     return if $self->_not_for($language);
 
     my $page = $self->_make_file_name($language, 'web/comics', 'html');
-    open my $F, '>', $page or croak "Cannot write $page: $OS_ERROR";
-    $self->_do_export_html($F, $language, %languages);
-    close $F or croak "Cannot close $page: $OS_ERROR";
-    return;
+    return _write_file($page, $self->_do_export_html($language, %languages));
 }
 
 
 sub _not_for {
     my ($self, $language) = @ARG;
-    return !$self->{meta_data}->{title}->{$language};
+    return defined($self->{meta_data}->{title}->{$language}) ? 0 : 1;
 }
 
 
 sub _do_export_html {
-    my ($self, $F, $language, %languages) = @ARG;
+    my ($self, $language, %languages) = @ARG;
 
     my %vars;
     my $title = $self->{meta_data}->{title}->{$language};
@@ -544,17 +529,8 @@ sub _do_export_html {
     $vars{'prev'} = $self->{'prev'};
     $vars{'next'} = $self->{'next'};
     $vars{'last'} = $self->{'last'};
-
-    my $language_links = '';
-    foreach my $l (sort keys %languages) {
-        next if ($l eq $language);
-
-        if ($self->{meta_data}->{title}->{$l}) {
-            my $href = $self->_make_url($l, 'png');
-            my $alt = $text{langLink}{$l};
-            $language_links .= "<a href=\"$href\" alt=\"$alt\">" . uc $l . '</a> ';
-        }
-    }
+    $vars{'archive'} = "../$text{archivePage}{$language}";
+    $vars{'imprint'} = "../$text{imprintPage}{$language}";
 
     $vars{transcript} = '';
     foreach my $t ($self->_texts_for($language)) {
@@ -565,9 +541,8 @@ sub _do_export_html {
         $text{keywords}{$language} . ', ' .
         join ', ', @{$self->{meta_data}->{tags}->{$language}});
 
-    print {$F} $self->_templatize(_slurp($text{templateFile}{$language}), %vars)
+    return _templatize(_slurp($text{comicTemplateFile}{$language}), %vars)
         or croak "Error writing HTML: $OS_ERROR";
-    return;
 }
 
 
@@ -698,7 +673,7 @@ sub _pos_to_frame {
 
 
 sub _templatize {
-    my ($self, $template, %vars) = @ARG;
+    my ($template, %vars) = @ARG;
 
     my %options = (
         STRICT => 1,
@@ -719,7 +694,7 @@ sub _write_sitemap_xml_fragment {
 
     my $html = $self->_make_url($language, 'html');
     my $path = "https://$text{domain}{$language}";
-    my $png_file = basename($self->_make_file_name($language, 'web', 'png'));
+    my $png_file = basename($self->{pngFile}{$language});
     my $title = $self->{meta_data}->{title}{$language};
     my $fragment = $self->_make_file_name($language, 'tmp', 'xml');
 
@@ -729,7 +704,7 @@ sub _write_sitemap_xml_fragment {
 <image:image>
 <image:loc>${path}/comics/$png_file</image:loc>
 <image:title>$title</image:title>
-<image:license>$path/$text{licensePage}{$language}</image:license>
+<image:license>$path/$text{imprintPage}{$language}</image:license>
 </image:image>
 <lastmod>$self->{modified}</lastmod>
 </url>
@@ -741,9 +716,55 @@ XML
 sub _write_file {
     my ($file_name, $contents) = @ARG;
 
-    open my $F, '>', $file_name or croak "Cannot write $file_name: $OS_ERROR";
+    open my $F, '>', $file_name or croak "Cannot open $file_name: $OS_ERROR";
     print {$F} $contents or croak "Cannot write to $file_name: $OS_ERROR";
     close $F or croak "Cannot close $file_name: $OS_ERROR";
+    return;
+}
+
+
+=head2 export_archive
+
+Generates a single HTML page with all comics in chronological order.
+
+The output file will be in generated/web/language/archivePage.html.
+
+Parameters:
+
+=over 4
+
+    =item B<%templates> hash of long language name to template file for that
+    language.
+
+=back
+
+=cut
+
+sub export_archive {
+    my (%templates) = @_;
+
+    foreach my $c (@comics) {
+        foreach my $language (keys %templates) {
+            next if $c->_not_for($language);
+            my $name = $c->_make_file_name($language, 'web/comics', 'html');
+            $c->{href}{$language} = 'comics/' . basename($name);
+        }
+    }
+
+    my @sorted = sort _compare @comics;
+    foreach my $language (keys %templates) {
+        my $t = _slurp($templates{$language});
+
+        my %vars;
+        $vars{'comics'} = \@sorted;
+        # FIXME look for the last comic in the given language
+        $vars{'modified'} = $sorted[-1]->{modified};
+        $vars{'notFor'} = \&_not_for;
+        $vars{'imprint'} = $text{imprintPage}{$language};
+
+        my $page = 'generated/' . lc($language) . "/web/$text{archivePage}{$language}";
+        _write_file($page, _templatize($t, %vars));
+    }
     return;
 }
 
