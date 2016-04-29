@@ -150,7 +150,9 @@ sub _load {
     $self->{xpath}->registerNs($DEFAULT_NAMESPACE, 'http://www.w3.org/2000/svg');
     my $meta_xpath = _build_xpath('metadata/rdf:RDF/cc:Work/dc:description/text()');
     my $meta_data = join ' ', $self->{xpath}->findnodes($meta_xpath);
-    $self->{meta_data} = from_json($meta_data);
+    eval {
+        $self->{meta_data} = from_json($meta_data);
+    } or croak "Error in JSON for $file: $EVAL_ERROR";
     $self->{modified} = DateTime->from_epoch(epoch => _mtime($file))->ymd;
     push @comics, $self;
     return;
