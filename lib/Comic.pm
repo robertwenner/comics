@@ -107,6 +107,10 @@ my %text = (
         'English' => 'imprint.html',
         'Deutsch' => 'impressum.html',
     },
+    logo => {
+        'English' => 'beercomics-logo.png',
+        'Deutsch' => 'biercomics-logo.png',
+    },
 );
 
 
@@ -533,6 +537,7 @@ sub _do_export_html {
     $vars{'last'} = $self->{'last'};
     $vars{'archive'} = "../$text{archivePage}{$language}";
     $vars{'imprint'} = "../$text{imprintPage}{$language}";
+    $vars{'logo'} = "../$text{logo}{$language}";
 
     $vars{transcript} = '';
     foreach my $t ($self->_texts_for($language)) {
@@ -763,6 +768,7 @@ sub export_archive {
         $vars{'modified'} = $sorted[-1]->{modified};
         $vars{'notFor'} = \&_not_for;
         $vars{'imprint'} = $text{imprintPage}{$language};
+        $vars{'logo'} = $text{logo}{$language};
 
         my $page = 'generated/' . lc($language) . "/web/$text{archivePage}{$language}";
         _write_file($page, _templatize($t, %vars));
