@@ -537,6 +537,7 @@ sub _do_export_html {
     $vars{'last'} = $self->{'last'};
     $vars{'archive'} = "../$text{archivePage}{$language}";
     $vars{'imprint'} = "../$text{imprintPage}{$language}";
+    $vars{'favicon'} = "favicon.png";
     $vars{'logo'} = "../$text{logo}{$language}";
 
     $vars{transcript} = '';
@@ -769,6 +770,7 @@ sub export_archive {
         $vars{'notFor'} = \&_not_for;
         $vars{'imprint'} = $text{imprintPage}{$language};
         $vars{'logo'} = $text{logo}{$language};
+        $vars{'favicon'} = "favicon.png";
 
         my $page = 'generated/' . lc($language) . "/web/$text{archivePage}{$language}";
         _write_file($page, _templatize($t, %vars));
