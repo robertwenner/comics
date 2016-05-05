@@ -68,6 +68,8 @@ Readonly our $DEFAULT_NAMESPACE => 'defNs';
 Readonly our $FRAME_TOLERANCE => 5;
 # How to mark a comic as not publishable, so that the converter can flag it.
 Readonly our $DONT_PUBLISH => 'DONT_PUBLISH';
+# What date to use for sorting unpublished comics.
+Readonly our $UNPUBLISHED => '3000-01-01';
 
 
 # Whether to transform SVG coordinates if the transform atttribute is used.
@@ -437,7 +439,7 @@ sub export_all_html {
     foreach my $i (0 .. @sorted - 1) {
         my $comic = $sorted[$i];
         foreach my $language (keys %languages) {
-            next if ($comic->_not_for($language));
+            next if ($comic->_not_for($language) || $comic->_not_yet_published());
 
             my $first_comic = _find_first($language, $i, @sorted);
             $comic->{'first'} = $first_comic ? $first_comic->{htmlFile}{$language} : 0;
@@ -456,12 +458,41 @@ sub export_all_html {
 }
 
 
+sub _not_yet_published {
+    my ($self) = @_;
+
+    Readonly my $DAYS_PER_WEEK => 7;
+    Readonly my $FRIDAY => 5;
+
+    my $till = _now();
+    my $dow = $till->day_of_week();
+    if ($dow != $FRIDAY) {
+        # On Friday, just do comics up until today. On any other day, also include
+        # the comic for next Friday.
+        # That way, when the web site update script runs on 00:00:02 on Friday 
+        # night, it will only include comic up to today's comic, but when I run
+        # the script on any other day of the week it will already include the
+        # next comic in the queue for previewing.
+        $till->add(days => $DAYS_PER_WEEK);
+        # Adding 7 week days (going one week further) makes sure next Friday is
+        # in the valid dates range.
+    }
+    my $published = $self->{meta_data}->{published}->{when} || $UNPUBLISHED;
+    return ($published cmp $till->ymd) > 0;
+}
+
+
+sub _now {
+    return DateTime->now;
+}
+
+
 sub _find_first {
     my ($language, $pos, @sorted) = @_;
 
     foreach my $i (0 .. $pos - 1) {
         my $comic = $sorted[$i];
-        return $comic unless ($comic->_not_for($language));
+        return $comic unless ($comic->_not_for($language) || $comic->_not_yet_published());
     }
     return 0;
 }
@@ -472,7 +503,7 @@ sub _find_prev {
 
     while (--$pos >= 0) {
         my $comic = $sorted[$pos];
-        return $comic unless ($comic->_not_for($language));
+        return $comic unless ($comic->_not_for($language) || $comic->_not_yet_published());
     }
     return 0;
 }
@@ -483,7 +514,7 @@ sub _find_next {
 
     while (++$pos < @sorted) {
         my $comic = $sorted[$pos];
-        return $comic unless ($comic->_not_for($language));
+        return $comic unless ($comic->_not_for($language) || $comic->_not_yet_published());
     }
     return 0;
 }
@@ -494,7 +525,7 @@ sub _find_last {
 
     foreach my $i (reverse $pos + 1 .. @sorted - 1) {
         my $comic = $sorted[$i];
-        return $comic unless ($comic->_not_for($language));
+        return $comic unless ($comic->_not_for($language) || $comic->_not_yet_published());
     }
     return 0;
 }
@@ -505,7 +536,7 @@ sub _export_language_html {
 
     # If the comic has no title for the given language, assume it does not
     # have language layers either and don't export a transcript.
-    return if $self->_not_for($language);
+    return if $self->_not_for($language) || $self->_not_yet_published();
 
     my $page = $self->_make_file_name($language, 'web/comics', 'html');
     return _write_file($page, $self->_do_export_html($language, %languages));
@@ -759,13 +790,12 @@ sub export_archive {
         }
     }
 
-    my @sorted = sort _compare @comics;
+    my @sorted = sort _compare grep { !$_->_not_yet_published() } @comics;
     foreach my $language (keys %templates) {
         my $t = _slurp($templates{$language});
 
         my %vars;
         $vars{'comics'} = \@sorted;
-        # FIXME look for the last comic in the given language
         $vars{'modified'} = $sorted[-1]->{modified};
         $vars{'notFor'} = \&_not_for;
         $vars{'imprint'} = $text{imprintPage}{$language};
@@ -792,8 +822,8 @@ sub export_archive {
 #
 sub _compare($$) {
 ## use critic
-    my $pub_a = $_[0]->{meta_data}->{published}{when} || '3000-01-01';
-    my $pub_b = $_[1]->{meta_data}->{published}{when} || '3000-01-01';
+    my $pub_a = $_[0]->{meta_data}->{published}{when} || $UNPUBLISHED;
+    my $pub_b = $_[1]->{meta_data}->{published}{when} || $UNPUBLISHED;
     return $pub_a cmp $pub_b;
 }
 

@@ -5,13 +5,20 @@ no warnings qw/redefine/;
 use base 'Test::Class';
 use Test::More;
 use Test::Deep;
+use DateTime;
 use Comic;
 
 __PACKAGE__->runtests() unless caller;
 
 
+my $today;
+my @exported;
+
+
 sub set_up : Test(setup) {
     Comic::reset_statics();
+    @exported = ();
+    $today = DateTime->now;
 }
 
 
@@ -54,13 +61,17 @@ XML
         return 1;
     };
     *Comic::_export_language_html = sub {
+        my ($self, $language) = @_;
+        push @exported, $self->{meta_data}->{title}->{$language};
         return;
     };
     *Comic::_write_sitemap_xml_fragment = sub {
         return;
     };
-    my $comic = new Comic('whatever');
-    return $comic;
+    *Comic::_now = sub {
+        return $today;
+    };
+    return new Comic('whatever');
 }
 
 
@@ -121,7 +132,7 @@ sub ignores_unknown_language : Test {
 }
 
 
-sub hops_over_comic_without_that_language : Tests {
+sub skips_comic_without_that_language : Tests {
     my $jan = make_comic('English', 'jan', '2016-01-01');
     my $feb = make_comic('Deutsch', 'feb', '2016-02-01');
     my $mar = make_comic('English', 'mar', '2016-03-01');
@@ -142,4 +153,33 @@ sub hops_over_comic_without_that_language : Tests {
     is($feb->{'prev'}, 0, "Feb prev");
     is($feb->{'next'}, 0, "Feb next");
     is($feb->{'last'}, 0, "Feb last");
+}
+
+
+sub skips_comic_without_published_date : Test {
+    my $not_yet = make_comic('English', 'not yet', '');
+    Comic::export_all_html('English' => 'en');
+    is_deeply([], \@exported);
+}
+
+
+sub skips_comic_in_far_future : Tests {
+    my $not_yet = make_comic('English', 'not yet', '2200-01-01');
+    Comic::export_all_html('English' => 'en');
+    is_deeply([], \@exported);
+}
+
+
+sub includes_comic_for_next_friday : Tests {
+    #       May 2016
+    #  Su Mo Tu We Th Fr Sa
+    #   1  2  3  4  5  6  7
+    #   8  9 10 11 12 13 14
+    #  15 16 17 18 19 20 21
+    #  22 23 24 25 26 27 28
+    #  29 30 31
+    $today = DateTime->new(year => 2016, month => 5, day => 1);
+    my $not_yet = make_comic('English', 'next Friday', '2016-05-01');
+    Comic::export_all_html('English' => 'en');
+    is_deeply(['next Friday'], \@exported);
 }
