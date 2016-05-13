@@ -101,9 +101,17 @@ my %text = (
         'English' => 'web/english/archive.templ',
         'Deutsch' => 'web/deutsch/archiv.templ',
     },
+    backlogTemplateFile => {
+        'English' => 'web/english/backlog.templ',
+        'Deutsch' => 'web/deutsch/backlog.templ',
+    },
     archivePage => {
         'English' => 'archive.html',
         'Deutsch' => 'archiv.html',
+    },
+    backlogPage => {
+        'English' => 'backlog.html',
+        'Deutsch' => 'backlog.html',
     },
     imprintPage => {
         'English' => 'imprint.html',
@@ -222,7 +230,8 @@ sub export_png {
         $self->_check_tags('people', $language);
 
         $self->_flip_language_layers($language, keys %languages);
-        $self->_svg_to_png($language, $self->_write_temp_svg_file());
+        my $to = $self->_not_yet_published() ? 'tmp/backlog' : 'web/comics';
+        $self->_svg_to_png($to, $language, $self->_write_temp_svg_file());
     }
     $self->_count_tags();
     return;
@@ -360,9 +369,9 @@ sub _write_temp_svg_file {
 
 
 sub _svg_to_png {
-    my ($self, $language, $svg_file) = @ARG;
+    my ($self, $to, $language, $svg_file) = @ARG;
 
-    my $png_file = $self->_make_file_name($language, 'web/comics', 'png');
+    my $png_file = $self->_make_file_name($language, $to, 'png');
     $self->{pngFile}{$language} = basename($png_file);
     my $cmd = "inkscape --without-gui --file=$svg_file";
     $cmd .= ' --g-fatal-warnings';
@@ -439,7 +448,9 @@ sub export_all_html {
     foreach my $i (0 .. @sorted - 1) {
         my $comic = $sorted[$i];
         foreach my $language (keys %languages) {
-            next if ($comic->_not_for($language) || $comic->_not_yet_published());
+            next if ($comic->_not_for($language));
+
+            my $to = $comic->_not_yet_published() ? 'tmp/backlog' : 'web/comics';
 
             my $first_comic = _find_first($language, $i, @sorted);
             $comic->{'first'} = $first_comic ? $first_comic->{htmlFile}{$language} : 0;
@@ -450,7 +461,7 @@ sub export_all_html {
             my $last_comic = _find_last($language, $i, @sorted);
             $comic->{'last'} = $last_comic ? $last_comic->{htmlFile}{$language} : 0;
 
-            $comic->_export_language_html($language, %languages);
+            $comic->_export_language_html($to, $language, %languages);
             $comic->_write_sitemap_xml_fragment($language);
         }
     }
@@ -469,8 +480,8 @@ sub _not_yet_published {
     if ($dow != $FRIDAY) {
         # On Friday, just do comics up until today. On any other day, also include
         # the comic for next Friday.
-        # That way, when the web site update script runs on 00:00:02 on Friday 
-        # night, it will only include comic up to today's comic, but when I run
+        # That way, when the web site update script runs on 00:00:02 on Friday
+        # night, it will only include comics up to today's comic, but when I run
         # the script on any other day of the week it will already include the
         # next comic in the queue for previewing.
         $till->add(days => $DAYS_PER_WEEK);
@@ -490,9 +501,11 @@ sub _now {
 sub _find_first {
     my ($language, $pos, @sorted) = @_;
 
+    my $need = $sorted[$pos]->_not_yet_published();
     foreach my $i (0 .. $pos - 1) {
         my $comic = $sorted[$i];
-        return $comic unless ($comic->_not_for($language) || $comic->_not_yet_published());
+        next if ($comic->_not_for($language));
+        return $comic if ($comic->_not_yet_published() == $need);
     }
     return 0;
 }
@@ -501,9 +514,11 @@ sub _find_first {
 sub _find_prev {
     my ($language, $pos, @sorted) = @_;
 
+    my $need = $sorted[$pos]->_not_yet_published();
     while (--$pos >= 0) {
         my $comic = $sorted[$pos];
-        return $comic unless ($comic->_not_for($language) || $comic->_not_yet_published());
+        next if ($comic->_not_for($language));
+        return $comic if ($comic->_not_yet_published() == $need);
     }
     return 0;
 }
@@ -512,9 +527,11 @@ sub _find_prev {
 sub _find_next {
     my ($language, $pos, @sorted) = @_;
 
+    my $need = $sorted[$pos]->_not_yet_published();
     while (++$pos < @sorted) {
         my $comic = $sorted[$pos];
-        return $comic unless ($comic->_not_for($language) || $comic->_not_yet_published());
+        next if ($comic->_not_for($language));
+        return $comic if ($comic->_not_yet_published() == $need);
     }
     return 0;
 }
@@ -523,29 +540,35 @@ sub _find_next {
 sub _find_last {
     my ($language, $pos, @sorted) = @_;
 
+    my $need = $sorted[$pos]->_not_yet_published();
     foreach my $i (reverse $pos + 1 .. @sorted - 1) {
         my $comic = $sorted[$i];
-        return $comic unless ($comic->_not_for($language) || $comic->_not_yet_published());
+        next if ($comic->_not_for($language));
+        return $comic if ($comic->_not_yet_published() == $need);
     }
     return 0;
 }
 
 
 sub _export_language_html {
-    my ($self, $language, %languages) = @ARG;
+    my ($self, $to, $language, %languages) = @ARG;
 
-    # If the comic has no title for the given language, assume it does not
-    # have language layers either and don't export a transcript.
-    return if $self->_not_for($language) || $self->_not_yet_published();
-
-    my $page = $self->_make_file_name($language, 'web/comics', 'html');
+    my $page = $self->_make_file_name($language, $to, 'html');
     return _write_file($page, $self->_do_export_html($language, %languages));
 }
 
 
 sub _not_for {
+    my ($self, @args) = @ARG;
+    # Cannot just use !$self->_is_for cause Perl's weird truthiness can turn
+    # the result into an empty text, and then tests trip over that.
+    return $self->_is_for(@args) == 1 ? 0 : 1;
+}
+
+
+sub _is_for {
     my ($self, $language) = @ARG;
-    return defined($self->{meta_data}->{title}->{$language}) ? 0 : 1;
+    return defined($self->{meta_data}->{title}->{$language}) ? 1 : 0;
 }
 
 
@@ -566,10 +589,13 @@ sub _do_export_html {
     $vars{'prev'} = $self->{'prev'};
     $vars{'next'} = $self->{'next'};
     $vars{'last'} = $self->{'last'};
-    $vars{'archive'} = "../$text{archivePage}{$language}";
-    $vars{'imprint'} = "../$text{imprintPage}{$language}";
-    $vars{'favicon'} = 'favicon.png';
-    $vars{'logo'} = "../$text{logo}{$language}";
+    my $path = '';
+    $path = '../../web/comics/' if ($self->_not_yet_published());
+    $vars{'archive'} = "$path../$text{archivePage}{$language}";
+    $vars{'imprint'} = "$path../$text{imprintPage}{$language}";
+    $vars{'favicon'} = "$path../favicon.png";
+    $vars{'stylesheet'} = "$path../styles.css";
+    $vars{'logo'} = "$path../$text{logo}{$language}";
 
     $vars{transcript} = '';
     foreach my $t ($self->_texts_for($language)) {
@@ -735,8 +761,8 @@ sub _write_sitemap_xml_fragment {
     my $path = "https://$text{domain}{$language}";
     my $png_file = basename($self->{pngFile}{$language});
     my $title = $self->{meta_data}->{title}{$language};
-    my $fragment = $self->_make_file_name($language, 'tmp', 'xml');
 
+    my $fragment = $self->_make_file_name($language, 'tmp', 'xml');
     _write_file($fragment, <<"XML");
 <url>
 <loc>$html</loc>
@@ -772,37 +798,79 @@ Parameters:
 
 =over 4
 
-    =item B<%templates> hash of long language name to template file for that
-    language.
+    =item B<$archive_templates> reference to a hash of long language name to
+    the archive template file for that language.
+
+    =item B<$backlog_templates> reference to a hash of long language name to
+    backlog template file for that language.
 
 =back
 
 =cut
 
 sub export_archive {
-    my (%templates) = @_;
+    my ($archive_templates, $backlog_templates) = @ARG;
 
     foreach my $c (@comics) {
-        foreach my $language (keys %templates) {
-            next if $c->_not_for($language);
-            my $name = $c->_make_file_name($language, 'web/comics', 'html');
-            $c->{href}{$language} = 'comics/' . basename($name);
+        foreach my $language (keys %{$archive_templates}) {
+            next unless ($c->_is_for($language));
+
+            my $name;
+            my $dir;
+            if ($c->_not_yet_published()) {
+                $name = $c->_make_file_name($language, 'tmp/backlog', 'html');
+                $dir = 'backlog/';
+            }
+            else {
+                $name = $c->_make_file_name($language, 'web/comics', 'html');
+                $dir = 'comics/';
+            }
+            $c->{href}{$language} = $dir . basename($name);
         }
     }
 
-    my @sorted = sort _compare grep { !$_->_not_yet_published() } @comics;
+    _do_export_archive('archive', 'web', '', \&_archive_filter, %{$archive_templates});
+    _do_export_archive('backlog', 'tmp', '../web/', \&_backlog_filter, %{$backlog_templates});
+    return;
+}
+
+
+sub _archive_filter {
+    my ($comic, $language) = @ARG;
+    return !$comic->_not_yet_published() && $comic->_is_for($language);
+}
+
+
+sub _backlog_filter {
+    my ($comic, $language) = @ARG;
+    return $comic->_not_yet_published() && $comic->_is_for($language);
+}
+
+
+sub _do_export_archive {
+    my ($what, $dir, $url, $filter, %templates) = @ARG;
+
     foreach my $language (keys %templates) {
-        my $t = _slurp($templates{$language});
+        my @filtered = sort _compare grep { $filter->($_, $language) } @comics;
+        my $hrsn = "${what}Page";
+        my $page = 'generated/' . lc($language) . "/$dir/$text{$hrsn}{$language}";
+
+        if (!@filtered) {
+            _write_file($page, "<p>No comics in $what.</p>");
+            next;
+        }
 
         my %vars;
-        $vars{'comics'} = \@sorted;
-        $vars{'modified'} = $sorted[-1]->{modified};
+        $vars{'comics'} = \@filtered;
+        $vars{'modified'} = $filtered[-1]->{modified};
         $vars{'notFor'} = \&_not_for;
-        $vars{'imprint'} = $text{imprintPage}{$language};
-        $vars{'logo'} = $text{logo}{$language};
-        $vars{'favicon'} = 'favicon.png';
+        $vars{'imprint'} = "${url}$text{imprintPage}{$language}";
+        $vars{'logo'} = "${url}$text{logo}{$language}";
+        $vars{'favicon'} = "${url}favicon.png";
+        $vars{'stylesheet'} = "${url}styles.css";
+        $vars{'archive'} = "${url}$text{archivePage}{$language}";
 
-        my $page = 'generated/' . lc($language) . "/web/$text{archivePage}{$language}";
+        my $t = _slurp($templates{$language});
         _write_file($page, _templatize($t, %vars));
     }
     return;

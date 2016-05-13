@@ -61,10 +61,11 @@ XML
         return 1;
     };
     *Comic::_export_language_html = sub {
-        my ($self, $language) = @_;
-        push @exported, $self->{meta_data}->{title}->{$language};
+        my ($self, $to, $language) = @_;
+        push @exported, "$to:" . ($self->{meta_data}->{title}->{$language} || '');
         return;
     };
+
     *Comic::_write_sitemap_xml_fragment = sub {
         return;
     };
@@ -78,7 +79,7 @@ XML
 sub export_only_if_meta_title_for_language : Test {
     local *Comic::_make_comics_path = sub { die("should not make a path"); };
     my $comic = make_comic('English', 'title', '2016-04-19');
-    $comic->_export_language_html('Deutsch', ("Deutsch" => "de"));
+    $comic->_export_language_html('web/comics', 'Deutsch', ("Deutsch" => "de"));
     ok(1); # Would have failed above
 }
 
@@ -159,14 +160,14 @@ sub skips_comic_without_that_language : Tests {
 sub skips_comic_without_published_date : Test {
     my $not_yet = make_comic('English', 'not yet', '');
     Comic::export_all_html('English' => 'en');
-    is_deeply([], \@exported);
+    is_deeply(['tmp/backlog:not yet'], \@exported);
 }
 
 
 sub skips_comic_in_far_future : Tests {
     my $not_yet = make_comic('English', 'not yet', '2200-01-01');
     Comic::export_all_html('English' => 'en');
-    is_deeply([], \@exported);
+    is_deeply(['tmp/backlog:not yet'], \@exported);
 }
 
 
@@ -181,5 +182,34 @@ sub includes_comic_for_next_friday : Tests {
     $today = DateTime->new(year => 2016, month => 5, day => 1);
     my $not_yet = make_comic('English', 'next Friday', '2016-05-01');
     Comic::export_all_html('English' => 'en');
-    is_deeply(['next Friday'], \@exported);
+    is_deeply(['web/comics:next Friday'], \@exported);
+}
+
+
+sub separate_navs_for_archive_and_backlog : Tests {
+    my $a1 = make_comic('Deutsch', 'arch1', '2016-01-01');
+    my $a2 = make_comic('Deutsch', 'arch2', '2016-01-02');
+    my $b1 = make_comic('Deutsch', 'back1', '2222-01-01');
+    my $b2 = make_comic('Deutsch', 'back2', '2222-01-02');
+    Comic::export_all_html('Deutsch' => 'de');
+
+    is($a1->{'prev'}, 0, "arch1 should have no prev");
+    is($a1->{'next'}, "arch2.html", "arch1 next should be arch2");
+    is($a1->{'first'}, 0, "arch1 should have no first");
+    is($a1->{'last'}, "arch2.html", "arch1 last should be arch2");
+
+    is($a2->{'prev'}, "arch1.html", "arch2 prev should be arch1");
+    is($a2->{'next'}, 0, "arch2 should not have a next");
+    is($a2->{'first'}, "arch1.html", "arch2 first should be arch1");
+    is($a2->{'last'}, 0, "arch2 should not have a last");
+
+    is($b1->{'prev'}, 0, "back1 should not have a prev");
+    is($b1->{'next'}, "back2.html", "back1 next should be back2");
+    is($b1->{'first'}, 0, "back1 should not have a first");
+    is($b1->{'last'}, "back2.html", "back1 last should be back2");
+
+    is($b2->{'next'}, 0, "back2 should not have a next");
+    is($b2->{'prev'}, "back1.html", "back2 prev should be back1");
+    is($b2->{'first'}, "back1.html", "back2 first should be back1");
+    is($b2->{'last'}, 0, "back2 should not have a last");
 }
