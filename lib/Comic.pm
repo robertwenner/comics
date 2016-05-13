@@ -723,7 +723,7 @@ sub _write_sitemap_xml_fragment {
     my $png_file = basename($self->{pngFile}{$language});
     my $title = $self->{meta_data}->{title}{$language};
 
-    my $fragment = $self->_make_file_name($language, 'tmp', 'xml');
+    my $fragment = $self->_make_file_name($language, 'tmp/sitemap', 'xml');
     _write_file($fragment, <<"XML");
 <url>
 <loc>$html</loc>

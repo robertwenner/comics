@@ -59,7 +59,7 @@ sub assertWrote {
         ($fileNameIs, $contentsIs) = @_;
     };
     $comic->_write_sitemap_xml_fragment("English");
-    is("generated/english/tmp/drinking-beer.xml", $fileNameIs);
+    is("generated/english/tmp/sitemap/drinking-beer.xml", $fileNameIs);
     like($contentsIs, qr{$contentsExpected}m);
 }
 
