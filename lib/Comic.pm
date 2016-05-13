@@ -450,17 +450,16 @@ sub export_all_html {
         foreach my $language (keys %languages) {
             next if ($comic->_not_for($language));
 
-            my $to = $comic->_not_yet_published() ? 'tmp/backlog' : 'web/comics';
-
-            my $first_comic = _find_first($language, $i, @sorted);
+            my $first_comic = _find_next($language, $i, \@sorted, [0 .. $i - 1]);
             $comic->{'first'} = $first_comic ? $first_comic->{htmlFile}{$language} : 0;
-            my $prev_comic = _find_prev($language, $i, @sorted);
+            my $prev_comic = _find_next($language, $i, \@sorted, [reverse 0 .. $i - 1]);
             $comic->{'prev'} = $prev_comic ? $prev_comic->{htmlFile}{$language} : 0;
-            my $next_comic = _find_next($language, $i, @sorted);
+            my $next_comic = _find_next($language, $i, \@sorted, [$i + 1 .. @sorted - 1]);
             $comic->{'next'} = $next_comic ? $next_comic->{htmlFile}{$language} : 0;
-            my $last_comic = _find_last($language, $i, @sorted);
+            my $last_comic = _find_next($language, $i, \@sorted, [reverse $i + 1 .. @sorted - 1]);
             $comic->{'last'} = $last_comic ? $last_comic->{htmlFile}{$language} : 0;
 
+            my $to = $comic->_not_yet_published() ? 'tmp/backlog' : 'web/comics';
             $comic->_export_language_html($to, $language, %languages);
             $comic->_write_sitemap_xml_fragment($language);
         }
@@ -498,53 +497,15 @@ sub _now {
 }
 
 
-sub _find_first {
-    my ($language, $pos, @sorted) = @_;
-
-    my $need = $sorted[$pos]->_not_yet_published();
-    foreach my $i (0 .. $pos - 1) {
-        my $comic = $sorted[$i];
-        next if ($comic->_not_for($language));
-        return $comic if ($comic->_not_yet_published() == $need);
-    }
-    return 0;
-}
-
-
-sub _find_prev {
-    my ($language, $pos, @sorted) = @_;
-
-    my $need = $sorted[$pos]->_not_yet_published();
-    while (--$pos >= 0) {
-        my $comic = $sorted[$pos];
-        next if ($comic->_not_for($language));
-        return $comic if ($comic->_not_yet_published() == $need);
-    }
-    return 0;
-}
-
-
 sub _find_next {
-    my ($language, $pos, @sorted) = @_;
+    my ($language, $pos, $comics, $nums) = @_;
 
-    my $need = $sorted[$pos]->_not_yet_published();
-    while (++$pos < @sorted) {
-        my $comic = $sorted[$pos];
-        next if ($comic->_not_for($language));
-        return $comic if ($comic->_not_yet_published() == $need);
-    }
-    return 0;
-}
+    foreach my $i (@{$nums}) {
+        next if (@{$comics}[$i]->_not_for($language));
+        if (@{$comics}[$i]->_not_yet_published() == @{$comics}[$pos]->_not_yet_published()) {
+            return @{$comics}[$i];
+        }
 
-
-sub _find_last {
-    my ($language, $pos, @sorted) = @_;
-
-    my $need = $sorted[$pos]->_not_yet_published();
-    foreach my $i (reverse $pos + 1 .. @sorted - 1) {
-        my $comic = $sorted[$i];
-        next if ($comic->_not_for($language));
-        return $comic if ($comic->_not_yet_published() == $need);
     }
     return 0;
 }
