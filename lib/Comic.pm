@@ -515,7 +515,7 @@ sub _export_language_html {
     my ($self, $to, $language, %languages) = @ARG;
 
     my $page = $self->_make_file_name($language, $to, 'html');
-    return _write_file($page, $self->_do_export_html($language, %languages));
+    return _write_file($page, $self->_do_export_html($language));
 }
 
 
@@ -534,7 +534,7 @@ sub _is_for {
 
 
 sub _do_export_html {
-    my ($self, $language, %languages) = @ARG;
+    my ($self, $language) = @ARG;
 
     my %vars;
     my $title = $self->{meta_data}->{title}->{$language};

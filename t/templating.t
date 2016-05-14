@@ -175,7 +175,7 @@ sub object_function_wrapped : Tests {
 
 
 sub fromComic : Tests {
-    my $wrote = $comic->_do_export_html("Deutsch", ());
+    my $wrote = $comic->_do_export_html("Deutsch");
     like($wrote, qr/Bier trinken/m);
     like($wrote, qr/1970-01-01/m);
     like($wrote, qr/bier-trinken\.png/m);
