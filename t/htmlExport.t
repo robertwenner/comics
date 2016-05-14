@@ -91,10 +91,10 @@ sub navigation_links_first : Tests {
 
     Comic::export_all_html("English" => "en");
 
-    is($jan->{'first'}, 0, "Jan first");
-    is($jan->{'prev'}, 0, "Jan prev");
-    is($jan->{'next'}, "feb.html", "Jan next");
-    is($jan->{'last'}, "mar.html", "Jan last");
+    is($jan->{'first'}{'English'}, 0, "Jan first");
+    is($jan->{'prev'}{'English'}, 0, "Jan prev");
+    is($jan->{'next'}{'English'}, "feb.html", "Jan next");
+    is($jan->{'last'}{'English'}, "mar.html", "Jan last");
 }
 
 
@@ -105,10 +105,10 @@ sub navigation_links_middle : Tests {
 
     Comic::export_all_html("English" => "en");
 
-    is($feb->{'first'}, "jan.html", "Feb first");
-    is($feb->{'prev'}, "jan.html", "Feb prev");
-    is($feb->{'next'}, "mar.html", "Feb next");
-    is($feb->{'last'}, "mar.html", "Feb last");
+    is($feb->{'first'}{'English'}, "jan.html", "Feb first");
+    is($feb->{'prev'}{'English'}, "jan.html", "Feb prev");
+    is($feb->{'next'}{'English'}, "mar.html", "Feb next");
+    is($feb->{'last'}{'English'}, "mar.html", "Feb last");
 }
 
 
@@ -119,10 +119,10 @@ sub navigation_links_last : Tests {
 
     Comic::export_all_html("English" => "en");
 
-    is($mar->{'first'}, "jan.html", "Mar first");
-    is($mar->{'prev'}, "feb.html", "Mar prev");
-    is($mar->{'next'}, 0, "Mar next");
-    is($mar->{'last'}, 0, "Mar last");
+    is($mar->{'first'}{'English'}, "jan.html", "Mar first");
+    is($mar->{'prev'}{'English'}, "feb.html", "Mar prev");
+    is($mar->{'next'}{'English'}, 0, "Mar next");
+    is($mar->{'last'}{'English'}, 0, "Mar last");
 }
 
 
@@ -140,20 +140,20 @@ sub skips_comic_without_that_language : Tests {
 
     Comic::export_all_html("English" => "en", "Deutsch" => "de");
 
-    is($jan->{'first'}, 0, "Jan first");
-    is($jan->{'prev'}, 0, "Jan first");
-    is($jan->{'next'}, 'mar.html', "Jan next");
-    is($jan->{'last'}, 'mar.html', "Jan last");
+    is($jan->{'first'}{'English'}, 0, "Jan first");
+    is($jan->{'prev'}{'English'}, 0, "Jan first");
+    is($jan->{'next'}{'English'}, 'mar.html', "Jan next");
+    is($jan->{'last'}{'English'}, 'mar.html', "Jan last");
 
-    is($mar->{'first'}, 'jan.html', "Mar first");
-    is($mar->{'prev'}, 'jan.html', "Mar first");
-    is($mar->{'next'}, 0, "Mar next");
-    is($mar->{'last'}, 0, "Mar last");
+    is($mar->{'first'}{'English'}, 'jan.html', "Mar first");
+    is($mar->{'prev'}{'English'}, 'jan.html', "Mar first");
+    is($mar->{'next'}{'English'}, 0, "Mar next");
+    is($mar->{'last'}{'English'}, 0, "Mar last");
 
-    is($feb->{'first'}, 0, "Feb first");
-    is($feb->{'prev'}, 0, "Feb prev");
-    is($feb->{'next'}, 0, "Feb next");
-    is($feb->{'last'}, 0, "Feb last");
+    is($feb->{'first'}{'Deutsch'}, 0, "Feb first");
+    is($feb->{'prev'}{'Deutsch'}, 0, "Feb prev");
+    is($feb->{'next'}{'Deutsch'}, 0, "Feb next");
+    is($feb->{'last'}{'Deutsch'}, 0, "Feb last");
 }
 
 
@@ -193,23 +193,23 @@ sub separate_navs_for_archive_and_backlog : Tests {
     my $b2 = make_comic('Deutsch', 'back2', '2222-01-02');
     Comic::export_all_html('Deutsch' => 'de');
 
-    is($a1->{'prev'}, 0, "arch1 should have no prev");
-    is($a1->{'next'}, "arch2.html", "arch1 next should be arch2");
-    is($a1->{'first'}, 0, "arch1 should have no first");
-    is($a1->{'last'}, "arch2.html", "arch1 last should be arch2");
+    is($a1->{'prev'}{'Deutsch'}, 0, "arch1 should have no prev");
+    is($a1->{'next'}{'Deutsch'}, "arch2.html", "arch1 next should be arch2");
+    is($a1->{'first'}{'Deutsch'}, 0, "arch1 should have no first");
+    is($a1->{'last'}{'Deutsch'}, "arch2.html", "arch1 last should be arch2");
 
-    is($a2->{'prev'}, "arch1.html", "arch2 prev should be arch1");
-    is($a2->{'next'}, 0, "arch2 should not have a next");
-    is($a2->{'first'}, "arch1.html", "arch2 first should be arch1");
-    is($a2->{'last'}, 0, "arch2 should not have a last");
+    is($a2->{'prev'}{'Deutsch'}, "arch1.html", "arch2 prev should be arch1");
+    is($a2->{'next'}{'Deutsch'}, 0, "arch2 should not have a next");
+    is($a2->{'first'}{'Deutsch'}, "arch1.html", "arch2 first should be arch1");
+    is($a2->{'last'}{'Deutsch'}, 0, "arch2 should not have a last");
 
-    is($b1->{'prev'}, 0, "back1 should not have a prev");
-    is($b1->{'next'}, "back2.html", "back1 next should be back2");
-    is($b1->{'first'}, 0, "back1 should not have a first");
-    is($b1->{'last'}, "back2.html", "back1 last should be back2");
+    is($b1->{'prev'}{'Deutsch'}, 0, "back1 should not have a prev");
+    is($b1->{'next'}{'Deutsch'}, "back2.html", "back1 next should be back2");
+    is($b1->{'first'}{'Deutsch'}, 0, "back1 should not have a first");
+    is($b1->{'last'}{'Deutsch'}, "back2.html", "back1 last should be back2");
 
-    is($b2->{'next'}, 0, "back2 should not have a next");
-    is($b2->{'prev'}, "back1.html", "back2 prev should be back1");
-    is($b2->{'first'}, "back1.html", "back2 first should be back1");
-    is($b2->{'last'}, 0, "back2 should not have a last");
+    is($b2->{'next'}{'Deutsch'}, 0, "back2 should not have a next");
+    is($b2->{'prev'}{'Deutsch'}, "back1.html", "back2 prev should be back1");
+    is($b2->{'first'}{'Deutsch'}, "back1.html", "back2 first should be back1");
+    is($b2->{'last'}{'Deutsch'}, 0, "back2 should not have a last");
 }

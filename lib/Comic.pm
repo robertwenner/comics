@@ -389,9 +389,15 @@ sub _svg_to_png {
 sub _make_file_name {
     my ($self, $language, $where, $ext) = @ARG;
 
+    return _make_dir($language, $where) . q{/} . $self->_normalized_title($language) . ".$ext";
+}
+
+
+sub _make_dir {
+    my ($language, $where) = @ARG;
     my $dir = 'generated/' . lc $language . "/$where";
     File::Path::make_path($dir) or croak("Cannot mkdirs $dir: $OS_ERROR") unless(-d $dir);
-    return "$dir/" . $self->_normalized_title($language) . ".$ext";
+    return $dir;
 }
 
 
@@ -451,13 +457,13 @@ sub export_all_html {
             next if ($comic->_not_for($language));
 
             my $first_comic = _find_next($language, $i, \@sorted, [0 .. $i - 1]);
-            $comic->{'first'} = $first_comic ? $first_comic->{htmlFile}{$language} : 0;
+            $comic->{'first'}{$language} = $first_comic ? $first_comic->{htmlFile}{$language} : 0;
             my $prev_comic = _find_next($language, $i, \@sorted, [reverse 0 .. $i - 1]);
-            $comic->{'prev'} = $prev_comic ? $prev_comic->{htmlFile}{$language} : 0;
+            $comic->{'prev'}{$language} = $prev_comic ? $prev_comic->{htmlFile}{$language} : 0;
             my $next_comic = _find_next($language, $i, \@sorted, [$i + 1 .. @sorted - 1]);
-            $comic->{'next'} = $next_comic ? $next_comic->{htmlFile}{$language} : 0;
+            $comic->{'next'}{$language} = $next_comic ? $next_comic->{htmlFile}{$language} : 0;
             my $last_comic = _find_next($language, $i, \@sorted, [reverse $i + 1 .. @sorted - 1]);
-            $comic->{'last'} = $last_comic ? $last_comic->{htmlFile}{$language} : 0;
+            $comic->{'last'}{$language} = $last_comic ? $last_comic->{htmlFile}{$language} : 0;
 
             my $to = $comic->_not_yet_published() ? 'tmp/backlog' : 'web/comics';
             $comic->_export_language_html($to, $language, %languages);
@@ -546,17 +552,25 @@ sub _do_export_html {
     $vars{modified} = $self->{modified};
     $vars{height} = $self->{height};
     $vars{width} = $self->{width};
-    $vars{'first'} = $self->{'first'};
-    $vars{'prev'} = $self->{'prev'};
-    $vars{'next'} = $self->{'next'};
-    $vars{'last'} = $self->{'last'};
-    my $path = '';
+    $vars{'first'} = $self->{'first'}{$language};
+    $vars{'prev'} = $self->{'prev'}{$language};
+    $vars{'next'} = $self->{'next'}{$language};
+    $vars{'last'} = $self->{'last'}{$language};
+
+    # By default, use normal path with comics in comics/
+    my $path = '../';
+    # Adjust the path for backlog comics.
     $path = '../../web/comics/' if ($self->_not_yet_published());
-    $vars{'archive'} = "$path../$text{archivePage}{$language}";
-    $vars{'imprint'} = "$path../$text{imprintPage}{$language}";
-    $vars{'favicon'} = "$path../favicon.png";
-    $vars{'stylesheet'} = "$path../styles.css";
-    $vars{'logo'} = "$path../$text{logo}{$language}";
+    # Adjust the path for top-level index.html
+    if ($self->{isLatestPublished}) {
+        $path = '';
+        $vars{png_file} = 'comics/' . basename($vars{png_file});
+    }
+    $vars{'archive'} = "${path}$text{archivePage}{$language}";
+    $vars{'imprint'} = "${path}$text{imprintPage}{$language}";
+    $vars{'favicon'} = "${path}favicon.png";
+    $vars{'stylesheet'} = "${path}styles.css";
+    $vars{'logo'} = "${path}$text{logo}{$language}";
 
     $vars{transcript} = '';
     foreach my $t ($self->_texts_for($language)) {
@@ -788,6 +802,15 @@ sub export_archive {
             }
             $c->{href}{$language} = $dir . basename($name);
         }
+    }
+
+    foreach my $language (keys %{$archive_templates}) {
+        my @sorted = (sort _compare grep { _archive_filter($_, $language) } @comics);
+        next if (@sorted == 0);
+        my $last_pub = $sorted[-1];
+        $last_pub->{isLatestPublished} = 1;
+        my $page = _make_dir($language, 'web') . '/index.html';
+        _write_file($page, $last_pub->_do_export_html($language));
     }
 
     _do_export_archive('archive', 'web', '', \&_archive_filter, %{$archive_templates});
