@@ -658,8 +658,6 @@ sub _transformed {
     ## no critic(RegularExpressions::ProhibitCaptureWithoutTest)
     # Perl::Critic does not understand the croak.
     croak 'Cannot handle multiple transformations' if ($transform !~ m/^(\w+)\(([^)]+)\)$/);
-    ## no critic(RegularExpressions::ProhibitCaptureWithoutTest)
-    # Perl::Critic does not understand the croak.
     my ($operation, $params) = ($1, $2);
     ## use critic
     my ($a, $b, $c, $d, $e, $f);
@@ -721,7 +719,7 @@ sub _templatize {
     my $t = Template->new(%options) ||
         croak('Cannot construct template: ' . Template->error());
     my $output = '';
-    $t->process(\$template, \%vars, \$output) || croak $t->error();
+    $t->process(\$template, \%vars, \$output) || croak $t->error() . "\n";
     if ($output =~ m/(\[%\S*)/m) {
         croak "Unresolved template marker $1";
     }
