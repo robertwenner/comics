@@ -42,15 +42,15 @@ This document refers to version 0.0.2.
 
     use Comic;
 
-    my %languages = (
-        "Deutsch" => "de",
-        "English" => "en",
+    my @languages = (
+        "Deutsch",
+        "English"
     );
 
     foreach my $file (@ARGV) {
         my $c = Comic->new($file);
-        $c->export_png(%languages);
-        $c->export_html(%languages);
+        $c->export_png(@languages);
+        $c->export_html(@languages);
     }
 
 
@@ -203,23 +203,22 @@ Parameters:
 
 =over 4
 
-    =item B<%languages> hash of long language name (e.g., "English") to
-        short language name (e.g., "en"). The long language name must be
-        used in the Inkscape layer names and the JSON meta data.
+    =item B<@languages> language names (e.g., "English"). The language name
+        must be used in the Inkscape layer names and the JSON meta data.
 
-        This code will only work on the languages passed in this hash,
-        even if additional languages are present in the SVG. Specifying a
-        language that the SVG does not have is fine, you just don't get
-        any output (png, transcript) for it.
+        This code will only work on the languages passed, even if additional
+        languages are present in the SVG. Specifying a language that the SVG
+        does not have is fine, you just don't get any output (png,
+        transcript) for it.
 
 =back
 
 =cut
 
 sub export_png {
-    my ($self, %languages) = @ARG;
+    my ($self, @languages) = @ARG;
 
-    foreach my $language (keys %languages) {
+    foreach my $language (@languages) {
         next if $self->_not_for($language);
 
         $counts{'comics'}{$language}++;
@@ -229,7 +228,7 @@ sub export_png {
         $self->_check_tags('tags', $language);
         $self->_check_tags('people', $language);
 
-        $self->_flip_language_layers($language, keys %languages);
+        $self->_flip_language_layers($language, @languages);
         my $to = $self->_not_yet_published() ? 'tmp/backlog' : 'web/comics';
         $self->_svg_to_png($to, $language, $self->_write_temp_svg_file());
     }
@@ -431,18 +430,17 @@ Parameters:
 
 =over 4
 
-    =item B<%languages> hash of short language name (e.g., en for English and
-        de for German) to long language name.
+    =item B<@languages> language names to export.
 
 =back
 
 =cut
 
 sub export_all_html {
-    my (%languages) = @ARG;
+    my (@languages) = @ARG;
 
     foreach my $c (@comics) {
-        foreach my $language (keys %languages) {
+        foreach my $language (@languages) {
             next if $c->_not_for($language);
             my $name = $c->_make_file_name($language, 'web/comics', 'html');
             $c->{htmlFile}{$language} = basename($name);
@@ -453,7 +451,7 @@ sub export_all_html {
     # Would be nice to do this incrementally...
     foreach my $i (0 .. @sorted - 1) {
         my $comic = $sorted[$i];
-        foreach my $language (keys %languages) {
+        foreach my $language (@languages) {
             next if ($comic->_not_for($language));
 
             my $first_comic = _find_next($language, $i, \@sorted, [0 .. $i - 1]);
@@ -466,7 +464,7 @@ sub export_all_html {
             $comic->{'last'}{$language} = $last_comic ? $last_comic->{htmlFile}{$language} : 0;
 
             my $to = $comic->_not_yet_published() ? 'tmp/backlog' : 'web/comics';
-            $comic->_export_language_html($to, $language, %languages);
+            $comic->_export_language_html($to, $language);
             $comic->_write_sitemap_xml_fragment($language);
         }
     }
@@ -518,7 +516,7 @@ sub _find_next {
 
 
 sub _export_language_html {
-    my ($self, $to, $language, %languages) = @ARG;
+    my ($self, $to, $language) = @ARG;
 
     my $page = $self->_make_file_name($language, $to, 'html');
     return _write_file($page, $self->_do_export_html($language));
@@ -720,7 +718,7 @@ sub _templatize {
         croak('Cannot construct template: ' . Template->error());
     my $output = '';
     $t->process(\$template, \%vars, \$output) || croak $t->error() . "\n";
-    if ($output =~ m/(\[%\S*)/m) {
+    if ($output =~ m/(\[%)/m) {
         croak "Unresolved template marker $1";
     }
     return $output;
