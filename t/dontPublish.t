@@ -46,7 +46,7 @@ JSON
     eval {
         $comic->_check_dont_publish();
     };
-    like($@, qr{In JSON > title > English: DONT_PUBLISH fix me});
+    like($@, qr{in JSON > title > English: DONT_PUBLISH fix me}i);
 }
 
 
@@ -61,7 +61,7 @@ JSON
     eval {
         $comic->_check_dont_publish();
     };
-    like($@, qr{In JSON > who > English\[3\]: three DONT_PUBLISH});
+    like($@, qr{In JSON > who > English\[3\]: three DONT_PUBLISH}i);
 }
 
 
@@ -72,7 +72,7 @@ JSON
     eval {
         $comic->_check_dont_publish();
     };
-    like($@, qr{In JSON > who: DONT_PUBLISH top level});
+    like($@, qr{In JSON > who: DONT_PUBLISH top level}i);
 }
 
 
@@ -107,5 +107,5 @@ XML
     eval {
         $comic->_check_dont_publish("English");
     };
-    like($@, qr{In layer Deutsch: DONT_PUBLISH oops});
+    like($@, qr{In layer Deutsch: DONT_PUBLISH oops}i);
 }

@@ -75,7 +75,6 @@ Readonly our $FRAME_WIDTH => 1.25;
 # Allowed deviation from expected frame width.
 Readonly our $FRAME_WIDTH_DEVIATION => 0.25;
 
-
 # Whether to transform SVG coordinates if the transform atttribute is used.
 # This may be needed for fancy texts (tilted or on a path) so that the new
 # translated coordinates can be sorted as expected for the comic's transcript.
@@ -170,7 +169,7 @@ sub _load {
     my $meta_data = join ' ', $self->{xpath}->findnodes($meta_xpath);
     eval {
         $self->{meta_data} = from_json($meta_data);
-    } or croak "Error in JSON for $file: $EVAL_ERROR";
+    } or croak "$file: Error in JSON for: $EVAL_ERROR";
     $self->{modified} = DateTime->from_epoch(epoch => _mtime($file))->ymd;
     push @comics, $self;
     return;
@@ -263,7 +262,7 @@ sub _check_title {
 sub _check_dont_publish {
     my ($self) = @ARG;
 
-    _check_json('', $self->{meta_data});
+    $self->_check_json('', $self->{meta_data});
 
     ## no critic(ValuesAndExpressions::RequireInterpolationOfMetachars)
     my $all_layers = _build_xpath('g[@inkscape:groupmode="layer"]');
@@ -272,7 +271,7 @@ sub _check_dont_publish {
         my $text = $layer->textContent();
         my $label = $layer->{'inkscape:label'};
         if ($text =~ m/(\b$DONT_PUBLISH\b[^\n\r]*)/m) {
-            croak "In layer $label: $1";
+            croak "In $self->{file} in layer $label: $1";
         }
     }
     return;
@@ -280,20 +279,20 @@ sub _check_dont_publish {
 
 
 sub _check_json {
-    my ($where, $what) = @ARG;
+    my ($self, $where, $what) = @ARG;
 
     if (ref($what) eq 'HASH') {
         foreach my $key (keys %{$what}) {
-            _check_json("$where > $key", $what->{$key});
+            $self->_check_json("$where > $key", $what->{$key});
         }
     }
     elsif (ref($what) eq 'ARRAY') {
         for my $i (0 .. $#{$what}) {
-            _check_json($where . '[' . ($i + 1) . ']', $what->[$i]);
+            $self->_check_json($where . '[' . ($i + 1) . ']', $what->[$i]);
         }
     }
     elsif ($what =~ m/$DONT_PUBLISH/m) {
-        croak "In JSON$where: $what";
+        croak "In $self->{file} in JSON$where: $what";
     }
     return;
 }
@@ -328,8 +327,8 @@ sub _check_tags {
     my ($self, $what, $language) = @ARG;
 
     foreach my $tag (@{$self->{meta_data}->{$what}->{$language}}) {
-        croak("No $language $what") unless(defined $tag);
-        croak("Empty $language $what") if ($tag =~ m/^\s*$/);
+        croak("No $language $what in $self->{file}") unless(defined $tag);
+        croak("Empty $language $what in $self->{file}") if ($tag =~ m/^\s*$/);
     }
     return;
 }
@@ -372,7 +371,7 @@ sub _flip_language_layers {
         }
     }
     unless ($had_lang) {
-        croak "No $language layer";
+        croak "No $language layer in $self->{file}";
     }
 }
 
@@ -634,7 +633,7 @@ sub _texts_for {
 
         if ($text eq '') {
             my $layer = $node->parentNode->{'inkscape:label'};
-            croak "Empty text in $layer with ID $node->{id}";
+            croak "Empty text in $layer with ID $node->{id} in $self->{file}";
         }
         push @texts, $text;
     }
@@ -685,7 +684,9 @@ sub _transformed {
 
     ## no critic(RegularExpressions::ProhibitCaptureWithoutTest)
     # Perl::Critic does not understand the croak.
-    croak 'Cannot handle multiple transformations' if ($transform !~ m/^(\w+)\(([^)]+)\)$/);
+    if ($transform !~ m/^(\w+)\(([^)]+)\)$/) {
+        croak "Cannot handle multiple transformations in $self->{file}";
+    }
     my ($operation, $params) = ($1, $2);
     ## use critic
     my ($a, $b, $c, $d, $e, $f);
@@ -704,7 +705,7 @@ sub _transformed {
         ## use critic
     }
     else {
-        croak "Unsupported operation $operation";
+        croak "Unsupported operation $operation in $self->{file}";
     }
     my $x = $node->getAttribute('x');
     my $y = $node->getAttribute('y');
@@ -716,7 +717,7 @@ sub _transformed {
     # attributes.
     return $a * $x + $c * $y if ($attribute eq 'x');
     return $b * $x + $d * $y if ($attribute eq 'y');
-    croak "Unsupported attribute $attribute to transform";
+    croak "Unsupported attribute $attribute to transform in $self->{file}";
 }
 
 
@@ -749,7 +750,7 @@ sub _templatize {
     my $output = '';
     $t->process(\$template, \%vars, \$output) || croak $t->error() . "\n";
     if ($output =~ m/(\[%)/m) {
-        croak "Unresolved template marker $1";
+        croak 'Unresolved template marker';
     }
     return $output;
 }
