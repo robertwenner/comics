@@ -103,6 +103,22 @@ sub unknownVariable : Test {
 }
 
 
+sub strayOpeningTag : Test {
+    eval {
+        Comic::_templatize('[% a', ("a" => "b"));
+    };
+    like($@, qr/unresolved template marker/i);
+}
+
+
+sub strayClosingTag : Test {
+    eval {
+        Comic::_templatize("\nblah\na %]\nblah\n\n", ("a" => "b"));
+    };
+    like($@, qr/unresolved template marker/i);
+}
+
+
 sub array : Test {
     is(Comic::_templatize(
         "[% FOREACH a IN array %][% a %][% END %]", ("array" => ["a", "b", "c"])),

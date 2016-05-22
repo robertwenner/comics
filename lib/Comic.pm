@@ -124,6 +124,10 @@ my %text = (
         'English' => 'beercomics-logo.png',
         'Deutsch' => 'biercomics-logo.png',
     },
+    ccbutton => {
+        'English' => 'cc.png',
+        'Deutsch' => 'cc.png',
+    },
 );
 
 
@@ -598,6 +602,7 @@ sub _do_export_html {
     $vars{'favicon'} = "${path}favicon.png";
     $vars{'stylesheet'} = "${path}styles.css";
     $vars{'logo'} = "${path}$text{logo}{$language}";
+    $vars{'ccbutton'} = "${path}$text{ccbutton}{$language}";
 
     $vars{transcript} = '';
     foreach my $t ($self->_texts_for($language)) {
@@ -749,7 +754,7 @@ sub _templatize {
         croak('Cannot construct template: ' . Template->error());
     my $output = '';
     $t->process(\$template, \%vars, \$output) || croak $t->error() . "\n";
-    if ($output =~ m/(\[%)/m) {
+    if ($output =~ m/\[%/mg || $output =~ m/%\]/mg) {
         croak 'Unresolved template marker';
     }
     return $output;
@@ -880,6 +885,7 @@ sub _do_export_archive {
         $vars{'favicon'} = "${url}favicon.png";
         $vars{'stylesheet'} = "${url}styles.css";
         $vars{'archive'} = "${url}$text{archivePage}{$language}";
+        $vars{'ccbutton'} = "${url}$text{ccbutton}{$language}";
 
         my $t = _slurp($templates{$language});
         _write_file($page, _templatize($t, %vars));
