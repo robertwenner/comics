@@ -70,6 +70,10 @@ Readonly our $FRAME_TOLERANCE => 5;
 Readonly our $DONT_PUBLISH => 'DONT_PUBLISH';
 # What date to use for sorting unpublished comics.
 Readonly our $UNPUBLISHED => '3000-01-01';
+# Expected frame thickness.
+Readonly our $FRAME_WIDTH => 1.25;
+# Allowed deviation from expected frame width.
+Readonly our $FRAME_WIDTH_DEVIATION => 0.25;
 
 
 # Whether to transform SVG coordinates if the transform atttribute is used.
@@ -225,6 +229,7 @@ sub export_png {
 
         $self->_check_title($language);
         $self->_check_dont_publish($language);
+        $self->_check_frames();
         $self->_check_tags('tags', $language);
         $self->_check_tags('people', $language);
 
@@ -289,6 +294,31 @@ sub _check_json {
     }
     elsif ($what =~ m/$DONT_PUBLISH/m) {
         croak "In JSON$where: $what";
+    }
+    return;
+}
+
+
+sub _check_frames {
+    my ($self) = @ARG;
+
+    ## no critic(ValuesAndExpressions::RequireInterpolationOfMetachars)
+    my $frame_xpath = _build_xpath('g[@inkscape:label="Rahmen"]', 'rect');
+    ## use critic
+    foreach my $f ($self->{xpath}->findnodes($frame_xpath)) {
+        my $style = $f->getAttribute('style');
+        if ($style =~ m{;stroke-width:([^;]+);}) {
+            my $width = $1;
+            if ($width < $FRAME_WIDTH - $FRAME_WIDTH_DEVIATION) {
+                croak "Frame too narrow ($width) in $self->{file}";
+            }
+            if ($width > $FRAME_WIDTH + $FRAME_WIDTH_DEVIATION) {
+                croak "Frame too wide ($width) in $self->{file}";
+            }
+        }
+        else {
+            croak "Cannot find width in $style from $self->{file}";
+        }
     }
     return;
 }
