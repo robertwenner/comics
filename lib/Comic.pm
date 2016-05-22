@@ -591,7 +591,7 @@ sub _do_export_html {
     # By default, use normal path with comics in comics/
     my $path = '../';
     # Adjust the path for backlog comics.
-    $path = '../../web/comics/' if ($self->_not_yet_published());
+    $path = '../../web/' if ($self->_not_yet_published());
     # Adjust the path for top-level index.html
     if ($self->{isLatestPublished}) {
         $path = '';
