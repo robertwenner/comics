@@ -197,3 +197,8 @@ sub fromComic : Tests {
     like($wrote, qr/bier-trinken\.png/m);
     like($wrote, qr/200 by 600/m);
 }
+
+
+sub html_special_as_is : Test {
+    is(Comic::_templatize("[%modified\t\t %]", ("modified" => "<b>")), "<b>");
+}

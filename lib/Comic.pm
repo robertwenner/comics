@@ -21,6 +21,7 @@ use JSON;
 use HTML::Entities;
 use Image::PNG;
 use Template;
+use SVG;
 
 
 use version; our $VERSION = qv('0.0.2');
@@ -127,6 +128,10 @@ my %text = (
     ccbutton => {
         'English' => 'cc.png',
         'Deutsch' => 'cc.png',
+    },
+    sizeMapTemplateFile => {
+        'English' => 'web/english/sizemap.templ',
+        'Deutsch' => 'web/deutsch/sizemap.templ',
     },
 );
 
@@ -886,6 +891,7 @@ sub _do_export_archive {
         $vars{'stylesheet'} = "${url}styles.css";
         $vars{'archive'} = "${url}$text{archivePage}{$language}";
         $vars{'ccbutton'} = "${url}$text{ccbutton}{$language}";
+        $vars{'sizemap'} = 'sizemap.html';
 
         my $t = _slurp($templates{$language});
         _write_file($page, _templatize($t, %vars));
@@ -951,6 +957,120 @@ in that language).
 sub counts_of_in {
     my ($what, $language) = @ARG;
     return $counts{$what}{$language};
+}
+
+
+=head2 size_map
+
+Writes an SVG size map of all comics for comparing sizes.
+
+Parameters:
+
+=over 4
+
+    =item B<@languages> for what languages.
+
+=back
+
+=cut
+
+sub size_map {
+    my (@languages) = @ARG;
+
+    my %aggregate;
+    foreach my $comic (@comics) {
+        foreach my $language (@languages) {
+            next unless ($comic->_is_for($language));
+            foreach my $dim (qw(height width)) {
+                if (!defined($aggregate{$language}{$dim}{'min'}) ||
+                    $aggregate{$language}{$dim}{'min'} > $comic->{$dim}) {
+                    $aggregate{$language}{$dim}{'min'} = $comic->{$dim};
+                }
+                if (!defined($aggregate{$language}{$dim}{'max'}) ||
+                    $aggregate{$language}{$dim}{'max'} < $comic->{$dim}) {
+                    $aggregate{$language}{$dim}{'max'} = $comic->{$dim};
+                }
+                $aggregate{$language}{$dim}{'avg'} += $comic->{$dim};
+                $aggregate{$language}{$dim}{'cnt'}++;
+            }
+        }
+    }
+
+    foreach my $language (@languages) {
+        foreach my $dim (qw(height width)) {
+            if (($aggregate{$language}{$dim}{'cnt'} || 0) == 0) {
+                $aggregate{$language}{$dim}{avg} = 'n/a';
+            }
+            else {
+                $aggregate{$language}{$dim}{avg} /= $aggregate{$language}{$dim}{'cnt'};
+            }
+        }
+    }
+
+    Readonly my $SCALE_BY => 0.3;
+    foreach my $language (@languages) {
+        my $svg = SVG->new(
+            width => $aggregate{$language}{width}{'max'} * $SCALE_BY,
+            height => $aggregate{$language}{height}{'max'} * $SCALE_BY,
+            -printerror => 1,
+            -raiseerror => 1);
+        foreach my $comic (@comics) {
+            my $color = 'green';
+            $color = 'blue' if ($comic->_not_yet_published());
+            $svg->rectangle(x => 0, y => 0,
+                width => $comic->{width} * $SCALE_BY,
+                height => $comic->{height} * $SCALE_BY,
+                id => basename("$comic->{file}"),
+                style => {
+                    'fill-opacity' => 0,
+                    'stroke-width' => '3',
+                    'stroke' => "$color",
+                });
+        }
+
+        my %vars;
+        foreach my $agg (qw(min max avg)) {
+            foreach my $dim (qw(width height)) {
+                $vars{"$agg$dim"} = $aggregate{$language}{$dim}{$agg};
+            }
+        }
+        $vars{'height'} = $aggregate{$language}{height}{'max'} * $SCALE_BY;
+        $vars{'width'} = $aggregate{$language}{width}{'max'} * $SCALE_BY;
+        $vars{'logo'} = "../web/$text{logo}{$language}";
+        $vars{'imprint'} = "../web/$text{imprintPage}{$language}";
+        $vars{'ccbutton'} = "../web/$text{ccbutton}{$language}";
+        $vars{'favicon'} = '../web/favicon.png';
+        $vars{'stylesheet'} = '../web/styles.css';
+        $vars{'archive'} = '../../web/archive.html';
+        $vars{'backlog'} = 'backlog.html';
+        $vars{'comics_by_width'} = [sort _by_width @comics];
+        $vars{'comics_by_height'} = [sort _by_height @comics];
+        $vars{'notFor'} = \&_not_for;
+
+        $vars{svg} = $svg->xmlify();
+        # Remove XML declaration and doctype; Firefox marks them red in the source
+        # view of the page.
+        $vars{svg} =~ s/<\?xml[^>]+>\n//;
+        $vars{svg} =~ s/<!DOCTYPE[^>]+>\n//;
+
+        _write_file('generated/' . lc($language) . '/tmp/sizemap.html',
+            _templatize(_slurp($text{sizeMapTemplateFile}{$language}), %vars));
+    }
+    return;
+}
+
+
+## no critic(Subroutines::ProhibitSubroutinePrototypes, Subroutines::RequireArgUnpacking)
+sub _by_width($$) {
+## use critic
+    return $_[0]->{width} <=> $_[1]->{width};
+}
+
+
+## no critic(Subroutines::ProhibitSubroutinePrototypes, Subroutines::RequireArgUnpacking)
+sub _by_height($$) {
+## use critic
+    return $_[0]->{height} <=> $_[1]->{height};
 }
 
 
