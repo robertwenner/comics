@@ -1041,7 +1041,7 @@ sub size_map {
         $vars{'ccbutton'} = "../web/$text{ccbutton}{$language}";
         $vars{'favicon'} = '../web/favicon.png';
         $vars{'stylesheet'} = '../web/styles.css';
-        $vars{'archive'} = '../../web/archive.html';
+        $vars{'archive'} = "../web/$text{archivePage}{$language}";
         $vars{'backlog'} = 'backlog.html';
         $vars{'comics_by_width'} = [sort _by_width @comics];
         $vars{'comics_by_height'} = [sort _by_height @comics];
