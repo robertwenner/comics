@@ -6,14 +6,14 @@ use base 'Test::Class';
 use Test::More;
 use Test::Deep;
 use DateTime;
+use File::Basename;
 use Comic;
 
 __PACKAGE__->runtests() unless caller;
 
 
 my $today;
-my $wroteArchive;
-my $wroteBacklog;
+my %wrote;
 my %archives;
 my %backlogs;
 
@@ -21,8 +21,6 @@ my %backlogs;
 sub set_up : Test(setup) {
     Comic::reset_statics();
     $today = DateTime->now;
-    $wroteArchive = "";
-    $wroteBacklog = "";
     %archives = ("Deutsch" => "archive");
     %backlogs = ("Deutsch" => "backlog");
 }
@@ -92,12 +90,7 @@ TEMPL
     };
     *Comic::_write_file = sub {
         my ($file, $contents) = @_;
-        if ($file =~ m{archiv}) {
-            $wroteArchive = $contents;
-        }
-        else {
-            $wroteBacklog = $contents;
-        }
+        $wrote{basename($file)} = $contents;
     };
 
     return new Comic('png');
@@ -107,7 +100,7 @@ TEMPL
 sub one_comic_archive : Tests {
     makeComic('Bier', '2016-01-01', 'Deutsch');
     Comic::export_archive(\%archives, \%backlogs);
-    like($wroteArchive, qr{<li><a href="comics/bier.html">Bier</a></li>}m);
+    like($wrote{'archiv.html'}, qr{<li><a href="comics/bier.html">Bier</a></li>}m);
 }
 
 
@@ -116,7 +109,7 @@ sub some_comics_archive : Tests {
     makeComic("zwei", "2016-01-02", 'Deutsch');
     makeComic("drei", "2016-01-03", 'Deutsch');
     Comic::export_archive(\%archives, \%backlogs);
-    like($wroteArchive, qr{
+    like($wrote{'archiv.html'}, qr{
         <li><a\shref="comics/eins.html">eins</a></li>\s+
         <li><a\shref="comics/zwei.html">zwei</a></li>\s+
         <li><a\shref="comics/drei.html">drei</a></li>\s+
@@ -129,11 +122,11 @@ sub ignores_for_archive_if_not_that_language : Tests {
     makeComic("two", "2016-01-02", 'English');
     makeComic("drei", "2016-01-03", 'Deutsch');
     Comic::export_archive(\%archives, \%backlogs);
-    like($wroteArchive, qr{
+    like($wrote{'archiv.html'}, qr{
         <li><a\shref="comics/eins.html">eins</a></li>\s+
         <li><a\shref="comics/drei.html">drei</a></li>\s+
         }mx);
-    ok($wroteArchive !~ m/two/);
+    ok($wrote{'archiv.html'} !~ m/two/);
 }
 
 
@@ -143,7 +136,7 @@ sub ignores_unpublished_for_archive : Tests {
     makeComic('zwei', "2016-05-06", 'Deutsch');
     makeComic('drei', "2016-06-01", 'Deutsch');
     Comic::export_archive(\%archives, \%backlogs);
-    like($wroteArchive, qr{
+    like($wrote{'archiv.html'}, qr{
         <li><a\shref="comics/eins.html">eins</a></li>\s+
         <li><a\shref="comics/zwei.html">zwei</a></li>\s+
         }mx);
@@ -152,15 +145,15 @@ sub ignores_unpublished_for_archive : Tests {
 
 sub no_comics : Tests {
     Comic::export_archive(\%archives, \%backlogs);
-    like($wroteArchive, qr{No comics in archive}m);
-    like($wroteBacklog, qr{No comics in backlog}m);
+    like($wrote{'archiv.html'}, qr{No comics in archive}m);
+    like($wrote{'backlog.html'}, qr{No comics in backlog}m);
 }
 
 
 sub backlog_future_date : Tests {
     makeComic('eins', "3016-01-01", 'Deutsch');
     Comic::export_archive(\%archives, \%backlogs);
-    like($wroteBacklog, qr{
+    like($wrote{'backlog.html'}, qr{
         <li><a\shref="backlog/eins.html">eins</a>\s\(3016-01-01\)</li>\s+
         }mx);
 }
@@ -169,7 +162,7 @@ sub backlog_future_date : Tests {
 sub backlog_no_date : Tests {
     makeComic('eins', '', 'Deutsch');
     Comic::export_archive(\%archives, \%backlogs);
-    like($wroteBacklog, qr{
+    like($wrote{'backlog.html'}, qr{
         <li><a\shref="backlog/eins.html">eins</a>\s\(\)</li>\s+
         }mx);
 }
@@ -181,5 +174,5 @@ sub last_modified_from_archive_language : Test {
     makeComic('zwei', "2016-01-02", 'Deutsch');
     makeComic('drei', "2016-01-03", 'English');
     Comic::export_archive(\%archives, \%backlogs);
-    like($wroteArchive, qr{2016-01-02}m);
+    like($wrote{'archiv.html'}, qr{2016-01-02}m);
 }
