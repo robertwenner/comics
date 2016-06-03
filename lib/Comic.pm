@@ -601,6 +601,8 @@ sub _do_export_html {
     if ($self->{isLatestPublished}) {
         $path = '';
         $vars{png_file} = 'comics/' . basename($vars{png_file});
+        $vars{'first'} = 'comics/' . $self->{'first'}{$language};
+        $vars{'prev'} = 'comics/' . $self->{'prev'}{$language};
     }
     $vars{'archive'} = "${path}$text{archivePage}{$language}";
     $vars{'imprint'} = "${path}$text{imprintPage}{$language}";

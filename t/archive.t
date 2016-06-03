@@ -13,6 +13,7 @@ __PACKAGE__->runtests() unless caller;
 
 
 my $today;
+my %files;
 my %wrote;
 my %archives;
 my %backlogs;
@@ -29,7 +30,6 @@ sub set_up : Test(setup) {
 sub makeComic {
     my ($title, $pubDate, $language) = @_;
 
-    my %files;
     $files{"png"} = <<XML;
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
@@ -93,7 +93,10 @@ TEMPL
         $wrote{basename($file)} = $contents;
     };
 
-    return new Comic('png');
+    my $comic = new Comic('png');
+    $comic->{'prev'}{'Deutsch'} = "prev.html";
+    $comic->{'first'}{'Deutsch'} = "first.html";
+    return $comic;
 }
 
 
@@ -165,6 +168,19 @@ sub backlog_no_date : Tests {
     like($wrote{'backlog.html'}, qr{
         <li><a\shref="backlog/eins.html">eins</a>\s\(\)</li>\s+
         }mx);
+}
+
+
+sub index_html : Tests {
+    $files{"web/deutsch/comic-page.templ"} = <<TEMPL;
+        <li><a href="[% first %]" title="zum ersten Biercomic">&lt;&lt; Erstes</a></li>
+TEMPL
+    my $c = makeComic('zwei', '2016-01-02', 'Deutsch');
+    $c->{'first'}{'Deutsch'} = 'eins.html';
+    $c->{'prev'}{'Deutsch'} = 'eins.html';
+    $c->{isLatestPublished} = 1;
+    my $wrote = $c->_do_export_html('Deutsch');
+    like($wrote, qr{href="comics/eins.html"}m);
 }
 
 
