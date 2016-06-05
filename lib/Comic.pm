@@ -784,16 +784,14 @@ sub _write_sitemap_xml_fragment {
 
     my $html = $self->_make_url($language, 'html');
     my $path = "https://$text{domain}{$language}";
-    my $png_file = basename($self->{pngFile}{$language});
-    my $title = $self->{meta_data}->{title}{$language};
 
     my $fragment = $self->_make_file_name($language, 'tmp/sitemap', 'xml');
     _write_file($fragment, <<"XML");
 <url>
 <loc>$html</loc>
 <image:image>
-<image:loc>${path}/comics/$png_file</image:loc>
-<image:title>$title</image:title>
+<image:loc>${path}/comics/$self->{pngFile}{$language}</image:loc>
+<image:title>$self->{meta_data}->{title}{$language}</image:title>
 <image:license>$path/$text{imprintPage}{$language}</image:license>
 </image:image>
 <lastmod>$self->{modified}</lastmod>
