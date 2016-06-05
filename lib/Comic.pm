@@ -1042,7 +1042,7 @@ sub size_map {
         my %vars;
         foreach my $agg (qw(min max avg)) {
             foreach my $dim (qw(width height)) {
-                $vars{"$agg$dim"} = $aggregate{$language}{$dim}{$agg};
+                $vars{"$agg$dim"} = $aggregate{$language}{$dim}{$agg} || 'n/a';
             }
         }
         $vars{'height'} = $aggregate{$language}{height}{'max'} * $SCALE_BY;
