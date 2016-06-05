@@ -410,10 +410,21 @@ sub _svg_to_png {
 
     my $png_file = $self->_make_file_name($language, $to, 'png');
     $self->{pngFile}{$language} = basename($png_file);
-    my $cmd = "inkscape --without-gui --file=$svg_file";
-    $cmd .= ' --g-fatal-warnings';
-    $cmd .= " --export-png=$png_file --export-area-drawing --export-background=#ffffff";
-    system($cmd) && croak("Could not run $cmd: $OS_ERROR");
+
+    my $need_to_export = 1;
+    if (-r $png_file) {
+        my $svg_mod = _mtime($svg_file);
+        my $png_mod = _mtime($png_file);
+        $need_to_export = $svg_mod < $png_mod;
+    }
+    if ($need_to_export) {
+        my $export_cmd = "inkscape --without-gui --file=$svg_file" .
+            ' --g-fatal-warnings' .
+            " --export-png=$png_file --export-area-drawing --export-background=#ffffff";
+        system($export_cmd) && croak("Could not export: $export_cmd: $OS_ERROR");
+        my $shrink_cmd = "optipng --quiet $png_file";
+        system($shrink_cmd) && croak("Could not shrink: $shrink_cmd: $OS_ERROR");
+    }
 
     my $png = Image::PNG->new();
     $png->read($png_file);
