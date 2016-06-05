@@ -19,7 +19,7 @@ use XML::LibXML;
 use XML::LibXML::XPathContext;
 use JSON;
 use HTML::Entities;
-use Image::PNG;
+use Image::ExifTool qw(:Public);
 use Template;
 use SVG;
 
@@ -445,10 +445,11 @@ sub _svg_to_png {
 sub _get_png_info {
     my ($self, $png_file) = @_;
 
-    my $png = Image::PNG->new();
-    $png->read($png_file);
-    $self->{height} = $png->height;
-    $self->{width} = $png->width;
+    my $tool = Image::ExifTool->new();
+    my $info = $tool->ImageInfo($png_file);
+
+    $self->{height} = $$info{'ImageHeight'};
+    $self->{width} = $$info{'ImageWidth'};
     return;
 }
 
