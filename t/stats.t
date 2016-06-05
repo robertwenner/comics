@@ -49,13 +49,19 @@ XML
     local *Comic::_mtime = sub {
         return 0;
     };
+    local *Comic::_exists = sub {
+        return 1;
+    };
     return new Comic('whatever');
 }
 
 
 sub comic_counts_per_language : Tests {
     local *Comic::_svg_to_png = sub {
-        # ignore...
+        # ignore
+    };
+    local *Comic::_get_png_info = sub {
+        # ignore
     };
     foreach my $i (1..3) {
         makeComic("2016-01-$i")->export_png("English" => "en", "Deutsch" => "de");

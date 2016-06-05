@@ -235,18 +235,42 @@ sub export_png {
 
         $counts{'comics'}{$language}++;
 
-        $self->_check_title($language);
-        $self->_check_dont_publish($language);
-        $self->_check_frames();
-        $self->_check_tags('tags', $language);
-        $self->_check_tags('people', $language);
-
-        $self->_flip_language_layers($language, @languages);
         my $to = $self->_not_yet_published() ? 'tmp/backlog' : 'web/comics';
-        $self->_svg_to_png($to, $language, $self->_write_temp_svg_file());
+        my $png_file = $self->_make_file_name($language, $to, 'png');
+        $self->{pngFile}{$language} = basename($png_file);
+
+        unless (_up_to_date($self->{file}, $png_file)) {
+            $self->_check_title($language);
+            $self->_check_dont_publish($language);
+            $self->_check_frames();
+            $self->_check_tags('tags', $language);
+            $self->_check_tags('people', $language);
+
+            $self->_flip_language_layers($language, @languages);
+            $self->_svg_to_png($to, $self->_write_temp_svg_file(), $png_file);
+        }
+        $self->_get_png_info($png_file);
     }
     $self->_count_tags();
     return;
+}
+
+
+sub _up_to_date {
+    my ($svg_file, $png_file) = @_;
+
+    my $up_to_date = 0;
+    if (_exists($png_file)) {
+        my $svg_mod = _mtime($svg_file);
+        my $png_mod = _mtime($png_file);
+        $up_to_date = $png_mod > $svg_mod;
+    }
+    return $up_to_date;
+}
+
+
+sub _exists {
+    return -r shift;
 }
 
 
@@ -406,25 +430,20 @@ sub _write_temp_svg_file {
 
 
 sub _svg_to_png {
-    my ($self, $to, $language, $svg_file) = @ARG;
+    my ($self, $to, $svg_file, $png_file) = @ARG;
 
-    my $png_file = $self->_make_file_name($language, $to, 'png');
-    $self->{pngFile}{$language} = basename($png_file);
+    my $export_cmd = "inkscape --without-gui --file=$svg_file" .
+        ' --g-fatal-warnings' .
+        " --export-png=$png_file --export-area-drawing --export-background=#ffffff";
+    system($export_cmd) && croak("Could not export: $export_cmd: $OS_ERROR");
+    my $shrink_cmd = "optipng --quiet $png_file";
+    system($shrink_cmd) && croak("Could not shrink: $shrink_cmd: $OS_ERROR");
+    return;
+}
 
-    my $need_to_export = 1;
-    if (-r $png_file) {
-        my $svg_mod = _mtime($svg_file);
-        my $png_mod = _mtime($png_file);
-        $need_to_export = $svg_mod < $png_mod;
-    }
-    if ($need_to_export) {
-        my $export_cmd = "inkscape --without-gui --file=$svg_file" .
-            ' --g-fatal-warnings' .
-            " --export-png=$png_file --export-area-drawing --export-background=#ffffff";
-        system($export_cmd) && croak("Could not export: $export_cmd: $OS_ERROR");
-        my $shrink_cmd = "optipng --quiet $png_file";
-        system($shrink_cmd) && croak("Could not shrink: $shrink_cmd: $OS_ERROR");
-    }
+
+sub _get_png_info {
+    my ($self, $png_file) = @_;
 
     my $png = Image::PNG->new();
     $png->read($png_file);
@@ -627,10 +646,12 @@ sub _do_export_html {
         $vars{transcript} .= '<p>' . encode_entities($t) . "</p>\n";
     }
 
-    $vars{description} = encode_entities(
-        $text{keywords}{$language} . ', ' .
-        join ', ', @{$self->{meta_data}->{tags}->{$language}});
-
+    my $tags = '';
+    foreach my $t (@{$self->{meta_data}->{tags}->{$language}}) {
+        $tags .= ', ' unless ($tags eq '');
+        $tags .= $t;
+    }
+    $vars{description} = encode_entities($text{keywords}{$language} . ', ' . $tags);
     return _templatize(_slurp($text{comicTemplateFile}{$language}), %vars)
         or croak "Error writing HTML: $OS_ERROR";
 }
