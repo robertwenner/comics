@@ -448,8 +448,8 @@ sub _get_png_info {
     my $tool = Image::ExifTool->new();
     my $info = $tool->ImageInfo($png_file);
 
-    $self->{height} = $$info{'ImageHeight'};
-    $self->{width} = $$info{'ImageWidth'};
+    $self->{height} = ${$info}{'ImageHeight'};
+    $self->{width} = ${$info}{'ImageWidth'};
     return;
 }
 
