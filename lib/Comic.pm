@@ -247,7 +247,7 @@ sub export_png {
             $self->_check_tags('people', $language);
 
             $self->_flip_language_layers($language, @languages);
-            $self->_svg_to_png($to, $self->_write_temp_svg_file(), $png_file);
+            $self->_svg_to_png($language, $self->_write_temp_svg_file(), $png_file);
         }
         $self->_get_png_info($png_file);
     }
@@ -430,14 +430,42 @@ sub _write_temp_svg_file {
 
 
 sub _svg_to_png {
-    my ($self, $to, $svg_file, $png_file) = @ARG;
+    my ($self, $language, $svg_file, $png_file) = @ARG;
 
     my $export_cmd = "inkscape --without-gui --file=$svg_file" .
         ' --g-fatal-warnings' .
         " --export-png=$png_file --export-area-drawing --export-background=#ffffff";
     system($export_cmd) && croak("Could not export: $export_cmd: $OS_ERROR");
+
+    my $tool = Image::ExifTool->new();
+    _set_png_meta($tool, 'Title', $self->{meta}->{title}->{$language});
+    _set_png_meta($tool, 'Artist', 'Robert Wenner');
+    my $transcript = '';
+    foreach my $t ($self->_texts_for($language)) {
+        $transcript .= ' ' unless ($transcript eq '');
+        $transcript .=  $t;
+    }
+    _set_png_meta($tool, 'Description', $transcript);
+    _set_png_meta($tool, 'CreationTime', $self->{modified});
+    _set_png_meta($tool, 'Copyright', 'CC BY-NC-SA 4.0');
+    _set_png_meta($tool, 'URL', $self->_make_url($language, 'png'));
+    my $rc = $tool->WriteInfo($png_file);
+    if ($rc != 1) {
+        croak("$svg_file: cannot write info: " . tool->GetValue('Error'));
+    }
+
     my $shrink_cmd = "optipng --quiet $png_file";
     system($shrink_cmd) && croak("Could not shrink: $shrink_cmd: $OS_ERROR");
+
+    return;
+}
+
+
+sub _set_png_meta {
+    my ($tool, $name, $value) = @ARG;
+
+    my ($count_set, $error) = $tool->SetNewValue($name, $value);
+    croak("Cannot set $name: $error") if ($error);
     return;
 }
 
