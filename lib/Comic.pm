@@ -832,6 +832,8 @@ sub _templatize {
 sub _write_sitemap_xml_fragment {
     my ($self, $language) = @ARG;
 
+    return if ($self->_not_for($language) || $self->_not_yet_published());
+
     my $html = $self->_make_url($language, 'html');
     my $path = "https://$text{domain}{$language}";
 
