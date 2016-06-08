@@ -52,6 +52,9 @@ XML
     local *Comic::_exists = sub {
         return 1;
     };
+    *File::Path::make_path = sub {
+        return 1;
+    };
     return new Comic('whatever');
 }
 
