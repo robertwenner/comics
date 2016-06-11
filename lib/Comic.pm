@@ -669,6 +669,7 @@ sub _do_export_html {
     $vars{'stylesheet'} = "${path}styles.css";
     $vars{'logo'} = "${path}$text{logo}{$language}";
     $vars{'ccbutton'} = "${path}$text{ccbutton}{$language}";
+    $vars{'contrib'} = $self->{meta_data}->{contrib} || 0;
 
     $vars{transcript} = '';
     foreach my $t ($self->_texts_for($language)) {

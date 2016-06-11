@@ -23,8 +23,9 @@ sub set_up : Test(setup) {
 
 
 sub make_comic {
-    my ($language, $title, $published) = @_;
+    my ($language, $title, $published, $contributor) = @_;
 
+    my $contrib = $contributor || "";
     local *Comic::_slurp = sub {
         return <<XML;
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -47,6 +48,7 @@ sub make_comic {
 &quot;published&quot;: {
     &quot;when&quot;: &quot;$published&quot;
 }
+$contrib
 }</dc:description>
       </cc:Work>
     </rdf:RDF>
@@ -212,4 +214,109 @@ sub separate_navs_for_archive_and_backlog : Tests {
     is($b2->{'prev'}{'Deutsch'}, "back1.html", "back2 prev should be back1");
     is($b2->{'first'}{'Deutsch'}, "back1.html", "back2 first should be back1");
     is($b2->{'last'}{'Deutsch'}, 0, "back2 should not have a last");
+}
+
+
+sub write_templ_en {
+    my ($comic) = @_;
+    local *Comic::_slurp = sub {
+        return <<TEMPL;
+[% IF contrib %]
+    <p style="contributors">With help from
+        [% FOREACH c IN contrib %]
+            [% c != contrib.first && c == contrib.last ? ' and ' : '' %]
+            [% c %][% contrib.defined(2) ? ', ' : '' %]
+        [% END %]
+    </p>
+[% END %]
+TEMPL
+    };
+    return $comic->_do_export_html('Deutsch');
+}
+
+
+sub contributor_credit_en_none : Tests {
+    my $comic = make_comic('Deutsch', 'Beer flavored', '2016-01-01');
+    like(write_templ_en($comic), qr{\A\s*\z}xim);
+}
+
+
+sub contributor_credit_en_empty : Tests {
+    my $comic = make_comic('Deutsch', 'Beer flavored', '2016-01-01',
+        ', &quot;contrib:&quot;: []');
+    like(write_templ_en($comic), qr{\A\s*\z}xim);
+}
+
+
+sub contributor_credit_en_one : Tests {
+    my $comic = make_comic('Deutsch', 'Beer flavored', '2016-01-01',
+        ', &quot;contrib&quot;: [ &quot;Mark Dilger&quot; ]');
+    like(write_templ_en($comic), qr{With\s+help\s+from\s+Mark\s+Dilger}xim);
+}
+
+
+sub contributor_credit_en_two : Tests {
+    my $comic = make_comic('Deutsch', 'Beer flavored', '2016-01-01',
+        ', &quot;contrib&quot;: [ &quot;Mark Dilger&quot;, &quot;Mike Karr&quot;]');
+    like(write_templ_en($comic),
+        qr{With\s+help\s+from\s+Mark\s+Dilger\s+and\s+Mike\s+Karr}xim);
+}
+
+
+sub contributor_credit_en_many_en : Tests {
+    my $comic = make_comic('Deutsch', 'Beer flavored', '2016-01-01',
+        ', &quot;contrib&quot;: [ &quot;Mark Dilger&quot;, &quot;Mike Karr&quot;, &quot;My Self&quot;]');
+    like(write_templ_en($comic),
+        qr{With\s+help\s+from\s+Mark\s+Dilger,\s+Mike\s+Karr,\s+and\s+My\s+Self}xim);
+}
+
+
+sub write_templ_de {
+    my ($comic) = @_;
+    local *Comic::_slurp = sub {
+        return <<TEMPL;
+[% IF contrib %]
+    <p style="contributors">Mit Ideen von
+[% FOREACH c IN contrib %][% c != contrib.first && c == contrib.last ? ' und ' : '' %][% c != contrib.first && c != contrib.last ? ', ' : '' %][% c %][% END %]
+    </p>
+[% END %]
+TEMPL
+    };
+    return $comic->_do_export_html('Deutsch');
+}
+
+
+sub contributor_credit_de_none : Test {
+    my $comic = make_comic('Deutsch', 'Beer flavored', '2016-01-01');
+    like(write_templ_de($comic), qr{\A\s*\z}xim);
+}
+
+
+sub contributor_credit_de_empty : Tests {
+    my $comic = make_comic('Deutsch', 'Beer flavored', '2016-01-01',
+        ', &quot;contrib:&quot;: []');
+    like(write_templ_en($comic), qr{\A\s*\z}xim);
+}
+
+
+sub contributor_credit_de_one : Test {
+    my $comic = make_comic('Deutsch', 'Beer flavored', '2016-01-01',
+        ', &quot;contrib&quot;: [ &quot;Mark Dilger&quot; ]');
+    like(write_templ_de($comic), qr{Mit\s+Ideen\s+von\s+Mark\s+Dilger}xim);
+}
+
+
+sub contributor_credit_de_two : Test {
+    my $comic = make_comic('Deutsch', 'Beer flavored', '2016-01-01',
+        ', &quot;contrib&quot;: [ &quot;Mark Dilger&quot;, &quot;Mike Karr&quot;]');
+    like(write_templ_de($comic),
+        qr{Mit\s+Ideen\s+von\s+Mark\s+Dilger\s+und\s+Mike\s+Karr}xim);
+}
+
+
+sub contributor_credit_de_many : Test {
+    my $comic = make_comic('Deutsch', 'Beer flavored', '2016-01-01',
+        ', &quot;contrib&quot;: [ &quot;Mark Dilger&quot;, &quot;Mike Karr&quot;, &quot;My Self&quot;]');
+    like(write_templ_de($comic),
+        qr{Mit\s+Ideen\s+von\s+Mark\s+Dilger,\s+Mike\s+Karr\s+und\s+My\s+Self}xim);
 }
