@@ -49,6 +49,7 @@ description: [% description %]
 [% title %]
 [% png_file %] [% height %] by [% width %]
 [% transcript %]
+[% url %]
 TEMPLATE
         }
     };
@@ -196,6 +197,7 @@ sub fromComic : Tests {
     like($wrote, qr/1970-01-01/m);
     like($wrote, qr/bier-trinken\.png/m);
     like($wrote, qr/200 by 600/m);
+    like($wrote, qr{https://biercomics.de/comics/bier-trinken.html}m);
 }
 
 

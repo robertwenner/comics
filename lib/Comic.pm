@@ -113,6 +113,10 @@ my %text = (
         'English' => 'archive.html',
         'Deutsch' => 'archiv.html',
     },
+    archiveTitle => {
+        'English' => 'The beercomics.com archive',
+        'Deutsch' => 'Das Biercomics-Archiv',
+    },
     backlogPage => {
         'English' => 'backlog.html',
         'Deutsch' => 'backlog.html',
@@ -120,6 +124,10 @@ my %text = (
     imprintPage => {
         'English' => 'imprint.html',
         'Deutsch' => 'impressum.html',
+    },
+    imprintPageAbsolute => {
+        'English' => 'https://beercomics.com/imprint.html',
+        'Deutsch' => 'https://biercomics.de/impressum.html',
     },
     logo => {
         'English' => 'beercomics-logo.png',
@@ -647,6 +655,7 @@ sub _do_export_html {
     $vars{modified} = $self->{modified};
     $vars{height} = $self->{height};
     $vars{width} = $self->{width};
+    $vars{'url'} = $self->_make_url($language, 'html');
     $vars{'first'} = $self->{'first'}{$language};
     $vars{'prev'} = $self->{'prev'}{$language};
     $vars{'next'} = $self->{'next'}{$language};
@@ -665,6 +674,7 @@ sub _do_export_html {
     }
     $vars{'archive'} = "${path}$text{archivePage}{$language}";
     $vars{'imprint'} = "${path}$text{imprintPage}{$language}";
+    $vars{'imprintCC'} = "$text{imprintPageAbsolute}{$language}";
     $vars{'favicon'} = "${path}favicon.png";
     $vars{'stylesheet'} = "${path}styles.css";
     $vars{'logo'} = "${path}$text{logo}{$language}";
@@ -946,10 +956,13 @@ sub _do_export_archive {
         }
 
         my %vars;
+        $vars{'title'} = $text{archiveTitle}{$language};
+        $vars{'url'} = $text{archivePage}{$language};
         $vars{'comics'} = \@filtered;
         $vars{'modified'} = $filtered[-1]->{modified};
         $vars{'notFor'} = \&_not_for;
         $vars{'imprint'} = "${url}$text{imprintPage}{$language}";
+        $vars{'imprintCC'} = "$text{imprintPageAbsolute}{$language}";
         $vars{'logo'} = "${url}$text{logo}{$language}";
         $vars{'favicon'} = "${url}favicon.png";
         $vars{'stylesheet'} = "${url}styles.css";
@@ -1098,10 +1111,13 @@ sub size_map {
                 $vars{"$agg$dim"} = $aggregate{$language}{$dim}{$agg} || 'n/a';
             }
         }
+        $vars{'title'} = 'Sizemap';
+        $vars{'url'} = 'backlog.html';
         $vars{'height'} = $aggregate{$language}{height}{'max'} * $SCALE_BY;
         $vars{'width'} = $aggregate{$language}{width}{'max'} * $SCALE_BY;
         $vars{'logo'} = "../web/$text{logo}{$language}";
         $vars{'imprint'} = "../web/$text{imprintPage}{$language}";
+        $vars{'imprintCC'} = "$text{imprintPageAbsolute}{$language}";
         $vars{'ccbutton'} = "../web/$text{ccbutton}{$language}";
         $vars{'favicon'} = '../web/favicon.png';
         $vars{'stylesheet'} = '../web/styles.css';
