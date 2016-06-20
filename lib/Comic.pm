@@ -253,6 +253,7 @@ sub export_png {
             $self->_check_frames();
             $self->_check_tags('tags', $language);
             $self->_check_tags('people', $language);
+            $self->_check_transcript($language);
 
             $self->_flip_language_layers($language, @languages);
             $self->_svg_to_png($language, $self->_write_temp_svg_file(), $png_file);
@@ -386,6 +387,40 @@ sub _count_tags {
         }
     }
     return;
+}
+
+
+sub _check_transcript {
+    my ($self, $language) = @_;
+
+    my $previous = '';
+    ## no critic(ValuesAndExpressions::RequireInterpolationOfMetachars)
+    my $all_layers = _build_xpath('g[@inkscape:groupmode="layer"]', 'text');
+    ## use critic
+    foreach my $layer ($self->{xpath}->findnodes($all_layers)) {
+        my $this = $layer->textContent();
+        $this =~ s/^\s*//;
+        $this =~ s/\s*$//;
+        if (_both_names($previous, $this)) {
+            croak "'$this' after '$previous'";
+        }
+        $previous = $this;
+    }
+    return;
+}
+
+
+sub _both_names {
+    my ($a, $b) = @_;
+    if ($a =~ m/:$/ && $b =~ m/:$/) {
+        return 1;
+    }
+    $a =~ s/:$//;
+    $b =~ s/:$//;
+    if (lc $a eq lc $b && $a ne '') {
+        return 1;
+    }
+    return 0;
 }
 
 
