@@ -394,17 +394,11 @@ sub _check_transcript {
     my ($self, $language) = @_;
 
     my $previous = '';
-    ## no critic(ValuesAndExpressions::RequireInterpolationOfMetachars)
-    my $all_layers = _build_xpath('g[@inkscape:groupmode="layer"]', 'text');
-    ## use critic
-    foreach my $layer ($self->{xpath}->findnodes($all_layers)) {
-        my $this = $layer->textContent();
-        $this =~ s/^\s*//;
-        $this =~ s/\s*$//;
-        if (_both_names($previous, $this)) {
-            croak "'$this' after '$previous'";
+    foreach my $t ($self->_texts_for($language)) {
+        if (_both_names($previous, $t)) {
+            croak "$language: '$t' after '$previous'";
         }
-        $previous = $this;
+        $previous = $t;
     }
     return;
 }
