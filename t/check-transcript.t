@@ -82,6 +82,15 @@ FOOT
 # Do all meta tags need to have trailing colons? Only speaker markers? What
 # else would be there?
 
+sub includes_file_name() : Test {
+    my $comic = make_comic('MetaDeutsch', 'Paul:', 'Paul');
+    eval {
+        $comic->_check_transcript('Deutsch');
+    };
+    like($@, qr{\bwhatever\b});
+}
+
+
 sub includes_language() : Test {
     my $comic = make_comic('MetaDeutsch', 'Max:', 'Max:');
     eval {
@@ -96,7 +105,7 @@ sub same_name_no_content() : Test {
     eval {
         $comic->_check_transcript('Deutsch');
     };
-    like($@, qr{'Max:' after 'Max:'}i);
+    like($@, qr{\[Max:\]\[Max:\]}i);
 }
 
 
@@ -105,7 +114,7 @@ sub different_names_no_content() : Test {
     eval {
         $comic->_check_transcript('Deutsch');
     };
-    like($@, qr{'Paul:' after 'Max:'}i);
+    like($@, qr{\[Max:\]\[Paul:\]}i);
 }
 
 
@@ -121,5 +130,14 @@ sub same_name_colon_missing() : Test {
     eval {
         $comic->_check_transcript('Deutsch');
     };
-    like($@, qr{'Paul' after 'Paul:'}i);
+    like($@, qr{\[Paul:\]\[Paul\]}i);
+}
+
+
+sub full_context() : Test {
+    my $comic = make_comic('MetaDeutsch', 'one', 'two', 'three', 'Paul:', 'Paul:', 'ignore');
+    eval {
+        $comic->_check_transcript('Deutsch');
+    };
+    like($@, qr{\[one\]\[two\]\[three\]\[Paul:\]\[Paul:\]}i);
 }

@@ -392,10 +392,12 @@ sub _count_tags {
 sub _check_transcript {
     my ($self, $language) = @_;
 
+    my $trace = '';
     my $previous = '';
     foreach my $t ($self->_texts_for($language)) {
+        $trace .= "[$t]";
         if (_both_names($previous, $t)) {
-            croak "$self->{file} in $language: '$t' after '$previous'";
+            croak "$self->{file}: transcript mixed up in $language: $trace";
         }
         $previous = $t;
     }
