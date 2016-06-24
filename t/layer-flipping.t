@@ -144,3 +144,16 @@ sub ignoresUnknownLayerWithEmbeddedLanguageName : Tests {
     $comic->_flip_language_layers("Deutsch", ("Deutsch", "English"));
     assert_visible(qw(Deutsch Rahmen Figuren Hintergrund));
 }
+
+
+sub keeps_background_opacity : Tests {
+    setup('<g inkscape:groupmode="layer" id="layer18" inkscape:label="HintergrundDeutsch" style="display:inline;opacity:0.35"/>');
+    $comic->_flip_language_layers("English", ("Deutsch", "English"));
+    assert_visible(qw(English Rahmen Figuren Hintergrund));
+
+    my $xpath = XML::LibXML::XPathContext->new($comic->{dom});
+    $xpath->registerNs($Comic::DEFAULT_NAMESPACE, 'http://www.w3.org/2000/svg');
+    my $theLayer = Comic::_build_xpath('g[@inkscape:label="HintergrundDeutsch"]');
+    my $style = ($comic->{xpath}->findnodes($theLayer))[0]->{style};
+    is($style, 'display:none;opacity:0.35');
+}

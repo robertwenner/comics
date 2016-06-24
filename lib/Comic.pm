@@ -431,12 +431,12 @@ sub _flip_language_layers {
         foreach my $other_lang (@languages) {
             # Turn off all meta layers and all other languages
             if ($label =~ m/$other_lang$/ || $label =~ m/^Meta/) {
-                $layer->{'style'} = 'display:none';
+                $layer->{'style'} =~ s{\bdisplay:inline\b}{display:none};
             }
         }
         # Make sure the right language layer is visible
         if ($label =~ m/$language$/ && $label !~ m/Meta/) {
-            $layer->{'style'} = 'display:inline';
+            $layer->{'style'} =~ s{\bdisplay:none\b}{display:inline};
             $had_lang = 1;
         }
     }
