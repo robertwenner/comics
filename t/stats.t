@@ -66,6 +66,9 @@ sub comic_counts_per_language : Tests {
     local *Comic::_get_png_info = sub {
         # ignore
     };
+    local *Comic::_write_temp_svg_file = sub {
+        # ignore
+    };
     foreach my $i (1..3) {
         makeComic("2016-01-$i")->export_png("English" => "en", "Deutsch" => "de");
     }

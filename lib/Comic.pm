@@ -12,7 +12,6 @@ use Carp;
 use autodie;
 use DateTime;
 use File::Path qw(make_path);
-use File::Temp qw/tempfile/;
 use File::Basename;
 use open ':std', ':encoding(UTF-8)'; # to handle e.g., umlauts correctly
 use XML::LibXML;
@@ -256,7 +255,7 @@ sub export_png {
             $self->_check_transcript($language);
 
             $self->_flip_language_layers($language, @languages);
-            $self->_svg_to_png($language, $self->_write_temp_svg_file(), $png_file);
+            $self->_svg_to_png($language, $self->_write_temp_svg_file($language), $png_file);
         }
         $self->_get_png_info($png_file);
     }
@@ -458,11 +457,11 @@ sub _build_xpath {
 
 
 sub _write_temp_svg_file {
-    my ($self) = @ARG;
+    my ($self, $language) = @ARG;
 
-    my ($handle, $temp_file_name) = tempfile(SUFFIX => '.svg');
+    my $temp_file_name = $self->_make_file_name($language, 'tmp/svgs', 'svg');
     $self->{dom}->toFile($temp_file_name);
-    return $temp_file_name
+    return $temp_file_name;
 }
 
 
