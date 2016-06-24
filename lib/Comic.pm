@@ -396,7 +396,7 @@ sub _check_transcript {
     my $previous = '';
     foreach my $t ($self->_texts_for($language)) {
         if (_both_names($previous, $t)) {
-            croak "$language: '$t' after '$previous'";
+            croak "$self->{file} in $language: '$t' after '$previous'";
         }
         $previous = $t;
     }
