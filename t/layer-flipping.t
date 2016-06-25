@@ -157,3 +157,10 @@ sub keeps_background_opacity : Tests {
     my $style = ($comic->{xpath}->findnodes($theLayer))[0]->{style};
     is($style, 'display:none;opacity:0.35');
 }
+
+
+sub no_style_on_layer : Tests {
+    setup('<g inkscape:groupmode="layer" id="layer18" inkscape:label="HintergrundDeutsch"/>');
+    $comic->_flip_language_layers("Deutsch", ("Deutsch", "English"));
+    assert_visible(qw(Deutsch Rahmen Figuren Hintergrund HintergrundDeutsch));
+}

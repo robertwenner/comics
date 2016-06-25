@@ -429,6 +429,7 @@ sub _flip_language_layers {
     ## use critic
     foreach my $layer ($self->{xpath}->findnodes($all_layers)) {
         my $label = $layer->{'inkscape:label'};
+        $layer->{'style'} = 'display:inline' unless (defined($layer->{'style'}));
         foreach my $other_lang (@languages) {
             # Turn off all meta layers and all other languages
             if ($label =~ m/$other_lang$/ || $label =~ m/^Meta/) {
