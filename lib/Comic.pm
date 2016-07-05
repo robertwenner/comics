@@ -792,8 +792,17 @@ sub _text_pos_sort {
 sub _transformed {
     my ($self, $node, $attribute) = @ARG;
 
+    my ($x, $y) = ($node->getAttribute('x'), $node->getAttribute('y'));
+    if (!defined($node->getAttribute('x')) || !defined($node->getAttribute('y'))) {
+        ($x, $y) = _text_from_path($self, $node);
+    }
+    croak "$self->{file}: No x" unless(defined $x);
+    croak "$self->{file}: No y" unless(defined $y);
+
     my $transform = $node->getAttribute('transform');
     if (!$transform || !$self->{options}{$TRANSFORM}) {
+        return $x if ($attribute eq 'x');
+        return $y if ($attribute eq 'y');
         return $node->getAttribute($attribute);
     }
 
@@ -822,8 +831,6 @@ sub _transformed {
     else {
         croak "Unsupported operation $operation in $self->{file}";
     }
-    my $x = $node->getAttribute('x');
-    my $y = $node->getAttribute('y');
     # http://www.w3.org/TR/SVG/coords.html#TransformMatrixDefined
     # a c e   x
     # b d f * y
@@ -833,6 +840,24 @@ sub _transformed {
     return $a * $x + $c * $y if ($attribute eq 'x');
     return $b * $x + $d * $y if ($attribute eq 'y');
     croak "Unsupported attribute $attribute to transform in $self->{file}";
+}
+
+
+sub _text_from_path {
+    my ($self, $node) = @ARG;
+
+    my @text_path = $node->getChildrenByTagName('textPath');
+    croak "$self->{file}: No X/Y and no textPath child element" if (@text_path == 0);
+    croak "$self->{file}: No X/Y and multiple textPath child elements" if (@text_path > 1);
+    my $path_id = $text_path[0]->getAttribute('xlink:href');
+    $path_id =~ s{^#}{};
+    my $xpath = "//$DEFAULT_NAMESPACE:ellipse[\@id='$path_id']";
+    my @path_nodes = $self->{xpath}->findnodes($xpath);
+    croak "$self->{file}: $xpath not found" if (@path_nodes == 0);
+    croak "$self->{file}: More than one node with ID $path_id" if (@path_nodes > 1);
+    my $type = $path_nodes[0]->nodeName;
+    croak "$self->{file}: Cannot handle $type nodes" unless ($type eq 'ellipse');
+    return ($path_nodes[0]->getAttribute('cx'), $path_nodes[0]->getAttribute('cy'));
 }
 
 
@@ -1085,36 +1110,7 @@ Parameters:
 sub size_map {
     my (@languages) = @ARG;
 
-    my %aggregate;
-    foreach my $comic (@comics) {
-        foreach my $language (@languages) {
-            next unless ($comic->_is_for($language));
-            foreach my $dim (qw(height width)) {
-                if (!defined($aggregate{$language}{$dim}{'min'}) ||
-                    $aggregate{$language}{$dim}{'min'} > $comic->{$dim}) {
-                    $aggregate{$language}{$dim}{'min'} = $comic->{$dim};
-                }
-                if (!defined($aggregate{$language}{$dim}{'max'}) ||
-                    $aggregate{$language}{$dim}{'max'} < $comic->{$dim}) {
-                    $aggregate{$language}{$dim}{'max'} = $comic->{$dim};
-                }
-                $aggregate{$language}{$dim}{'avg'} += $comic->{$dim};
-                $aggregate{$language}{$dim}{'cnt'}++;
-            }
-        }
-    }
-
-    foreach my $language (@languages) {
-        foreach my $dim (qw(height width)) {
-            if (($aggregate{$language}{$dim}{'cnt'} || 0) == 0) {
-                $aggregate{$language}{$dim}{avg} = 'n/a';
-            }
-            else {
-                $aggregate{$language}{$dim}{avg} /= $aggregate{$language}{$dim}{'cnt'};
-            }
-        }
-    }
-
+    my %aggregate = _aggregate_comic_sizes(@languages);
     Readonly my $SCALE_BY => 0.3;
     foreach my $language (@languages) {
         my $svg = SVG->new(
@@ -1168,6 +1164,50 @@ sub size_map {
             _templatize(_slurp($text{sizeMapTemplateFile}{$language}), %vars));
     }
     return;
+}
+
+
+sub _aggregate_comic_sizes {
+    my (@languages) = @ARG;
+
+    my %aggregate;
+
+    Readonly my $A_LOT = 999_999_999;
+    foreach my $language (@languages) {
+        foreach my $agg (qw(min max avg cnt)) {
+            foreach my $dim (qw(height width)) {
+                $aggregate{$language}{$dim}{$agg} = $agg eq 'min' ? $A_LOT : 0;
+            }
+        }
+    }
+
+    foreach my $comic (@comics) {
+        foreach my $language (@languages) {
+            next unless ($comic->_is_for($language));
+            foreach my $dim (qw(height width)) {
+                if ($aggregate{$language}{$dim}{'min'} > $comic->{$dim}) {
+                    $aggregate{$language}{$dim}{'min'} = $comic->{$dim};
+                }
+                if ($aggregate{$language}{$dim}{'max'} < $comic->{$dim}) {
+                    $aggregate{$language}{$dim}{'max'} = $comic->{$dim};
+                }
+                $aggregate{$language}{$dim}{'avg'} += $comic->{$dim};
+                $aggregate{$language}{$dim}{'cnt'}++;
+            }
+        }
+    }
+
+    foreach my $language (@languages) {
+        foreach my $dim (qw(height width)) {
+            if (($aggregate{$language}{$dim}{'cnt'} || 0) == 0) {
+                $aggregate{$language}{$dim}{avg} = 'n/a';
+            }
+            else {
+                $aggregate{$language}{$dim}{avg} /= $aggregate{$language}{$dim}{'cnt'};
+            }
+        }
+    }
+    return %aggregate;
 }
 
 
