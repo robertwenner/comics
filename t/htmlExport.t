@@ -320,3 +320,14 @@ sub contributor_credit_de_many : Test {
     like(write_templ_de($comic),
         qr{Mit\s+Ideen\s+von\s+Mark\s+Dilger,\s+Mike\s+Karr\s+und\s+My\s+Self}xim);
 }
+
+
+sub backlog_transcript : Test {
+    my $comic = make_comic('Deutsch', 'Beer flavored', '4001-01-01');
+    local *Comic::_slurp = sub {
+        return '[% IF backlog %][% transcript %][% END %]';
+    };
+    return $comic->_do_export_html('Deutsch');
+    is(write_templ_de($comic), ''); 
+    # Would have fail if the backlog variable was not set.
+}

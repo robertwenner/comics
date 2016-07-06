@@ -716,6 +716,7 @@ sub _do_export_html {
     foreach my $t ($self->_texts_for($language)) {
         $vars{transcript} .= '<p>' . encode_entities($t) . "</p>\n";
     }
+    $vars{'backlog'} = $self->_not_yet_published();
 
     my $tags = '';
     foreach my $t (@{$self->{meta_data}->{tags}->{$language}}) {
