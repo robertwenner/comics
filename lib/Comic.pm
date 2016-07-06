@@ -1173,11 +1173,16 @@ sub _aggregate_comic_sizes {
 
     my %aggregate;
 
-    Readonly my $A_LOT = 999_999_999;
+    my %inits = (
+        'min' => '9999999',
+        'max' => 0,
+        'avg' => 0,
+        'cnt' => 0,
+    );
     foreach my $language (@languages) {
         foreach my $agg (qw(min max avg cnt)) {
             foreach my $dim (qw(height width)) {
-                $aggregate{$language}{$dim}{$agg} = $agg eq 'min' ? $A_LOT : 0;
+                $aggregate{$language}{$dim}{$agg} = $inits{$agg};
             }
         }
     }
