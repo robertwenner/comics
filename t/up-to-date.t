@@ -4,11 +4,11 @@ no warnings qw/redefine/;
 
 use base 'Test::Class';
 use Test::More;
-use Test::Deep;
 use DateTime;
 use Comic;
 
 __PACKAGE__->runtests() unless caller;
+
 
 sub no_png : Test {
     local *Comic::_exists = sub {

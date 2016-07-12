@@ -3,7 +3,6 @@ use warnings;
 
 use base 'Test::Class';
 use Test::More;
-use Test::Deep;
 use Comic;
 
 __PACKAGE__->runtests() unless caller;

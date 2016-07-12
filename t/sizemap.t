@@ -4,43 +4,22 @@ no warnings qw/redefine/;
 
 use base 'Test::Class';
 use Test::More;
-use Test::Deep;
-use DateTime;
-use Comic;
+
+use lib 't';
+use MockComic;
 
 __PACKAGE__->runtests() unless caller;
 
 
 sub set_up : Test(setup) {
-    Comic::reset_statics();
+    MockComic::set_up();
 }
 
 
 sub make_comic {
     my ($width, $height) = @_;
 
-    *Comic::_slurp = sub {
-        my ($file) = @_;
-        return <<XML;
-<svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns="http://www.w3.org/2000/svg">
-  <metadata id="metadata7">
-    <rdf:RDF>
-      <cc:Work rdf:about="">
-        <dc:description>{}</dc:description>
-      </cc:Work>
-    </rdf:RDF>
-  </metadata>
-</svg>
-XML
-    };
-    *Comic::_mtime = sub {
-        return 0;
-    };
-    my $comic = Comic->new('whatever');
+    my $comic = MockComic::make_comic();
     $comic->{height} = $height;
     $comic->{width} = $width;
     return $comic;

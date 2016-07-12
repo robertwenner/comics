@@ -1,65 +1,20 @@
 use strict;
 use warnings;
-no warnings qw/redefine/;
 
 use base 'Test::Class';
 use Test::More;
-use Test::Deep;
-use Comic;
+
+use lib 't';
+use MockComic;
 
 __PACKAGE__->runtests() unless caller;
-
-
-my $comic;
 
 
 sub make_texts {
     my (@texts) = @_;
 
-    *Comic::_slurp = sub {
-        my $xml = <<XML;
-<svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="744.09448"
-   height="1052.3622"
-   id="svg2"
-   version="1.1"
-   inkscape:version="0.91 r"
-   viewBox="0 0 744.09448 1052.3622">
-  <metadata id="metadata7">
-    <rdf:RDF>
-      <cc:Work rdf:about="">
-        <dc:description>{}</dc:description>
-      </cc:Work>
-    </rdf:RDF>
-  </metadata>
-  <g
-     inkscape:groupmode="layer"
-     id="layer6"
-     inkscape:label="Rahmen"
-     sodipodi:insensitive="true">
-    <rect
-       style="display:inline;fill:none;stroke:#000000;stroke-width:1.08581364;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="rect6486"
-       width="100"
-       height="100"
-       x="0"
-       y="0"/>
-    <rect
-       style="display:inline;fill:none;stroke:#000000;stroke-width:1.08581364;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       id="rect6486"
-       width="100"
-       height="100"
-       x="0"
-       y="100"/>
-  </g>
-  <g
+    my $xml =<<'XML';
+    <g
      inkscape:groupmode="layer"
      id="layer2"
      inkscape:label="Deutsch"
@@ -82,46 +37,44 @@ XML
          y="$y">Text $x / $y</tspan></text>
 TEXT
     }
-$xml .= <<XML;
-  </g>
-</svg>
-XML
-        return $xml;
-    };
-    local *Comic::_mtime = sub {
-        return 0;
-    };
-    $comic = Comic->new('whatever');
+    $xml .= '</g>';
+    my $comic = MockComic::make_comic(
+        $MockComic::XML => $xml,
+        $MockComic::FRAMES => [
+            100, 100, 0, 0, 
+            100, 100, 0, 100,
+        ],
+    );
     $comic->_find_frames();
     return $comic;
 }
 
 
-sub oneText : Test {
+sub one_text : Test {
     is_deeply([make_texts(0, 0)->_texts_for("Deutsch")], 
         ["Text 0 / 0"]);
 }
 
 
-sub differentX : Test {
+sub different_x : Test {
     is_deeply([make_texts(0, 0, 10, 0)->_texts_for("Deutsch")],
         ["Text 0 / 0", "Text 10 / 0"]);
 }
 
 
-sub differentY : Test {
+sub different_y : Test {
     is_deeply([make_texts(0, 0, 0, 10)->_texts_for("Deutsch")],
         ["Text 0 / 0", "Text 0 / 10"]);
 }
 
 
-sub differentXandY : Test {
+sub different_x_and_y : Test {
     is_deeply([make_texts(0, 0, 10, 10)->_texts_for("Deutsch")],
         ["Text 0 / 0", "Text 10 / 10"]);
 }
 
 
-sub differentFrames : Test {
+sub different_frames : Test {
     is_deeply([make_texts(0, 110, 10, 10)->_texts_for("Deutsch")],
         ["Text 10 / 10", "Text 0 / 110"]);
 }

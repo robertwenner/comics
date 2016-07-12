@@ -1,109 +1,72 @@
 use strict;
 use warnings;
-no warnings qw/redefine/;
 
 use base 'Test::Class';
 use Test::More;
-use Test::Deep;
-use Comic;
+
+use lib 't';
+use MockComic;
 
 __PACKAGE__->runtests() unless caller;
 
-my $titleDe;
-my $titleEn;
 
+sub make_comic {
+    my ($title, $file, $lang) = @_;
+    $lang = $lang || $MockComic::ENGLISH;
 
-BEGIN {
-    $titleDe = "titleDe";
-    $titleEn = "titleEn";
-}
-
-
-sub before : Test(setup) {
-    *Comic::_slurp = sub {
-        return <<XML;
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns="http://www.w3.org/2000/svg">
-  <metadata id="metadata7">
-    <rdf:RDF>
-      <cc:Work rdf:about="">
-        <dc:description>{
-&quot;title&quot;: {
-    &quot;English&quot;: &quot;$titleEn&quot;,
-    &quot;Deutsch&quot;: &quot;$titleDe&quot;
-}
-}</dc:description>
-      </cc:Work>
-    </rdf:RDF>
-  </metadata>
-</svg>
-XML
-    };
-    *Comic::_mtime = sub {
-        return 0;
-    };
+    return MockComic::make_comic(
+        $MockComic::TITLE => {$lang => $title},
+        $MockComic::IN_FILE => $file);
 }
 
 
 sub duplicated_title : Test {
-    $titleEn = "duplicated title";
-    my $c1 = Comic->new("one file");
-    $c1->_check_title("English");
-    my $c2 = Comic->new("other file");
+    my $c1 = make_comic('duplicated title', 'file1.svg');
+    my $c2 = make_comic('duplicated title', 'file2.svg');
+    $c1->_check_title($MockComic::ENGLISH);
     eval {
-        $c2->_check_title("English");
+        $c2->_check_title($MockComic::ENGLISH);
     };
     like($@, qr/Duplicated English title/i);
 }
 
 
 sub duplicated_title_case_insensitive : Test {
-    $titleEn = "clever title";
-    my $c1 = Comic->new("one file");
-    $c1->_check_title("English");
-    $titleEn = "Clever Title";
-    my $c2 = Comic->new("other file");
+    my $c1 = make_comic('clever title', 'file1.svg');
+    my $c2 = make_comic('Clever Title', 'file2.svg');
+    $c1->_check_title($MockComic::ENGLISH);
     eval {
-        $c2->_check_title("English");
+        $c2->_check_title($MockComic::ENGLISH);
     };
     like($@, qr/Duplicated English title/i);
 }
 
 
 sub duplicated_title_whitespace : Test {
-    $titleEn = " white spaced";
-    my $c1 = Comic->new("one file");
-    $c1->_check_title("English");
-    $titleEn = "white   spaced ";
-    my $c2 = Comic->new("other file");
+    my $c1 = make_comic('white spaced', 'file1.svg');
+    $c1->_check_title($MockComic::ENGLISH);
+    my $c2 = make_comic(' white   spaced', 'file2.svg');
     eval {
-        $c2->_check_title("English");
+        $c2->_check_title($MockComic::ENGLISH);
     };
     like($@, qr/Duplicated English title/i);
 }
 
 
 sub duplicate_title_allowed_in_different_languages : Test {
-    $titleEn = "language title";
-    $titleDe = "language title";
-    my $c1 = Comic->new("one file");
-    $c1->_check_title("English");
-    my $c2 = Comic->new("other file");
+    my $c1 = make_comic('Hahaha', 'file1.svg', $MockComic::ENGLISH);
+    $c1->_check_title($MockComic::ENGLISH);
+    my $c2 = make_comic('Hahaha', 'file2.svg', $MockComic::DEUTSCH);
     # This would throw if it failed
-    $c2->_check_title("Deutsch");
+    $c2->_check_title($MockComic::DEUTSCH);
     ok(1);
 }
 
 
 sub idempotent : Test {
-    $titleEn = "idempotent";
-    my $c = Comic->new("idempotent");
-    $c->_check_title("English");
+    my $c = make_comic("idempotent", 'file1.svg', $MockComic::ENGLISH);
+    $c->_check_title($MockComic::ENGLISH);
     # This would throw if it failed
-    $c->_check_title("English");
+    $c->_check_title($MockComic::ENGLISH);
     ok(1);
 }

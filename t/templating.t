@@ -4,73 +4,31 @@ no warnings qw/redefine/;
 
 use base 'Test::Class';
 use Test::More;
-use Test::Deep;
-use Comic;
+
+use lib 't';
+use MockComic;
 
 __PACKAGE__->runtests() unless caller;
 
 
-my $comic;
-
-
-sub setup : Test(setup) {
-    *Comic::_slurp = sub {
-        my ($fileName) = @_;
-        if ($fileName eq 'comic') {
-            return <<XML;
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns="http://www.w3.org/2000/svg">
-  <metadata id="metadata7">
-    <rdf:RDF>
-      <cc:Work rdf:about="">
-        <dc:description>{
-&quot;title&quot;: {
-    &quot;Deutsch&quot;: &quot;Bier trinken&quot;
-},
-&quot;tags&quot;: {
-    &quot;Deutsch&quot;: [&quot;Bier&quot;]
-}
-}</dc:description>
-      </cc:Work>
-    </rdf:RDF>
-  </metadata>
-</svg>
-XML
-        }
-        else {
-            return <<TEMPLATE;
-Biercomics: [% title %]
-last-modified: [% modified %]
-description: [% description %]
-[% title %]
-[% png_file %] [% height %] by [% width %]
-[% transcript %]
-[% url %]
-TEMPLATE
-        }
-    };
-    local *Comic::_mtime = sub {
-        return 0;
-    };
-    *File::Path::make_path = sub {
-        return 1;
-    };
-    $comic = new Comic('comic');
+sub make_comic {
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::DEUTSCH => 'Bier trinken',
+        },
+    );
     $comic->{height} = 200;
     $comic->{width} = 600;
+    return $comic;
 }
 
 
-sub simpleExpression : Test {
+sub simple_expression : Test {
     is(Comic::_templatize('[% modified %]', ("modified" => "today")), "today");
 }
 
 
-sub caseSensitive : Test {
+sub case_sensitive : Test {
     eval {
         Comic::_templatize('[% modified %]', ("MODified" => "today"));
     };
@@ -78,7 +36,7 @@ sub caseSensitive : Test {
 }
 
 
-sub whiteSpace : Test {
+sub white_space : Test {
     is(Comic::_templatize("[%modified\t\t %]", ("modified" => "today")), "today");
 }
 
@@ -88,7 +46,7 @@ sub utf8 : Test {
 }
 
 
-sub templateSyntaxError : Test {
+sub template_syntax_error : Test {
     eval {
         Comic::_templatize('[% modified ', ("modified" => "today"));
     };
@@ -96,7 +54,7 @@ sub templateSyntaxError : Test {
 }
 
 
-sub unknownVariable : Test {
+sub unknown_variable : Test {
     eval {
         Comic::_templatize('[% modified %]', ("a" => "b"));
     };
@@ -104,7 +62,7 @@ sub unknownVariable : Test {
 }
 
 
-sub strayOpeningTag : Test {
+sub stray_opening_tag : Test {
     eval {
         Comic::_templatize('[% a', ("a" => "b"));
     };
@@ -112,7 +70,7 @@ sub strayOpeningTag : Test {
 }
 
 
-sub strayClosingTag : Test {
+sub stray_closing_tag : Test {
     eval {
         Comic::_templatize("\nblah\na %]\nblah\n\n", ("a" => "b"));
     };
@@ -142,10 +100,11 @@ sub function : Test {
 
 
 sub object_member : Tests {
-    is($comic->{file}, "comic");
+    my $comic = make_comic();
+    is($comic->{file}, "some_comic.svg");
     is(Comic::_templatize(
         "[%comic.file%]", ("comic" => $comic)),
-        "comic");
+        "some_comic.svg");
     is(Comic::_templatize(
         "[%comic.meta_data.title.Deutsch%]", ("comic" => $comic)),
         "Bier trinken");
@@ -153,6 +112,7 @@ sub object_member : Tests {
 
 
 sub object_function_code_ref : Tests {
+    my $comic = make_comic();
     is(Comic::_templatize(
         "[%notFor(comic, 'Pimperanto')%]", (
             "notFor" => \&Comic::_not_for,
@@ -169,6 +129,7 @@ sub object_function_code_ref : Tests {
 
 
 sub object_function_wrapped : Tests {
+    my $comic = make_comic();
     is(Comic::_templatize(
         "[%notFor(comic, 'Pimperanto')%]", (
             "notFor" => sub { return Comic::_not_for(@_); },
@@ -191,7 +152,17 @@ sub object_function_wrapped : Tests {
 }
 
 
-sub fromComic : Tests {
+sub from_comic : Tests {
+    my $comic = make_comic();
+    MockComic::fake_file('web/deutsch/comic-page.templ', <<'TEMPLATE');
+Biercomics: [% title %]
+last-modified: [% modified %]
+description: [% description %]
+[% title %]
+[% png_file %] [% height %] by [% width %]
+[% transcript %]
+[% url %]
+TEMPLATE
     my $wrote = $comic->_do_export_html("Deutsch");
     like($wrote, qr/Bier trinken/m);
     like($wrote, qr/1970-01-01/m);

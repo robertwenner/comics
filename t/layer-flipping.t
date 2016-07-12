@@ -1,11 +1,11 @@
 use strict;
 use warnings;
-no warnings qw/redefine/;
 
 use base 'Test::Class';
 use Test::More;
-use Test::Deep;
-use Comic;
+
+use lib 't';
+use MockComic;
 
 __PACKAGE__->runtests() unless caller;
 
@@ -14,76 +14,33 @@ my $comic;
 
 
 sub setup {
-    my ($xml) = shift || "";
-    *Comic::_slurp = sub {
-        return <<XML;
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape">
-  <metadata id="metadata7">
-    <rdf:RDF>
-      <cc:Work rdf:about="">
-        <dc:format>image/svg+xml</dc:format>
-        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
-        <dc:creator>
-          <cc:Agent>
-            <dc:title>Robert Wenner</dc:title>
-          </cc:Agent>
-        </dc:creator>
-        <dc:description>{}</dc:description>
-      </cc:Work>
-    </rdf:RDF>
-  </metadata>
-  <g
-     inkscape:groupmode="layer"
-     id="layer7"
-     inkscape:label="Hintergrund"
-     style="display:inline;opacity:0.35"/>
-  <g
-     inkscape:groupmode="layer"
-     id="layer8"
-     inkscape:label="Figuren"
-     style="display:inline"/>
-  <g
-     inkscape:groupmode="layer"
-     id="layer2"
-     inkscape:label="Deutsch"
-     style="display:inline"/>
-  <g
-     inkscape:groupmode="layer"
-     id="layer3"
-     inkscape:label="MetaDeutsch"
-     style="display:inline"/>
-  <g
-     inkscape:groupmode="layer"
-     id="layer4"
-     inkscape:label="English"
-     style="display:none"/>
-  <g
-     inkscape:groupmode="layer"
-     id="layer5"
-     inkscape:label="MetaEnglish"
-     style="display:none"/>
-  <g
-     inkscape:groupmode="layer"
-     id="layer6"
-     inkscape:label="Rahmen"
-     style="display:inline"/>
-  $xml
-</svg>
-XML
-    };
-    *Comic::_mtime = sub {
-        return 0;
-    };
-    $comic = Comic->new('whatever');
+    my %layers = (
+        $MockComic::DEUTSCH => [''],
+        $MockComic::META_DEUTSCH => [],
+        $MockComic::ENGLISH => [],
+        $MockComic::META_ENGLISH => [],
+        $MockComic::HINTERGRUND => [],
+        $MockComic::FIGUREN => [],
+    );
+    foreach my $l (@_) {
+        $layers{$l} = [];
+    }
+
+    $comic = MockComic::make_comic(
+        $MockComic::TEXTS => \%layers, 
+        $MockComic::FRAMES => [0, 0, 200, 200],
+    );
+}
+
+
+sub setup_xml {
+    my $xml = shift;
+    $comic = MockComic::make_comic(
+        $MockComic::TEXTS => {
+            $MockComic::DEUTSCH => [''],
+            $MockComic::ENGLISH => [''],
+        },
+        $MockComic::XML => $xml);
 }
 
 
@@ -109,7 +66,7 @@ sub assert_visible {
 }
 
 
-sub germanOnly : Tests {
+sub german_only : Tests {
     setup();
     $comic->_flip_language_layers("Deutsch", ("Deutsch", "English"));
     assert_visible(qw(Deutsch Rahmen Figuren Hintergrund));
@@ -133,23 +90,24 @@ sub failsOnUnknownLanguage : Test {
 
 
 sub flipsUnknownLayerWithTrailingLanguageName : Tests {
-    setup('<g inkscape:groupmode="layer" id="layer18" inkscape:label="HintergrundDeutsch" style="display:none"/>');
+    setup('HintergrundDeutsch');
     $comic->_flip_language_layers("Deutsch", ("Deutsch", "English"));
     assert_visible(qw(Deutsch Rahmen Figuren Hintergrund HintergrundDeutsch));
 }
 
 
 sub ignoresUnknownLayerWithEmbeddedLanguageName : Tests {
-    setup('<g inkscape:groupmode="layer" id="layer18" inkscape:label="HintergrundDeutschUndSo" style="display:none"/>');
+    setup('HintergrundDeutschUndSo', 'HintergrundEnglishUndSo');
     $comic->_flip_language_layers("Deutsch", ("Deutsch", "English"));
-    assert_visible(qw(Deutsch Rahmen Figuren Hintergrund));
+    assert_visible(qw(Deutsch Rahmen Figuren Hintergrund 
+        HintergrundDeutschUndSo HintergrundEnglishUndSo));
 }
 
 
 sub keeps_background_opacity : Tests {
-    setup('<g inkscape:groupmode="layer" id="layer18" inkscape:label="HintergrundDeutsch" style="display:inline;opacity:0.35"/>');
+    setup_xml('<g inkscape:groupmode="layer" id="layer18" inkscape:label="HintergrundDeutsch" style="display:inline;opacity:0.35"/>');
     $comic->_flip_language_layers("English", ("Deutsch", "English"));
-    assert_visible(qw(English Rahmen Figuren Hintergrund));
+    assert_visible(qw(English));
 
     my $xpath = XML::LibXML::XPathContext->new($comic->{dom});
     $xpath->registerNs($Comic::DEFAULT_NAMESPACE, 'http://www.w3.org/2000/svg');
@@ -160,7 +118,7 @@ sub keeps_background_opacity : Tests {
 
 
 sub no_style_on_layer : Tests {
-    setup('<g inkscape:groupmode="layer" id="layer18" inkscape:label="HintergrundDeutsch"/>');
+    setup_xml('<g inkscape:groupmode="layer" id="layer18" inkscape:label="HintergrundDeutsch"/>');
     $comic->_flip_language_layers("Deutsch", ("Deutsch", "English"));
-    assert_visible(qw(Deutsch Rahmen Figuren Hintergrund HintergrundDeutsch));
+    assert_visible(qw(Deutsch HintergrundDeutsch));
 }

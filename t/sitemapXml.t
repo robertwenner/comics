@@ -1,118 +1,82 @@
 use strict;
 use warnings;
-no warnings qw/redefine/;
 
 use base 'Test::Class';
 use Test::More;
-use Test::Deep;
-use Comic;
+
+use lib 't';
+use MockComic;
 
 __PACKAGE__->runtests() unless caller;
 
 
-my $comic;
+sub setup : Test(setup) {
+    MockComic::set_up();
+}
 
 
 sub make_comic {
     my ($published, $language) = @_;
 
-    $language = $language || 'English';
-    *Comic::_slurp = sub {
-        return <<XML;
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns="http://www.w3.org/2000/svg">
-  <metadata id="metadata7">
-    <rdf:RDF>
-      <cc:Work rdf:about="">
-        <dc:description>{
-&quot;title&quot;: {
-    &quot;$language&quot;: &quot;Drinking beer&quot;
-},
-&quot;published&quot;: {
-    &quot;when&quot;: &quot;$published&quot;
-}
-}</dc:description>
-      </cc:Work>
-    </rdf:RDF>
-  </metadata>
-</svg>
-XML
-    };
-    *Comic::_mtime = sub {
-        return 0;
-    };
-    *File::Path::make_path = sub {
-        return 1;
-    };
-    my $comic = Comic->new('whatever');
-    $comic->{modified} = $published;
+    $language ||= $MockComic::ENGLISH;
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $language => 'Drinking beer',
+        },
+        $MockComic::PUBLISHED => $published,
+        $MockComic::MTIME => DateTime->new(year => 2016, month => 1, day => 1)->epoch,
+    );
     $comic->{pngFile}{$language} = "drinking-beer.png";
     return $comic;
 }
 
 
-sub assertWrote {
+sub assert_wrote {
     my ($comic, $contentsExpected) = @_;
 
-    my $fileNameIs;   
-    my $contentsIs;
-
-    *Comic::_write_file = sub {
-        ($fileNameIs, $contentsIs) = @_;
-    };
-    $comic->_write_sitemap_xml_fragment("English");
-    if ($contentsExpected eq '^$') {
-        is($fileNameIs, undef, 'Should not have written anything');
-    }
-    else {
-        is($fileNameIs, 'generated/english/tmp/sitemap/drinking-beer.xml', 'Wrong file name');
-    }
-    like($contentsIs, qr{$contentsExpected}m, 'Wrong content');
+    $comic->_write_sitemap_xml_fragment($MockComic::ENGLISH);
+    MockComic::assert_wrote_file(
+        'generated/english/tmp/sitemap/drinking-beer.xml',
+        $contentsExpected);
 }
 
 
 sub page : Tests {
-    my $comic = make_comic('2016-01-01');
-    assertWrote($comic, '<loc>https://beercomics.com/comics/drinking-beer.html</loc>');
+    assert_wrote(make_comic('2016-01-01'),
+        qr{<loc>https://beercomics.com/comics/drinking-beer.html</loc>}m);
 }
 
 
 sub last_modified : Tests {
-    my $comic = make_comic('2016-01-01');
-    assertWrote($comic, '<lastmod>2016-01-01</lastmod>');
+    assert_wrote(make_comic('2016-01-01'),
+        qr{<lastmod>2016-01-01</lastmod>}m);
 }
 
 
+
 sub image : Tests {
-    my $comic = make_comic('2016-01-01');
-    assertWrote($comic, '<image:loc>https://beercomics.com/comics/drinking-beer.png</image:loc>');
+    assert_wrote(make_comic('2016-01-01'), 
+        qr{<image:loc>https://beercomics.com/comics/drinking-beer.png</image:loc>}m);
 }
 
 
 sub image_title : Tests {
-    my $comic = make_comic('2016-01-01');
-    assertWrote($comic, '<image:title>Drinking beer</image:title>');
+    assert_wrote(make_comic('2016-01-01'), 
+        qr{<image:title>Drinking beer</image:title>}m);
 }
 
 
 sub image_license : Tests {
-    my $comic = make_comic('2016-01-01');
-    assertWrote($comic, '<image:license>https://beercomics.com/imprint.html</image:license>');
+    assert_wrote(make_comic('2016-01-01'),
+        qr{<image:license>https://beercomics.com/imprint.html</image:license>}m);
 }
 
 
 sub unpublished : Tests {
-    my $comic = make_comic('3016-01-01', 'English');
-    assertWrote($comic, '^$'); # should not write anything
+    assert_wrote(make_comic('3016-01-01', 'English')); # should not write anything
 }
 
 
 sub wrong_language : Tests {
-    my $comic = make_comic('2016-01-01', 'Deutsch');
-    assertWrote($comic, '^$'); # should not write anything
+    assert_wrote(make_comic('2016-01-01', 'Deutsch')); # should not write anything
 }

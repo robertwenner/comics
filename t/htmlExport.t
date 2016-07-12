@@ -1,87 +1,32 @@
 use strict;
 use warnings;
-no warnings qw/redefine/;
 
 use base 'Test::Class';
 use Test::More;
-use Test::Deep;
-use DateTime;
-use Comic;
+
+use lib 't';
+use MockComic;
 
 __PACKAGE__->runtests() unless caller;
 
 
-my $today;
-my @exported;
-
-
 sub set_up : Test(setup) {
-    Comic::reset_statics();
-    @exported = ();
-    $today = DateTime->now;
+    MockComic::set_up();
 }
 
 
 sub make_comic {
-    my ($language, $title, $published, $contributor) = @_;
+    my ($language, $title, $published) = @_;
 
-    my $contrib = $contributor || "";
-    local *Comic::_slurp = sub {
-        return <<XML;
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns="http://www.w3.org/2000/svg">
-  <metadata id="metadata7">
-    <rdf:RDF>
-      <cc:Work rdf:about="">
-        <dc:description>{
-&quot;title&quot;: {
-    &quot;$language&quot;: &quot;$title&quot;
-},
-&quot;tags&quot;: {
-    &quot;$language&quot;: [ &quot;JSON, tags&quot; ]
-},
-&quot;published&quot;: {
-    &quot;when&quot;: &quot;$published&quot;
-}
-$contrib
-}</dc:description>
-      </cc:Work>
-    </rdf:RDF>
-  </metadata>
-</svg>
-XML
-    };
-    *Comic::_mtime = sub {
-        return 0;
-    };
-    *File::Path::make_path = sub {
-        return 1;
-    };
-    *Comic::_export_language_html = sub {
-        my ($self, $to, $language) = @_;
-        push @exported, "$to:" . ($self->{meta_data}->{title}->{$language} || '');
-        return;
-    };
-
-    *Comic::_write_sitemap_xml_fragment = sub {
-        return;
-    };
-    *Comic::_now = sub {
-        return $today;
-    };
-    return new Comic('whatever');
+    return MockComic::make_comic(
+        $MockComic::TITLE => { $language => $title },
+        $MockComic::PUBLISHED => $published);
 }
 
 
 sub export_only_if_meta_title_for_language : Test {
-    local *Comic::_make_comics_path = sub { die("should not make a path"); };
-    my $comic = make_comic('English', 'title', '2016-04-19');
-    $comic->_export_language_html('web/comics', 'Deutsch', ("Deutsch" => "de"));
+    my $comic = MockComic::make_comic($MockComic::PUBLISHED => '2016-04-19');
+    $comic->export_all_html("Pimperanto");
     ok(1); # Would have failed above
 }
 
@@ -160,16 +105,16 @@ sub skips_comic_without_that_language : Tests {
 
 
 sub skips_comic_without_published_date : Test {
-    my $not_yet = make_comic('English', 'not yet', '');
+    make_comic('English', 'not yet', '');
     Comic::export_all_html('English' => 'en');
-    is_deeply(['tmp/backlog:not yet'], \@exported);
+    is_deeply(\@MockComic::exported, ['tmp/backlog:not yet']);
 }
 
 
 sub skips_comic_in_far_future : Tests {
     my $not_yet = make_comic('English', 'not yet', '2200-01-01');
     Comic::export_all_html('English' => 'en');
-    is_deeply(['tmp/backlog:not yet'], \@exported);
+    is_deeply(\@MockComic::exported, ['tmp/backlog:not yet']);
 }
 
 
@@ -181,10 +126,10 @@ sub includes_comic_for_next_friday : Tests {
     #  15 16 17 18 19 20 21
     #  22 23 24 25 26 27 28
     #  29 30 31
-    $today = DateTime->new(year => 2016, month => 5, day => 1);
-    my $not_yet = make_comic('English', 'next Friday', '2016-05-01');
+    MockComic::fake_now(DateTime->new(year => 2016, month => 5, day => 1));
+    make_comic('English', 'next Friday', '2016-05-01');
     Comic::export_all_html('English' => 'en');
-    is_deeply(['web/comics:next Friday'], \@exported);
+    is_deeply(\@MockComic::exported, ['web/comics:next Friday']);
 }
 
 
@@ -217,113 +162,9 @@ sub separate_navs_for_archive_and_backlog : Tests {
 }
 
 
-sub write_templ_en {
-    my ($comic) = @_;
-    local *Comic::_slurp = sub {
-        return <<TEMPL;
-[% IF contrib %]
-    <p style="contributors">With help from
-        [% FOREACH c IN contrib %]
-            [% c != contrib.first && c == contrib.last ? ' and ' : '' %]
-            [% c %][% contrib.defined(2) ? ', ' : '' %]
-        [% END %]
-    </p>
-[% END %]
-TEMPL
-    };
-    return $comic->_do_export_html('Deutsch');
-}
-
-
-sub contributor_credit_en_none : Tests {
-    my $comic = make_comic('Deutsch', 'Beer flavored', '2016-01-01');
-    like(write_templ_en($comic), qr{\A\s*\z}xim);
-}
-
-
-sub contributor_credit_en_empty : Tests {
-    my $comic = make_comic('Deutsch', 'Beer flavored', '2016-01-01',
-        ', &quot;contrib:&quot;: []');
-    like(write_templ_en($comic), qr{\A\s*\z}xim);
-}
-
-
-sub contributor_credit_en_one : Tests {
-    my $comic = make_comic('Deutsch', 'Beer flavored', '2016-01-01',
-        ', &quot;contrib&quot;: [ &quot;Mark Dilger&quot; ]');
-    like(write_templ_en($comic), qr{With\s+help\s+from\s+Mark\s+Dilger}xim);
-}
-
-
-sub contributor_credit_en_two : Tests {
-    my $comic = make_comic('Deutsch', 'Beer flavored', '2016-01-01',
-        ', &quot;contrib&quot;: [ &quot;Mark Dilger&quot;, &quot;Mike Karr&quot;]');
-    like(write_templ_en($comic),
-        qr{With\s+help\s+from\s+Mark\s+Dilger\s+and\s+Mike\s+Karr}xim);
-}
-
-
-sub contributor_credit_en_many_en : Tests {
-    my $comic = make_comic('Deutsch', 'Beer flavored', '2016-01-01',
-        ', &quot;contrib&quot;: [ &quot;Mark Dilger&quot;, &quot;Mike Karr&quot;, &quot;My Self&quot;]');
-    like(write_templ_en($comic),
-        qr{With\s+help\s+from\s+Mark\s+Dilger,\s+Mike\s+Karr,\s+and\s+My\s+Self}xim);
-}
-
-
-sub write_templ_de {
-    my ($comic) = @_;
-    local *Comic::_slurp = sub {
-        return <<TEMPL;
-[% IF contrib %]
-    <p style="contributors">Mit Ideen von
-[% FOREACH c IN contrib %][% c != contrib.first && c == contrib.last ? ' und ' : '' %][% c != contrib.first && c != contrib.last ? ', ' : '' %][% c %][% END %]
-    </p>
-[% END %]
-TEMPL
-    };
-    return $comic->_do_export_html('Deutsch');
-}
-
-
-sub contributor_credit_de_none : Test {
-    my $comic = make_comic('Deutsch', 'Beer flavored', '2016-01-01');
-    like(write_templ_de($comic), qr{\A\s*\z}xim);
-}
-
-
-sub contributor_credit_de_empty : Tests {
-    my $comic = make_comic('Deutsch', 'Beer flavored', '2016-01-01',
-        ', &quot;contrib:&quot;: []');
-    like(write_templ_en($comic), qr{\A\s*\z}xim);
-}
-
-
-sub contributor_credit_de_one : Test {
-    my $comic = make_comic('Deutsch', 'Beer flavored', '2016-01-01',
-        ', &quot;contrib&quot;: [ &quot;Mark Dilger&quot; ]');
-    like(write_templ_de($comic), qr{Mit\s+Ideen\s+von\s+Mark\s+Dilger}xim);
-}
-
-
-sub contributor_credit_de_two : Test {
-    my $comic = make_comic('Deutsch', 'Beer flavored', '2016-01-01',
-        ', &quot;contrib&quot;: [ &quot;Mark Dilger&quot;, &quot;Mike Karr&quot;]');
-    like(write_templ_de($comic),
-        qr{Mit\s+Ideen\s+von\s+Mark\s+Dilger\s+und\s+Mike\s+Karr}xim);
-}
-
-
-sub contributor_credit_de_many : Test {
-    my $comic = make_comic('Deutsch', 'Beer flavored', '2016-01-01',
-        ', &quot;contrib&quot;: [ &quot;Mark Dilger&quot;, &quot;Mike Karr&quot;, &quot;My Self&quot;]');
-    like(write_templ_de($comic),
-        qr{Mit\s+Ideen\s+von\s+Mark\s+Dilger,\s+Mike\s+Karr\s+und\s+My\s+Self}xim);
-}
-
-
 sub backlog_transcript : Test {
     my $comic = make_comic('Deutsch', 'Beer flavored', '4001-01-01');
+    no warnings qw/redefine/;
     local *Comic::_slurp = sub {
         return '[% IF backlog %][% transcript %][% END %]';
     };
@@ -331,3 +172,4 @@ sub backlog_transcript : Test {
     is(write_templ_de($comic), ''); 
     # Would have fail if the backlog variable was not set.
 }
+
