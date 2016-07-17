@@ -170,7 +170,7 @@ sub _build_json {
     $json .= "\n" if ($wrote);
 
     # Special: published takes when and where
-    if ($args{$PUBLISHED}) {
+    if (defined($args{$PUBLISHED})) {
         $json .= ",\n";
         $json .= <<JSON;
 &quot;published&quot;: {
