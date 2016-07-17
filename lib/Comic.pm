@@ -10,6 +10,7 @@ use base qw(Exporter);
 use POSIX;
 use Carp;
 use autodie;
+use String::Util 'trim';
 use DateTime;
 use File::Path qw(make_path);
 use File::Basename;
@@ -248,6 +249,7 @@ sub export_png {
 
         unless (_up_to_date($self->{file}, $png_file)) {
             $self->_check_title($language);
+            $self->_check_date(@languages);
             $self->_check_dont_publish($language);
             $self->_check_frames();
             $self->_check_tags('tags', $language);
@@ -286,9 +288,7 @@ sub _check_title {
     my ($self, $language) = @ARG;
 
     my $title = $self->{meta_data}->{title}->{$language};
-    my $key = lc "$language\n$title";
-    $key =~ s/^\s+//;
-    $key =~ s/\s+$//;
+    my $key = trim(lc "$language\n$title");
     $key =~ s/\s+/ /g;
     if (defined $titles{$key}) {
         if ($titles{$key} ne $self->{file}) {
@@ -296,6 +296,26 @@ sub _check_title {
         }
     }
     $titles{$key} = $self->{file};
+    return;
+}
+
+
+sub _check_date {
+    my ($self, @lang) = @_;
+
+    my $published = trim($self->{meta_data}->{published}->{when});
+    return unless($published);
+    foreach my $c (@comics) {
+        next if ($c == $self);
+        my $pub = trim($c->{meta_data}->{published}->{when});
+        next unless(defined $pub);
+        foreach my $l (@lang) {
+            next if ($self->_is_for($l) != $c->_is_for($l));
+            if ($published eq $pub) {
+                croak("$self->{file}: duplicated date with $c->{file}");
+            }
+        }
+    }
     return;
 }
 
@@ -748,8 +768,7 @@ sub _texts_for {
         while ($tspan);
         $text =~ s/-\s+/-/mg;
         $text =~ s/ +/ /mg;
-        $text =~ s/^\s+//mg;
-        $text =~ s/\s+$//mg;
+        $text = trim ($text);
 
         if ($text eq '') {
             my $layer = $node->parentNode->{'inkscape:label'};
