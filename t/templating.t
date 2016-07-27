@@ -1,6 +1,5 @@
 use strict;
 use warnings;
-no warnings qw/redefine/;
 
 use base 'Test::Class';
 use Test::More;
@@ -85,10 +84,45 @@ sub array : Test {
 }
 
 
-sub hash : Test {
+sub hash_one_element : Test {
     is(Comic::_templatize(
         "[% hash.key %]", ("hash" => {"key" => "the key"})),
         "the key");
+}
+
+
+sub hash_all_elements : Tests {
+    my %hash = ("a" => "1", "b" => "2", "c" => "3");
+    my @order = sort keys %hash;
+    my %vars = ("hash" => \%hash, "order" => \@order);
+    is(Comic::_templatize('[% FOREACH o IN order %][% hash.$o %][% END %]', %vars),
+        '123');
+}
+
+
+sub hash_of_hashes: Test {
+    my %languages = (
+        "de" => { "1" => "eins", "2" => "zwei" },
+        "en" => { "1" => "one", "2" => "two" },
+    );
+    my @lang_order = qw(de en);
+    my @in_lang_order = qw(1 2);
+
+    my $template = <<'TEMPL';
+[% FOREACH l IN langorder %]
+    [% FOREACH il IN in_lang_order %]
+        [% FOREACH v IN languages.$l.$il %]
+            [% v %]
+        [% END %]
+    [% END %]
+[% END %]
+TEMPL
+
+    like(Comic::_templatize($template, (
+            "languages" => \%languages,
+            "langorder" => \@lang_order,
+            "in_lang_order" => \@in_lang_order)),
+        qr{^\s*eins\s*zwei\s*one\s*two\s*$}m);
 }
 
 
