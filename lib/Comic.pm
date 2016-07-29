@@ -748,7 +748,7 @@ sub _do_export_html {
         $tags .= $t;
     }
     $vars{description} = encode_entities($text{keywords}{$language} . ', ' . $tags);
-    return _templatize(_slurp($text{comicTemplateFile}{$language}), %vars)
+    return _templatize($text{comicTemplateFile}, _slurp($text{comicTemplateFile}{$language}), %vars)
         or croak "Error writing HTML: $OS_ERROR";
 }
 
@@ -904,7 +904,7 @@ sub _pos_to_frame {
 
 
 sub _templatize {
-    my ($template, %vars) = @ARG;
+    my ($template_file, $template, %vars) = @ARG;
 
     my %options = (
         STRICT => 1,
@@ -912,7 +912,7 @@ sub _templatize {
     my $t = Template->new(%options) ||
         croak('Cannot construct template: ' . Template->error());
     my $output = '';
-    $t->process(\$template, \%vars, \$output) || croak $t->error() . "\n";
+    $t->process(\$template, \%vars, \$output) || croak "$template_file: " . $t->error() . "\n";
     if ($output =~ m/\[%/mg || $output =~ m/%\]/mg) {
         croak 'Unresolved template marker';
     }
@@ -1051,7 +1051,7 @@ sub _do_export_archive {
         $vars{'sizemap'} = 'sizemap.html';
 
         my $t = _slurp($templates{$language});
-        _write_file($page, _templatize($t, %vars));
+        _write_file($page, _templatize($templates{$language}, $t, %vars));
     }
     return;
 }
@@ -1185,7 +1185,7 @@ sub size_map {
         $vars{svg} =~ s/<!DOCTYPE[^>]+>\n//;
 
         _write_file('generated/' . lc($language) . '/tmp/sizemap.html',
-            _templatize(_slurp($text{sizeMapTemplateFile}{$language}), %vars));
+            _templatize($text{sizeMapTemplateFile}, _slurp($text{sizeMapTemplateFile}{$language}), %vars));
     }
     return;
 }

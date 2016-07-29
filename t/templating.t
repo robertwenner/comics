@@ -23,31 +23,31 @@ sub make_comic {
 
 
 sub simple_expression : Test {
-    is(Comic::_templatize('[% modified %]', ("modified" => "today")), "today");
+    is(Comic::_templatize('file.templ', '[% modified %]', ("modified" => "today")), "today");
 }
 
 
 sub case_sensitive : Test {
     eval {
-        Comic::_templatize('[% modified %]', ("MODified" => "today"));
+        Comic::_templatize('file.templ', '[% modified %]', ("MODified" => "today"));
     };
     like($@, qr/undefined variable/i);
 }
 
 
 sub white_space : Test {
-    is(Comic::_templatize("[%modified\t\t %]", ("modified" => "today")), "today");
+    is(Comic::_templatize('file.templ', "[%modified\t\t %]", ("modified" => "today")), "today");
 }
 
 
 sub utf8 : Test {
-    is(Comic::_templatize('[%modified%]', ("modified" => "töday")), "töday");
+    is(Comic::_templatize('file.templ', '[%modified%]', ("modified" => "töday")), "töday");
 }
 
 
 sub template_syntax_error : Test {
     eval {
-        Comic::_templatize('[% modified ', ("modified" => "today"));
+        Comic::_templatize('file.templ', '[% modified ', ("modified" => "today"));
     };
     like($@, qr/Unresolved template marker/i);
 }
@@ -55,7 +55,7 @@ sub template_syntax_error : Test {
 
 sub unknown_variable : Test {
     eval {
-        Comic::_templatize('[% modified %]', ("a" => "b"));
+        Comic::_templatize('file.templ', '[% modified %]', ("a" => "b"));
     };
     like($@, qr/undefined variable/i);
 }
@@ -63,7 +63,7 @@ sub unknown_variable : Test {
 
 sub stray_opening_tag : Test {
     eval {
-        Comic::_templatize('[% a', ("a" => "b"));
+        Comic::_templatize('file.templ', '[% a', ("a" => "b"));
     };
     like($@, qr/unresolved template marker/i);
 }
@@ -71,21 +71,21 @@ sub stray_opening_tag : Test {
 
 sub stray_closing_tag : Test {
     eval {
-        Comic::_templatize("\nblah\na %]\nblah\n\n", ("a" => "b"));
+        Comic::_templatize('file.templ', "\nblah\na %]\nblah\n\n", ("a" => "b"));
     };
     like($@, qr/unresolved template marker/i);
 }
 
 
 sub array : Test {
-    is(Comic::_templatize(
+    is(Comic::_templatize('file.templ',
         "[% FOREACH a IN array %][% a %][% END %]", ("array" => ["a", "b", "c"])),
         "abc");
 }
 
 
 sub hash_one_element : Test {
-    is(Comic::_templatize(
+    is(Comic::_templatize('file.templ',
         "[% hash.key %]", ("hash" => {"key" => "the key"})),
         "the key");
 }
@@ -95,7 +95,7 @@ sub hash_all_elements : Tests {
     my %hash = ("a" => "1", "b" => "2", "c" => "3");
     my @order = sort keys %hash;
     my %vars = ("hash" => \%hash, "order" => \@order);
-    is(Comic::_templatize('[% FOREACH o IN order %][% hash.$o %][% END %]', %vars),
+    is(Comic::_templatize('file.templ', '[% FOREACH o IN order %][% hash.$o %][% END %]', %vars),
         '123');
 }
 
@@ -118,7 +118,7 @@ sub hash_of_hashes: Test {
 [% END %]
 TEMPL
 
-    like(Comic::_templatize($template, (
+    like(Comic::_templatize('file.templ', $template, (
             "languages" => \%languages,
             "langorder" => \@lang_order,
             "in_lang_order" => \@in_lang_order)),
@@ -127,7 +127,7 @@ TEMPL
 
 
 sub function : Test {
-    is(Comic::_templatize(
+    is(Comic::_templatize('file.templ',
         "[% func %]", ("func" => &{ return "works" })),
         "works");
 }
@@ -136,10 +136,10 @@ sub function : Test {
 sub object_member : Tests {
     my $comic = make_comic();
     is($comic->{file}, "some_comic.svg");
-    is(Comic::_templatize(
+    is(Comic::_templatize('file.templ',
         "[%comic.file%]", ("comic" => $comic)),
         "some_comic.svg");
-    is(Comic::_templatize(
+    is(Comic::_templatize('file.templ',
         "[%comic.meta_data.title.Deutsch%]", ("comic" => $comic)),
         "Bier trinken");
 }
@@ -147,13 +147,13 @@ sub object_member : Tests {
 
 sub object_function_code_ref : Tests {
     my $comic = make_comic();
-    is(Comic::_templatize(
+    is(Comic::_templatize('file.templ',
         "[%notFor(comic, 'Pimperanto')%]", (
             "notFor" => \&Comic::_not_for,
             "comic" => $comic,
         )),
         1);
-    is(Comic::_templatize(
+    is(Comic::_templatize('file.templ',
         "[%notFor(comic, 'Deutsch')%]", (
             "notFor" => \&Comic::_not_for,
             "comic" => $comic,
@@ -164,23 +164,23 @@ sub object_function_code_ref : Tests {
 
 sub object_function_wrapped : Tests {
     my $comic = make_comic();
-    is(Comic::_templatize(
+    is(Comic::_templatize('file.templ',
         "[%notFor(comic, 'Pimperanto')%]", (
             "notFor" => sub { return Comic::_not_for(@_); },
             "comic" => $comic,
         )),
         1);
-    is(Comic::_templatize(
+    is(Comic::_templatize('file.templ',
         "[%notFor(comic, 'Deutsch')%]", (
             "notFor" => sub { return Comic::_not_for(@_); },
             "comic" => $comic,
         )),
         0);
 
-    is(Comic::_templatize(
+    is(Comic::_templatize('file.templ',
         "[%notFor('Pimperanto')%]", ("notFor" => sub { return $comic->_not_for(@_);})),
         1);
-    is(Comic::_templatize(
+    is(Comic::_templatize('file.templ',
         "[%notFor('Deutsch')%]", ("notFor" => sub { return $comic->_not_for(@_);})),
         0);
 }
@@ -207,5 +207,13 @@ TEMPLATE
 
 
 sub html_special_as_is : Test {
-    is(Comic::_templatize("[%modified\t\t %]", ("modified" => "<b>")), "<b>");
+    is(Comic::_templatize('file.templ', "[%modified\t\t %]", ("modified" => "<b>")), "<b>");
+}
+
+
+sub error_includes_template_file_name : Test {
+    eval {
+        Comic::_templatize('file.templ', "[% oops %]");
+    };
+    like($@, qr{^file.templ:.*undefined variable});
 }
