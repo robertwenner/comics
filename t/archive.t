@@ -24,10 +24,18 @@ sub set_up : Test(setup) {
 [% END %]
 [% modified %]
 TEMPL
-    MockComic::fake_file("backlog", <<TEMPL);
+    MockComic::fake_file("backlog", <<'TEMPL');
 [% FOREACH c IN comics %]
-[% NEXT IF notFor(c, 'Deutsch') %]
-<li><a href="[% c.href.Deutsch %]">[% c.meta_data.title.Deutsch %]</a> ([%c.meta_data.published.when%])</li>
+    <li>[% c.file %] [% c.meta_data.published.when %]
+        <ul>
+            [% FOREACH l IN languages %]
+                [% DEFAULT c.meta_data.title.$l = 0 %]
+                [% IF c.meta_data.title.$l %]
+                    <li><a href="backlog/[% c.htmlFile.$l %]">[% c.meta_data.title.$l %]</a></li>
+                [% END %]
+            [% END %]
+        </ul>
+    </li>
 [% END %]
 TEMPL
 }
@@ -100,19 +108,48 @@ sub no_comics : Tests {
 
 sub backlog_future_date : Tests {
     make_comic('eins', "3016-01-01", 'Deutsch');
+    Comic::export_all_html('Deutsch');
     Comic::export_archive(\%archives, \%backlogs);
-    MockComic::assert_wrote_file('generated/deutsch/tmp/backlog.html', qr{
-        <li><a\shref="backlog/eins.html">eins</a>\s\(3016-01-01\)</li>\s+
-        }mx);
+    MockComic::assert_wrote_file('generated/deutsch/tmp/backlog.html',
+        qr{<li>some_comic.svg\s+3016-01-01\s*<ul>}mx);
+    MockComic::assert_wrote_file('generated/deutsch/tmp/backlog.html',
+        qr{<li><a\shref="backlog/eins.html">eins</a></li>}mx);
 }
 
 
 sub backlog_no_date : Tests {
     make_comic('eins', '', 'Deutsch');
+    Comic::export_all_html('Deutsch');
     Comic::export_archive(\%archives, \%backlogs);
-    MockComic::assert_wrote_file('generated/deutsch/tmp/backlog.html', qr{
-        <li><a\shref="backlog/eins.html">eins</a>\s\(\)</li>\s+
-        }mx);
+    MockComic::assert_wrote_file('generated/deutsch/tmp/backlog.html',
+        qr{<li>some_comic.svg\s*<ul>}mx);
+    MockComic::assert_wrote_file('generated/deutsch/tmp/backlog.html',
+        qr{<li><a\shref="backlog/eins.html">eins</a></li>}mx);
+}
+
+
+sub backlog_two_languages : Tests {
+    MockComic::make_comic(
+        $MockComic::PUBLISHED => '',
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => "Beer!",
+            $MockComic::DEUTSCH => "Bier!"});
+    Comic::export_all_html('Deutsch', 'English');
+    %backlogs = ('Deutsch' => 'backlog', 'English' => 'backlog');
+    Comic::export_archive(\%archives, \%backlogs);
+    MockComic::assert_wrote_file('generated/deutsch/tmp/backlog.html',
+        qr{<li><a\shref="backlog/bier.html">Bier!</a></li>\s*
+           <li><a\shref="backlog/beer.html">Beer!</a></li>}mx);
+}
+
+
+sub backlog_ignores_language_not_for_comic : Tests {
+    make_comic('Bier!', '', 'Deutsch');
+    Comic::export_all_html('Deutsch', 'English');
+    %backlogs = ('Deutsch' => 'backlog', 'English' => 'backlog');
+    Comic::export_archive(\%archives, \%backlogs);
+    MockComic::assert_wrote_file('generated/deutsch/tmp/backlog.html',
+        qr{<li><a\shref="backlog/bier.html">Bier!</a></li>}mx);
 }
 
 

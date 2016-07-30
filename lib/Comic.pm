@@ -51,8 +51,8 @@ This document refers to version 0.0.2.
     foreach my $file (@ARGV) {
         my $c = Comic->new($file);
         $c->export_png(@languages);
-        $c->export_html(@languages);
     }
+    Comic::export_all_html(@languages);
 
 
 =head1 DESCRIPTION
@@ -1018,14 +1018,15 @@ sub _archive_filter {
 
 sub _backlog_filter {
     my ($comic, $language) = @ARG;
-    return $comic->_not_yet_published() && $comic->_is_for($language);
+    return $comic->_not_yet_published();
 }
 
 
 sub _do_export_archive {
     my ($what, $dir, $url, $filter, %templates) = @ARG;
 
-    foreach my $language (keys %templates) {
+    my @languages = sort keys %templates;
+    foreach my $language (@languages) {
         my @filtered = sort _compare grep { $filter->($_, $language) } @comics;
         my $hrsn = "${what}Page";
         my $page = 'generated/' . lc($language) . "/$dir/$text{$hrsn}{$language}";
@@ -1034,10 +1035,11 @@ sub _do_export_archive {
             _write_file($page, "<p>No comics in $what.</p>");
             next;
         }
-
         my %vars;
+        $vars{'languages'} = \@languages;
         $vars{'title'} = $text{archiveTitle}{$language};
         $vars{'url'} = $text{archivePage}{$language};
+        $vars{'backlogurl'} = "$language/tmp/backlog/";
         $vars{'comics'} = \@filtered;
         $vars{'modified'} = $filtered[-1]->{modified};
         $vars{'notFor'} = \&_not_for;
