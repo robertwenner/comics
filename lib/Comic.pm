@@ -732,7 +732,7 @@ sub _do_export_html {
     $vars{'ccbutton'} = "${path}$text{ccbutton}{$language}";
     my $contrib = $self->{meta_data}->{contrib};
     $vars{'contrib'} = 0;
-    if (defined($contrib) && scalar(@{$contrib}) > 0) {
+    if (defined($contrib) && join('', @{$contrib}) !~ m{^\s*$}) {
         $vars{'contrib'} = $contrib;
     }
 

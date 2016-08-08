@@ -59,8 +59,22 @@ sub contributor_credit_en_none : Tests {
 
 
 sub contributor_credit_en_empty : Tests {
-    my $comic = MockComic::make_comic($MockComic::JSON => 
+    my $comic = MockComic::make_comic($MockComic::JSON =>
         "&quot;contrib&quot;: []");
+    like(write_templ_en($comic), qr{\A\s*\z}xim);
+}
+
+
+sub contributor_credit_en_empty_quotes : Tests {
+    my $comic = MockComic::make_comic($MockComic::JSON =>
+        "&quot;contrib&quot;: [ &quot;&quot;]");
+    like(write_templ_en($comic), qr{\A\s*\z}xim);
+}
+
+
+sub contributor_credit_en_whitespace_quotes : Tests {
+    my $comic = MockComic::make_comic($MockComic::JSON =>
+        "&quot;contrib&quot;: [ &quot;   &quot;  ,  \t  &quot; &quot;]");
     like(write_templ_en($comic), qr{\A\s*\z}xim);
 }
 
@@ -71,9 +85,8 @@ sub contributor_credit_en_one : Tests {
 }
 
 
-
 sub contributor_credit_en_two : Tests {
-    my $comic = MockComic::make_comic($MockComic::CONTRIBUTORS => 
+    my $comic = MockComic::make_comic($MockComic::CONTRIBUTORS =>
         ['Mark Dilger', 'Mike Karr']);
     like(write_templ_en($comic),
         qr{With\s+help\s+from\s+Mark\s+Dilger\s+and\s+Mike\s+Karr}xim);
@@ -81,7 +94,7 @@ sub contributor_credit_en_two : Tests {
 
 
 sub contributor_credit_en_many : Tests {
-    my $comic = MockComic::make_comic($MockComic::CONTRIBUTORS => 
+    my $comic = MockComic::make_comic($MockComic::CONTRIBUTORS =>
         ['Mark Dilger', 'Mike Karr', 'My Self']);
     like(write_templ_en($comic),
         qr{With\s+help\s+from\s+Mark\s+Dilger,\s+Mike\s+Karr,\s+and\s+My\s+Self}xim);
@@ -95,7 +108,7 @@ sub contributor_credit_de_none : Test {
 
 
 sub contributor_credit_de_empty : Tests {
-    my $comic = MockComic::make_comic($MockComic::JSON => 
+    my $comic = MockComic::make_comic($MockComic::JSON =>
         "&quot;contrib&quot;: []");
     like(write_templ_en($comic), qr{\A\s*\z}xim);
 }
@@ -108,7 +121,7 @@ sub contributor_credit_de_one : Test {
 
 
 sub contributor_credit_de_two : Test {
-    my $comic = MockComic::make_comic($MockComic::CONTRIBUTORS => 
+    my $comic = MockComic::make_comic($MockComic::CONTRIBUTORS =>
         ['Mark Dilger', 'Mike Karr']);
     like(write_templ_de($comic),
         qr{Mit\s+Ideen\s+von\s+Mark\s+Dilger\s+und\s+Mike\s+Karr}xim);
@@ -116,7 +129,7 @@ sub contributor_credit_de_two : Test {
 
 
 sub contributor_credit_de_many : Test {
-    my $comic = MockComic::make_comic($MockComic::CONTRIBUTORS => 
+    my $comic = MockComic::make_comic($MockComic::CONTRIBUTORS =>
         ['Mark Dilger', 'Mike Karr', 'My Self']);
     like(write_templ_de($comic),
         qr{Mit\s+Ideen\s+von\s+Mark\s+Dilger,\s+Mike\s+Karr\s+und\s+My\s+Self}xim);
