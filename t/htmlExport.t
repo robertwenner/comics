@@ -1,5 +1,6 @@
 use strict;
 use warnings;
+use utf8;
 
 use base 'Test::Class';
 use Test::More;
@@ -24,9 +25,51 @@ sub make_comic {
 }
 
 
-sub export_only_if_meta_title_for_language : Test {
-    my $comic = MockComic::make_comic($MockComic::PUBLISHED => '2016-04-19');
-    $comic->export_all_html("Pimperanto");
+sub languages_one : Test {
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { 'English' => 'Drinking beer' }
+    );
+    is_deeply([$comic->_languages()], ['English']);
+}
+
+
+sub languages_many : Test {
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            'English' => 'Drinking beer',
+            'Deutsch' => 'Bier trinken',
+            'Español' => 'Tomar cerveca',
+        }
+    );
+    is_deeply([sort $comic->_languages()], ['Deutsch', 'English', 'Español']);
+}
+
+
+sub languages_none : Tests {
+    no warnings 'redefine';
+    local *Comic::_slurp = sub {
+        return <<'XML';
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns="http://www.w3.org/2000/svg">
+  <metadata id="metadata7">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:description>{
+            "title" : {}
+        }</dc:description>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+</svg>
+XML
+    };
+    my $comic = new Comic();
+    is_deeply([sort $comic->_languages()], []);
+    $comic->export_all_html();
     ok(1); # Would have failed above
 }
 
@@ -36,7 +79,7 @@ sub navigation_links_first : Tests {
     my $feb = make_comic('English', 'Feb', '2016-02-01');
     my $mar = make_comic('English', 'Mar', '2016-03-01');
 
-    Comic::export_all_html("English" => "en");
+    Comic::export_all_html();
 
     is($jan->{'first'}{'English'}, 0, "Jan first");
     is($jan->{'prev'}{'English'}, 0, "Jan prev");
@@ -50,7 +93,7 @@ sub navigation_links_middle : Tests {
     my $feb = make_comic('English', 'Feb', '2016-02-01');
     my $mar = make_comic('English', 'Mar', '2016-03-01');
 
-    Comic::export_all_html("English" => "en");
+    Comic::export_all_html();
 
     is($feb->{'first'}{'English'}, "jan.html", "Feb first");
     is($feb->{'prev'}{'English'}, "jan.html", "Feb prev");
@@ -64,7 +107,7 @@ sub navigation_links_last : Tests {
     my $feb = make_comic('English', 'Feb', '2016-02-01');
     my $mar = make_comic('English', 'Mar', '2016-03-01');
 
-    Comic::export_all_html("English" => "en");
+    Comic::export_all_html();
 
     is($mar->{'first'}{'English'}, "jan.html", "Mar first");
     is($mar->{'prev'}{'English'}, "feb.html", "Mar prev");
@@ -75,7 +118,7 @@ sub navigation_links_last : Tests {
 
 sub ignores_unknown_language : Test {
     my $comic = make_comic('English', 'Jan', '2016-01-01'),
-    Comic::export_all_html("Deutsch" => "de");
+    Comic::export_all_html();
     is($comic->{pref}, undef);
 }
 
@@ -85,7 +128,7 @@ sub skips_comic_without_that_language : Tests {
     my $feb = make_comic('Deutsch', 'feb', '2016-02-01');
     my $mar = make_comic('English', 'mar', '2016-03-01');
 
-    Comic::export_all_html("English" => "en", "Deutsch" => "de");
+    Comic::export_all_html();
 
     is($jan->{'first'}{'English'}, 0, "Jan first");
     is($jan->{'prev'}{'English'}, 0, "Jan first");
@@ -106,14 +149,14 @@ sub skips_comic_without_that_language : Tests {
 
 sub skips_comic_without_published_date : Test {
     make_comic('English', 'not yet', '');
-    Comic::export_all_html('English' => 'en');
+    Comic::export_all_html();
     is_deeply(\@MockComic::exported, ['backlog:not yet']);
 }
 
 
 sub skips_comic_in_far_future : Tests {
     my $not_yet = make_comic('English', 'not yet', '2200-01-01');
-    Comic::export_all_html('English' => 'en');
+    Comic::export_all_html();
     is_deeply(\@MockComic::exported, ['backlog:not yet']);
 }
 
@@ -128,7 +171,7 @@ sub includes_comic_for_next_friday : Tests {
     #  29 30 31
     MockComic::fake_now(DateTime->new(year => 2016, month => 5, day => 1));
     make_comic('English', 'next Friday', '2016-05-01');
-    Comic::export_all_html('English' => 'en');
+    Comic::export_all_html();
     is_deeply(\@MockComic::exported, ['english/web/comics:next Friday']);
 }
 
@@ -138,7 +181,7 @@ sub separate_navs_for_archive_and_backlog : Tests {
     my $a2 = make_comic('Deutsch', 'arch2', '2016-01-02');
     my $b1 = make_comic('Deutsch', 'back1', '2222-01-01');
     my $b2 = make_comic('Deutsch', 'back2', '2222-01-02');
-    Comic::export_all_html('Deutsch' => 'de');
+    Comic::export_all_html();
 
     is($a1->{'prev'}{'Deutsch'}, 0, "arch1 should have no prev");
     is($a1->{'next'}{'Deutsch'}, "arch2.html", "arch1 next should be arch2");
@@ -160,16 +203,3 @@ sub separate_navs_for_archive_and_backlog : Tests {
     is($b2->{'first'}{'Deutsch'}, "back1.html", "back2 first should be back1");
     is($b2->{'last'}{'Deutsch'}, 0, "back2 should not have a last");
 }
-
-
-sub backlog_transcript : Test {
-    my $comic = make_comic('Deutsch', 'Beer flavored', '4001-01-01');
-    no warnings qw/redefine/;
-    local *Comic::_slurp = sub {
-        return '[% IF backlog %][% transcript %][% END %]';
-    };
-    return $comic->_do_export_html('Deutsch');
-    is(write_templ_de($comic), ''); 
-    # Would have fail if the backlog variable was not set.
-}
-

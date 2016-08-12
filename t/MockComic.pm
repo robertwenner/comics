@@ -134,7 +134,7 @@ sub make_comic {
     };
 
     my $comic = new Comic($args{$IN_FILE});
-    $comic->export_png($MockComic::DEUTSCH, $MockComic::ENGLISH);
+    $comic->export_png();
     return $comic;
 }
 

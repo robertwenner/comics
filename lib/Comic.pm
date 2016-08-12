@@ -26,7 +26,7 @@ use SVG;
 
 use version; our $VERSION = qv('0.0.2');
 
-=for stopwords Inkscape inkscape html SVG svg PNG png Wenner MERCHANTABILITY perlartistic
+=for stopwords Inkscape inkscape html SVG svg PNG png Wenner MERCHANTABILITY perlartistic MetaEnglish
 
 
 =head1 NAME
@@ -43,16 +43,11 @@ This document refers to version 0.0.2.
 
     use Comic;
 
-    my @languages = (
-        "Deutsch",
-        "English"
-    );
-
     foreach my $file (@ARGV) {
         my $c = Comic->new($file);
-        $c->export_png(@languages);
+        $c->export_png();
     }
-    Comic::export_all_html(@languages);
+    Comic::export_all_html();
 
 
 =head1 DESCRIPTION
@@ -205,32 +200,20 @@ sub _mtime {
 
 =head2 export_png
 
-Exports PNGs for the given languages.
+Exports PNGs for all languages with meta data in the graphic.
 
 The png file will be the lower case title of the comic, limited to ASCII
 only characters. It will be placed in F<generated/web/$language/>.
 
-Parameters:
-
-=over 4
-
-    =item B<@languages> language names (e.g., "English"). The language name
-        must be used in the Inkscape layer names and the JSON meta data.
-
-        This code will only work on the languages passed, even if additional
-        languages are present in the SVG. Specifying a language that the SVG
-        does not have is fine, you just don't get any output (png,
-        transcript) for it.
-
-=back
+Inkscape files must have meta data matching layer names, e.g., "English" in
+the meta data and an "English" layer and an "MetaEnglish" layer
 
 =cut
 
 sub export_png {
-    my ($self, @languages) = @ARG;
+    my ($self) = @ARG;
 
-    foreach my $language (@languages) {
-        next if $self->_not_for($language);
+    foreach my $language ($self->_languages()) {
         $counts{'comics'}{$language}++;
 
         my $png_file;
@@ -244,14 +227,14 @@ sub export_png {
 
         unless (_up_to_date($self->{file}, $png_file)) {
             $self->_check_title($language);
-            $self->_check_date(@languages);
+            $self->_check_date($self->_languages());
             $self->_check_dont_publish($language);
             $self->_check_frames();
             $self->_check_tags('tags', $language);
             $self->_check_tags('people', $language);
             $self->_check_transcript($language);
 
-            $self->_flip_language_layers($language, @languages);
+            $self->_flip_language_layers($language);
             $self->_svg_to_png($language, $self->_write_temp_svg_file($language), $png_file);
         }
         $self->_get_png_info($png_file);
@@ -435,7 +418,7 @@ sub _both_names {
 
 
 sub _flip_language_layers {
-    my ($self, $language, @languages) = @ARG;
+    my ($self, $language) = @ARG;
 
     # Hide all but current language layers
     my $had_lang = 0;
@@ -445,7 +428,7 @@ sub _flip_language_layers {
     foreach my $layer ($self->{xpath}->findnodes($all_layers)) {
         my $label = $layer->{'inkscape:label'};
         $layer->{'style'} = 'display:inline' unless (defined($layer->{'style'}));
-        foreach my $other_lang (@languages) {
+        foreach my $other_lang ($self->_languages()) {
             # Turn off all meta layers and all other languages
             if ($label =~ m/$other_lang$/ || $label =~ m/^Meta/) {
                 $layer->{'style'} =~ s{\bdisplay:inline\b}{display:none};
@@ -574,39 +557,25 @@ sub _normalized_title {
 
 =head2 export_all_html
 
-Generates a HTML page for each Comics that have been loaded.
+Generates a HTML page for each Comic that has been loaded.
 
 The HTML page will be the same name as the generated PNG, with a .html
 extension and will be placed next to it.
 
-Parameters:
-
-=over 4
-
-    =item B<@languages> language names to export.
-
-=back
-
 =cut
 
 sub export_all_html {
-    my (@languages) = @ARG;
-
     foreach my $c (@comics) {
-        foreach my $language (@languages) {
-            next if $c->_not_for($language);
+        foreach my $language ($c->_languages()) {
             my $name = $c->_make_file_name($language, 'web/comics', 'html');
             $c->{htmlFile}{$language} = basename($name);
         }
     }
 
     my @sorted = sort _compare @comics;
-    # Would be nice to do this incrementally...
     foreach my $i (0 .. @sorted - 1) {
         my $comic = $sorted[$i];
-        foreach my $language (@languages) {
-            next if ($comic->_not_for($language));
-
+        foreach my $language ($comic->_languages()) {
             my $first_comic = _find_next($language, $i, \@sorted, [0 .. $i - 1]);
             $comic->{'first'}{$language} = $first_comic ? $first_comic->{htmlFile}{$language} : 0;
             my $prev_comic = _find_next($language, $i, \@sorted, [reverse 0 .. $i - 1]);
@@ -625,8 +594,17 @@ sub export_all_html {
 }
 
 
+sub _languages {
+    my ($self) = @ARG;
+
+    my @languages;
+    push @languages, keys $self->{meta_data}->{title};
+    return @languages;
+}
+
+
 sub _not_yet_published {
-    my ($self) = @_;
+    my ($self) = @ARG;
 
     Readonly my $DAYS_PER_WEEK => 7;
     Readonly my $FRIDAY => 5;
