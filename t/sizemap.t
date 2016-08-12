@@ -34,3 +34,64 @@ sub sorting : Tests {
     is_deeply([$c, $b, $a], [sort Comic::_by_height ($b, $a, $c)]);
     is_deeply([$a, $b, $c], [sort Comic::_by_width ($b, $a, $c)]);
 }
+
+
+sub aggregate_none : Tests {
+    my %aggregated = Comic::_aggregate_comic_sizes('Deutsch', 'English');
+    is_deeply(\%aggregated, {
+        height => {
+            min => 9999999,
+            max => 0,
+            avg => 'n/a',
+            cnt => 0,
+       },
+        width => {
+            min => 9999999,
+            max => 0,
+            avg => 'n/a',
+            cnt => 0,
+       },
+    });
+}
+
+
+sub aggregate_one : Tests {
+    make_comic(100, 300);
+    my %aggregated = Comic::_aggregate_comic_sizes('Deutsch', 'English');
+    is_deeply(\%aggregated, {
+        height => {
+            min => 300,
+            max => 300,
+            avg => 300,
+            cnt => 1,
+       },
+        width => {
+            min => 100,
+            max => 100,
+            avg => 100,
+            cnt => 1,
+       },
+    });
+}
+
+
+sub aggregate_many : Tests {
+    make_comic(100, 500);
+    make_comic(200, 600);
+    make_comic(300, 400);
+    my %aggregated = Comic::_aggregate_comic_sizes('Deutsch', 'English');
+    is_deeply(\%aggregated, {
+        height => {
+            min => 400,
+            max => 600,
+            avg => 500,
+            cnt => 3,
+       },
+        width => {
+            min => 100,
+            max => 300,
+            avg => 200,
+            cnt => 3,
+        },
+    });
+}

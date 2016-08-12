@@ -131,10 +131,7 @@ my %text = (
         'English' => 'cc.png',
         'Deutsch' => 'cc.png',
     },
-    sizeMapTemplateFile => {
-        'English' => 'web/english/sizemap.templ',
-        'Deutsch' => 'web/deutsch/sizemap.templ',
-    },
+    sizeMapTemplateFile => 'web/sizemap.templ',
 );
 
 
@@ -1136,119 +1133,89 @@ sub counts_of_in {
 
 Writes an SVG size map of all comics for comparing sizes.
 
-Parameters:
-
-=over 4
-
-    =item B<@languages> for what languages.
-
-=back
-
 =cut
 
 sub size_map {
-    my (@languages) = @ARG;
+    my %aggregate = _aggregate_comic_sizes();
 
-    my %aggregate = _aggregate_comic_sizes(@languages);
     Readonly my $SCALE_BY => 0.3;
-    foreach my $language (@languages) {
-        my $svg = SVG->new(
-            width => $aggregate{$language}{width}{'max'} * $SCALE_BY,
-            height => $aggregate{$language}{height}{'max'} * $SCALE_BY,
-            -printerror => 1,
-            -raiseerror => 1);
-        foreach my $comic (@comics) {
-            my $color = 'green';
-            $color = 'blue' if ($comic->_not_yet_published());
-            $svg->rectangle(x => 0, y => 0,
-                width => $comic->{width} * $SCALE_BY,
-                height => $comic->{height} * $SCALE_BY,
-                id => basename("$comic->{file}"),
-                style => {
-                    'fill-opacity' => 0,
-                    'stroke-width' => '3',
-                    'stroke' => "$color",
-                });
-        }
+    my $svg = SVG->new(
+        width => $aggregate{width}{'max'} * $SCALE_BY,
+        height => $aggregate{height}{'max'} * $SCALE_BY,
+        -printerror => 1,
+        -raiseerror => 1);
 
-        my %vars;
-        foreach my $agg (qw(min max avg)) {
-            foreach my $dim (qw(width height)) {
-                $vars{"$agg$dim"} = $aggregate{$language}{$dim}{$agg} || 'n/a';
-            }
-        }
-        $vars{'title'} = 'Sizemap';
-        $vars{'url'} = $text{backlogPage};
-        $vars{'height'} = $aggregate{$language}{height}{'max'} * $SCALE_BY;
-        $vars{'width'} = $aggregate{$language}{width}{'max'} * $SCALE_BY;
-        $vars{'logo'} = "../web/$text{logo}{$language}";
-        $vars{'imprint'} = "../web/$text{imprintPage}{$language}";
-        $vars{'imprintCC'} = "$text{imprintPageAbsolute}{$language}";
-        $vars{'ccbutton'} = "../web/$text{ccbutton}{$language}";
-        $vars{'favicon'} = '../web/favicon.png';
-        $vars{'stylesheet'} = '../web/styles.css';
-        $vars{'archive'} = "../web/$text{archivePage}{$language}";
-        $vars{'backlog'} = $text{backlogPage};
-        $vars{'comics_by_width'} = [sort _by_width @comics];
-        $vars{'comics_by_height'} = [sort _by_height @comics];
-        $vars{'notFor'} = \&_not_for;
-
-        $vars{svg} = $svg->xmlify();
-        # Remove XML declaration and doctype; Firefox marks them red in the source
-        # view of the page.
-        $vars{svg} =~ s/<\?xml[^>]+>\n//;
-        $vars{svg} =~ s/<!DOCTYPE[^>]+>\n//;
-
-        _write_file('generated/' . lc($language) . '/tmp/sizemap.html',
-            _templatize($text{sizeMapTemplateFile}, _slurp($text{sizeMapTemplateFile}{$language}), %vars));
+    foreach my $comic (@comics) {
+        my $color = 'green';
+        $color = 'blue' if ($comic->_not_yet_published());
+        $svg->rectangle(x => 0, y => 0,
+            width => $comic->{width} * $SCALE_BY,
+            height => $comic->{height} * $SCALE_BY,
+            id => basename("$comic->{file}"),
+            style => {
+                'fill-opacity' => 0,
+                'stroke-width' => '3',
+                'stroke' => "$color",
+            });
     }
+
+    my %vars;
+    foreach my $agg (qw(min max avg)) {
+        foreach my $dim (qw(width height)) {
+            $vars{"$agg$dim"} = $aggregate{$dim}{$agg} || 'n/a';
+        }
+    }
+    $vars{'height'} = $aggregate{height}{'max'} * $SCALE_BY;
+    $vars{'width'} = $aggregate{width}{'max'} * $SCALE_BY;
+    $vars{'comics_by_width'} = [sort _by_width @comics];
+    $vars{'comics_by_height'} = [sort _by_height @comics];
+    $vars{svg} = $svg->xmlify();
+    # Remove XML declaration and doctype; Firefox marks them red in the source
+    # view of the page.
+    $vars{svg} =~ s/<\?xml[^>]+>\n//;
+    $vars{svg} =~ s/<!DOCTYPE[^>]+>\n//;
+
+    _write_file('generated/sizemap.html',
+        _templatize($text{sizeMapTemplateFile}, _slurp($text{sizeMapTemplateFile}), %vars));
+
     return;
 }
 
 
 sub _aggregate_comic_sizes {
-    my (@languages) = @ARG;
-
     my %aggregate;
 
     my %inits = (
-        'min' => '9999999',
+        'min' => 9_999_999,
         'max' => 0,
         'avg' => 0,
         'cnt' => 0,
     );
-    foreach my $language (@languages) {
-        foreach my $agg (qw(min max avg cnt)) {
-            foreach my $dim (qw(height width)) {
-                $aggregate{$language}{$dim}{$agg} = $inits{$agg};
-            }
+    foreach my $agg (qw(min max avg cnt)) {
+        foreach my $dim (qw(height width)) {
+            $aggregate{$dim}{$agg} = $inits{$agg};
         }
     }
 
     foreach my $comic (@comics) {
-        foreach my $language (@languages) {
-            next unless ($comic->_is_for($language));
-            foreach my $dim (qw(height width)) {
-                if ($aggregate{$language}{$dim}{'min'} > $comic->{$dim}) {
-                    $aggregate{$language}{$dim}{'min'} = $comic->{$dim};
-                }
-                if ($aggregate{$language}{$dim}{'max'} < $comic->{$dim}) {
-                    $aggregate{$language}{$dim}{'max'} = $comic->{$dim};
-                }
-                $aggregate{$language}{$dim}{'avg'} += $comic->{$dim};
-                $aggregate{$language}{$dim}{'cnt'}++;
+        foreach my $dim (qw(height width)) {
+            if ($aggregate{$dim}{'min'} > $comic->{$dim}) {
+                $aggregate{$dim}{'min'} = $comic->{$dim};
             }
+            if ($aggregate{$dim}{'max'} < $comic->{$dim}) {
+                $aggregate{$dim}{'max'} = $comic->{$dim};
+            }
+            $aggregate{$dim}{'avg'} += $comic->{$dim};
+            $aggregate{$dim}{'cnt'}++;
         }
     }
 
-    foreach my $language (@languages) {
-        foreach my $dim (qw(height width)) {
-            if (($aggregate{$language}{$dim}{'cnt'} || 0) == 0) {
-                $aggregate{$language}{$dim}{avg} = 'n/a';
-            }
-            else {
-                $aggregate{$language}{$dim}{avg} /= $aggregate{$language}{$dim}{'cnt'};
-            }
+    foreach my $dim (qw(height width)) {
+        if (($aggregate{$dim}{'cnt'} || 0) == 0) {
+            $aggregate{$dim}{avg} = 'n/a';
+        }
+        else {
+            $aggregate{$dim}{avg} /= $aggregate{$dim}{'cnt'};
         }
     }
     return %aggregate;
