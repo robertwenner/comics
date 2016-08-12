@@ -107,14 +107,14 @@ sub skips_comic_without_that_language : Tests {
 sub skips_comic_without_published_date : Test {
     make_comic('English', 'not yet', '');
     Comic::export_all_html('English' => 'en');
-    is_deeply(\@MockComic::exported, ['tmp/backlog:not yet']);
+    is_deeply(\@MockComic::exported, ['backlog:not yet']);
 }
 
 
 sub skips_comic_in_far_future : Tests {
     my $not_yet = make_comic('English', 'not yet', '2200-01-01');
     Comic::export_all_html('English' => 'en');
-    is_deeply(\@MockComic::exported, ['tmp/backlog:not yet']);
+    is_deeply(\@MockComic::exported, ['backlog:not yet']);
 }
 
 
@@ -129,7 +129,7 @@ sub includes_comic_for_next_friday : Tests {
     MockComic::fake_now(DateTime->new(year => 2016, month => 5, day => 1));
     make_comic('English', 'next Friday', '2016-05-01');
     Comic::export_all_html('English' => 'en');
-    is_deeply(\@MockComic::exported, ['web/comics:next Friday']);
+    is_deeply(\@MockComic::exported, ['english/web/comics:next Friday']);
 }
 
 

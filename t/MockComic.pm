@@ -65,7 +65,7 @@ sub fake_file {
 
 sub fake_comic {
     my %args = @_;
-    
+
     my $json = _build_json(%args);
     my $xml = <<"HEADER";
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -102,6 +102,7 @@ sub make_comic {
 
     *Comic::_slurp = sub {
         my ($name) = @_;
+        die "Tried to read unmocked file '$name'" unless (defined($files_read{$name}));
         return $files_read{$name};
     };
 
@@ -128,11 +129,12 @@ sub make_comic {
         return $now || DateTime->now;
     };
 
-    my $comic = new Comic($args{$IN_FILE});
-    $comic->{pngFile} = { 
-        $MockComic::DEUTSCH => 'deutsch.png',
-        $MockComic::ENGLISH => 'english.png',
+    *Comic::_up_to_date = sub {
+        return 1;
     };
+
+    my $comic = new Comic($args{$IN_FILE});
+    $comic->export_png($MockComic::DEUTSCH, $MockComic::ENGLISH);
     return $comic;
 }
 
@@ -141,7 +143,7 @@ sub _build_json {
     my %args = @_;
 
     my $json = '';
-    
+
     $json .= _single_per_language_json($json, \%args, $TITLE); # comments series
     # Could check whether a scalar or array was passed and then generate
     # the JSON as needed, but this way it's easier to fail fast if a test
@@ -178,7 +180,7 @@ sub _build_json {
 }
 JSON
     }
-    
+
     # Manually defined JSON
     if (defined($args{$JSON})) {
         $json .= ",\n" if ($json ne '');
@@ -231,7 +233,7 @@ sub _array_per_language_json {
                 $json .= "    &quot;$what&quot;: {\n";
                 $hadOne = 1;
             }
-            
+
             $json .= "        &quot;$lang&quot;: ";
             my $elems = '';
             foreach my $v (@{$a{$what}{$lang}}) {
@@ -326,7 +328,7 @@ LAYER
      </text>
 TEXT
         }
-        $xml .= "</g>\n";        
+        $xml .= "</g>\n";
     }
     return $xml;
 }

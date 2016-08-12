@@ -105,10 +105,6 @@ my %text = (
         'English' => 'web/english/archive.templ',
         'Deutsch' => 'web/deutsch/archiv.templ',
     },
-    backlogTemplateFile => {
-        'English' => 'web/english/backlog.templ',
-        'Deutsch' => 'web/deutsch/backlog.templ',
-    },
     archivePage => {
         'English' => 'archive.html',
         'Deutsch' => 'archiv.html',
@@ -117,10 +113,8 @@ my %text = (
         'English' => 'The beercomics.com archive',
         'Deutsch' => 'Das Biercomics-Archiv',
     },
-    backlogPage => {
-        'English' => 'backlog.html',
-        'Deutsch' => 'backlog.html',
-    },
+    backlogTemplateFile => 'web/backlog.templ',
+    backlogPage => 'backlog.html',
     imprintPage => {
         'English' => 'imprint.html',
         'Deutsch' => 'impressum.html',
@@ -240,12 +234,16 @@ sub export_png {
 
     foreach my $language (@languages) {
         next if $self->_not_for($language);
-
         $counts{'comics'}{$language}++;
 
-        my $to = $self->_not_yet_published() ? 'tmp/backlog' : 'web/comics';
-        my $png_file = $self->_make_file_name($language, $to, 'png');
-        $self->{pngFile}{$language} = basename($png_file);
+        my $png_file;
+        if ($self->_not_yet_published()) {
+            $png_file = _make_dir('backlog/') . $self->_normalized_title($language) . '.png';
+        }
+        else {
+            $png_file = $self->_make_file_name($language, '/web/comics', 'png');
+        }
+        $self->{pngFile}{$language} = $png_file;
 
         unless (_up_to_date($self->{file}, $png_file)) {
             $self->_check_title($language);
@@ -544,14 +542,16 @@ sub _get_png_info {
 sub _make_file_name {
     my ($self, $language, $where, $ext) = @ARG;
 
-    return _make_dir($language, $where) . q{/} . $self->_normalized_title($language) . ".$ext";
+    return _make_dir(lc($language) . "/$where/") . $self->_normalized_title($language) . ".$ext";
 }
 
 
 sub _make_dir {
-    my ($language, $where) = @ARG;
-    my $dir = 'generated/' . lc $language . "/$where";
-    File::Path::make_path($dir) or croak("Cannot mkdirs $dir: $OS_ERROR") unless(-d $dir);
+    my $dir = 'generated/' . shift;
+
+    unless (-d $dir) {
+        File::Path::make_path($dir) or croak("Cannot mkdir $dir: $OS_ERROR");
+    }
     return $dir;
 }
 
@@ -619,7 +619,7 @@ sub export_all_html {
             my $last_comic = _find_next($language, $i, \@sorted, [reverse $i + 1 .. @sorted - 1]);
             $comic->{'last'}{$language} = $last_comic ? $last_comic->{htmlFile}{$language} : 0;
 
-            my $to = $comic->_not_yet_published() ? 'tmp/backlog' : 'web/comics';
+            my $to = $comic->_not_yet_published() ? 'backlog' : lc($language) . '/web/comics';
             $comic->_export_language_html($to, $language);
             $comic->_write_sitemap_xml_fragment($language);
         }
@@ -674,7 +674,8 @@ sub _find_next {
 sub _export_language_html {
     my ($self, $to, $language) = @ARG;
 
-    my $page = $self->_make_file_name($language, $to, 'html');
+    my $page = $self->{pngFile}{$language};
+    $page =~ s{\.png$}{.html};
     return _write_file($page, $self->_do_export_html($language));
 }
 
@@ -702,7 +703,7 @@ sub _do_export_html {
     # HTML encoding. So first reverse the XML encoding, then apply any HTML
     # encoding.
     $vars{title} = encode_entities(decode_entities($title));
-    $vars{png_file} = basename($self->_make_file_name($language, 'web/comics', 'png'));
+    $vars{png_file} = basename($self->{pngFile}{$language});
     $vars{modified} = $self->{modified};
     $vars{height} = $self->{height};
     $vars{width} = $self->{width};
@@ -715,7 +716,7 @@ sub _do_export_html {
     # By default, use normal path with comics in comics/
     my $path = '../';
     # Adjust the path for backlog comics.
-    $path = '../../web/' if ($self->_not_yet_published());
+    $path = '../' . lc($language) . '/web/' if ($self->_not_yet_published());
     # Adjust the path for top-level index.html
     if ($self->{isLatestPublished}) {
         $path = '';
@@ -908,6 +909,7 @@ sub _templatize {
 
     my %options = (
         STRICT => 1,
+        EVAL_PERL => 1,
     );
     my $t = Template->new(%options) ||
         croak('Cannot construct template: ' . Template->error());
@@ -929,11 +931,12 @@ sub _write_sitemap_xml_fragment {
     my $path = "https://$text{domain}{$language}";
 
     my $fragment = $self->_make_file_name($language, 'tmp/sitemap', 'xml');
+    my $png_file = basename($self->{pngFile}{$language});
     _write_file($fragment, <<"XML");
 <url>
 <loc>$html</loc>
 <image:image>
-<image:loc>${path}/comics/$self->{pngFile}{$language}</image:loc>
+<image:loc>${path}/comics/$png_file</image:loc>
 <image:title>$self->{meta_data}->{title}{$language}</image:title>
 <image:license>$path/$text{imprintPage}{$language}</image:license>
 </image:image>
@@ -975,86 +978,96 @@ Parameters:
 =cut
 
 sub export_archive {
-    my ($archive_templates, $backlog_templates) = @ARG;
+    my ($backlog_template, %archive_templates) = @ARG;
 
     foreach my $c (@comics) {
-        foreach my $language (keys %{$archive_templates}) {
+        foreach my $language (keys %archive_templates) {
             next unless ($c->_is_for($language));
 
-            my $name;
-            my $dir;
-            if ($c->_not_yet_published()) {
-                $name = $c->_make_file_name($language, 'tmp/backlog', 'html');
-                $dir = 'backlog/';
-            }
-            else {
-                $name = $c->_make_file_name($language, 'web/comics', 'html');
-                $dir = 'comics/';
-            }
+            my $dir = $c->_not_yet_published() ? 'backlog/' : 'comics/';
+            my $name = $c->{pngFile}{$language};
+            $name =~ s{\.png$}{.html};
             $c->{href}{$language} = $dir . basename($name);
         }
     }
 
-    foreach my $language (keys %{$archive_templates}) {
+    foreach my $language (keys %archive_templates) {
         my @sorted = (sort _compare grep { _archive_filter($_, $language) } @comics);
         next if (@sorted == 0);
         my $last_pub = $sorted[-1];
         $last_pub->{isLatestPublished} = 1;
-        my $page = _make_dir($language, 'web') . '/index.html';
+        my $page = _make_dir(lc($language) . '/web') . '/index.html';
         _write_file($page, $last_pub->_do_export_html($language));
     }
 
-    _do_export_archive('archive', 'web', '', \&_archive_filter, %{$archive_templates});
-    _do_export_archive('backlog', 'tmp', '../web/', \&_backlog_filter, %{$backlog_templates});
+    _do_export_archive(%archive_templates);
+    _do_export_backlog($backlog_template, sort keys %archive_templates);
     return;
 }
 
 
 sub _archive_filter {
     my ($comic, $language) = @ARG;
-    return !$comic->_not_yet_published() && $comic->_is_for($language);
+    return !$comic->_not_yet_published() && $comic->_is_for($language)
 }
 
 
 sub _backlog_filter {
-    my ($comic, $language) = @ARG;
+    my ($comic) = @ARG;
     return $comic->_not_yet_published();
 }
 
 
 sub _do_export_archive {
-    my ($what, $dir, $url, $filter, %templates) = @ARG;
+    my (%archive_templates) = @ARG;
 
-    my @languages = sort keys %templates;
-    foreach my $language (@languages) {
-        my @filtered = sort _compare grep { $filter->($_, $language) } @comics;
-        my $hrsn = "${what}Page";
-        my $page = 'generated/' . lc($language) . "/$dir/$text{$hrsn}{$language}";
+    foreach my $language (sort keys %archive_templates) {
+        my $page = 'generated/' . lc($language) . "/web/$text{archivePage}{$language}";
 
+        my @filtered = sort _compare grep { _archive_filter($_, $language) } @comics;
         if (!@filtered) {
-            _write_file($page, "<p>No comics in $what.</p>");
+            _write_file($page, '<p>No comics in archive.</p>');
             next;
         }
+
         my %vars;
-        $vars{'languages'} = \@languages;
         $vars{'title'} = $text{archiveTitle}{$language};
         $vars{'url'} = $text{archivePage}{$language};
-        $vars{'backlogurl'} = "$language/tmp/backlog/";
         $vars{'comics'} = \@filtered;
         $vars{'modified'} = $filtered[-1]->{modified};
         $vars{'notFor'} = \&_not_for;
-        $vars{'imprint'} = "${url}$text{imprintPage}{$language}";
+        $vars{'imprint'} = "$text{imprintPage}{$language}";
         $vars{'imprintCC'} = "$text{imprintPageAbsolute}{$language}";
-        $vars{'logo'} = "${url}$text{logo}{$language}";
-        $vars{'favicon'} = "${url}favicon.png";
-        $vars{'stylesheet'} = "${url}styles.css";
-        $vars{'archive'} = "${url}$text{archivePage}{$language}";
-        $vars{'ccbutton'} = "${url}$text{ccbutton}{$language}";
-        $vars{'sizemap'} = 'sizemap.html';
+        $vars{'logo'} = "$text{logo}{$language}";
+        $vars{'ccbutton'} = "$text{ccbutton}{$language}";
 
-        my $t = _slurp($templates{$language});
-        _write_file($page, _templatize($templates{$language}, $t, %vars));
+        my $templ_file = $text{archiveTemplateFile}{$language};
+        _write_file($page, _templatize($templ_file, _slurp($templ_file), %vars));
     }
+
+    return;
+}
+
+
+sub _do_export_backlog {
+    my ($templ_file, @languages) = @ARG;
+    # @fixme weird mix of hard-coded and passed file names
+
+    my $page = "generated/$text{backlogPage}";
+    my @filtered = sort _compare grep { _backlog_filter($_) } @comics;
+    if (!@filtered) {
+        _write_file($page, '<p>No comics in backlog.</p>');
+        return;
+    }
+
+    my %vars;
+    $vars{'languages'} = \@languages;
+    $vars{'comics'} = \@filtered;
+    $vars{'notFor'} = \&_not_for;
+    $vars{'archive'} = \$text{archivePage};
+
+    _write_file($page, _templatize($templ_file, _slurp($templ_file), %vars));
+
     return;
 }
 
@@ -1165,7 +1178,7 @@ sub size_map {
             }
         }
         $vars{'title'} = 'Sizemap';
-        $vars{'url'} = 'backlog.html';
+        $vars{'url'} = $text{backlogPage};
         $vars{'height'} = $aggregate{$language}{height}{'max'} * $SCALE_BY;
         $vars{'width'} = $aggregate{$language}{width}{'max'} * $SCALE_BY;
         $vars{'logo'} = "../web/$text{logo}{$language}";
@@ -1175,7 +1188,7 @@ sub size_map {
         $vars{'favicon'} = '../web/favicon.png';
         $vars{'stylesheet'} = '../web/styles.css';
         $vars{'archive'} = "../web/$text{archivePage}{$language}";
-        $vars{'backlog'} = 'backlog.html';
+        $vars{'backlog'} = $text{backlogPage};
         $vars{'comics_by_width'} = [sort _by_width @comics];
         $vars{'comics_by_height'} = [sort _by_height @comics];
         $vars{'notFor'} = \&_not_for;
