@@ -133,6 +133,10 @@ sub make_comic {
         return 1;
     };
 
+    *Comic::_get_tz = sub {
+        return '-0500';
+    };
+
     my $comic = new Comic($args{$IN_FILE});
     $comic->export_png();
     return $comic;

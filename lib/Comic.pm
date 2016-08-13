@@ -12,6 +12,7 @@ use Carp;
 use autodie;
 use String::Util 'trim';
 use DateTime;
+use DateTime::Format::ISO8601;
 use File::Path qw(make_path);
 use File::Basename;
 use open ':std', ':encoding(UTF-8)'; # to handle e.g., umlauts correctly
@@ -26,7 +27,7 @@ use SVG;
 
 use version; our $VERSION = qv('0.0.2');
 
-=for stopwords Inkscape inkscape html SVG svg PNG png Wenner MERCHANTABILITY perlartistic MetaEnglish
+=for stopwords Inkscape inkscape html SVG svg PNG png Wenner MERCHANTABILITY perlartistic MetaEnglish RSS
 
 
 =head1 NAME
@@ -1211,6 +1212,56 @@ sub _by_width($$) {
 sub _by_height($$) {
 ## use critic
     return $_[0]->{height} <=> $_[1]->{height};
+}
+
+
+=head2 export_rss_feed
+
+Writes an RSS feed XML for all comics and each language encountered.
+
+Parameters:
+
+=over 4
+
+    =item B<$items> number of comics to include in the feed.
+
+=back
+
+=cut
+
+sub export_rss_feed {
+    my ($items) = @ARG;
+
+    my %rss;
+    my %done;
+    my @last_ones = (reverse sort _compare grep { !$_->_not_yet_published() } @comics);
+    foreach my $c (@last_ones) {
+        foreach my $l ($c->_languages()) {
+            last if ($done{$l}++ >= $items);
+            my $html_file = "https://$text{domain}{$l}/comics/" . $c->_normalized_title($l) . '.html';
+            my $dt = DateTime::Format::ISO8601->parse_datetime($c->{meta_data}->{published}->{when});
+            $dt->set_time_zone(_get_tz());
+            my $pub = $dt->strftime('%a, %d %b %Y %H:%M:%S %z');
+            $rss{$l} .= <<"XML";
+<item>
+<title>$c->{meta_data}->{title}->{$l}</title>
+<link>$html_file</link>
+<pubDate>$pub</pubDate>
+</item>
+XML
+        }
+    }
+
+    foreach my $l (keys %rss) {
+        _write_file('generated/' . lc($l) . '/tmp/rss.xml', $rss{$l});
+    }
+
+    return;
+}
+
+
+sub _get_tz {
+    return strftime '%z', localtime;
 }
 
 
