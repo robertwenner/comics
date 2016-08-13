@@ -608,17 +608,18 @@ sub _not_yet_published {
     my ($self) = @ARG;
 
     Readonly my $DAYS_PER_WEEK => 7;
-    Readonly my $FRIDAY => 5;
+    Readonly my $THURSDAY => 4;
 
     my $till = _now();
+    $till->set_time_zone(_get_tz());
     my $dow = $till->day_of_week();
-    if ($dow != $FRIDAY) {
-        # On Friday, just do comics up until today. On any other day, also include
-        # the comic for next Friday.
-        # That way, when the web site update script runs on 00:00:02 on Friday
-        # night, it will only include comics up to today's comic, but when I run
-        # the script on any other day of the week it will already include the
-        # next comic in the queue for previewing.
+    if ($dow == $THURSDAY) {
+        # On Thursday, already add next day's comic. That way, when the web
+        # site update script runs on 23:58 on Thursday or on 00:00:02 on
+        # Friday night, it will already have the comic for the next push.
+        # When I run the script on any other day of the week it will just
+        # have what is already published and I can easily upload changes
+        # in e.g., pages without publishing new comics.
         $till->add(days => $DAYS_PER_WEEK);
         # Adding 7 week days (going one week further) makes sure next Friday is
         # in the valid dates range.

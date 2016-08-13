@@ -72,10 +72,23 @@ sub ignores_if_not_that_language : Tests {
 
 
 sub ignores_unpublished : Tests {
+    MockComic::fake_file('backlog.templ', '...');
     MockComic::fake_now(DateTime->new(year => 2016, month => 5, day => 1));
-    make_comic('eins', "2016-01-01", 'Deutsch');
-    make_comic('zwei', "2016-05-06", 'Deutsch');
-    make_comic('drei', "2016-06-01", 'Deutsch');
+    make_comic('eins', "2016-01-01", 'Deutsch'); # Fri
+    make_comic('zwei', "2016-05-01", 'Deutsch'); # Sun
+    make_comic('drei', "2016-05-02", 'Deutsch'); # Mon
+    Comic::export_archive('backlog.templ', %archives);
+    MockComic::assert_wrote_file('generated/deutsch/web/archiv.html', qr{
+        <li><a\shref="comics/eins.html">eins</a></li>\s+
+        <li><a\shref="comics/zwei.html">zwei</a></li>\s+
+        }mx);
+}
+
+
+sub thursday_gets_next_days_comic : Tests {
+    MockComic::fake_now(DateTime->new(year => 2016, month => 8, day => 11)); # Thur
+    make_comic('eins', "2016-08-05", 'Deutsch'); # Fri
+    make_comic('zwei', "2016-08-12", 'Deutsch'); # Fri
     Comic::export_archive('backlog.templ', %archives);
     MockComic::assert_wrote_file('generated/deutsch/web/archiv.html', qr{
         <li><a\shref="comics/eins.html">eins</a></li>\s+
