@@ -228,7 +228,7 @@ sub export_png {
 
         unless (_up_to_date($self->{file}, $png_file)) {
             $self->_check_title($language);
-            $self->_check_date($self->_languages());
+            $self->_check_date();
             $self->_check_dont_publish($language);
             $self->_check_frames();
             $self->_check_tags('tags', $language);
@@ -280,7 +280,7 @@ sub _check_title {
 
 
 sub _check_date {
-    my ($self, @lang) = @_;
+    my ($self) = @_;
 
     my $published = trim($self->{meta_data}->{published}->{when});
     return unless($published);
@@ -288,7 +288,7 @@ sub _check_date {
         next if ($c == $self);
         my $pub = trim($c->{meta_data}->{published}->{when});
         next unless(defined $pub);
-        foreach my $l (@lang) {
+        foreach my $l ($self->_languages()) {
             next if ($self->_is_for($l) != $c->_is_for($l));
             if ($published eq $pub) {
                 croak("$self->{file}: duplicated date with $c->{file}");
