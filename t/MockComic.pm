@@ -120,8 +120,8 @@ sub make_comic {
     };
 
     *Comic::_export_language_html = sub {
-        my ($self, $to, $language) = @_;
-        push @exported, "$to:" . ($self->{meta_data}->{title}->{$language} || '');
+        my ($self, $language) = @_;
+        push @exported, ($self->{meta_data}->{title}->{$language} || '');
         return;
     };
 

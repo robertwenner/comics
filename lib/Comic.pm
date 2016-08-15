@@ -128,6 +128,10 @@ my %text = (
         'Deutsch' => 'cc.png',
     },
     sizeMapTemplateFile => 'web/sizemap.templ',
+    languageCodes => {
+        'Deutsch' => 'de',
+        'English' => 'en',
+    },
 );
 
 
@@ -570,6 +574,7 @@ sub export_all_html {
         foreach my $language ($c->_languages()) {
             my $name = $c->_make_file_name($language, 'web/comics', 'html');
             $c->{htmlFile}{$language} = basename($name);
+            $c->{url}{$language} = $c->_make_url($language, 'html');
         }
     }
 
@@ -586,8 +591,7 @@ sub export_all_html {
             my $last_comic = _find_next($language, $i, \@sorted, [reverse $i + 1 .. @sorted - 1]);
             $comic->{'last'}{$language} = $last_comic ? $last_comic->{htmlFile}{$language} : 0;
 
-            my $to = $comic->_not_yet_published() ? 'backlog' : lc($language) . '/web/comics';
-            $comic->_export_language_html($to, $language);
+            $comic->_export_language_html($language);
             $comic->_write_sitemap_xml_fragment($language);
         }
     }
@@ -649,7 +653,7 @@ sub _find_next {
 
 
 sub _export_language_html {
-    my ($self, $to, $language) = @ARG;
+    my ($self, $language) = @ARG;
 
     my $page = $self->{pngFile}{$language};
     $page =~ s{\.png$}{.html};
@@ -684,11 +688,15 @@ sub _do_export_html {
     $vars{modified} = $self->{modified};
     $vars{height} = $self->{height};
     $vars{width} = $self->{width};
-    $vars{'url'} = $self->_make_url($language, 'html');
+    $vars{'url'} = $self->{url}{$language};
     $vars{'first'} = $self->{'first'}{$language};
     $vars{'prev'} = $self->{'prev'}{$language};
     $vars{'next'} = $self->{'next'}{$language};
     $vars{'last'} = $self->{'last'}{$language};
+    $vars{'languages'} = [grep { $_ ne $language } sort $self->_languages()];
+    $vars{'languagecodes'} = $text{languageCodes};
+    $vars{'languageurls'} = $self->{url};
+    $vars{'languagetitles'} = $self->{meta_data}->{title};
 
     # By default, use normal path with comics in comics/
     my $path = '../';
@@ -726,7 +734,8 @@ sub _do_export_html {
         $tags .= $t;
     }
     $vars{description} = encode_entities($text{keywords}{$language} . ', ' . $tags);
-    return _templatize($text{comicTemplateFile}, _slurp($text{comicTemplateFile}{$language}), %vars)
+    return _templatize($text{comicTemplateFile}{$language},
+            _slurp($text{comicTemplateFile}{$language}), %vars)
         or croak "Error writing HTML: $OS_ERROR";
 }
 

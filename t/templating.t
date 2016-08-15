@@ -197,6 +197,7 @@ description: [% description %]
 [% transcript %]
 [% url %]
 TEMPLATE
+    $comic->export_all_html();
     my $wrote = $comic->_do_export_html("Deutsch");
     like($wrote, qr/Bier trinken/m);
     like($wrote, qr/1970-01-01/m);

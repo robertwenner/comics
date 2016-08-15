@@ -150,14 +150,14 @@ sub skips_comic_without_that_language : Tests {
 sub skips_comic_without_published_date : Test {
     make_comic('English', 'not yet', '');
     Comic::export_all_html();
-    is_deeply(\@MockComic::exported, ['backlog:not yet']);
+    is_deeply(\@MockComic::exported, ['not yet']);
 }
 
 
 sub skips_comic_in_far_future : Tests {
     my $not_yet = make_comic('English', 'not yet', '2200-01-01');
     Comic::export_all_html();
-    is_deeply(\@MockComic::exported, ['backlog:not yet']);
+    is_deeply(\@MockComic::exported, ['not yet']);
 }
 
 
@@ -172,7 +172,7 @@ sub includes_comic_for_next_friday : Tests {
     MockComic::fake_now(DateTime->new(year => 2016, month => 5, day => 1));
     make_comic('English', 'next Friday', '2016-05-01');
     Comic::export_all_html();
-    is_deeply(\@MockComic::exported, ['english/web/comics:next Friday']);
+    is_deeply(\@MockComic::exported, ['next Friday']);
 }
 
 
@@ -202,4 +202,66 @@ sub separate_navs_for_archive_and_backlog : Tests {
     is($b2->{'prev'}{'Deutsch'}, "back1.html", "back2 prev should be back1");
     is($b2->{'first'}{'Deutsch'}, "back1.html", "back2 first should be back1");
     is($b2->{'last'}{'Deutsch'}, 0, "back2 should not have a last");
+}
+
+
+sub language_links_none : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            'Deutsch' => 'Bier trinken',
+        }
+    );
+    MockComic::fake_file('web/deutsch/comic-page.templ', <<'XML');
+[% FOREACH l IN languages %]
+    <a hreflang="[% languagecodes.$l %]" href="[% languageurls.$l %]" title="[% languagetitles.$l %]">[% l %]</a>
+[% END %]
+XML
+    Comic::export_all_html();
+    MockComic::assert_wrote_file('generated/deutsch/web/comics/bier-trinken.html', qr{^\s*$});
+}
+
+
+sub language_links : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            'English' => 'Drinking beer',
+            'Deutsch' => 'Bier trinken',
+        }
+    );
+    MockComic::fake_file('web/deutsch/comic-page.templ', <<'XML');
+[% FOREACH l IN languages %]
+    <a hreflang="[% languagecodes.$l %]" href="[% languageurls.$l %]" title="[% languagetitles.$l %]">[% l %]</a>
+[% END %]
+XML
+    Comic::export_all_html();
+    my $exported = $comic->_do_export_html('Deutsch');
+    like($exported, qr{href="https://beercomics\.com/comics/drinking-beer\.html"},
+        'URL not found');
+    like($exported, qr{>English</a>}, 'Language code not found');
+    like($exported, qr{hreflang="en"}, 'hreflang not found');
+    like($exported, qr{title="Drinking beer"}, 'title not found');
+    unlike($comic->_do_export_html('Deutsch'), qr{https://biercomics\.de"},
+        'Should not link to self');
+}
+
+
+sub language_links_alternate : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            'English' => 'Drinking beer',
+            'Deutsch' => 'Bier trinken',
+        }
+    );
+    MockComic::fake_file('web/deutsch/comic-page.templ', <<'XML');
+[% FOREACH l IN languages %]
+<link rel="alternate" hreflang="[% languagecodes.$l %]" href="[% languageurls.$l %]"/>
+[% END %]
+XML
+    Comic::export_all_html();
+    my $exported = $comic->_do_export_html('Deutsch');
+    like($exported, qr{href="https://beercomics\.com/comics/drinking-beer\.html"},
+        'URL not found');
+    like($exported, qr{hreflang="en"}, 'hreflang not found');
+    unlike($comic->_do_export_html('Deutsch'), qr{https://biercomics\.de"},
+        'Should not link to self');
 }
