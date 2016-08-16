@@ -61,16 +61,22 @@ PNG files. Creates a transcript per language for search engines.
 
 # XPath default namespace name.
 Readonly our $DEFAULT_NAMESPACE => 'defNs';
-# Tolerance in Inkscape units when looking for frames.
-Readonly our $FRAME_TOLERANCE => 5;
 # How to mark a comic as not publishable, so that the converter can flag it.
 Readonly our $DONT_PUBLISH => 'DONT_PUBLISH';
 # What date to use for sorting unpublished comics.
 Readonly our $UNPUBLISHED => '3000-01-01';
-# Expected frame thickness.
+# Expected frame thickness in pixels.
 Readonly our $FRAME_WIDTH => 1.25;
-# Allowed deviation from expected frame width.
+# Tolerance in pixels when looking for frames.
+Readonly our $FRAME_TOLERANCE => 1;
+# Allowed deviation from expected frame width in pixels.
 Readonly our $FRAME_WIDTH_DEVIATION => 0.25;
+# After how many pixels a frame is assumed to be in the next row.
+Readonly our $FRAME_ROW_HEIGHT => 50;
+# How many pixels space there should be between frames (both x and y).
+Readonly our $FRAME_SPACING => 10;
+# Maximum tolerance in pixels for distance between frames.
+Readonly our $FRAME_SPACING_TOLERANCE => 1;
 
 # Whether to transform SVG coordinates if the transform atttribute is used.
 # This may be needed for fancy texts (tilted or on a path) so that the new
@@ -345,6 +351,11 @@ sub _check_json {
 sub _check_frames {
     my ($self) = @ARG;
 
+    my $prev_y;
+    my $prev_bottom;
+    my $prev_x;
+    my $prev_side;
+
     ## no critic(ValuesAndExpressions::RequireInterpolationOfMetachars)
     my $frame_xpath = _build_xpath('g[@inkscape:label="Rahmen"]', 'rect');
     ## use critic
@@ -362,8 +373,65 @@ sub _check_frames {
         else {
             croak "Cannot find width in $style from $self->{file}";
         }
+
+        my $y = $f->getAttribute('y');
+        my $bottom = $y + $f->getAttribute('height');
+        my $x = $f->getAttribute('x');
+        my $side = $x + $f->getAttribute('width');
+        # should this use _find_frames?
+        my $next_row = defined($prev_y) && _more_off($prev_y, $y, $FRAME_ROW_HEIGHT);
+
+        if (defined $prev_y) {
+            if ($next_row) {
+                if ($prev_bottom > $y) {
+                    croak "$self->{file}: frames overlap at $prev_bottom and $y";
+                }
+                if ($prev_bottom + $FRAME_SPACING > $y) {
+                    croak "$self->{file}: frames too close at $prev_bottom and $y";
+                }
+                if ($prev_bottom + $FRAME_SPACING + $FRAME_SPACING_TOLERANCE < $y) {
+                    croak "$self->{file}: frames too far at $prev_bottom and $y";
+                }
+
+                if (_more_off($prev_x, $x, $FRAME_TOLERANCE)) {
+                    croak "$self->{file}: Frame left side not aligned: $prev_x and $x";
+                }
+                if (_more_off($prev_side, $side, $FRAME_TOLERANCE)) {
+                    croak "$self->{file}: Frame right side not aligned: $prev_x and $x";
+                }
+            }
+            else {
+                if (_more_off($prev_y, $y, $FRAME_TOLERANCE)) {
+                    croak "$self->{file}: Frame tops not aligned: $prev_y and $y";
+                }
+                if (_more_off($prev_bottom, $bottom, $FRAME_TOLERANCE)) {
+                    croak "$self->{file}: Frame bottoms not aligned: y $prev_bottom and $bottom";
+                }
+
+                if ($prev_side > $x) {
+                    croak "$self->{file}: frames overlap at $prev_side and $x";
+                }
+                if ($prev_side + $FRAME_SPACING > $x) {
+                    croak "$self->{file}: frames too close at $prev_side and $x";
+                }
+                if ($prev_side + $FRAME_SPACING + $FRAME_SPACING_TOLERANCE < $x) {
+                    croak "$self->{file}: frames too far at $prev_side and $x";
+                }
+            }
+        }
+
+        $prev_y = $y;
+        $prev_bottom = $bottom;
+        $prev_x = $x;
+        $prev_side = $side;
     }
     return;
+}
+
+
+sub _more_off {
+    my ($a, $b, $dist) = @ARG;
+    return abs($a - $b) > $dist;
 }
 
 
