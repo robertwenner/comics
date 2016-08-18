@@ -206,3 +206,40 @@ sub spacing_y_tolerance : Tests {
         100, 100, 0,   0,
         100, 100, 0, 110.87);
 }
+
+
+sub sorts : Tests {
+    assert_bad(qr{overlap},
+        100, 100, 90, 0,    #  90 - 190
+        100, 100, 200, 0,   # 200 - 300
+        100, 100, 0, 0);    #   0 - 100
+}
+
+
+sub normalizes_y_for_sorting : Tests {
+    assert_ok(
+        100, 100, 0, 1,
+        100, 100, 111, 0);
+}
+
+
+sub negative_coordinates : Tests {
+    assert_ok(
+        100, 100, -500, -500,   # -500 - -400
+        100, 100, -610, -500);  # -610 - -510
+}
+
+
+sub double : Tests {
+    assert_ok(
+        100, 100, 0.5, 0.5, # 0.5 - 100.5 
+        100, 100, 111, 0);  # 111 - 211
+}
+
+
+sub aligned_left_multiple_columns : Tests {
+    assert_ok(
+        100, 100, 0, 0,
+        100, 100, 110, 0,
+        100, 210, 0, 110);
+}

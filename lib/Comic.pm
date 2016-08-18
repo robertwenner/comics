@@ -68,7 +68,7 @@ Readonly our $UNPUBLISHED => '3000-01-01';
 # Expected frame thickness in pixels.
 Readonly our $FRAME_WIDTH => 1.25;
 # Tolerance in pixels when looking for frames.
-Readonly our $FRAME_TOLERANCE => 1;
+Readonly our $FRAME_TOLERANCE => 1.0;
 # Allowed deviation from expected frame width in pixels.
 Readonly our $FRAME_WIDTH_DEVIATION => 0.25;
 # After how many pixels a frame is assumed to be in the next row.
@@ -76,7 +76,7 @@ Readonly our $FRAME_ROW_HEIGHT => 50;
 # How many pixels space there should be between frames (both x and y).
 Readonly our $FRAME_SPACING => 10;
 # Maximum tolerance in pixels for distance between frames.
-Readonly our $FRAME_SPACING_TOLERANCE => 1;
+Readonly our $FRAME_SPACING_TOLERANCE => 2.0;
 
 # Whether to transform SVG coordinates if the transform atttribute is used.
 # This may be needed for fancy texts (tilted or on a path) so that the new
@@ -356,66 +356,62 @@ sub _check_frames {
     my $prev_x;
     my $prev_side;
 
+    my $left_side;
+    my $right_side;
+
+    my $first_row = 1;
+
     ## no critic(ValuesAndExpressions::RequireInterpolationOfMetachars)
     my $frame_xpath = _build_xpath('g[@inkscape:label="Rahmen"]', 'rect');
     ## use critic
-    foreach my $f ($self->{xpath}->findnodes($frame_xpath)) {
-        my $style = $f->getAttribute('style');
-        if ($style =~ m{;stroke-width:([^;]+);}) {
-            my $width = $1;
-            if ($width < $FRAME_WIDTH - $FRAME_WIDTH_DEVIATION) {
-                croak "Frame too narrow ($width) in $self->{file}";
-            }
-            if ($width > $FRAME_WIDTH + $FRAME_WIDTH_DEVIATION) {
-                croak "Frame too wide ($width) in $self->{file}";
-            }
-        }
-        else {
-            croak "Cannot find width in $style from $self->{file}";
-        }
+    foreach my $f (sort _framesort $self->{xpath}->findnodes($frame_xpath)) {
+        $self->_check_frame_style($f);
 
-        my $y = $f->getAttribute('y');
-        my $bottom = $y + $f->getAttribute('height');
-        my $x = $f->getAttribute('x');
-        my $side = $x + $f->getAttribute('width');
-        # should this use _find_frames?
+        my $y = $f->getAttribute('y') * 1.0;
+        my $bottom = $y + $f->getAttribute('height') * 1.0;
+        my $x = $f->getAttribute('x') * 1.0;
+        $left_side = $x unless (defined $left_side);
+
+        my $side = $x + $f->getAttribute('width') * 1.0;
         my $next_row = defined($prev_y) && _more_off($prev_y, $y, $FRAME_ROW_HEIGHT);
+        $first_row = 0 if ($next_row);
+        $right_side = $side if ($first_row);
 
         if (defined $prev_y) {
             if ($next_row) {
                 if ($prev_bottom > $y) {
-                    croak "$self->{file}: frames overlap at $prev_bottom and $y";
+                    croak "$self->{file}: frames overlap y at $prev_bottom and $y";
                 }
                 if ($prev_bottom + $FRAME_SPACING > $y) {
-                    croak "$self->{file}: frames too close at $prev_bottom and $y";
+                    croak "$self->{file}: frames too close y (" . ($prev_bottom + $FRAME_SPACING - $y) . "at $prev_bottom and $y";
                 }
                 if ($prev_bottom + $FRAME_SPACING + $FRAME_SPACING_TOLERANCE < $y) {
-                    croak "$self->{file}: frames too far at $prev_bottom and $y";
+                    croak "$self->{file}: frames too far y at $prev_bottom and $y";
                 }
 
-                if (_more_off($prev_x, $x, $FRAME_TOLERANCE)) {
-                    croak "$self->{file}: Frame left side not aligned: $prev_x and $x";
+                if (_more_off($left_side, $x, $FRAME_TOLERANCE)) {
+                    croak "$self->{file}: frame left side not aligned: $left_side and $x";
                 }
-                if (_more_off($prev_side, $side, $FRAME_TOLERANCE)) {
-                    croak "$self->{file}: Frame right side not aligned: $prev_x and $x";
+                if (_more_off($prev_side, $right_side, $FRAME_TOLERANCE)) {
+                    croak "$self->{file}: frame right side not aligned: $prev_side and $right_side";
                 }
             }
             else {
                 if (_more_off($prev_y, $y, $FRAME_TOLERANCE)) {
-                    croak "$self->{file}: Frame tops not aligned: $prev_y and $y";
+                    croak "$self->{file}: frame tops not aligned: $prev_y and $y";
                 }
                 if (_more_off($prev_bottom, $bottom, $FRAME_TOLERANCE)) {
-                    croak "$self->{file}: Frame bottoms not aligned: y $prev_bottom and $bottom";
+                    croak "$self->{file}: frame bottoms not aligned: $prev_bottom and $bottom";
                 }
 
                 if ($prev_side > $x) {
-                    croak "$self->{file}: frames overlap at $prev_side and $x";
+                    croak "$self->{file}: frames overlap x at $prev_side and $x";
                 }
                 if ($prev_side + $FRAME_SPACING > $x) {
-                    croak "$self->{file}: frames too close at $prev_side and $x";
+                    croak "$self->{file}: frames too close x at $prev_side and $x";
                 }
                 if ($prev_side + $FRAME_SPACING + $FRAME_SPACING_TOLERANCE < $x) {
-                    croak "$self->{file}: frames too far at $prev_side and $x";
+                    croak "$self->{file}: frames too far x (" . ($x - ($prev_side + $FRAME_SPACING + $FRAME_SPACING_TOLERANCE)) . ") at $prev_side and $x";
                 }
             }
         }
@@ -426,6 +422,39 @@ sub _check_frames {
         $prev_side = $side;
     }
     return;
+}
+
+
+sub _framesort {
+    # Need to normalize, so that e.g., y 0 and 0.5 are considered in the same row.
+    # No need to normalize x, these values are not close together for a row.
+    return _rowify($a->getAttribute('y')) <=> _rowify($b->getAttribute('y'))
+        || $a->getAttribute('x') <=> $b->getAttribute('x');
+}
+
+
+sub _rowify {
+    my $y = shift;
+    return floor($y / $FRAME_ROW_HEIGHT); # too much? just use 10 to move the comma?
+}
+
+
+sub _check_frame_style {
+    my ($self, $f) = @ARG;
+
+    my $style = $f->getAttribute('style');
+    if ($style =~ m{;stroke-width:([^;]+);}) {
+        my $width = $1;
+        if ($width < $FRAME_WIDTH - $FRAME_WIDTH_DEVIATION) {
+            croak "Frame too narrow ($width) in $self->{file}";
+        }
+        if ($width > $FRAME_WIDTH + $FRAME_WIDTH_DEVIATION) {
+            croak "Frame too wide ($width) in $self->{file}";
+        }
+    }
+    else {
+        croak "Cannot find width in $style from $self->{file}";
+    }
 }
 
 
