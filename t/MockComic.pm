@@ -27,6 +27,7 @@ our Readonly $TEXT_ID = 'theText';
 our Readonly $FRAMES = 'frames';
 our Readonly $CONTRIBUTORS = 'contrib';
 our Readonly $XML = 'xml';
+our Readonly $DESCRIPTION = 'description';
 
 
 our @exported;  # hide behind assert_... sub
@@ -148,7 +149,7 @@ sub _build_json {
 
     my $json = '';
 
-    $json .= _single_per_language_json($json, \%args, $TITLE); # comments series
+    $json .= _single_per_language_json($json, \%args, $TITLE, $DESCRIPTION); # comments series
     # Could check whether a scalar or array was passed and then generate
     # the JSON as needed, but this way it's easier to fail fast if a test
     # tries to build a JSON structure that would not exist in real life.

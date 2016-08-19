@@ -830,9 +830,9 @@ sub _do_export_html {
         $tags .= ', ' unless ($tags eq '');
         $tags .= $t;
     }
-    $vars{description} = encode_entities($text{keywords}{$language} . ', ' . $tags);
-    return _templatize($text{comicTemplateFile}{$language},
-            _slurp($text{comicTemplateFile}{$language}), %vars)
+    $vars{description} = encode_entities($self->{meta_data}->{description}->{$language});
+    return _templatize($self->{file}, $text{comicTemplateFile}{$language},
+           _slurp($text{comicTemplateFile}{$language}), %vars)
         or croak "Error writing HTML: $OS_ERROR";
 }
 
@@ -988,7 +988,7 @@ sub _pos_to_frame {
 
 
 sub _templatize {
-    my ($template_file, $template, %vars) = @ARG;
+    my ($comic_file, $template_file, $template, %vars) = @ARG;
 
     my %options = (
         STRICT => 1,
@@ -997,9 +997,9 @@ sub _templatize {
     my $t = Template->new(%options) ||
         croak('Cannot construct template: ' . Template->error());
     my $output = '';
-    $t->process(\$template, \%vars, \$output) || croak "$template_file: " . $t->error() . "\n";
+    $t->process(\$template, \%vars, \$output) || croak "$template_file for $comic_file: " . $t->error() . "\n";
     if ($output =~ m/\[%/mg || $output =~ m/%\]/mg) {
-        croak 'Unresolved template marker';
+        croak "$template_file for $comic_file: Unresolved template marker";
     }
     return $output;
 }
@@ -1125,7 +1125,7 @@ sub _do_export_archive {
         $vars{'ccbutton'} = "$text{ccbutton}{$language}";
 
         my $templ_file = $text{archiveTemplateFile}{$language};
-        _write_file($page, _templatize($templ_file, _slurp($templ_file), %vars));
+        _write_file($page, _templatize('archive', $templ_file, _slurp($templ_file), %vars));
     }
 
     return;
@@ -1149,7 +1149,7 @@ sub _do_export_backlog {
     $vars{'notFor'} = \&_not_for;
     $vars{'archive'} = \$text{archivePage};
 
-    _write_file($page, _templatize($templ_file, _slurp($templ_file), %vars));
+    _write_file($page, _templatize('backlog', $templ_file, _slurp($templ_file), %vars));
 
     return;
 }
@@ -1262,7 +1262,7 @@ sub size_map {
     $vars{svg} =~ s/<!DOCTYPE[^>]+>\n//;
 
     _write_file('generated/sizemap.html',
-        _templatize($text{sizeMapTemplateFile}, _slurp($text{sizeMapTemplateFile}), %vars));
+        _templatize('sizemap', $text{sizeMapTemplateFile}, _slurp($text{sizeMapTemplateFile}), %vars));
 
     return;
 }
