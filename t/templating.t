@@ -219,6 +219,7 @@ description: [% description %]
 [% FOREACH w IN who %]
 [% w %].
 [% END %]
+Image: [% image %]
 Copyright year: [% year %]
 Keywords: [% keywords %]
 TEMPLATE
@@ -230,6 +231,7 @@ TEMPLATE
     like($wrote, qr/200 by 600/m, "dimensions");
     like($wrote, qr{https://biercomics.de/comics/bier-trinken.html}m, "url");
     like($wrote, qr{Max\.\s*Paul\.}m, "who");
+    like($wrote, qr{Image: https://biercomics.de/comics/bier-trinken.png}m, "image");
     like($wrote, qr{Copyright year: 2016}m, "copyright year");
     like($wrote, qr{Keywords: Bier,Saufen,Craft}m, "keywords");
 }

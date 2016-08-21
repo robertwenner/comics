@@ -786,6 +786,8 @@ sub _do_export_html {
     $vars{height} = $self->{height};
     $vars{width} = $self->{width};
     $vars{'url'} = $self->{url}{$language};
+    $vars{'image'} = $self->{url}{$language} || ''; # for tests that don't fake this
+    $vars{'image'} =~ s/\.html$/.png/;
     $vars{'first'} = $self->{'first'}{$language};
     $vars{'prev'} = $self->{'prev'}{$language};
     $vars{'next'} = $self->{'next'}{$language};
