@@ -7,7 +7,7 @@ use Readonly;
 use Test::More;
 use Comic;
 
-
+# Constants to catch typos when defining meta data.
 our Readonly $ENGLISH = 'English';
 our Readonly $META_ENGLISH = 'MetaEnglish';
 our Readonly $DEUTSCH = 'Deutsch';
@@ -28,6 +28,10 @@ our Readonly $FRAMES = 'frames';
 our Readonly $CONTRIBUTORS = 'contrib';
 our Readonly $XML = 'xml';
 our Readonly $DESCRIPTION = 'description';
+our Readonly $COMMENTS = 'comments';
+our Readonly $SERIES = 'series';
+our Readonly $HEIGHT = 'height';
+our Readonly $WIDTH = 'width';
 
 
 our @exported;  # hide behind assert_... sub
@@ -41,8 +45,19 @@ my %defaultArgs = (
         $ENGLISH => 'Drinking beer',
         $DEUTSCH => 'Bier trinken',
     },
+    $TAGS => {
+        $ENGLISH => ['beer', 'craft'],
+        $DEUTSCH => ['Bier', 'Craft'],
+    },
+    $WHO => {
+        $ENGLISH => ['Paul', 'Max'],
+        $DEUTSCH => ['Paul', 'Max'],
+    },
     $IN_FILE => 'some_comic.svg',
     $MTIME => 0,
+    $HEIGHT => 200,
+    $WIDTH => 600,
+    $PUBLISHED => '2016-08-01',
 );
 
 
@@ -140,6 +155,8 @@ sub make_comic {
 
     my $comic = new Comic($args{$IN_FILE});
     $comic->export_png();
+    $comic->{height} = $args{$HEIGHT};
+    $comic->{width} = $args{$WIDTH};
     return $comic;
 }
 
@@ -149,11 +166,11 @@ sub _build_json {
 
     my $json = '';
 
-    $json .= _single_per_language_json($json, \%args, $TITLE, $DESCRIPTION); # comments series
+    $json .= _single_per_language_json($json, \%args, $TITLE, $DESCRIPTION, $COMMENTS, $SERIES);
     # Could check whether a scalar or array was passed and then generate
     # the JSON as needed, but this way it's easier to fail fast if a test
     # tries to build a JSON structure that would not exist in real life.
-    $json = _array_per_language_json($json, \%args, $TAGS, $WHO); # keywords
+    $json = _array_per_language_json($json, \%args, $TAGS, $WHO);
 
     # Meta info: value, language independent
     my $wrote = 0;

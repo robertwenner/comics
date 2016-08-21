@@ -18,9 +18,10 @@ sub make_comic {
         $MockComic::DESCRIPTION => {
             $MockComic::DEUTSCH => 'Ein lustiges Comic.',
         },
+        $MockComic::TAGS => {
+            $MockComic::DEUTSCH => ['Bier', 'Craft'],
+        },
     );
-    $comic->{height} = 200;
-    $comic->{width} = 600;
     return $comic;
 }
 
@@ -190,23 +191,47 @@ sub object_function_wrapped : Tests {
 
 
 sub from_comic : Tests {
-    my $comic = make_comic();
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::DEUTSCH => 'Bier trinken',
+        },
+        $MockComic::DESCRIPTION => {
+            $MockComic::DEUTSCH => 'Ein lustiges Comic.',
+        },
+        $MockComic::PUBLISHED => '2016-08-20',
+        $MockComic::WHO => {
+            $MockComic::DEUTSCH => [ "Max", "Paul" ],
+        },
+        $MockComic::TAGS => {
+            $MockComic::DEUTSCH => [ "Bier", "Saufen", "Craft" ],
+        },
+    );
+ 
     MockComic::fake_file('web/deutsch/comic-page.templ', <<'TEMPLATE');
 Biercomics: [% title %]
 last-modified: [% modified %]
 description: [% description %]
 [% title %]
 [% png_file %] [% height %] by [% width %]
-[% transcript %]
+[% transcriptJson %]
+[% transcriptHtml %]
 [% url %]
+[% FOREACH w IN who %]
+[% w %].
+[% END %]
+Copyright year: [% year %]
+Keywords: [% keywords %]
 TEMPLATE
     $comic->export_all_html();
     my $wrote = $comic->_do_export_html("Deutsch");
-    like($wrote, qr/Bier trinken/m);
-    like($wrote, qr/1970-01-01/m);
-    like($wrote, qr/bier-trinken\.png/m);
-    like($wrote, qr/200 by 600/m);
-    like($wrote, qr{https://biercomics.de/comics/bier-trinken.html}m);
+    like($wrote, qr/Bier trinken/m, "title");
+    like($wrote, qr/1970-01-01/m, "last modified");
+    like($wrote, qr/bier-trinken\.png/m, "png file name");
+    like($wrote, qr/200 by 600/m, "dimensions");
+    like($wrote, qr{https://biercomics.de/comics/bier-trinken.html}m, "url");
+    like($wrote, qr{Max\.\s*Paul\.}m, "who");
+    like($wrote, qr{Copyright year: 2016}m, "copyright year");
+    like($wrote, qr{Keywords: Bier,Saufen,Craft}m, "keywords");
 }
 
 
@@ -222,4 +247,20 @@ sub error_includes_template_file_name : Tests {
     like($@, qr{\bfile.templ\b});
     like($@, qr{\bcomic.svg\b});
     like($@, qr{undefined variable});
+}
+
+
+sub catches_perl_array : Tests {
+    eval {
+        Comic::_templatize('comic.svg', 'file.templ', '[% x %] ', ("x" => [1, 2, 3]));
+    };
+    like($@, qr/ARRAY/i);
+}
+
+
+sub catches_perl_hash : Tests {
+    eval {
+        Comic::_templatize('comic.svg', 'file.templ', '[% x %] ', ("x" => {a =>1, b => 2}));
+    };
+    like($@, qr/HASH/i);
 }

@@ -90,7 +90,7 @@ sub transcript : Test {
     my $comic = make_comic('Beer flavored', '4001-01-01', 'Deutsch');
     no warnings qw/redefine/;
     local *Comic::_slurp = sub {
-        return '[% IF backlog %][% transcript %][% END %]';
+        return '[% IF backlog %][% transcriptHtml %][% END %]';
     };
     return $comic->_do_export_html('Deutsch');
     is(write_templ_de($comic), '');

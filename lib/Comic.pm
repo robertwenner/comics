@@ -794,6 +794,13 @@ sub _do_export_html {
     $vars{'languagecodes'} = $text{languageCodes};
     $vars{'languageurls'} = $self->{url};
     $vars{'languagetitles'} = $self->{meta_data}->{title};
+    $vars{'who'} = [@{$self->{meta_data}->{who}->{$language}}];
+    Readonly my $DIGITS_YEAR => 4;
+    $vars{'year'} = substr $self->{meta_data}->{published}->{when}, 0, $DIGITS_YEAR;
+    $vars{'keywords'} = [];
+    if (defined($self->{meta_data}->{tags}->{$language})) {
+        $vars{'keywords'} = join q{,}, @{$self->{meta_data}->{tags}->{$language}};
+    }
 
     # By default, use normal path with comics in comics/
     my $path = '../';
@@ -819,10 +826,14 @@ sub _do_export_html {
         $vars{'contrib'} = $contrib;
     }
 
-    $vars{transcript} = '';
+    $vars{transcriptHtml} = '';
+    $vars{transcriptJson} = '';
     foreach my $t ($self->_texts_for($language)) {
-        $vars{transcript} .= '<p>' . encode_entities($t) . "</p>\n";
+        $vars{transcriptHtml} .= '<p>' . encode_entities($t) . "</p>\n";
+        $vars{transcriptJson} .= ' ' unless ($vars{transcriptJson} eq '');
+        $vars{transcriptJson} .= $t;
     }
+    $vars{'transcriptJson'} =~ s/"/\\"/mg;
     $vars{'backlog'} = $self->_not_yet_published();
 
     my $tags = '';
@@ -997,9 +1008,17 @@ sub _templatize {
     my $t = Template->new(%options) ||
         croak('Cannot construct template: ' . Template->error());
     my $output = '';
-    $t->process(\$template, \%vars, \$output) || croak "$template_file for $comic_file: " . $t->error() . "\n";
+    $t->process(\$template, \%vars, \$output) ||
+        croak "$template_file for $comic_file: " . $t->error() . "\n";
+
     if ($output =~ m/\[%/mg || $output =~ m/%\]/mg) {
         croak "$template_file for $comic_file: Unresolved template marker";
+    }
+    if ($output =~ m/ARRAY\(0x[[:xdigit:]]+\)/mg) {
+        croak "$template_file for $comic_file: ARRAY ref found";
+    }
+    if ($output =~ m/HASH\(0x[[:xdigit:]]+\)/mg) {
+        croak "$template_file for $comic_file: HASH ref found";
     }
     return $output;
 }

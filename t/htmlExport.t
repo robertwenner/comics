@@ -265,3 +265,21 @@ XML
     unlike($comic->_do_export_html('Deutsch'), qr{https://biercomics\.de"},
         'Should not link to self');
 }
+
+
+sub transcript_json_utf8 : Tests {
+    MockComic::fake_file('web/english/comic-page.templ', '[% transcriptJson %]');
+    my $comic = MockComic::make_comic(
+        $MockComic::TEXTS => { 'English' => ["Ümläuts"] },
+    );
+    is($comic->_do_export_html('English'), 'Ümläuts');
+}
+
+
+sub transcript_json_escapes_quotes : Tests {
+    MockComic::fake_file('web/english/comic-page.templ', '[% transcriptJson %]');
+    my $comic = MockComic::make_comic(
+        $MockComic::TEXTS => { 'English' => ['"quoted"'] },
+    );
+    is($comic->_do_export_html('English'), '\\"quoted\\"');
+}
