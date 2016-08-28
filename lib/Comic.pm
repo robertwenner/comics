@@ -797,8 +797,9 @@ sub _do_export_html {
     $vars{'languageurls'} = $self->{url};
     $vars{'languagetitles'} = $self->{meta_data}->{title};
     $vars{'who'} = [@{$self->{meta_data}->{who}->{$language}}];
+    $vars{'published'} = trim($self->{meta_data}->{published}->{when});
     Readonly my $DIGITS_YEAR => 4;
-    $vars{'year'} = substr $self->{meta_data}->{published}->{when}, 0, $DIGITS_YEAR;
+    $vars{'year'} = substr $vars{'published'}, 0, $DIGITS_YEAR;
     $vars{'keywords'} = '';
     if (defined($self->{meta_data}->{tags}->{$language})) {
         $vars{'keywords'} = join q{,}, @{$self->{meta_data}->{tags}->{$language}};

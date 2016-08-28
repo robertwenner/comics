@@ -283,3 +283,53 @@ sub transcript_json_escapes_quotes : Tests {
     );
     is($comic->_do_export_html('English'), '\\"quoted\\"');
 }
+
+
+sub fb_open_graph : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            'Deutsch' => 'Bier trinken',
+            'English' => 'Drinking beer',
+        },
+        $MockComic::DESCRIPTION => {
+            'Deutsch' => 'Paul und Max \"gehen\" Bier trinken.',
+        },
+    );
+    MockComic::fake_file('web/deutsch/comic-page.templ', <<'XML');
+<meta property="og:url" content="[% url %]"/>
+<meta property="og:image:secure_url" content="[% url %]"/>
+<meta property="og:type" content="article"/>
+<meta property="og:title" content="[% title %]"/>
+<meta property="og:site_name" content="Biercomics"/>
+<meta property="og:description" content="[% description %]"/>
+<meta property="og:image" content="[% image %]"/>
+<meta property="og:locale" content="de"/>
+<meta property="og:image:type" content="image/png"/>
+<meta property="og:image:height" content="[% height %]"/>
+<meta property="og:image:width" content="[% width %]"/>
+<meta property="og:article:published" content="[% published %]"/>
+<meta property="og:article:modified" content="[% modified %]"/>
+<meta property="og:article:author" content="Robert Wenner"/>
+<meta property="og:article:tag" content="[% keywords %]"/>
+<meta property="og:website" content="https://biercomics.de"/>
+[% FOREACH l IN languages %]
+<!-- This is pointless because you cannot specify the other language URL here.
+Instead Facebook will just add a URL parameter for the language and hit the
+same page again. I guess that is a limitation from their simplistic key/value
+properties.
+https://developers.facebook.com/docs/opengraph/guides/internationalization/?_fb_noscript=1#objects
+-->
+<meta property="og:locale:alternate" content="[% languagecodes.$l %]"/>
+[% END %]
+XML
+    Comic::export_all_html();
+    my $exported = $comic->_do_export_html('Deutsch');
+    like($exported, qr{<meta property="og:url" content="https://biercomics\.de/comics/bier-trinken\.html"/>},
+        'URL not found');
+    like($exported, qr{<meta property="og:title" content="Bier trinken"/>},
+        'Title not found');
+    like($exported, qr{<meta property="og:description" content="Paul und Max &quot;gehen&quot; Bier trinken."/>},
+        'Description not found');
+    like($exported, qr{<meta property="og:image" content="https://biercomics\.de/comics/bier-trinken.png"/>},
+        'Image not found');
+}
