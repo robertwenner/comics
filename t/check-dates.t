@@ -21,7 +21,7 @@ sub no_dates : Test {
 }
 
 
-sub dates_no_collision : Test {
+sub no_collision : Test {
     MockComic::make_comic($MockComic::PUBLISHED_WHEN => '2016-01-01');
     MockComic::make_comic($MockComic::PUBLISHED_WHEN => '2016-01-02');
     my $comic = MockComic::make_comic($MockComic::PUBLISHED_WHEN => '2016-01-03');
@@ -30,7 +30,7 @@ sub dates_no_collision : Test {
 }
 
 
-sub dates_with_collision : Test {
+sub collision : Test {
     MockComic::make_comic(
         $MockComic::PUBLISHED_WHEN => '2016-01-01',
         $MockComic::IN_FILE => 'one.svg');
@@ -45,7 +45,7 @@ sub dates_with_collision : Test {
 }
 
 
-sub dates_with_collision_ignores_whitespace : Test {
+sub collision_ignores_whitespace : Test {
     MockComic::make_comic(
         $MockComic::PUBLISHED_WHEN => '2016-01-01 ',
         $MockComic::IN_FILE => 'one.svg');
@@ -60,7 +60,7 @@ sub dates_with_collision_ignores_whitespace : Test {
 }
 
 
-sub dates_no_collision_different_languages : Test {
+sub no_collision_different_languages : Test {
     MockComic::make_comic(
         $MockComic::TITLE => {
             $MockComic::ENGLISH => 'not funny in German',
@@ -71,6 +71,24 @@ sub dates_no_collision_different_languages : Test {
             $MockComic::DEUTSCH => 'auf Englisch nicht lustig',
         },
         $MockComic::PUBLISHED_WHEN => '2016-01-01');
-    $comic->_check_date();
-    ok(1);
+    eval {
+        $comic->_check_date();
+    };
+    is($@, '');
+}
+
+
+sub no_collision_published_elsewhere : Tests {
+    MockComic::make_comic(
+        $MockComic::PUBLISHED_WHEN => '2016-01-01',
+        $MockComic::PUBLISHED_WHERE => 'web',
+        $MockComic::IN_FILE => 'one.svg');
+    my $comic = MockComic::make_comic(
+        $MockComic::PUBLISHED_WHEN => '2016-01-01',
+        $MockComic::PUBLISHED_WHERE => 'offline',
+        $MockComic::IN_FILE => 'other.svg');
+    eval {
+        $comic->_check_date();
+    };
+    is($@, '');
 }

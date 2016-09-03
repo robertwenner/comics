@@ -292,15 +292,19 @@ sub _check_title {
 sub _check_date {
     my ($self) = @_;
 
-    my $published = trim($self->{meta_data}->{published}->{when});
-    return unless($published);
+    my $published_when = trim($self->{meta_data}->{published}->{when});
+    my $published_where = trim($self->{meta_data}->{published}->{where});
+    return unless($published_when);
+
     foreach my $c (@comics) {
         next if ($c == $self);
-        my $pub = trim($c->{meta_data}->{published}->{when});
-        next unless(defined $pub);
+        my $pub_when = trim($c->{meta_data}->{published}->{when});
+        my $pub_where = trim($c->{meta_data}->{published}->{where});
+
+        next unless(defined $pub_when);
         foreach my $l ($self->_languages()) {
             next if ($self->_is_for($l) != $c->_is_for($l));
-            if ($published eq $pub) {
+            if ($published_when eq $pub_when && $published_where eq $pub_where) {
                 croak("$self->{file}: duplicated date with $c->{file}");
             }
         }
