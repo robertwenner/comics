@@ -1176,10 +1176,21 @@ sub _do_export_backlog {
     $vars{'comics'} = \@filtered;
     $vars{'notFor'} = \&_not_for;
     $vars{'archive'} = \$text{archivePage};
+    $vars{'publishers'} = _publishers();
 
     _write_file($page, _templatize('backlog', $templ_file, _slurp($templ_file), %vars));
 
     return;
+}
+
+
+sub _publishers {
+    my %publishers = map {
+        $_->{meta_data}->{published}->{where} => 1
+    } grep {
+        $_->{meta_data}->{published}->{where} ne 'web'
+    } @comics;
+    return ['web', sort {lc $a cmp lc $b} keys %publishers];
 }
 
 

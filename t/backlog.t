@@ -20,35 +20,23 @@ sub set_up : Test(setup) {
     MockComic::set_up();
     MockComic::fake_file("backlog.templ", <<'TEMPL');
 <h1>Backlog</h1>
-[% FOREACH c IN comics %]
-[% IF c.meta_data.published.where == 'web' %]
-    <li>[% c.file %] [% c.meta_data.published.when %]
-        <ul>
-            [% FOREACH l IN languages %]
-            [% DEFAULT c.meta_data.title.$l = 0 %]
-                [% IF c.meta_data.title.$l %]
-                <li><a href="backlog/[% c.htmlFile.$l %]">[% c.meta_data.title.$l %]</a></li>
-                [% END %]
-            [% END %]
-        </ul>
-    </li>
-[% END %]
-[% END %]
+[% FOREACH publisher IN publishers %]
+    <h2>[% publisher %]</h2>
 
-<h1>Published elsewhere</h1>
-[% FOREACH c IN comics %]
-[% IF c.meta_data.published.where != 'web' %]
-    <li>[% c.file %] [% c.meta_data.published.when %]
-        <ul>
-            [% FOREACH l IN languages %]
-            [% DEFAULT c.meta_data.title.$l = 0 %]
-                [% IF c.meta_data.title.$l %]
-                <li><a href="backlog/[% c.htmlFile.$l %]">[% c.meta_data.title.$l %]</a></li>
-                [% END %]
-            [% END %]
-        </ul>
-    </li>
-[% END %]
+    [% FOREACH c IN comics %]
+        [% IF c.meta_data.published.where == publisher %]
+            <li>[% c.file %] [% c.meta_data.published.when %]
+                <ul>
+                    [% FOREACH l IN languages %]
+                    [% DEFAULT c.meta_data.title.$l = 0 %]
+                        [% IF c.meta_data.title.$l %]
+                        <li><a href="backlog/[% c.htmlFile.$l %]">[% c.meta_data.title.$l %]</a></li>
+                        [% END %]
+                    [% END %]
+                </ul>
+            </li>
+        [% END %]
+    [% END %]
 [% END %]
 TEMPL
     MockComic::fake_file("web/deutsch/comic-page.templ", "...");
@@ -127,13 +115,41 @@ sub comic_not_published_on_my_page : Tests {
 
 
 sub comic_not_published_on_my_page_goes_after_regular_backlog : Tests {
-    my $backlog = make_comic('Coming up', 'English', '2016-10-01', 'web');
-    my $elsewhere = make_comic('Elsewhere', 'English', '2016-09-01', 'magazine');
+    make_comic('Coming up', 'English', '2016-10-01', 'web');
+    make_comic('Elsewhere', 'English', '2016-09-01', 'magazine');
     Comic::export_all_html();
     Comic::export_archive('backlog.templ', %languages);
     MockComic::assert_wrote_file('generated/backlog.html', qr{
+        .*Backlog.*
+        .*web.*
         <li><a\shref="backlog/coming-up\.html">Coming\sup</a></li>
-        .*Published\selsewhere.*
+        .*magazine.*
         <li><a\shref="backlog/elsewhere\.html">Elsewhere</a></li>
     }xsm);
+}
+
+
+sub comics_not_published_grouped_by_publisher : Tests {
+    make_comic('Brau Okt', 'Deutsch', '2016-10-01', 'braumagazin.de');
+    make_comic('Beer Guide', 'English', '2016-11-01', 'Austin Beer Guide');
+    make_comic('Brau Dez', 'Deutsch', '2016-12-01', 'braumagazin.de');
+    Comic::export_all_html();
+    Comic::export_archive('backlog.templ', %languages);
+    MockComic::assert_wrote_file('generated/backlog.html', qr{
+        <h2>Austin\sBeer\sGuide</h2>.*
+        <li><a\shref="backlog/beer-guide\.html">Beer\sGuide</a></li>.*
+        <h2>braumagazin\.de</h2>.*
+        <li><a\shref="backlog/brau-okt\.html">Brau\sOkt</a></li>.*
+        <li><a\shref="backlog/brau-dez\.html">Brau\sDez</a></li>
+    }xsm);
+}
+
+
+sub publisher_order : Tests {
+    make_comic('1', 'English', '3016-01-01', 'Craft Beer &amp; Brewing');
+    make_comic('2', 'Deutsch', '3016-01-01', 'braumagazin.de');
+    make_comic('3', 'English', '3016-01-01', 'Austin Beer Guide');
+    make_comic('4', 'English', '3016-01-01', 'web');
+    is_deeply(Comic::_publishers(),
+       ['web', 'Austin Beer Guide', 'braumagazin.de', 'Craft Beer &amp; Brewing' ]);
 }
