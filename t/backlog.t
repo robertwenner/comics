@@ -40,7 +40,7 @@ sub make_comic {
     my ($title, $published, $lang) = @_;
     return MockComic::make_comic(
         $MockComic::TITLE => { $lang => $title },
-        $MockComic::PUBLISHED => $published);
+        $MockComic::PUBLISHED_WHEN => $published);
 }
 
 
@@ -74,7 +74,7 @@ sub no_date : Tests {
 
 sub two_languages : Tests {
     my $comic = MockComic::make_comic(
-        $MockComic::PUBLISHED => '',
+        $MockComic::PUBLISHED_WHEN => '',
         $MockComic::TITLE => {
             $MockComic::ENGLISH => "Beer!",
             $MockComic::DEUTSCH => "Bier!"});

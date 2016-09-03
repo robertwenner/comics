@@ -17,7 +17,7 @@ sub make_comic {
         $MockComic::TITLE => {
             $MockComic::DEUTSCH => 'Bier trinken',
         },
-        $MockComic::PUBLISHED => $pubDate,
+        $MockComic::PUBLISHED_WHEN => $pubDate,
     );
 }
 

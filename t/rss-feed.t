@@ -22,7 +22,7 @@ sub make_comic {
         $MockComic::TITLE => {
             $MockComic::ENGLISH => $title,
         },
-        $MockComic::PUBLISHED => $published
+        $MockComic::PUBLISHED_WHEN => $published
     );
 }
 
@@ -111,13 +111,13 @@ sub by_language : Tests {
         $MockComic::TITLE => {
             $MockComic::DEUTSCH => 'Bier',
         },
-        $MockComic::PUBLISHED => '2016-01-01',
+        $MockComic::PUBLISHED_WHEN => '2016-01-01',
     );
     MockComic::make_comic(
         $MockComic::TITLE => {
             $MockComic::ENGLISH => 'Beer',
         },
-        $MockComic::PUBLISHED => '2016-01-01',
+        $MockComic::PUBLISHED_WHEN => '2016-01-01',
     );
 
     Comic::export_rss_feed(5);

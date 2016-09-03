@@ -21,7 +21,7 @@ sub make_comic {
 
     return MockComic::make_comic(
         $MockComic::TITLE => { $language => $title },
-        $MockComic::PUBLISHED => $published);
+        $MockComic::PUBLISHED_WHEN => $published);
 }
 
 

@@ -23,7 +23,7 @@ sub make_comic {
         $MockComic::TITLE => {
             $language => 'Drinking beer',
         },
-        $MockComic::PUBLISHED => $published,
+        $MockComic::PUBLISHED_WHEN => $published,
         $MockComic::MTIME => DateTime->new(year => 2016, month => 1, day => 1)->epoch,
     );
     $comic->{pngFile}{$language} = "drinking-beer.png";

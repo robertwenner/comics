@@ -30,7 +30,7 @@ sub make_comic {
     my ($title, $published, $lang) = @_;
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $lang => $title },
-        $MockComic::PUBLISHED => $published);
+        $MockComic::PUBLISHED_WHEN => $published);
     $comic->{'prev'}{$lang} = "prev.html";
     $comic->{'first'}{$lang} = "first.html";
     return $comic;

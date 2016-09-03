@@ -20,7 +20,7 @@ our Readonly $TAGS = 'tags';
 our Readonly $WHO = 'who';
 our Readonly $IN_FILE = 'in_file';
 our Readonly $MTIME = 'mtime';
-our Readonly $PUBLISHED = 'published';
+our Readonly $PUBLISHED_WHEN = 'published_when';
 our Readonly $TEXTS = 'texts';
 our Readonly $JSON = 'json';
 our Readonly $TEXT_ID = 'theText';
@@ -57,7 +57,7 @@ my %defaultArgs = (
     $MTIME => 0,
     $HEIGHT => 200,
     $WIDTH => 600,
-    $PUBLISHED => '2016-08-01',
+    $PUBLISHED_WHEN => '2016-08-01',
 );
 
 
@@ -194,11 +194,11 @@ sub _build_json {
     $json .= "\n" if ($wrote);
 
     # Special: published takes when and where
-    if (defined($args{$PUBLISHED})) {
+    if (defined($args{$PUBLISHED_WHEN})) {
         $json .= ",\n";
         $json .= <<JSON;
 &quot;published&quot;: {
-    &quot;when&quot;: &quot;$args{$PUBLISHED}&quot;
+    &quot;when&quot;: &quot;$args{$PUBLISHED_WHEN}&quot;
 }
 JSON
     }

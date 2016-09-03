@@ -15,16 +15,16 @@ sub set_up : Test(setup) {
 
 
 sub no_dates : Test {
-    my $comic = MockComic::make_comic($MockComic::PUBLISHED => undef);
+    my $comic = MockComic::make_comic($MockComic::PUBLISHED_WHEN => undef);
     $comic->_check_date();
     ok(1);
 }
 
 
 sub dates_no_collision : Test {
-    MockComic::make_comic($MockComic::PUBLISHED => '2016-01-01');
-    MockComic::make_comic($MockComic::PUBLISHED => '2016-01-02');
-    my $comic = MockComic::make_comic($MockComic::PUBLISHED => '2016-01-03');
+    MockComic::make_comic($MockComic::PUBLISHED_WHEN => '2016-01-01');
+    MockComic::make_comic($MockComic::PUBLISHED_WHEN => '2016-01-02');
+    my $comic = MockComic::make_comic($MockComic::PUBLISHED_WHEN => '2016-01-03');
     $comic->_check_date();
     ok(1);
 }
@@ -32,11 +32,11 @@ sub dates_no_collision : Test {
 
 sub dates_with_collision : Test {
     MockComic::make_comic(
-        $MockComic::PUBLISHED => '2016-01-01',
+        $MockComic::PUBLISHED_WHEN => '2016-01-01',
         $MockComic::IN_FILE => 'one.svg');
-    MockComic::make_comic($MockComic::PUBLISHED => '2016-01-02');
+    MockComic::make_comic($MockComic::PUBLISHED_WHEN => '2016-01-02');
     my $comic = MockComic::make_comic(
-        $MockComic::PUBLISHED => '2016-01-01',
+        $MockComic::PUBLISHED_WHEN => '2016-01-01',
         $MockComic::IN_FILE => 'three.svg');
     eval {
         $comic->_check_date();
@@ -47,11 +47,11 @@ sub dates_with_collision : Test {
 
 sub dates_with_collision_ignores_whitespace : Test {
     MockComic::make_comic(
-        $MockComic::PUBLISHED => '2016-01-01 ',
+        $MockComic::PUBLISHED_WHEN => '2016-01-01 ',
         $MockComic::IN_FILE => 'one.svg');
-    MockComic::make_comic($MockComic::PUBLISHED => '2016-01-02');
+    MockComic::make_comic($MockComic::PUBLISHED_WHEN => '2016-01-02');
     my $comic = MockComic::make_comic(
-        $MockComic::PUBLISHED => ' 2016-01-01',
+        $MockComic::PUBLISHED_WHEN => ' 2016-01-01',
         $MockComic::IN_FILE => 'three.svg');
     eval {
         $comic->_check_date();
@@ -65,12 +65,12 @@ sub dates_no_collision_different_languages : Test {
         $MockComic::TITLE => {
             $MockComic::ENGLISH => 'not funny in German',
         },
-        $MockComic::PUBLISHED => '2016-01-01');
+        $MockComic::PUBLISHED_WHEN => '2016-01-01');
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
             $MockComic::DEUTSCH => 'auf Englisch nicht lustig',
         },
-        $MockComic::PUBLISHED => '2016-01-01');
+        $MockComic::PUBLISHED_WHEN => '2016-01-01');
     $comic->_check_date();
     ok(1);
 }

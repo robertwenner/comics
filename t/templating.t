@@ -198,7 +198,7 @@ sub from_comic : Tests {
         $MockComic::DESCRIPTION => {
             $MockComic::DEUTSCH => 'Ein lustiges Comic.',
         },
-        $MockComic::PUBLISHED => '2016-08-20',
+        $MockComic::PUBLISHED_WHEN => '2016-08-20',
         $MockComic::WHO => {
             $MockComic::DEUTSCH => [ "Max", "Paul" ],
         },
