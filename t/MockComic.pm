@@ -21,6 +21,7 @@ our Readonly $WHO = 'who';
 our Readonly $IN_FILE = 'in_file';
 our Readonly $MTIME = 'mtime';
 our Readonly $PUBLISHED_WHEN = 'published_when';
+our Readonly $PUBLISHED_WHERE = 'published_where';
 our Readonly $TEXTS = 'texts';
 our Readonly $JSON = 'json';
 our Readonly $TEXT_ID = 'theText';
@@ -58,6 +59,7 @@ my %defaultArgs = (
     $HEIGHT => 200,
     $WIDTH => 600,
     $PUBLISHED_WHEN => '2016-08-01',
+    $PUBLISHED_WHERE => 'web',
 );
 
 
@@ -194,13 +196,16 @@ sub _build_json {
     $json .= "\n" if ($wrote);
 
     # Special: published takes when and where
-    if (defined($args{$PUBLISHED_WHEN})) {
-        $json .= ",\n";
-        $json .= <<JSON;
-&quot;published&quot;: {
-    &quot;when&quot;: &quot;$args{$PUBLISHED_WHEN}&quot;
-}
-JSON
+    if (defined($args{$PUBLISHED_WHEN}) || defined($args{$PUBLISHED_WHERE})) {
+        $json .= ",\n&quot;published&quot;: {\n";
+        if (defined($args{$PUBLISHED_WHEN})) {
+            $json .= "    &quot;when&quot;: &quot;$args{$PUBLISHED_WHEN}&quot;";
+            $json .= ",\n" if (defined($args{$PUBLISHED_WHERE}));
+        }
+        if (defined($args{$PUBLISHED_WHERE})) {
+            $json .= "    &quot;where&quot;: &quot;$args{$PUBLISHED_WHERE}&quot;";
+        }
+        $json .= "}\n";
     }
 
     # Manually defined JSON

@@ -708,6 +708,8 @@ sub _languages {
 sub _not_yet_published {
     my ($self) = @ARG;
 
+    return 1 if ($self->{meta_data}->{published}->{where} ne 'web');
+
     Readonly my $DAYS_PER_WEEK => 7;
     Readonly my $THURSDAY => 4;
 

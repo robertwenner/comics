@@ -22,15 +22,16 @@ sub set_up : Test(setup) {
 [% END %]
 [% modified %]
 TEMPL
-    MockComic::fake_file("web/deutsch/comic-page.templ", "...");
+    MockComic::fake_file("web/deutsch/comic-page.templ", "[% title %]");
 }
 
 
 sub make_comic {
-    my ($title, $published, $lang) = @_;
+    my ($title, $lang, $published_when, $published_where) = @_;
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $lang => $title },
-        $MockComic::PUBLISHED_WHEN => $published);
+        $MockComic::PUBLISHED_WHEN => $published_when,
+        $MockComic::PUBLISHED_WHERE => ($published_where || "web"));
     $comic->{'prev'}{$lang} = "prev.html";
     $comic->{'first'}{$lang} = "first.html";
     return $comic;
@@ -38,7 +39,7 @@ sub make_comic {
 
 
 sub one_comic : Tests {
-    my $comic = make_comic('Bier', '2016-01-01', 'Deutsch');
+    my $comic = make_comic('Bier', 'Deutsch', '2016-01-01');
     Comic::export_archive('backlog.templ', %archives);
     MockComic::assert_wrote_file('generated/deutsch/web/archiv.html',
         qr{<li><a href="comics/bier.html">Bier</a></li>}m);
@@ -46,9 +47,9 @@ sub one_comic : Tests {
 
 
 sub some_comics : Tests {
-    make_comic("eins", "2016-01-01", 'Deutsch');
-    make_comic("zwei", "2016-01-02", 'Deutsch');
-    make_comic("drei", "2016-01-03", 'Deutsch');
+    make_comic("eins", 'Deutsch', "2016-01-01");
+    make_comic("zwei", 'Deutsch', "2016-01-02");
+    make_comic("drei", 'Deutsch', "2016-01-03");
     Comic::export_archive('backlog.templ', %archives);
     MockComic::assert_wrote_file('generated/deutsch/web/archiv.html', qr{
         <li><a\shref="comics/eins.html">eins</a></li>\s+
@@ -59,9 +60,9 @@ sub some_comics : Tests {
 
 
 sub ignores_if_not_that_language : Tests {
-    make_comic("eins", "2016-01-01", 'Deutsch');
-    make_comic("two", "2016-01-02", 'English');
-    make_comic("drei", "2016-01-03", 'Deutsch');
+    make_comic("eins", 'Deutsch', "2016-01-01");
+    make_comic("two", 'English', "2016-01-02");
+    make_comic("drei", 'Deutsch', "2016-01-03");
     Comic::export_archive('backlog.templ', %archives);
     MockComic::assert_wrote_file('generated/deutsch/web/archiv.html', qr{
         <li><a\shref="comics/eins.html">eins</a></li>\s+
@@ -74,9 +75,9 @@ sub ignores_if_not_that_language : Tests {
 sub ignores_unpublished : Tests {
     MockComic::fake_file('backlog.templ', '...');
     MockComic::fake_now(DateTime->new(year => 2016, month => 5, day => 1));
-    make_comic('eins', "2016-01-01", 'Deutsch'); # Fri
-    make_comic('zwei', "2016-05-01", 'Deutsch'); # Sun
-    make_comic('drei', "2016-05-02", 'Deutsch'); # Mon
+    make_comic('eins', 'Deutsch', "2016-01-01"); # Fri
+    make_comic('zwei', 'Deutsch', "2016-05-01"); # Sun
+    make_comic('drei', 'Deutsch', "2016-05-02"); # Mon
     Comic::export_archive('backlog.templ', %archives);
     MockComic::assert_wrote_file('generated/deutsch/web/archiv.html', qr{
         <li><a\shref="comics/eins.html">eins</a></li>\s+
@@ -87,8 +88,8 @@ sub ignores_unpublished : Tests {
 
 sub thursday_gets_next_days_comic : Tests {
     MockComic::fake_now(DateTime->new(year => 2016, month => 8, day => 11)); # Thur
-    make_comic('eins', "2016-08-05", 'Deutsch'); # Fri
-    make_comic('zwei', "2016-08-12", 'Deutsch'); # Fri
+    make_comic('eins', 'Deutsch', "2016-08-05"); # Fri
+    make_comic('zwei', 'Deutsch', "2016-08-12"); # Fri
     Comic::export_archive('backlog.templ', %archives);
     MockComic::assert_wrote_file('generated/deutsch/web/archiv.html', qr{
         <li><a\shref="comics/eins.html">eins</a></li>\s+
@@ -106,12 +107,21 @@ sub no_comics : Tests {
 sub index_html : Tests {
     MockComic::fake_file("web/deutsch/comic-page.templ",
         '<li><a href="[% first %]" title="zum ersten Biercomic">&lt;&lt; Erstes</a></li>');
-    my $c = make_comic('zwei', '2016-01-02', 'Deutsch');
+    my $c = make_comic('zwei', 'Deutsch', '2016-01-02');
     $c->{'first'}{'Deutsch'} = 'eins.html';
     $c->{'prev'}{'Deutsch'} = 'eins.html';
     $c->{isLatestPublished} = 1;
     my $wrote = $c->_do_export_html('Deutsch');
     like($wrote, qr{href="comics/eins.html"}m);
+}
+
+
+sub ignores_comics_not_published_on_my_page : Tests {
+    my $comic = make_comic('Magazined!', 'Deutsch', '2016-01-01', 'some beer magazine');
+    is('Magazined!', $comic->_do_export_html('Deutsch'));
+    MockComic::fake_file('backlog.templ', '');
+    Comic::export_archive('backlog.templ', %archives);
+    MockComic::assert_wrote_file('generated/deutsch/web/archiv.html', qr{No comics in archive}m);
 }
 
 

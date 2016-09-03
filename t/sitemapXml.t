@@ -16,14 +16,15 @@ sub setup : Test(setup) {
 
 
 sub make_comic {
-    my ($published, $language) = @_;
+    my ($published_when, $published_where, $language) = @_;
 
     $language ||= $MockComic::ENGLISH;
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
             $language => 'Drinking beer',
         },
-        $MockComic::PUBLISHED_WHEN => $published,
+        $MockComic::PUBLISHED_WHEN => $published_when,
+        $MockComic::PUBLISHED_WHERE => ($published_where || 'web'),
         $MockComic::MTIME => DateTime->new(year => 2016, month => 1, day => 1)->epoch,
     );
     $comic->{pngFile}{$language} = "drinking-beer.png";
@@ -53,7 +54,6 @@ sub last_modified : Tests {
 }
 
 
-
 sub image : Tests {
     assert_wrote(make_comic('2016-01-01'), 
         qr{<image:loc>https://beercomics.com/comics/drinking-beer.png</image:loc>}m);
@@ -73,10 +73,15 @@ sub image_license : Tests {
 
 
 sub unpublished : Tests {
-    assert_wrote(make_comic('3016-01-01', 'English')); # should not write anything
+    assert_wrote(make_comic('3016-01-01')); # should not write anything
 }
 
 
 sub wrong_language : Tests {
-    assert_wrote(make_comic('2016-01-01', 'Deutsch')); # should not write anything
+    assert_wrote(make_comic('2016-01-01', 'web', 'Deutsch')); # should not write anything
+}
+
+
+sub not_on_my_page : Tests {
+    assert_wrote(make_comic('2016-01-01', 'biermag', 'English')); # should nnot write anything
 }
