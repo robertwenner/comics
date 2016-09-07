@@ -105,3 +105,33 @@ sub last_text_is_speaker_indicator : Tests {
     };
     like($@, qr{speaker's text missing after 'Paul:'});
 }
+
+
+sub allowed_duplicated_words : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::TEXTS => {
+            $MockComic::DEUTSCH => ['blah'],
+            $MockComic::ENGLISH => ['blah'],
+        },
+        $MockComic::JSON => '"allow-duplicated": ["blah"]',
+    );
+    eval {
+        $comic->_check_transcript("English");
+    };
+    is($@, '');
+}
+
+
+sub duplicated_word_parts : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::TEXTS => {
+            $MockComic::DEUTSCH => ['blahblah'],
+            $MockComic::ENGLISH => ['blahblah'],
+        },
+        $MockComic::JSON => '"allow-duplicated": ["blah"]',
+    );
+    eval {
+        $comic->_check_transcript("English");
+    };
+    like($@, qr{duplicated text});
+}

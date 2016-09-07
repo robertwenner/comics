@@ -498,15 +498,23 @@ sub _check_transcript {
 
     my $trace = '';
     my $previous = '';
+    my $allow_duplicated = $self->{meta_data}->{'allow-duplicated'} || [];
+    my %allow_duplicated = map { $_ => 1 } @{$allow_duplicated};
     foreach my $t ($self->_texts_for($language)) {
         # Check for copy paste errors: copied texts and forgotten to adjust
         foreach my $l ($self->_languages()) {
             next if ($l eq $language);
             foreach my $ot ($self->_texts_for($l)) {
-                if (trim($t) eq trim($ot)) {
-                    if ($t !~ m{^\w+:$}) {
-                        # Only complain if this does not look like a name /
-                        # speaker introduction.
+                my $trimmed = trim($t);
+                if ($trimmed eq trim($ot)) {
+                    if (defined $allow_duplicated{$trimmed}) {
+                        # Ok, explicitly allowed to be duplicated.
+                    }
+                    elsif ($t =~ m{^\w+:$}) {
+                        # Ok, looks like a name / speaker introduction.
+                        # Should this also check that it's found in a meta layer?
+                    }
+                    else {
                         croak "$self->{file}: duplicated text '$t' in $language and $l";
                     }
                 }
