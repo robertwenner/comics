@@ -227,6 +227,8 @@ sub export_png {
     foreach my $language ($self->_languages()) {
         $counts{'comics'}{$language}++;
 
+        $self->_check($language);
+
         my $png_file;
         if ($self->_not_yet_published()) {
             $png_file = _make_dir('backlog/') . $self->_normalized_title($language) . '.png';
@@ -237,20 +239,26 @@ sub export_png {
         $self->{pngFile}{$language} = $png_file;
 
         unless (_up_to_date($self->{file}, $png_file)) {
-            $self->_check_title($language);
-            $self->_check_date();
-            $self->_check_dont_publish($language);
-            $self->_check_frames();
-            $self->_check_tags('tags', $language);
-            $self->_check_tags('people', $language);
-            $self->_check_transcript($language);
-
             $self->_flip_language_layers($language);
             $self->_svg_to_png($language, $self->_write_temp_svg_file($language), $png_file);
         }
         $self->_get_png_info($png_file);
     }
     $self->_count_tags();
+    return;
+}
+
+
+sub _check {
+    my ($self, $language) = @_;
+
+    $self->_check_title($language);
+    $self->_check_date();
+    $self->_check_dont_publish($language);
+    $self->_check_frames();
+    $self->_check_tags('tags', $language);
+    $self->_check_tags('people', $language);
+    $self->_check_transcript($language);
     return;
 }
 

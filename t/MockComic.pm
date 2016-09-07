@@ -155,6 +155,10 @@ sub make_comic {
         return '-0500';
     };
 
+    *Comic::_check = sub {
+        # Ignore; indivisual tests call check methods as needed.
+    };
+
     my $comic = new Comic($args{$IN_FILE});
     $comic->export_png();
     $comic->{height} = $args{$HEIGHT};
