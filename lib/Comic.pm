@@ -499,11 +499,31 @@ sub _check_transcript {
     my $trace = '';
     my $previous = '';
     foreach my $t ($self->_texts_for($language)) {
+        # Check for copy paste errors: copied texts and forgotten to adjust
+        foreach my $l ($self->_languages()) {
+            next if ($l eq $language);
+            foreach my $ot ($self->_texts_for($l)) {
+                if (trim($t) eq trim($ot)) {
+                    if ($t !~ m{^\w+:$}) {
+                        # Only complain if this does not look like a name /
+                        # speaker introduction.
+                        croak "$self->{file}: duplicated text '$t' in $language and $l";
+                    }
+                }
+            }
+        }
+
+        # Check for mixed up order (two speaker indicators after another).
         $trace .= "[$t]";
         if (_both_names($previous, $t)) {
             croak "$self->{file}: transcript mixed up in $language: $trace";
         }
         $previous = $t;
+    }
+
+    # Check that the comic does not end with a speaker indicator.
+    if (trim($previous) =~ m{:$}) {
+        croak "$self->{file}: speaker's text missing after '$previous'";
     }
     return;
 }

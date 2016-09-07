@@ -64,7 +64,7 @@ sub different_names_no_content() : Test {
 
 sub description_with_colon_speaker() : Test {
     my $comic = MockComic::make_comic(
-        $MockComic::TEXTS => {'MetaDeutsch' => ['Es war einmal ein Bier...', 'Paul:']});
+        $MockComic::TEXTS => {'MetaDeutsch' => ['Es war einmal ein Bier...', 'Paul:', '...']});
     $comic->_check_transcript('Deutsch');
     ok(1);
 }
