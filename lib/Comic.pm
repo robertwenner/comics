@@ -91,14 +91,6 @@ my %text = (
         'English' => 'beercomics.com',
         'Deutsch' => 'biercomics.de',
     },
-    langLink => {
-        'English' => 'english version of this comic',
-        'Deutsch' => 'deutsche Version dieses Comics',
-    },
-    keywords => {
-        'English' => 'beer, comic',
-        'Deutsch' => 'Bier, Comic',
-    },
     comicTemplateFile => {
         'English' => 'web/english/comic-page.templ',
         'Deutsch' => 'web/deutsch/comic-page.templ',
