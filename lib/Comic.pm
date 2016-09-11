@@ -109,10 +109,6 @@ my %text = (
     },
     backlogTemplateFile => 'web/backlog.templ',
     backlogPage => 'backlog.html',
-    imprintPage => {
-        'English' => 'imprint.html',
-        'Deutsch' => 'impressum.html',
-    },
     imprintPageAbsolute => {
         'English' => 'https://beercomics.com/imprint.html',
         'Deutsch' => 'https://biercomics.de/impressum.html',
@@ -851,8 +847,8 @@ sub _do_export_html {
         $vars{'prev'} = 'comics/' . $self->{'prev'}{$language};
     }
     $vars{'archive'} = "${path}$text{archivePage}{$language}";
-    $vars{'imprint'} = "${path}$text{imprintPage}{$language}";
-    $vars{'imprintCC'} = "$text{imprintPageAbsolute}{$language}";
+    $vars{'imprint'} = $path . basename($text{imprintPageAbsolute}{$language});
+    $vars{'imprintCC'} = $text{imprintPageAbsolute}{$language};
     $vars{'favicon'} = "${path}favicon.png";
     $vars{'stylesheet'} = "${path}styles.css";
     $vars{'logo'} = "${path}$text{logo}{$language}";
@@ -1071,13 +1067,14 @@ sub _write_sitemap_xml_fragment {
 
     my $fragment = $self->_make_file_name($language, 'tmp/sitemap', 'xml');
     my $png_file = basename($self->{pngFile}{$language});
+    my $imprint_page = basename($text{imprintPageAbsolute}{$language});
     _write_file($fragment, <<"XML");
 <url>
 <loc>$html</loc>
 <image:image>
 <image:loc>${path}/comics/$png_file</image:loc>
 <image:title>$self->{meta_data}->{title}{$language}</image:title>
-<image:license>$path/$text{imprintPage}{$language}</image:license>
+<image:license>$path/$imprint_page</image:license>
 </image:image>
 <lastmod>$self->{modified}</lastmod>
 </url>
@@ -1175,8 +1172,8 @@ sub _do_export_archive {
         $vars{'comics'} = \@filtered;
         $vars{'modified'} = $filtered[-1]->{modified};
         $vars{'notFor'} = \&_not_for;
-        $vars{'imprint'} = "$text{imprintPage}{$language}";
-        $vars{'imprintCC'} = "$text{imprintPageAbsolute}{$language}";
+        $vars{'imprint'} = basename($text{imprintPageAbsolute}{$language});
+        $vars{'imprintCC'} = $text{imprintPageAbsolute}{$language};
         $vars{'logo'} = "$text{logo}{$language}";
         $vars{'ccbutton'} = "$text{ccbutton}{$language}";
 
