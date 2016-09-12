@@ -6,6 +6,7 @@ use warnings;
 use Readonly;
 use English '-no_match_vars';
 use utf8;
+use Locales unicode => 1;
 use base qw(Exporter);
 use POSIX;
 use Carp;
@@ -131,6 +132,7 @@ my %text = (
 
 my %counts;
 my %titles;
+my %language_code_cache;
 my @comics;
 
 
@@ -823,7 +825,7 @@ sub _do_export_html {
     $vars{'next'} = $self->{'next'}{$language};
     $vars{'last'} = $self->{'last'}{$language};
     $vars{'languages'} = [grep { $_ ne $language } sort $self->_languages()];
-    $vars{'languagecodes'} = $text{languageCodes};
+    $vars{'languagecodes'} = { $self->_language_codes() };
     $vars{'languageurls'} = $self->{url};
     $vars{'languagetitles'} = $self->{meta_data}->{title};
     $vars{'who'} = [@{$self->{meta_data}->{who}->{$language}}];
@@ -878,6 +880,31 @@ sub _do_export_html {
     return _templatize($self->{file}, $text{comicTemplateFile}{$language},
            _slurp($text{comicTemplateFile}{$language}), %vars)
         or croak "Error writing HTML: $OS_ERROR";
+}
+
+
+sub _language_codes {
+    my ($self) = @_;
+
+    my %codes;
+    LANG: foreach my $lang (keys $self->{meta_data}->{title}) {
+        if ($language_code_cache{$lang}) {
+            $codes{$lang} = $language_code_cache{$lang};
+            next LANG;
+        }
+        foreach my $lcode (Locales::->new()->get_language_codes()) {
+            my $loc = Locales->new($lcode);
+            next unless($loc);
+            my $code = $loc->get_code_from_language($lang);
+            if ($code) {
+                $codes{$lang} = $code;
+                $language_code_cache{$lang} = $code;
+                next LANG;
+            }
+        }
+        croak "$self->{file}: Cannot find language code for '$lang'";
+    }
+    return %codes;
 }
 
 
