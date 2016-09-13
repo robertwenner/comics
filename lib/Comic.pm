@@ -110,23 +110,12 @@ my %text = (
     },
     backlogTemplateFile => 'web/backlog.templ',
     backlogPage => 'backlog.html',
+# @dontCommit remove this, too
     imprintPageAbsolute => {
         'English' => 'https://beercomics.com/imprint.html',
         'Deutsch' => 'https://biercomics.de/impressum.html',
     },
-    logo => {
-        'English' => 'beercomics-logo.png',
-        'Deutsch' => 'biercomics-logo.png',
-    },
-    ccbutton => {
-        'English' => 'cc.png',
-        'Deutsch' => 'cc.png',
-    },
     sizeMapTemplateFile => 'web/sizemap.templ',
-    languageCodes => {
-        'Deutsch' => 'de',
-        'English' => 'en',
-    },
 );
 
 
@@ -848,13 +837,7 @@ sub _do_export_html {
         $vars{'first'} = 'comics/' . $self->{'first'}{$language};
         $vars{'prev'} = 'comics/' . $self->{'prev'}{$language};
     }
-    $vars{'archive'} = "${path}$text{archivePage}{$language}";
-    $vars{'imprint'} = $path . basename($text{imprintPageAbsolute}{$language});
-    $vars{'imprintCC'} = $text{imprintPageAbsolute}{$language};
-    $vars{'favicon'} = "${path}favicon.png";
-    $vars{'stylesheet'} = "${path}styles.css";
-    $vars{'logo'} = "${path}$text{logo}{$language}";
-    $vars{'ccbutton'} = "${path}$text{ccbutton}{$language}";
+    $vars{'root'} = $path;
     my $contrib = $self->{meta_data}->{contrib};
     $vars{'contrib'} = 0;
     if (defined($contrib) && join('', @{$contrib}) !~ m{^\s*$}) {
@@ -1094,6 +1077,8 @@ sub _write_sitemap_xml_fragment {
 
     my $fragment = $self->_make_file_name($language, 'tmp/sitemap', 'xml');
     my $png_file = basename($self->{pngFile}{$language});
+    # @fixme: use a template per language for the site map?
+    # @fixme: change the license tag to point to the CC url?
     my $imprint_page = basename($text{imprintPageAbsolute}{$language});
     _write_file($fragment, <<"XML");
 <url>
@@ -1196,13 +1181,10 @@ sub _do_export_archive {
         my %vars;
         $vars{'title'} = $text{archiveTitle}{$language};
         $vars{'url'} = $text{archivePage}{$language};
+        $vars{'root'} = '';
         $vars{'comics'} = \@filtered;
         $vars{'modified'} = $filtered[-1]->{modified};
         $vars{'notFor'} = \&_not_for;
-        $vars{'imprint'} = basename($text{imprintPageAbsolute}{$language});
-        $vars{'imprintCC'} = $text{imprintPageAbsolute}{$language};
-        $vars{'logo'} = "$text{logo}{$language}";
-        $vars{'ccbutton'} = "$text{ccbutton}{$language}";
 
         my $templ_file = $text{archiveTemplateFile}{$language};
         _write_file($page, _templatize('archive', $templ_file, _slurp($templ_file), %vars));
