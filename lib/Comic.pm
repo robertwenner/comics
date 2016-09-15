@@ -1069,7 +1069,9 @@ sub _templatize {
 
     my %options = (
         STRICT => 1,
-        EVAL_PERL => 1,
+        # PRE_CHOMP => 1, removes space in "with ideas from [% who %]"
+        POST_CHOMP => 2,
+        # TRIM => 1,
     );
     my $t = Template->new(%options) ||
         croak('Cannot construct template: ' . Template->error());
