@@ -10,6 +10,12 @@ use MockComic;
 __PACKAGE__->runtests() unless caller;
 
 
+sub set_up : Test(setup) {
+    MockComic::set_up();
+    MockComic::fake_file("web/deutsch/sitemap-xml.templ", "...");
+}
+
+
 sub make_comic {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {

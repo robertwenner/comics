@@ -369,13 +369,29 @@ sub assert_wrote_file {
     my ($name, $contents) = @_;
 
     if (!defined($contents)) {
-        ok(!defined($file_written{$name}), "Should not haven written $name");
+        ok(!defined($file_written{$name}), "Should not haven written to $name");
     }
     elsif (ref($contents) eq '') {
-        is($file_written{$name}, $contents, "Wrong content");
+        is($file_written{$name}, $contents, "Wrong content in $name");
     }
     elsif (ref($contents) eq ref(qr{})) {
-        like($file_written{$name}, $contents, "Wrong content regex");
+        like($file_written{$name}, $contents, "Content in $name should match regex");
+    }
+    else {
+        die "Cannot match on $contents";
+    }
+}
+
+
+
+sub assert_didnt_write_in_file {
+    my ($name, $contents) = @_;
+
+    if (ref($contents) eq ref(qr{})) {
+        unlike($file_written{$name}, $contents, "Shouldn't have written that to $name");
+    }
+    else {
+        die "Cannot match on $contents";
     }
 }
 

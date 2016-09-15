@@ -13,6 +13,9 @@ __PACKAGE__->runtests() unless caller;
 
 sub set_up : Test(setup) {
     MockComic::set_up();
+    MockComic::fake_file("web/deutsch/comic-page.templ", "...");
+    MockComic::fake_file("web/deutsch/sitemap-xml.templ", "...");
+    MockComic::fake_file("web/english/sitemap-xml.templ", "...");
 }
 
 

@@ -40,6 +40,8 @@ sub set_up : Test(setup) {
 [% END %]
 TEMPL
     MockComic::fake_file("web/deutsch/comic-page.templ", "...");
+    MockComic::fake_file("web/deutsch/sitemap-xml.templ", "...");
+    MockComic::fake_file("web/english/sitemap-xml.templ", "...");
 }
 
 

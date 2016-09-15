@@ -88,7 +88,7 @@ Readonly our $TRANSFORM => 1;
 
 
 my %text = (
-    domain => {
+    domain => { # can we get rid off this?
         'English' => 'beercomics.com',
         'Deutsch' => 'biercomics.de',
     },
@@ -110,12 +110,15 @@ my %text = (
     },
     backlogTemplateFile => 'web/backlog.templ',
     backlogPage => 'backlog.html',
-# @dontCommit remove this, too
-    imprintPageAbsolute => {
-        'English' => 'https://beercomics.com/imprint.html',
-        'Deutsch' => 'https://biercomics.de/impressum.html',
-    },
     sizeMapTemplateFile => 'web/sizemap.templ',
+    sitemapXmlTemplateFile => {
+        'English' => 'web/english/sitemap-xml.templ',
+        'Deutsch' => 'web/deutsch/sitemap-xml.templ',
+    },
+    sitemapXmlTo => {
+        'English' => 'generated/english/web/sitemap.xml',
+        'Deutsch' => 'generated/deutsch/web/sitemap.xml',
+    },
 );
 
 
@@ -215,7 +218,7 @@ sub export_png {
         else {
             $png_file = $self->_make_file_name($language, '/web/comics', 'png');
         }
-        $self->{pngFile}{$language} = $png_file;
+        $self->{pngFile}{$language} = basename($png_file);
 
         unless (_up_to_date($self->{file}, $png_file)) {
             $self->_flip_language_layers($language);
@@ -686,10 +689,14 @@ extension and will be placed next to it.
 =cut
 
 sub export_all_html {
+    my %languages;
     foreach my $c (@comics) {
         foreach my $language ($c->_languages()) {
+            $languages{$language} = 1;
             my $name = $c->_make_file_name($language, 'web/comics', 'html');
             $c->{htmlFile}{$language} = basename($name);
+            $c->{pngFile}{$language} = basename($name);
+            $c->{pngFile}{$language} =~ s/\.html$/\.png/;
             $c->{url}{$language} = $c->_make_url($language, 'html');
         }
     }
@@ -706,11 +713,20 @@ sub export_all_html {
             $comic->{'next'}{$language} = $next_comic ? $next_comic->{htmlFile}{$language} : 0;
             my $last_comic = _find_next($language, $i, \@sorted, [reverse $i + 1 .. @sorted - 1]);
             $comic->{'last'}{$language} = $last_comic ? $last_comic->{htmlFile}{$language} : 0;
-
             $comic->_export_language_html($language);
-            $comic->_write_sitemap_xml_fragment($language);
         }
     }
+
+    my %vars;
+    $vars{'comics'} = [ @sorted ];
+    $vars{'notFor'} = \&_not_published_on_the_web;
+    foreach my $language (keys %languages) {
+        my $templ = $text{'sitemapXmlTemplateFile'}{$language};
+        my $xml =_templatize('(none)', $templ, _slurp($templ), %vars)
+            or croak "Error templatizing $templ: $OS_ERROR";
+        _write_file($text{'sitemapXmlTo'}{$language}, $xml);
+    }
+
     return;
 }
 
@@ -773,7 +789,8 @@ sub _find_next {
 sub _export_language_html {
     my ($self, $language) = @ARG;
 
-    my $page = $self->{pngFile}{$language};
+    my $path = $self->_not_yet_published() ? 'backlog' : lc($language) . '/web/comics';
+    my $page = "generated/$path/$self->{pngFile}{$language}";
     $page =~ s{\.png$}{.html};
     return _write_file($page, $self->_do_export_html($language));
 }
@@ -793,6 +810,12 @@ sub _is_for {
 }
 
 
+sub _not_published_on_the_web {
+    my ($self, $language) = @ARG;
+    return !$self->_is_for($language) || $self->_not_yet_published();
+}
+
+
 sub _do_export_html {
     my ($self, $language) = @ARG;
 
@@ -802,7 +825,7 @@ sub _do_export_html {
     # HTML encoding. So first reverse the XML encoding, then apply any HTML
     # encoding.
     $vars{title} = encode_entities(decode_entities($title));
-    $vars{png_file} = basename($self->{pngFile}{$language});
+    $vars{png_file} = $self->{pngFile}{$language};
     $vars{modified} = $self->{modified};
     $vars{height} = $self->{height};
     $vars{width} = $self->{width};
@@ -1064,34 +1087,6 @@ sub _templatize {
         croak "$template_file for $comic_file: HASH ref found:\n$output";
     }
     return $output;
-}
-
-
-sub _write_sitemap_xml_fragment {
-    my ($self, $language) = @ARG;
-
-    return if ($self->_not_for($language) || $self->_not_yet_published());
-
-    my $html = $self->_make_url($language, 'html');
-    my $path = "https://$text{domain}{$language}";
-
-    my $fragment = $self->_make_file_name($language, 'tmp/sitemap', 'xml');
-    my $png_file = basename($self->{pngFile}{$language});
-    # @fixme: use a template per language for the site map?
-    # @fixme: change the license tag to point to the CC url?
-    my $imprint_page = basename($text{imprintPageAbsolute}{$language});
-    _write_file($fragment, <<"XML");
-<url>
-<loc>$html</loc>
-<image:image>
-<image:loc>${path}/comics/$png_file</image:loc>
-<image:title>$self->{meta_data}->{title}{$language}</image:title>
-<image:license>$path/$imprint_page</image:license>
-</image:image>
-<lastmod>$self->{modified}</lastmod>
-</url>
-XML
-    return;
 }
 
 
