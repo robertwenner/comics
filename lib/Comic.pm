@@ -722,7 +722,7 @@ sub export_all_html {
     $vars{'notFor'} = \&_not_published_on_the_web;
     foreach my $language (keys %languages) {
         my $templ = $text{'sitemapXmlTemplateFile'}{$language};
-        my $xml =_templatize('(none)', $templ, _slurp($templ), %vars)
+        my $xml =_templatize('(none)', $templ, %vars)
             or croak "Error templatizing $templ: $OS_ERROR";
         _write_file($text{'sitemapXmlTo'}{$language}, $xml);
     }
@@ -883,8 +883,7 @@ sub _do_export_html {
         $tags .= $t;
     }
     $vars{description} = encode_entities($self->{meta_data}->{description}->{$language});
-    return _templatize($self->{file}, $text{comicTemplateFile}{$language},
-           _slurp($text{comicTemplateFile}{$language}), %vars)
+    return _templatize($self->{file}, $text{comicTemplateFile}{$language}, %vars)
         or croak "Error writing HTML: $OS_ERROR";
 }
 
@@ -1065,7 +1064,7 @@ sub _pos_to_frame {
 
 
 sub _templatize {
-    my ($comic_file, $template_file, $template, %vars) = @ARG;
+    my ($comic_file, $template_file, %vars) = @ARG;
 
     my %options = (
         STRICT => 1,
@@ -1076,6 +1075,7 @@ sub _templatize {
     my $t = Template->new(%options) ||
         croak('Cannot construct template: ' . Template->error());
     my $output = '';
+    my $template = _slurp($template_file);
     $t->process(\$template, \%vars, \$output) ||
         croak "$template_file for $comic_file: " . $t->error() . "\n";
 
@@ -1184,7 +1184,7 @@ sub _do_export_archive {
         $vars{'notFor'} = \&_not_for;
 
         my $templ_file = $text{archiveTemplateFile}{$language};
-        _write_file($page, _templatize('archive', $templ_file, _slurp($templ_file), %vars));
+        _write_file($page, _templatize('archive', $templ_file, %vars));
     }
 
     return;
@@ -1209,7 +1209,7 @@ sub _do_export_backlog {
     $vars{'archive'} = \$text{archivePage};
     $vars{'publishers'} = _publishers();
 
-    _write_file($page, _templatize('backlog', $templ_file, _slurp($templ_file), %vars));
+    _write_file($page, _templatize('backlog', $templ_file, %vars));
 
     return;
 }
@@ -1332,7 +1332,7 @@ sub size_map {
     $vars{svg} =~ s/<!DOCTYPE[^>]+>\n//;
 
     _write_file('generated/sizemap.html',
-        _templatize('sizemap', $text{sizeMapTemplateFile}, _slurp($text{sizeMapTemplateFile}), %vars));
+        _templatize('sizemap', $text{sizeMapTemplateFile}, %vars));
 
     return;
 }

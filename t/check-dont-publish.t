@@ -10,6 +10,11 @@ use MockComic;
 __PACKAGE__->runtests() unless caller;
 
 
+sub set_up : Test(setup) {
+    MockComic::set_up();
+}
+
+
 sub in_json_hash : Test {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {

@@ -9,6 +9,10 @@ use MockComic;
 
 __PACKAGE__->runtests() unless caller;
 
+sub set_up : Test(setup) {
+    MockComic::set_up();
+}
+
 
 # Should this rather check that no two meta texts come after each other?
 # Except in the beginning, where the first is an intro line? 

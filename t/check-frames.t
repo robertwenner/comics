@@ -9,6 +9,11 @@ use MockComic;
 __PACKAGE__->runtests() unless caller;
 
 
+sub set_up : Test(setup) {
+    MockComic::set_up();
+}
+
+
 sub assert_bad {
     my $expected = shift;
     my $err = try_comic(@_);

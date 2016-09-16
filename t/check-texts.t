@@ -10,6 +10,11 @@ use MockComic;
 __PACKAGE__->runtests() unless caller;
 
 
+sub set_up : Test(setup) {
+    MockComic::set_up();
+}
+
+
 sub empty_text_found : Test {
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => {$MockComic::DEUTSCH => ['']});

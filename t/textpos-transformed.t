@@ -13,6 +13,7 @@ __PACKAGE__->runtests() unless caller;
 my $comic;
 
 sub before : Test(setup) {
+    MockComic::set_up();
     $comic = MockComic::make_comic();
 }
 

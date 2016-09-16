@@ -39,6 +39,7 @@ our @exported;  # hide behind assert_... sub
 my %files_read;
 my %file_written;
 my $now;
+my $mtime;
 
 
 my %defaultArgs = (
@@ -67,6 +68,51 @@ sub set_up {
     @exported = ();
     %file_written = ();
     Comic::reset_statics();
+    mock_methods();
+}
+
+
+sub mock_methods {
+    *Comic::_slurp = sub {
+        my ($name) = @_;
+        die "Tried to read unmocked file '$name'" unless (defined($files_read{$name}));
+        return $files_read{$name};
+    };
+
+    *Comic::_mtime = sub {
+        return $mtime;
+    };
+
+    *File::Path::make_path = sub {
+        return 1;
+    };
+
+    *Comic::_write_file = sub {
+        my ($name, $contents) = @_;
+        $file_written{$name} = $contents;
+    };
+
+    *Comic::_export_language_html = sub {
+        my ($self, $language) = @_;
+        push @exported, ($self->{meta_data}->{title}->{$language} || '');
+        return;
+    };
+
+    *Comic::_now = sub {
+        return $now || DateTime->now;
+    };
+
+    *Comic::_up_to_date = sub {
+        return 1;
+    };
+
+    *Comic::_get_tz = sub {
+        return '-0500';
+    };
+
+    *Comic::_check = sub {
+        # Ignore; indivisual tests call check methods as needed.
+    };
 }
 
 
@@ -116,48 +162,8 @@ HEADER
 sub make_comic {
     my %args = (%defaultArgs, @_);
 
+    $mtime = $args{$MTIME};
     fake_file($args{$IN_FILE}, fake_comic(%args));
-
-    *Comic::_slurp = sub {
-        my ($name) = @_;
-        die "Tried to read unmocked file '$name'" unless (defined($files_read{$name}));
-        return $files_read{$name};
-    };
-
-    *Comic::_mtime = sub {
-        return $args{$MTIME};
-    };
-
-    *File::Path::make_path = sub {
-        return 1;
-    };
-
-    *Comic::_write_file = sub {
-        my ($name, $contents) = @_;
-        $file_written{$name} = $contents;
-    };
-
-    *Comic::_export_language_html = sub {
-        my ($self, $language) = @_;
-        push @exported, ($self->{meta_data}->{title}->{$language} || '');
-        return;
-    };
-
-    *Comic::_now = sub {
-        return $now || DateTime->now;
-    };
-
-    *Comic::_up_to_date = sub {
-        return 1;
-    };
-
-    *Comic::_get_tz = sub {
-        return '-0500';
-    };
-
-    *Comic::_check = sub {
-        # Ignore; indivisual tests call check methods as needed.
-    };
 
     my $comic = new Comic($args{$IN_FILE});
     $comic->export_png();
