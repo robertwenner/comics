@@ -165,7 +165,7 @@ sub _load {
     my $meta_data = join ' ', $self->{xpath}->findnodes($meta_xpath);
     eval {
         $self->{meta_data} = from_json($meta_data);
-    } or croak "$file: Error in JSON for: $EVAL_ERROR";
+    } or $self->_croak("Error in JSON for: $EVAL_ERROR");
     $self->{modified} = DateTime->from_epoch(epoch => _mtime($file))->ymd;
     push @comics, $self;
     return;
@@ -271,7 +271,7 @@ sub _check_title {
     $key =~ s/\s+/ /g;
     if (defined $titles{$key}) {
         if ($titles{$key} ne $self->{file}) {
-            croak("Duplicated $language title '$title' in $titles{$key} and $self->{file}");
+            $self->_croak("Duplicated $language title '$title' in $titles{$key}");
         }
     }
     $titles{$key} = $self->{file};
@@ -295,7 +295,7 @@ sub _check_date {
         foreach my $l ($self->_languages()) {
             next if ($self->_is_for($l) != $c->_is_for($l));
             if ($published_when eq $pub_when && $published_where eq $pub_where) {
-                croak("$self->{file}: duplicated date with $c->{file}");
+                $self->_croak("duplicated date with $c->{file}");
             }
         }
     }
@@ -315,7 +315,7 @@ sub _check_dont_publish {
         my $text = $layer->textContent();
         my $label = $layer->{'inkscape:label'};
         if ($text =~ m/(\b$DONT_PUBLISH\b[^\n\r]*)/m) {
-            croak "In $self->{file} in layer $label: $1";
+            $self->_croak("In layer $label: $1");
         }
     }
     return;
@@ -336,7 +336,7 @@ sub _check_json {
         }
     }
     elsif ($what =~ m/$DONT_PUBLISH/m) {
-        croak "In $self->{file} in JSON$where: $what";
+        $self->_croak("In JSON$where: $what");
     }
     return;
 }
@@ -374,38 +374,38 @@ sub _check_frames {
         if (defined $prev_y) {
             if ($next_row) {
                 if ($prev_bottom > $y) {
-                    croak "$self->{file}: frames overlap y at $prev_bottom and $y";
+                    $self->_croak("frames overlap y at $prev_bottom and $y");
                 }
                 if ($prev_bottom + $FRAME_SPACING > $y) {
-                    croak "$self->{file}: frames too close y (" . ($prev_bottom + $FRAME_SPACING - $y) . "at $prev_bottom and $y";
+                    $self->_croak('frames too close y (' . ($prev_bottom + $FRAME_SPACING - $y) . "at $prev_bottom and $y");
                 }
                 if ($prev_bottom + $FRAME_SPACING + $FRAME_SPACING_TOLERANCE < $y) {
-                    croak "$self->{file}: frames too far y at $prev_bottom and $y";
+                    $self->_croak("frames too far y at $prev_bottom and $y");
                 }
 
                 if (_more_off($left_side, $x, $FRAME_TOLERANCE)) {
-                    croak "$self->{file}: frame left side not aligned: $left_side and $x";
+                    $self->_croak("frame left side not aligned: $left_side and $x");
                 }
                 if (_more_off($prev_side, $right_side, $FRAME_TOLERANCE)) {
-                    croak "$self->{file}: frame right side not aligned: $prev_side and $right_side";
+                    $self->_croak("frame right side not aligned: $prev_side and $right_side");
                 }
             }
             else {
                 if (_more_off($prev_y, $y, $FRAME_TOLERANCE)) {
-                    croak "$self->{file}: frame tops not aligned: $prev_y and $y";
+                    $self->_croak("frame tops not aligned: $prev_y and $y");
                 }
                 if (_more_off($prev_bottom, $bottom, $FRAME_TOLERANCE)) {
-                    croak "$self->{file}: frame bottoms not aligned: $prev_bottom and $bottom";
+                    $self->_croak("frame bottoms not aligned: $prev_bottom and $bottom");
                 }
 
                 if ($prev_side > $x) {
-                    croak "$self->{file}: frames overlap x at $prev_side and $x";
+                    $self->_croak("frames overlap x at $prev_side and $x");
                 }
                 if ($prev_side + $FRAME_SPACING > $x) {
-                    croak "$self->{file}: frames too close x at $prev_side and $x";
+                    $self->_croak("frames too close x at $prev_side and $x");
                 }
                 if ($prev_side + $FRAME_SPACING + $FRAME_SPACING_TOLERANCE < $x) {
-                    croak "$self->{file}: frames too far x (" . ($x - ($prev_side + $FRAME_SPACING + $FRAME_SPACING_TOLERANCE)) . ") at $prev_side and $x";
+                    $self->_croak('frames too far x (' . ($x - ($prev_side + $FRAME_SPACING + $FRAME_SPACING_TOLERANCE)) . ") at $prev_side and $x");
                 }
             }
         }
@@ -440,15 +440,16 @@ sub _check_frame_style {
     if ($style =~ m{;stroke-width:([^;]+);}) {
         my $width = $1;
         if ($width < $FRAME_WIDTH - $FRAME_WIDTH_DEVIATION) {
-            croak "Frame too narrow ($width) in $self->{file}";
+            $self->_croak("Frame too narrow ($width)");
         }
         if ($width > $FRAME_WIDTH + $FRAME_WIDTH_DEVIATION) {
-            croak "Frame too wide ($width) in $self->{file}";
+            $self->_croak("Frame too wide ($width)");
         }
     }
     else {
-        croak "Cannot find width in $style from $self->{file}";
+        $self->_croak("Cannot find width in '$style'");
     }
+    return;
 }
 
 
@@ -462,8 +463,8 @@ sub _check_tags {
     my ($self, $what, $language) = @ARG;
 
     foreach my $tag (@{$self->{meta_data}->{$what}->{$language}}) {
-        croak("No $language $what in $self->{file}") unless(defined $tag);
-        croak("Empty $language $what in $self->{file}") if ($tag =~ m/^\s*$/);
+        $self->_croak("No $language $what") unless(defined $tag);
+        $self->_croak("Empty $language $what") if ($tag =~ m/^\s*$/);
     }
     return;
 }
@@ -505,7 +506,7 @@ sub _check_transcript {
                         # Should this also check that it's found in a meta layer?
                     }
                     else {
-                        croak "$self->{file}: duplicated text '$t' in $language and $l";
+                        $self->_croak("duplicated text '$t' in $language and $l");
                     }
                 }
             }
@@ -514,14 +515,14 @@ sub _check_transcript {
         # Check for mixed up order (two speaker indicators after another).
         $trace .= "[$t]";
         if (_both_names($previous, $t)) {
-            croak "$self->{file}: transcript mixed up in $language: $trace";
+            $self->_croak("transcript mixed up in $language: $trace");
         }
         $previous = $t;
     }
 
     # Check that the comic does not end with a speaker indicator.
     if (trim($previous) =~ m{:$}) {
-        croak "$self->{file}: speaker's text missing after '$previous'";
+        $self->_croak("speaker's text missing after '$previous'");
     }
     return;
 }
@@ -565,8 +566,9 @@ sub _flip_language_layers {
         }
     }
     unless ($had_lang) {
-        croak "No $language layer in $self->{file}";
+        $self->_croak("no $language layer");
     }
+    return;
 }
 
 
@@ -596,37 +598,37 @@ sub _svg_to_png {
     my $export_cmd = "inkscape --without-gui --file=$svg_file" .
         ' --g-fatal-warnings' .
         " --export-png=$png_file --export-area-drawing --export-background=#ffffff";
-    system($export_cmd) && croak("Could not export: $export_cmd: $OS_ERROR");
+    system($export_cmd) && $self->_croak("could not export: $export_cmd: $OS_ERROR");
 
     my $tool = Image::ExifTool->new();
-    _set_png_meta($tool, 'Title', $self->{meta}->{title}->{$language});
-    _set_png_meta($tool, 'Artist', 'Robert Wenner');
+    $self->_set_png_meta($tool, 'Title', $self->{meta}->{title}->{$language});
+    $self->_set_png_meta($tool, 'Artist', 'Robert Wenner');
     my $transcript = '';
     foreach my $t ($self->_texts_for($language)) {
         $transcript .= ' ' unless ($transcript eq '');
         $transcript .=  $t;
     }
-    _set_png_meta($tool, 'Description', $transcript);
-    _set_png_meta($tool, 'CreationTime', $self->{modified});
-    _set_png_meta($tool, 'Copyright', 'CC BY-NC-SA 4.0');
-    _set_png_meta($tool, 'URL', $self->_make_url($language, 'png'));
+    $self->_set_png_meta($tool, 'Description', $transcript);
+    $self->_set_png_meta($tool, 'CreationTime', $self->{modified});
+    $self->_set_png_meta($tool, 'Copyright', 'CC BY-NC-SA 4.0');
+    $self->_set_png_meta($tool, 'URL', $self->_make_url($language, 'png'));
     my $rc = $tool->WriteInfo($png_file);
     if ($rc != 1) {
-        croak("$svg_file: cannot write info: " . tool->GetValue('Error'));
+        $self->_croak('cannot write info: ' . tool->GetValue('Error'));
     }
 
     my $shrink_cmd = "optipng --quiet $png_file";
-    system($shrink_cmd) && croak("Could not shrink: $shrink_cmd: $OS_ERROR");
+    system($shrink_cmd) && $self->_croak("Could not shrink: $shrink_cmd: $OS_ERROR");
 
     return;
 }
 
 
 sub _set_png_meta {
-    my ($tool, $name, $value) = @ARG;
+    my ($self, $tool, $name, $value) = @ARG;
 
     my ($count_set, $error) = $tool->SetNewValue($name, $value);
-    croak("Cannot set $name: $error") if ($error);
+    $self->_roak("Cannot set $name: $error") if ($error);
     return;
 }
 
@@ -672,7 +674,7 @@ sub _normalized_title {
     my ($self, $language) = @ARG;
 
     my $title = $self->{meta_data}->{title}->{$language};
-    croak "No $language title in $self->{file}" unless($title);
+    $self->_croak("No $language title in $self->{file}") unless($title);
     $title =~ s/\s/-/g;
     $title =~ s/[^\w\d_-]//gi;
     return lc $title;
@@ -884,7 +886,7 @@ sub _do_export_html {
     }
     $vars{description} = encode_entities($self->{meta_data}->{description}->{$language});
     return _templatize($self->{file}, $text{comicTemplateFile}{$language}, %vars)
-        or croak "Error writing HTML: $OS_ERROR";
+        or $self->_croak("Error writing HTML: $OS_ERROR");
 }
 
 
@@ -907,7 +909,7 @@ sub _language_codes {
                 next LANG;
             }
         }
-        croak "$self->{file}: Cannot find language code for '$lang'";
+        $self->croak("cannot find language code for '$lang'");
     }
     return %codes;
 }
@@ -932,7 +934,7 @@ sub _texts_for {
 
         if ($text eq '') {
             my $layer = $node->parentNode->{'inkscape:label'};
-            croak "Empty text in $layer with ID $node->{id} in $self->{file}";
+            $self->_croak("empty text in $layer with ID $node->{id}");
         }
         push @texts, $text;
     }
@@ -980,8 +982,8 @@ sub _transformed {
     if (!defined($node->getAttribute('x')) || !defined($node->getAttribute('y'))) {
         ($x, $y) = _text_from_path($self, $node);
     }
-    croak "$self->{file}: No x" unless(defined $x);
-    croak "$self->{file}: No y" unless(defined $y);
+    $self->_croak('no x') unless(defined $x);
+    $self->_croak('no y') unless(defined $y);
 
     my $transform = $node->getAttribute('transform');
     if (!$transform || !$self->{options}{$TRANSFORM}) {
@@ -991,9 +993,9 @@ sub _transformed {
     }
 
     ## no critic(RegularExpressions::ProhibitCaptureWithoutTest)
-    # Perl::Critic does not understand the croak.
+    # Perl::Critic does not understand the if and croak here.
     if ($transform !~ m/^(\w+)\(([^)]+)\)$/) {
-        croak "Cannot handle multiple transformations in $self->{file}";
+        $self->_croak('Cannot handle multiple transformations');
     }
     my ($operation, $params) = ($1, $2);
     ## use critic
@@ -1013,7 +1015,7 @@ sub _transformed {
         ## use critic
     }
     else {
-        croak "Unsupported operation $operation in $self->{file}";
+        $self->_croak("Unsupported operation $operation");
     }
     # http://www.w3.org/TR/SVG/coords.html#TransformMatrixDefined
     # a c e   x
@@ -1023,7 +1025,8 @@ sub _transformed {
     # attributes.
     return $a * $x + $c * $y if ($attribute eq 'x');
     return $b * $x + $d * $y if ($attribute eq 'y');
-    croak "Unsupported attribute $attribute to transform in $self->{file}";
+    $self->_croak("Unsupported attribute $attribute to transform");
+    return; # PerlCritic does not see that this is unreachable.
 }
 
 
@@ -1031,16 +1034,16 @@ sub _text_from_path {
     my ($self, $node) = @ARG;
 
     my @text_path = $node->getChildrenByTagName('textPath');
-    croak "$self->{file}: No X/Y and no textPath child element" if (@text_path == 0);
-    croak "$self->{file}: No X/Y and multiple textPath child elements" if (@text_path > 1);
+    $self->_croak('No X/Y and no textPath child element') if (@text_path == 0);
+    $self->_croak('No X/Y and multiple textPath child elements') if (@text_path > 1);
     my $path_id = $text_path[0]->getAttribute('xlink:href');
     $path_id =~ s{^#}{};
     my $xpath = "//$DEFAULT_NAMESPACE:ellipse[\@id='$path_id']";
     my @path_nodes = $self->{xpath}->findnodes($xpath);
-    croak "$self->{file}: $xpath not found" if (@path_nodes == 0);
-    croak "$self->{file}: More than one node with ID $path_id" if (@path_nodes > 1);
+    $self->_croak("$xpath not found") if (@path_nodes == 0);
+    $self->_croak("More than one node with ID $path_id") if (@path_nodes > 1);
     my $type = $path_nodes[0]->nodeName;
-    croak "$self->{file}: Cannot handle $type nodes" unless ($type eq 'ellipse');
+    $self->_croak("Cannot handle $type nodes") unless ($type eq 'ellipse');
     return ($path_nodes[0]->getAttribute('cx'), $path_nodes[0]->getAttribute('cy'));
 }
 
@@ -1439,6 +1442,12 @@ XML
 
 sub _get_tz {
     return strftime '%z', localtime;
+}
+
+
+sub _croak {
+    my ($self, $msg) = @_;
+    croak "$self->{file}: $msg";
 }
 
 
