@@ -154,8 +154,8 @@ sub function : Test {
 
 sub object_member : Tests {
     my $comic = make_comic();
-    is($comic->{file}, "some_comic.svg");
-    MockComic::fake_file('file.templ', "[%comic.file%]");
+    is($comic->{srcFile}, "some_comic.svg");
+    MockComic::fake_file('file.templ', "[%comic.srcFile%]");
     is(Comic::_templatize('comic.svg', 'file.templ', ("comic" => $comic)),
         "some_comic.svg");
     MockComic::fake_file('file.templ', "[%comic.meta_data.title.Deutsch%]");

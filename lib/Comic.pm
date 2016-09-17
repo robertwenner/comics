@@ -157,7 +157,7 @@ sub new {
 sub _load {
     my ($self, $file) = @ARG;
 
-    $self->{file} = $file;
+    $self->{srcFile} = $file;
     $self->{dom} = XML::LibXML->load_xml(string => _slurp($file));
     $self->{xpath} = XML::LibXML::XPathContext->new($self->{dom});
     $self->{xpath}->registerNs($DEFAULT_NAMESPACE, 'http://www.w3.org/2000/svg');
@@ -220,7 +220,7 @@ sub export_png {
         }
         $self->{pngFile}{$language} = basename($png_file);
 
-        unless (_up_to_date($self->{file}, $png_file)) {
+        unless (_up_to_date($self->{srcFile}, $png_file)) {
             $self->_flip_language_layers($language);
             $self->_svg_to_png($language, $self->_write_temp_svg_file($language), $png_file);
         }
@@ -270,11 +270,11 @@ sub _check_title {
     my $key = trim(lc "$language\n$title");
     $key =~ s/\s+/ /g;
     if (defined $titles{$key}) {
-        if ($titles{$key} ne $self->{file}) {
+        if ($titles{$key} ne $self->{srcFile}) {
             $self->_croak("Duplicated $language title '$title' in $titles{$key}");
         }
     }
-    $titles{$key} = $self->{file};
+    $titles{$key} = $self->{srcFile};
     return;
 }
 
@@ -295,7 +295,7 @@ sub _check_date {
         foreach my $l ($self->_languages()) {
             next if ($self->_is_for($l) != $c->_is_for($l));
             if ($published_when eq $pub_when && $published_where eq $pub_where) {
-                $self->_croak("duplicated date with $c->{file}");
+                $self->_croak("duplicated date with $c->{srcFile}");
             }
         }
     }
@@ -674,7 +674,7 @@ sub _normalized_title {
     my ($self, $language) = @ARG;
 
     my $title = $self->{meta_data}->{title}->{$language};
-    $self->_croak("No $language title in $self->{file}") unless($title);
+    $self->_croak("No $language title in $self->{srcFile}") unless($title);
     $title =~ s/\s/-/g;
     $title =~ s/[^\w\d_-]//gi;
     return lc $title;
@@ -885,7 +885,7 @@ sub _do_export_html {
         $tags .= $t;
     }
     $vars{description} = encode_entities($self->{meta_data}->{description}->{$language});
-    return _templatize($self->{file}, $text{comicTemplateFile}{$language}, %vars)
+    return _templatize($self->{srcFile}, $text{comicTemplateFile}{$language}, %vars)
         or $self->_croak("Error writing HTML: $OS_ERROR");
 }
 
@@ -1310,7 +1310,7 @@ sub size_map {
         $svg->rectangle(x => 0, y => 0,
             width => $comic->{width} * $SCALE_BY,
             height => $comic->{height} * $SCALE_BY,
-            id => basename("$comic->{file}"),
+            id => basename("$comic->{srcFile}"),
             style => {
                 'fill-opacity' => 0,
                 'stroke-width' => '3',
@@ -1447,7 +1447,7 @@ sub _get_tz {
 
 sub _croak {
     my ($self, $msg) = @_;
-    croak "$self->{file}: $msg";
+    croak "$self->{srcFile}: $msg";
 }
 
 

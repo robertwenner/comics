@@ -25,7 +25,7 @@ sub set_up : Test(setup) {
 
     [% FOREACH c IN comics %]
         [% IF c.meta_data.published.where == publisher %]
-            <li>[% c.file %] [% c.meta_data.published.when %]
+            <li>[% c.srcFile %] [% c.meta_data.published.when %]
                 <ul>
                     [% FOREACH l IN languages %]
                     [% DEFAULT c.meta_data.title.$l = 0 %]
