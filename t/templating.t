@@ -287,3 +287,18 @@ sub catches_perl_hash : Tests {
     };
     like($@, qr/HASH/i);
 }
+
+
+sub sparse_collection_top_n : Tests {
+    MockComic::fake_file("file.templ", <<'TEMPL');
+[% done = 0 %]
+[% FOREACH a IN array %]
+[% NEXT IF a % 2 == 0 %]
+[% LAST IF done == max %]
+[% done = done + 1 %]
+[% a %]
+[% END %]
+TEMPL
+    like(Comic::_templatize('comic.svg', 'file.templ', ("array" => [1 .. 10], 'max' => 3)),
+        qr{^\s*1\s+3\s+5\s*$});
+}

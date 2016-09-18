@@ -166,7 +166,20 @@ sub _load {
     eval {
         $self->{meta_data} = from_json($meta_data);
     } or $self->_croak("Error in JSON for: $EVAL_ERROR");
+
     $self->{modified} = DateTime->from_epoch(epoch => _mtime($file))->ymd;
+    my $pub = trim($self->{meta_data}->{published}->{when});
+    if ($pub) {
+        my $dt = DateTime::Format::ISO8601->parse_datetime($pub);
+        $dt->set_time_zone(_get_tz());
+        $self->{rfc822pubDate} = $dt->strftime('%a, %d %b %Y %H:%M:%S %z');
+    }
+
+    foreach my $language ($self->_languages()) {
+        my $name = $self->_make_file_name($language, 'web/comics', 'html');
+        $self->{htmlFile}{$language} = basename($name);
+    }
+
     push @comics, $self;
     return;
 }
@@ -188,6 +201,11 @@ sub _mtime {
 
     Readonly my $MTIME => 9;
     return (stat $file)[$MTIME];
+}
+
+
+sub _get_tz {
+    return strftime '%z', localtime;
 }
 
 
@@ -1405,43 +1423,29 @@ Parameters:
 
     =item B<$items> number of comics to include in the feed.
 
+    =item B<$toFile> to which file to write the feed, e.g., rss.xml. This
+        will be within 'generated/<language>/web'.
+
+    =item B<%templates> hash of language to RSS template file name.
+
 =back
 
 =cut
 
 sub export_rss_feed {
-    my ($items) = @ARG;
+    my ($items, $to, %templates) = @ARG;
 
-    my %rss;
-    my %done;
-    my @last_ones = (reverse sort _compare grep { !$_->_not_yet_published() } @comics);
-    foreach my $c (@last_ones) {
-        foreach my $l ($c->_languages()) {
-            last if ($done{$l}++ >= $items);
-            my $html_file = "https://$text{domain}{$l}/comics/" . $c->_normalized_title($l) . '.html';
-            my $dt = DateTime::Format::ISO8601->parse_datetime($c->{meta_data}->{published}->{when});
-            $dt->set_time_zone(_get_tz());
-            my $pub = $dt->strftime('%a, %d %b %Y %H:%M:%S %z');
-            $rss{$l} .= <<"XML";
-<item>
-<title>$c->{meta_data}->{title}->{$l}</title>
-<link>$html_file</link>
-<pubDate>$pub</pubDate>
-</item>
-XML
-        }
+    foreach my $language (keys %templates) {
+        my %vars = (
+            'comics' => [reverse sort _compare grep { _archive_filter($_, $language) } @comics],
+            'notFor' => \&_not_for,
+            'max' => $items,
+        );
+        my $rss =_templatize('(none)', $templates{$language}, %vars)
+            or croak "Error templatizing $templates{$language}: $OS_ERROR";
+        _write_file('generated/' . lc($language) . "/web/$to", $rss);
     }
-
-    foreach my $l (keys %rss) {
-        _write_file('generated/' . lc($l) . '/tmp/rss.xml', $rss{$l});
-    }
-
     return;
-}
-
-
-sub _get_tz {
-    return strftime '%z', localtime;
 }
 
 

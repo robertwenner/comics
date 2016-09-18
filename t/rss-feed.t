@@ -12,6 +12,19 @@ __PACKAGE__->runtests() unless caller;
 
 sub setup : Test(setup) {
     MockComic::set_up();
+    MockComic::fake_file('rss.templ', <<"RSS");
+[% done = 0 %]
+[% FOREACH c IN comics %]
+[% NEXT IF notFor(c, 'English') %]
+[% LAST IF done == max %]
+[% done = done + 1 %]
+<item>
+<title>[% c.meta_data.title.English %]</title>
+<link>https://beercomics.com/comics/[% c.htmlFile.English %]</link>
+<pubDate>[% c.rfc822pubDate %]</pubDate>
+</item>
+[% END %]
+RSS
 }
 
 
@@ -30,27 +43,26 @@ sub make_comic {
 sub assert_wrote {
     my ($count, $contentsExpected) = @_;
 
-    Comic::export_rss_feed($count);
-    MockComic::assert_wrote_file(
-        'generated/english/tmp/rss.xml',
-        $contentsExpected);
+    Comic::export_rss_feed($count, 'rss.xml', ('English' => 'rss.templ'));
+    MockComic::assert_wrote_file('generated/english/web/rss.xml', $contentsExpected);
 }
 
 
 sub no_comic : Test {
-    assert_wrote(3, undef);
+    Comic::export_rss_feed(10, 'rss.xml', ('English' => 'rss.templ'));
+    MockComic::assert_didnt_write_in_file('rss.xml', qr{item});
 }
 
 
 sub one_comic : Test {
     make_comic('eins', '2016-01-01');
-    assert_wrote(1, <<'XML');
-<item>
-<title>eins</title>
-<link>https://beercomics.com/comics/eins.html</link>
-<pubDate>Fri, 01 Jan 2016 00:00:00 -0500</pubDate>
-</item>
-XML
+    my $item = qr{
+        <item>\s*
+        <title>eins</title>\s*
+        <link>https://beercomics\.com/comics/eins\.html</link>\s*
+        <pubDate>Fri,\s01\sJan\s2016\s00:00:00\s-0500</pubDate>\s*
+        </item>}mx;
+    assert_wrote(10, $item);
 }
 
 
@@ -58,13 +70,14 @@ sub count_cut_off : Test {
     make_comic('eins', '2016-01-01');
     make_comic('zwei', '2016-01-02');
     make_comic('drei', '2016-01-03');
-    assert_wrote(1, <<'XML');
-<item>
-<title>drei</title>
-<link>https://beercomics.com/comics/drei.html</link>
-<pubDate>Sun, 03 Jan 2016 00:00:00 -0500</pubDate>
-</item>
-XML
+    my $item = qr{
+        <item>\s*
+        <title>drei</title>\s*
+        <link>https://beercomics\.com/comics/drei\.html</link>\s*
+        <pubDate>Sun,\s03\sJan\s2016\s00:00:00\s-0500</pubDate>\s*
+        </item>}mx;
+    assert_wrote(1, $item);
+
 }
 
 
@@ -72,13 +85,13 @@ sub published_only : Test {
     make_comic('eins', '3016-01-01');
     make_comic('zwei', '2016-01-02');
     make_comic('drei', '3016-01-03');
-    assert_wrote(1, <<'XML');
-<item>
-<title>zwei</title>
-<link>https://beercomics.com/comics/zwei.html</link>
-<pubDate>Sat, 02 Jan 2016 00:00:00 -0500</pubDate>
-</item>
-XML
+    my $item = qr{
+        <item>\s*
+        <title>zwei</title>\s*
+        <link>https://beercomics.com/comics/zwei.html</link>\s*
+        <pubDate>Sat,\s02\sJan\s2016\s00:00:00\s-0500</pubDate>\s*
+        </item>}mx;
+    assert_wrote(1, $item);
 }
 
 
@@ -86,23 +99,23 @@ sub order : Test {
     make_comic('eins', '2016-01-01');
     make_comic('zwei', '2016-01-02');
     make_comic('drei', '2016-01-03');
-    assert_wrote(10, <<'XML');
-<item>
-<title>drei</title>
-<link>https://beercomics.com/comics/drei.html</link>
-<pubDate>Sun, 03 Jan 2016 00:00:00 -0500</pubDate>
-</item>
-<item>
-<title>zwei</title>
-<link>https://beercomics.com/comics/zwei.html</link>
-<pubDate>Sat, 02 Jan 2016 00:00:00 -0500</pubDate>
-</item>
-<item>
-<title>eins</title>
-<link>https://beercomics.com/comics/eins.html</link>
-<pubDate>Fri, 01 Jan 2016 00:00:00 -0500</pubDate>
-</item>
-XML
+    my $items = qr{
+        <item>\s*
+        <title>drei</title>\s*
+        <link>https://beercomics.com/comics/drei.html</link>\s*
+        <pubDate>Sun,\s03\sJan\s2016\s00:00:00\s-0500</pubDate>\s*
+        </item>\s*
+        <item>\s*
+        <title>zwei</title>\s*
+        <link>https://beercomics.com/comics/zwei.html</link>\s*
+        <pubDate>Sat,\s02\sJan\s2016\s00:00:00\s-0500</pubDate>\s*
+        </item>\s*
+        <item>\s*
+        <title>eins</title>\s*
+        <link>https://beercomics.com/comics/eins.html</link>\s*
+        <pubDate>Fri,\s01\sJan\s2016\s00:00:00\s-0500</pubDate>\s*
+        </item>}mx;
+    assert_wrote(10, $items);
 }
 
 
@@ -120,19 +133,43 @@ sub by_language : Tests {
         $MockComic::PUBLISHED_WHEN => '2016-01-01',
     );
 
-    Comic::export_rss_feed(5);
-    MockComic::assert_wrote_file('generated/deutsch/tmp/rss.xml', <<'XML');
+    MockComic::fake_file('de.templ', <<"RSS");
+[% done = 0 %]
+[% FOREACH c IN comics %]
+[% NEXT IF notFor(c, 'Deutsch') %]
+[% LAST IF done == max %]
+[% done = done + 1 %]
 <item>
-<title>Bier</title>
-<link>https://biercomics.de/comics/bier.html</link>
-<pubDate>Fri, 01 Jan 2016 00:00:00 -0500</pubDate>
+<title>[% c.meta_data.title.Deutsch %]</title>
+<link>https://biercomics.de/comics/[% c.htmlFile.Deutsch %]</link>
+<pubDate>[% c.rfc822pubDate %]</pubDate>
 </item>
-XML
-    MockComic::assert_wrote_file('generated/english/tmp/rss.xml', <<'XML');
-<item>
-<title>Beer</title>
-<link>https://beercomics.com/comics/beer.html</link>
-<pubDate>Fri, 01 Jan 2016 00:00:00 -0500</pubDate>
-</item>
-XML
+[% END %]
+RSS
+
+    Comic::export_rss_feed(5, 'rss.xml', ('Deutsch' => 'de.templ', 'English' => 'rss.templ'));
+    my $english = qr{<title>Beer</title>};
+    my $deutsch = qr{<title>Bier</title>};
+    MockComic::assert_wrote_file('generated/deutsch/web/rss.xml', $deutsch);
+    MockComic::assert_didnt_write_in_file('generated/deutsch/web/rss.xml', $english);
+    MockComic::assert_wrote_file('generated/english/web/rss.xml', $english);
+    MockComic::assert_didnt_write_in_file('generated/english/web/rss.xml', $deutsch);
+}
+
+
+sub xml_special_characters : Tests {
+    make_comic('&lt;Ale &amp; Lager&gt;', '2016-01-01');
+    assert_wrote(10, qr{<title>&lt;Ale &amp; Lager&gt;</title>});
+}
+
+
+sub not_published_on_web : Test {
+    MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => 'Bier in der Zeitung',
+        },
+        $MockComic::PUBLISHED_WHEN => '2016-01-01',,
+        $MockComic::PUBLISHED_WHERE => 'tolle Zeitung');
+    Comic::export_rss_feed(10, 'rss.xml', ('English' => 'rss.templ'));
+    MockComic::assert_didnt_write_in_file('rss.xml', qr{item});
 }
