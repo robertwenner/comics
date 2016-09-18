@@ -336,3 +336,12 @@ XML
     like($exported, qr{<meta property="og:image" content="https://biercomics\.de/comics/bier-trinken.png"/>},
         'Image not found');
 }
+
+
+sub html_special_characters {
+    MockComic::fake_file('templates/english/comic-page.templ', '[% title %]');
+    my $comic = MockComic::make_comic(
+        $MockComic::TEXTS => { 'English' => ["&lt;Ale &amp; Lager&gt;"] },
+    );
+    is($comic->_do_export_html('English'), '&lt;Ale &amp; Lager&gt;');
+}
