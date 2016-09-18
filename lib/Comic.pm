@@ -93,12 +93,12 @@ my %text = (
         'Deutsch' => 'biercomics.de',
     },
     comicTemplateFile => {
-        'English' => 'web/english/comic-page.templ',
-        'Deutsch' => 'web/deutsch/comic-page.templ',
+        'English' => 'templates/english/comic-page.templ',
+        'Deutsch' => 'templates/deutsch/comic-page.templ',
     },
     archiveTemplateFile => {
-        'English' => 'web/english/archive.templ',
-        'Deutsch' => 'web/deutsch/archiv.templ',
+        'English' => 'templates/english/archive.templ',
+        'Deutsch' => 'templates/deutsch/archiv.templ',
     },
     archivePage => {
         'English' => 'archive.html',
@@ -108,12 +108,12 @@ my %text = (
         'English' => 'The beercomics.com archive',
         'Deutsch' => 'Das Biercomics-Archiv',
     },
-    backlogTemplateFile => 'web/backlog.templ',
+    backlogTemplateFile => 'templates/backlog.templ',
     backlogPage => 'backlog.html',
-    sizeMapTemplateFile => 'web/sizemap.templ',
+    sizeMapTemplateFile => 'templates/sizemap.templ',
     sitemapXmlTemplateFile => {
-        'English' => 'web/english/sitemap-xml.templ',
-        'Deutsch' => 'web/deutsch/sitemap-xml.templ',
+        'English' => 'templates/english/sitemap-xml.templ',
+        'Deutsch' => 'templates/deutsch/sitemap-xml.templ',
     },
     sitemapXmlTo => {
         'English' => 'generated/english/web/sitemap.xml',

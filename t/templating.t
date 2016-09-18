@@ -12,7 +12,7 @@ __PACKAGE__->runtests() unless caller;
 
 sub set_up : Test(setup) {
     MockComic::set_up();
-    MockComic::fake_file("web/deutsch/sitemap-xml.templ", "...");
+    MockComic::fake_file("templates/deutsch/sitemap-xml.templ", "...");
 }
 
 
@@ -224,7 +224,7 @@ sub from_comic : Tests {
         },
     );
  
-    MockComic::fake_file('web/deutsch/comic-page.templ', <<'TEMPLATE');
+    MockComic::fake_file('templates/deutsch/comic-page.templ', <<'TEMPLATE');
 Biercomics: [% title %]
 last-modified: [% modified %]
 description: [% description %]

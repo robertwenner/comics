@@ -12,7 +12,7 @@ __PACKAGE__->runtests() unless caller;
 
 sub setup : Test(setup) {
     MockComic::set_up();
-    MockComic::fake_file('web/english/sitemap-xml.templ', <<'SITEMAP');
+    MockComic::fake_file('templates/english/sitemap-xml.templ', <<'SITEMAP');
     [% FOREACH c IN comics %]
     [% NEXT IF notFor(c, 'English') %]
     <url>
@@ -26,7 +26,7 @@ sub setup : Test(setup) {
     </url>
     [% END %]
 SITEMAP
-    MockComic::fake_file('web/deutsch/sitemap-xml.templ', <<'SITEMAP');
+    MockComic::fake_file('templates/deutsch/sitemap-xml.templ', <<'SITEMAP');
     [% FOREACH c IN comics %]
     [% NEXT IF notFor(c, 'Deutsch') %]
     <url>

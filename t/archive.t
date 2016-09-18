@@ -14,15 +14,15 @@ my %archives;
 
 sub set_up : Test(setup) {
     MockComic::set_up();
-    %archives = ("Deutsch" => "web/deutsch/archiv.templ");
-    MockComic::fake_file("web/deutsch/archiv.templ", <<'TEMPL');
+    %archives = ("Deutsch" => "templates/deutsch/archiv.templ");
+    MockComic::fake_file("templates/deutsch/archiv.templ", <<'TEMPL');
 [% FOREACH c IN comics %]
 [% NEXT IF notFor(c, 'Deutsch') %]
 <li><a href="[% c.href.Deutsch %]">[% c.meta_data.title.Deutsch %]</a></li>
 [% END %]
 [% modified %]
 TEMPL
-    MockComic::fake_file("web/deutsch/comic-page.templ", "[% title %]");
+    MockComic::fake_file("templates/deutsch/comic-page.templ", "[% title %]");
 }
 
 
@@ -105,7 +105,7 @@ sub no_comics : Tests {
 
 
 sub index_html : Tests {
-    MockComic::fake_file("web/deutsch/comic-page.templ",
+    MockComic::fake_file("templates/deutsch/comic-page.templ",
         '<li><a href="[% first %]" title="zum ersten Biercomic">&lt;&lt; Erstes</a></li>');
     my $c = make_comic('zwei', 'Deutsch', '2016-01-02');
     $c->{'first'}{'Deutsch'} = 'eins.html';

@@ -13,9 +13,9 @@ __PACKAGE__->runtests() unless caller;
 
 sub set_up : Test(setup) {
     MockComic::set_up();
-    MockComic::fake_file("web/deutsch/comic-page.templ", "...");
-    MockComic::fake_file("web/deutsch/sitemap-xml.templ", "...");
-    MockComic::fake_file("web/english/sitemap-xml.templ", "...");
+    MockComic::fake_file("templates/deutsch/comic-page.templ", "...");
+    MockComic::fake_file("templates/deutsch/sitemap-xml.templ", "...");
+    MockComic::fake_file("templates/english/sitemap-xml.templ", "...");
 }
 
 
@@ -214,7 +214,7 @@ sub language_links_none : Tests {
             'Deutsch' => 'Bier trinken',
         }
     );
-    MockComic::fake_file('web/deutsch/comic-page.templ', <<'XML');
+    MockComic::fake_file('templates/deutsch/comic-page.templ', <<'XML');
 [% FOREACH l IN languages %]
     <a hreflang="[% languagecodes.$l %]" href="[% languageurls.$l %]" title="[% languagetitles.$l %]">[% l %]</a>
 [% END %]
@@ -231,7 +231,7 @@ sub language_links : Tests {
             'Deutsch' => 'Bier trinken',
         }
     );
-    MockComic::fake_file('web/deutsch/comic-page.templ', <<'XML');
+    MockComic::fake_file('templates/deutsch/comic-page.templ', <<'XML');
 [% FOREACH l IN languages %]
     <a hreflang="[% languagecodes.$l %]" href="[% languageurls.$l %]" title="[% languagetitles.$l %]">[% l %]</a>
 [% END %]
@@ -255,7 +255,7 @@ sub language_links_alternate : Tests {
             'Deutsch' => 'Bier trinken',
         }
     );
-    MockComic::fake_file('web/deutsch/comic-page.templ', <<'XML');
+    MockComic::fake_file('templates/deutsch/comic-page.templ', <<'XML');
 [% FOREACH l IN languages %]
 <link rel="alternate" hreflang="[% languagecodes.$l %]" href="[% languageurls.$l %]"/>
 [% END %]
@@ -271,7 +271,7 @@ XML
 
 
 sub transcript_json_utf8 : Tests {
-    MockComic::fake_file('web/english/comic-page.templ', '[% transcriptJson %]');
+    MockComic::fake_file('templates/english/comic-page.templ', '[% transcriptJson %]');
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => { 'English' => ["Ümläuts"] },
     );
@@ -280,7 +280,7 @@ sub transcript_json_utf8 : Tests {
 
 
 sub transcript_json_escapes_quotes : Tests {
-    MockComic::fake_file('web/english/comic-page.templ', '[% transcriptJson %]');
+    MockComic::fake_file('templates/english/comic-page.templ', '[% transcriptJson %]');
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => { 'English' => ['"quoted"'] },
     );
@@ -298,7 +298,7 @@ sub fb_open_graph : Tests {
             'Deutsch' => 'Paul und Max \"gehen\" Bier trinken.',
         },
     );
-    MockComic::fake_file('web/deutsch/comic-page.templ', <<'XML');
+    MockComic::fake_file('templates/deutsch/comic-page.templ', <<'XML');
 <meta property="og:url" content="[% url %]"/>
 <meta property="og:image:secure_url" content="[% url %]"/>
 <meta property="og:type" content="article"/>
