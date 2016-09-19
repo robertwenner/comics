@@ -35,7 +35,6 @@ our Readonly $HEIGHT = 'height';
 our Readonly $WIDTH = 'width';
 
 
-our @exported;  # hide behind assert_... sub
 my %files_read;
 my %file_written;
 my $now;
@@ -65,7 +64,6 @@ my %defaultArgs = (
 
 
 sub set_up {
-    @exported = ();
     %file_written = ();
     Comic::reset_statics();
     mock_methods();
@@ -90,12 +88,6 @@ sub mock_methods {
     *Comic::_write_file = sub {
         my ($name, $contents) = @_;
         $file_written{$name} = $contents;
-    };
-
-    *Comic::_export_language_html = sub {
-        my ($self, $language) = @_;
-        push @exported, ($self->{meta_data}->{title}->{$language} || '');
-        return;
     };
 
     *Comic::_now = sub {

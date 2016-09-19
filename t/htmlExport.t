@@ -153,14 +153,14 @@ sub skips_comic_without_that_language : Tests {
 sub skips_comic_without_published_date : Test {
     make_comic('English', 'not yet', '');
     Comic::export_all_html();
-    is_deeply(\@MockComic::exported, ['not yet']);
+    MockComic::assert_wrote_file('generated/english/web/comics/not-yet.html', undef);
 }
 
 
 sub skips_comic_in_far_future : Tests {
     my $not_yet = make_comic('English', 'not yet', '2200-01-01');
     Comic::export_all_html();
-    is_deeply(\@MockComic::exported, ['not yet']);
+    MockComic::assert_wrote_file('generated/english/web/comics/not-yet.html', undef);
 }
 
 
@@ -175,7 +175,8 @@ sub includes_comic_for_next_friday : Tests {
     MockComic::fake_now(DateTime->new(year => 2016, month => 5, day => 1));
     make_comic('English', 'next Friday', '2016-05-01');
     Comic::export_all_html();
-    is_deeply(\@MockComic::exported, ['next Friday']);
+    MockComic::assert_wrote_file('generated/english/web/comics/next-friday.html',
+        qr{next Friday});
 }
 
 
@@ -292,7 +293,6 @@ sub fb_open_graph : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
             'Deutsch' => 'Bier trinken',
-            'English' => 'Drinking beer',
         },
         $MockComic::DESCRIPTION => {
             'Deutsch' => 'Paul und Max \"gehen\" Bier trinken.',
@@ -338,10 +338,14 @@ XML
 }
 
 
-sub html_special_characters {
+sub html_special_characters : Tests {
     MockComic::fake_file('templates/english/comic-page.templ', '[% title %]');
     my $comic = MockComic::make_comic(
-        $MockComic::TEXTS => { 'English' => ["&lt;Ale &amp; Lager&gt;"] },
+        $MockComic::TITLE => { 'English' => "&lt;Ale &amp; Lager&gt;" },
     );
     is($comic->_do_export_html('English'), '&lt;Ale &amp; Lager&gt;');
+
+    $comic->_export_language_html('English');
+    MockComic::assert_wrote_file('generated/english/web/comics/ale-lager.html',
+        '&lt;Ale &amp; Lager&gt;');
 }

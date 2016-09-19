@@ -40,6 +40,8 @@ SITEMAP
     </url>
     [% END %]
 SITEMAP
+    MockComic::fake_file('templates/deutsch/comic-page.templ', '...');
+    MockComic::fake_file('templates/english/comic-page.templ', '...');
 }
 
 

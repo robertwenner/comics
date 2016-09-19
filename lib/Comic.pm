@@ -693,6 +693,8 @@ sub _normalized_title {
 
     my $title = $self->{meta_data}->{title}->{$language};
     $self->_croak("No $language title in $self->{srcFile}") unless($title);
+    $title =~ s/&\w+;//g;
+    $title =~ s/\s{2}/ /g;
     $title =~ s/\s/-/g;
     $title =~ s/[^\w\d_-]//gi;
     return lc $title;
