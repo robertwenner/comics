@@ -107,8 +107,6 @@ my %text = (
         'English' => 'The beercomics.com archive',
         'Deutsch' => 'Das Biercomics-Archiv',
     },
-    backlogTemplateFile => 'templates/backlog.templ',
-    backlogPage => 'backlog.html',
     sitemapXmlTemplateFile => {
         'English' => 'templates/english/sitemap-xml.templ',
         'Deutsch' => 'templates/deutsch/sitemap-xml.templ',
@@ -1133,18 +1131,19 @@ Parameters:
 
 =over 4
 
-    =item B<$archive_templates> reference to a hash of long language name to
-    the archive template file for that language.
+    =item B<$backlog_template> path / file name of the template file.
 
-    =item B<$backlog_templates> reference to a hash of long language name to
-    backlog template file for that language.
+    =item B<$backlog_page> path / file name of the generated backlog html.
+
+    =item B<%archive_templates> hash of language the archive template file
+    for that language.
 
 =back
 
 =cut
 
 sub export_archive {
-    my ($backlog_template, %archive_templates) = @ARG;
+    my ($backlog_template, $backlog_page, %archive_templates) = @ARG;
 
     foreach my $c (@comics) {
         foreach my $language (keys %archive_templates) {
@@ -1167,7 +1166,7 @@ sub export_archive {
     }
 
     _do_export_archive(%archive_templates);
-    _do_export_backlog($backlog_template, sort keys %archive_templates);
+    _do_export_backlog($backlog_template, $backlog_page, sort keys %archive_templates);
     return;
 }
 
@@ -1213,10 +1212,8 @@ sub _do_export_archive {
 
 
 sub _do_export_backlog {
-    my ($templ_file, @languages) = @ARG;
-    # @fixme weird mix of hard-coded and passed file names
+    my ($templ_file, $page, @languages) = @ARG;
 
-    my $page = "generated/$text{backlogPage}";
     my @filtered = sort _compare grep { _backlog_filter($_) } @comics;
     if (!@filtered) {
         _write_file($page, '<p>No comics in backlog.</p>');
