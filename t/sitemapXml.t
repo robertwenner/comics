@@ -65,7 +65,14 @@ sub make_comic {
 sub assert_wrote {
     my ($comic, $contentsExpected) = @_;
 
-    $comic->export_all_html();
+    Comic::export_all_html({
+        'English' => 'templates/english/sitemap-xml.templ',
+        'Deutsch' => 'templates/deutsch/sitemap-xml.templ',
+    },
+    {
+        'English' => 'generated/english/web/sitemap.xml',
+        'Deutsch' => 'generated/deutsch/web/sitemap.xml',
+    });
     MockComic::assert_wrote_file(
         'generated/english/web/sitemap.xml',
         $contentsExpected);
@@ -75,7 +82,14 @@ sub assert_wrote {
 sub assert_wrote_no_comic {
     my ($comic) = @_;
 
-    $comic->export_all_html();
+    Comic::export_all_html({
+        'English' => 'templates/english/sitemap-xml.templ',
+        'Deutsch' => 'templates/deutsch/sitemap-xml.templ',
+    },
+    {
+        'English' => 'generated/english/web/sitemap.xml',
+        'Deutsch' => 'generated/deutsch/web/sitemap.xml',
+    });
     MockComic::assert_didnt_write_in_file(
         'generated/english/web/sitemap.xml',
         qr{<image:image>}m);

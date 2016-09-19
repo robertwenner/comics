@@ -28,7 +28,7 @@ use SVG;
 
 use version; our $VERSION = qv('0.0.2');
 
-=for stopwords Inkscape inkscape html SVG svg PNG png Wenner MERCHANTABILITY perlartistic MetaEnglish RSS
+=for stopwords Inkscape inkscape html SVG svg PNG png Wenner MERCHANTABILITY perlartistic MetaEnglish RSS sitemap xml
 
 
 =head1 NAME
@@ -107,14 +107,6 @@ my %text = (
         'English' => 'The beercomics.com archive',
         'Deutsch' => 'Das Biercomics-Archiv',
     },
-    sitemapXmlTemplateFile => {
-        'English' => 'templates/english/sitemap-xml.templ',
-        'Deutsch' => 'templates/deutsch/sitemap-xml.templ',
-    },
-    sitemapXmlTo => {
-        'English' => 'generated/english/web/sitemap.xml',
-        'Deutsch' => 'generated/deutsch/web/sitemap.xml',
-    },
 );
 
 
@@ -129,6 +121,8 @@ my @comics;
 =head2 new
 
 Creates a new Comic from an Inkscape SVG file.
+
+Parameters:
 
 =over 4
 
@@ -704,9 +698,25 @@ Generates a HTML page for each Comic that has been loaded.
 The HTML page will be the same name as the generated PNG, with a .html
 extension and will be placed next to it.
 
+Also generates a sitemap xml file per language.
+
+Parameters:
+
+=over 4
+
+    =item B<%templates> hash of language to path / file name of the sitemap 
+    templates.
+
+    =item B<%outputs> hash of language to path / file name of the generated
+    sitemaps.
+
+=back
+
 =cut
 
 sub export_all_html {
+    my ($templates, $outputs) = @_;
+
     my %languages;
     foreach my $c (@comics) {
         foreach my $language ($c->_languages()) {
@@ -739,10 +749,10 @@ sub export_all_html {
     $vars{'comics'} = [ @sorted ];
     $vars{'notFor'} = \&_not_published_on_the_web;
     foreach my $language (keys %languages) {
-        my $templ = $text{'sitemapXmlTemplateFile'}{$language};
+        my $templ = ${$templates}{$language};
         my $xml =_templatize('(none)', $templ, %vars)
             or croak "Error templatizing $templ: $OS_ERROR";
-        _write_file($text{'sitemapXmlTo'}{$language}, $xml);
+        _write_file(${$outputs}{$language}, $xml);
     }
 
     return;

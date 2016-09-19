@@ -223,7 +223,8 @@ sub from_comic : Tests {
             $MockComic::DEUTSCH => [ "Bier", "Saufen", "Craft" ],
         },
     );
- 
+
+    MockComic::fake_file('templates/deutsch/sitemap-xml.templ', '...');
     MockComic::fake_file('templates/deutsch/comic-page.templ', <<'TEMPLATE');
 Biercomics: [% title %]
 last-modified: [% modified %]
@@ -240,7 +241,13 @@ Image: [% image %]
 Copyright year: [% year %]
 Keywords: [% keywords %]
 TEMPLATE
-    $comic->export_all_html();
+    Comic::export_all_html({
+        'Deutsch' => 'templates/deutsch/sitemap-xml.templ',
+    },
+    {
+        'Deutsch' => 'generated/deutsch/web/sitemap.xml',
+    });
+
     my $wrote = $comic->_do_export_html("Deutsch");
     like($wrote, qr/Bier trinken/m, "title");
     like($wrote, qr/1970-01-01/m, "last modified");
