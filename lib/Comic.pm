@@ -530,7 +530,7 @@ sub _check_transcript {
 
     # Check that the comic does not end with a speaker indicator.
     if (trim($previous) =~ m{:$}) {
-        $self->_croak("speaker's text missing after '$previous'");
+        $self->_croak("speaker's text missing after '$previous', trace is $trace");
     }
     return;
 }
