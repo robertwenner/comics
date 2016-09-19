@@ -78,7 +78,6 @@ Readonly our $FRAME_ROW_HEIGHT => 50;
 Readonly our $FRAME_SPACING => 10;
 # Maximum tolerance in pixels for distance between frames.
 Readonly our $FRAME_SPACING_TOLERANCE => 2.0;
-
 # Whether to transform SVG coordinates if the transform atttribute is used.
 # This may be needed for fancy texts (tilted or on a path) so that the new
 # translated coordinates can be sorted as expected for the comic's transcript.
@@ -88,7 +87,7 @@ Readonly our $TRANSFORM => 1;
 
 
 my %text = (
-    domain => { # can we get rid off this?
+    domain => { # can we get rid off this? No, needed to put the URL in the PNG.
         'English' => 'beercomics.com',
         'Deutsch' => 'biercomics.de',
     },
@@ -110,7 +109,6 @@ my %text = (
     },
     backlogTemplateFile => 'templates/backlog.templ',
     backlogPage => 'backlog.html',
-    sizeMapTemplateFile => 'templates/sizemap.templ',
     sitemapXmlTemplateFile => {
         'English' => 'templates/english/sitemap-xml.templ',
         'Deutsch' => 'templates/deutsch/sitemap-xml.templ',
@@ -1312,9 +1310,20 @@ sub counts_of_in {
 
 Writes an SVG size map of all comics for comparing sizes.
 
+Parameters:
+
+=over 4
+
+    =item B<$template> path / file name of the template file.
+
+    =item B<$language> path / file name of the generated sizemap.
+
+=back
+
 =cut
 
 sub size_map {
+    my ($template, $output) = @_;
     my %aggregate = _aggregate_comic_sizes();
 
     Readonly my $SCALE_BY => 0.3;
@@ -1354,8 +1363,7 @@ sub size_map {
     $vars{svg} =~ s/<\?xml[^>]+>\n//;
     $vars{svg} =~ s/<!DOCTYPE[^>]+>\n//;
 
-    _write_file('generated/sizemap.html',
-        _templatize('sizemap', $text{sizeMapTemplateFile}, %vars));
+    _write_file($output, _templatize('size map', $template, %vars));
 
     return;
 }
