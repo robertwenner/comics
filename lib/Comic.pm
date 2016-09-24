@@ -166,8 +166,20 @@ sub _load {
     }
 
     foreach my $language ($self->_languages()) {
-        my $name = $self->_make_file_name($language, 'web/comics', 'html');
-        $self->{htmlFile}{$language} = basename($name);
+        my $base;
+        if ($self->_not_yet_published()) {
+            $base = 'backlog';
+        }
+        else {
+            $base = lc($language) . '/web/comics';
+        }
+
+        $self->{whereTo}{$language} = _make_dir($base);
+        my $name = $self->_normalized_title($language);
+        $self->{htmlFile}{$language} = "${name}.html";
+        $self->{pngFile}{$language} = "${name}.png";
+        $self->{url}{$language} = "https://$text{domain}{$language}/comics/$name.html";
+        $self->{href}{$language} = "comics/$self->{htmlFile}{$language}";
     }
 
     push @comics, $self;
@@ -216,23 +228,14 @@ sub export_png {
 
     foreach my $language ($self->_languages()) {
         $counts{'comics'}{$language}++;
-
         $self->_check($language);
 
-        my $png_file;
-        if ($self->_not_yet_published()) {
-            $png_file = _make_dir('backlog/') . $self->_normalized_title($language) . '.png';
-        }
-        else {
-            $png_file = $self->_make_file_name($language, '/web/comics', 'png');
-        }
-        $self->{pngFile}{$language} = basename($png_file);
-
-        unless (_up_to_date($self->{srcFile}, $png_file)) {
+        unless (_up_to_date($self->{srcFile}, "$self->{whereTo}{$language}/$self->{pngFile}{$language}")) {
             $self->_flip_language_layers($language);
-            $self->_svg_to_png($language, $self->_write_temp_svg_file($language), $png_file);
+            my $language_svg = $self->_write_temp_svg_file($language);
+            $self->_svg_to_png($language, $language_svg);
         }
-        $self->_get_png_info($png_file);
+        $self->_get_png_info("$self->{whereTo}{$language}/$self->{pngFile}{$language}");
     }
     $self->_count_tags();
     return;
@@ -254,6 +257,8 @@ sub _check {
 
 
 sub _up_to_date {
+    # Takes file names as arguments rather than being a member method for
+    # easier mocking.
     my ($svg_file, $png_file) = @_;
 
     my $up_to_date = 0;
@@ -601,8 +606,9 @@ sub _write_temp_svg_file {
 
 
 sub _svg_to_png {
-    my ($self, $language, $svg_file, $png_file) = @ARG;
+    my ($self, $language, $svg_file) = @ARG;
 
+    my $png_file = "$self->{whereTo}/$self->{pngFile}{$language}";
     my $export_cmd = "inkscape --without-gui --file=$svg_file" .
         ' --g-fatal-warnings' .
         " --export-png=$png_file --export-area-drawing --export-background=#ffffff";
@@ -611,15 +617,10 @@ sub _svg_to_png {
     my $tool = Image::ExifTool->new();
     $self->_set_png_meta($tool, 'Title', $self->{meta}->{title}->{$language});
     $self->_set_png_meta($tool, 'Artist', 'Robert Wenner');
-    my $transcript = '';
-    foreach my $t ($self->_texts_for($language)) {
-        $transcript .= ' ' unless ($transcript eq '');
-        $transcript .=  $t;
-    }
-    $self->_set_png_meta($tool, 'Description', $transcript);
+    $self->_set_png_meta($tool, 'Description', join ' ', $self->_texts_for($language));
     $self->_set_png_meta($tool, 'CreationTime', $self->{modified});
     $self->_set_png_meta($tool, 'Copyright', 'CC BY-NC-SA 4.0');
-    $self->_set_png_meta($tool, 'URL', $self->_make_url($language, 'png'));
+    $self->_set_png_meta($tool, 'URL', $self->{url}{$language});
     my $rc = $tool->WriteInfo($png_file);
     if ($rc != 1) {
         $self->_croak('cannot write info: ' . tool->GetValue('Error'));
@@ -661,20 +662,13 @@ sub _make_file_name {
 
 
 sub _make_dir {
-    my $dir = 'generated/' . shift;
+    my $dir = shift;
 
+    $dir = "generated/$dir" if ($dir !~ m{^generated/});
     unless (-d $dir) {
         File::Path::make_path($dir) or croak("Cannot mkdir $dir: $OS_ERROR");
     }
     return $dir;
-}
-
-
-sub _make_url {
-    my ($self, $language, $ext) = @ARG;
-
-    return "https://$text{domain}{$language}/comics/"
-        . $self->_normalized_title($language) . ".$ext";
 }
 
 
@@ -704,7 +698,7 @@ Parameters:
 
 =over 4
 
-    =item B<%templates> hash of language to path / file name of the sitemap 
+    =item B<%templates> hash of language to path / file name of the sitemap
     templates.
 
     =item B<%outputs> hash of language to path / file name of the generated
@@ -716,18 +710,6 @@ Parameters:
 
 sub export_all_html {
     my ($templates, $outputs) = @_;
-
-    my %languages;
-    foreach my $c (@comics) {
-        foreach my $language ($c->_languages()) {
-            $languages{$language} = 1;
-            my $name = $c->_make_file_name($language, 'web/comics', 'html');
-            $c->{htmlFile}{$language} = basename($name);
-            $c->{pngFile}{$language} = basename($name);
-            $c->{pngFile}{$language} =~ s/\.html$/\.png/;
-            $c->{url}{$language} = $c->_make_url($language, 'html');
-        }
-    }
 
     my @sorted = sort _compare @comics;
     foreach my $i (0 .. @sorted - 1) {
@@ -745,6 +727,12 @@ sub export_all_html {
         }
     }
 
+    my %languages;
+    foreach my $c (@comics) {
+        foreach my $language ($c->_languages()) {
+            $languages{$language} = 1;
+        }
+    }
     my %vars;
     $vars{'comics'} = [ @sorted ];
     $vars{'notFor'} = \&_not_published_on_the_web;
@@ -817,10 +805,8 @@ sub _find_next {
 sub _export_language_html {
     my ($self, $language) = @ARG;
 
-    my $path = $self->_not_yet_published() ? 'backlog' : lc($language) . '/web/comics';
-    my $page = "generated/$path/$self->{pngFile}{$language}";
-    $page =~ s{\.png$}{.html};
-    return _write_file($page, $self->_do_export_html($language));
+    return _write_file("$self->{whereTo}{$language}/$self->{htmlFile}{$language}",
+        $self->_do_export_html($language));
 }
 
 
@@ -884,7 +870,7 @@ sub _do_export_html {
     # Adjust the path for top-level index.html
     if ($self->{isLatestPublished}) {
         $path = '';
-        $vars{png_file} = 'comics/' . basename($vars{png_file});
+        $vars{png_file} = 'comics/' . $self->{pngFile}{$language};
         $vars{'first'} = 'comics/' . $self->{'first'}{$language};
         $vars{'prev'} = 'comics/' . $self->{'prev'}{$language};
     }
@@ -1154,17 +1140,6 @@ Parameters:
 
 sub export_archive {
     my ($backlog_template, $backlog_page, %archive_templates) = @ARG;
-
-    foreach my $c (@comics) {
-        foreach my $language (keys %archive_templates) {
-            next unless ($c->_is_for($language));
-
-            my $dir = $c->_not_yet_published() ? 'backlog/' : 'comics/';
-            my $name = $c->{pngFile}{$language};
-            $name =~ s{\.png$}{.html};
-            $c->{href}{$language} = $dir . basename($name);
-        }
-    }
 
     foreach my $language (keys %archive_templates) {
         my @sorted = (sort _compare grep { _archive_filter($_, $language) } @comics);
