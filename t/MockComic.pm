@@ -6,6 +6,7 @@ no warnings qw/redefine/;
 use Readonly;
 use Test::More;
 use Comic;
+use Carp;
 
 # Constants to catch typos when defining meta data.
 our Readonly $ENGLISH = 'English';
@@ -73,7 +74,7 @@ sub set_up {
 sub mock_methods {
     *Comic::_slurp = sub {
         my ($name) = @_;
-        die "Tried to read unmocked file '$name'" unless (defined($files_read{$name}));
+        confess("Tried to read unmocked file '$name'") unless (defined($files_read{$name}));
         return $files_read{$name};
     };
 
@@ -376,7 +377,7 @@ sub assert_wrote_file {
         like($file_written{$name}, $contents, "Content in $name should match regex");
     }
     else {
-        die "Cannot match on $contents";
+        confess("Cannot match on $contents");
     }
 }
 
@@ -389,7 +390,7 @@ sub assert_didnt_write_in_file {
         unlike($file_written{$name}, $contents, "Shouldn't have written that to $name");
     }
     else {
-        die "Cannot match on $contents";
+        confess("Cannot match on $contents");
     }
 }
 

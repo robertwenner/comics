@@ -91,14 +91,6 @@ my %text = (
         'English' => 'beercomics.com',
         'Deutsch' => 'biercomics.de',
     },
-    comicTemplateFile => {
-        'English' => 'templates/english/comic-page.templ',
-        'Deutsch' => 'templates/deutsch/comic-page.templ',
-    },
-    archiveTemplateFile => {
-        'English' => 'templates/english/archive.templ',
-        'Deutsch' => 'templates/deutsch/archiv.templ',
-    },
     archivePage => {
         'English' => 'archive.html',
         'Deutsch' => 'archiv.html',
@@ -608,7 +600,7 @@ sub _write_temp_svg_file {
 sub _svg_to_png {
     my ($self, $language, $svg_file) = @ARG;
 
-    my $png_file = "$self->{whereTo}/$self->{pngFile}{$language}";
+    my $png_file = "$self->{whereTo}{$language}/$self->{pngFile}{$language}";
     my $export_cmd = "inkscape --without-gui --file=$svg_file" .
         ' --g-fatal-warnings' .
         " --export-png=$png_file --export-area-drawing --export-background=#ffffff";
@@ -690,7 +682,7 @@ sub _normalized_title {
 Generates a HTML page for each Comic that has been loaded.
 
 The HTML page will be the same name as the generated PNG, with a .html
-extension and will be placed next to it.
+extension, and it will be placed next to it.
 
 Also generates a sitemap xml file per language.
 
@@ -698,8 +690,11 @@ Parameters:
 
 =over 4
 
-    =item B<%templates> hash of language to path / file name of the sitemap
-    templates.
+    =item B<%comic_templates> hash of language to path / file name of the
+    comic templates.
+
+    =item B<%site_map_templates> hash of language to path / file name of the
+    sitemap templates.
 
     =item B<%outputs> hash of language to path / file name of the generated
     sitemaps.
@@ -709,7 +704,7 @@ Parameters:
 =cut
 
 sub export_all_html {
-    my ($templates, $outputs) = @_;
+    my ($comic_templates, $site_map_templates, $outputs) = @_;
 
     my @sorted = sort _compare @comics;
     foreach my $i (0 .. @sorted - 1) {
@@ -723,7 +718,7 @@ sub export_all_html {
             $comic->{'next'}{$language} = $next_comic ? $next_comic->{htmlFile}{$language} : 0;
             my $last_comic = _find_next($language, $i, \@sorted, [reverse $i + 1 .. @sorted - 1]);
             $comic->{'last'}{$language} = $last_comic ? $last_comic->{htmlFile}{$language} : 0;
-            $comic->_export_language_html($language);
+            $comic->_export_language_html($language, ${$comic_templates}{$language});
         }
     }
 
@@ -737,7 +732,7 @@ sub export_all_html {
     $vars{'comics'} = [ @sorted ];
     $vars{'notFor'} = \&_not_published_on_the_web;
     foreach my $language (keys %languages) {
-        my $templ = ${$templates}{$language};
+        my $templ = ${$site_map_templates}{$language};
         my $xml =_templatize('(none)', $templ, %vars)
             or croak "Error templatizing $templ: $OS_ERROR";
         _write_file(${$outputs}{$language}, $xml);
@@ -803,10 +798,10 @@ sub _find_next {
 
 
 sub _export_language_html {
-    my ($self, $language) = @ARG;
+    my ($self, $language, $template) = @ARG;
 
     return _write_file("$self->{whereTo}{$language}/$self->{htmlFile}{$language}",
-        $self->_do_export_html($language));
+        $self->_do_export_html($language, $template));
 }
 
 
@@ -831,7 +826,7 @@ sub _not_published_on_the_web {
 
 
 sub _do_export_html {
-    my ($self, $language) = @ARG;
+    my ($self, $language, $template) = @ARG;
 
     my %vars;
     my $title = $self->{meta_data}->{title}->{$language};
@@ -897,7 +892,7 @@ sub _do_export_html {
         $tags .= $t;
     }
     $vars{description} = encode_entities($self->{meta_data}->{description}->{$language});
-    return _templatize($self->{srcFile}, $text{comicTemplateFile}{$language}, %vars)
+    return _templatize($self->{srcFile}, $template, %vars)
         or $self->_croak("Error writing HTML: $OS_ERROR");
 }
 
@@ -1131,27 +1126,30 @@ Parameters:
 
     =item B<$backlog_page> path / file name of the generated backlog html.
 
-    =item B<%archive_templates> hash of language the archive template file
-    for that language.
+    =item B<%archive_templates> reference to a hash of language the archive
+    template file for that language.
+
+    =item B<$%comic_templates> reference to a hash of language to comic
+    template file to use for index.html.
 
 =back
 
 =cut
 
 sub export_archive {
-    my ($backlog_template, $backlog_page, %archive_templates) = @ARG;
+    my ($backlog_template, $backlog_page, $archive_templates, $comic_template) = @ARG;
 
-    foreach my $language (keys %archive_templates) {
+    foreach my $language (keys %{$archive_templates}) {
         my @sorted = (sort _compare grep { _archive_filter($_, $language) } @comics);
         next if (@sorted == 0);
         my $last_pub = $sorted[-1];
         $last_pub->{isLatestPublished} = 1;
         my $page = _make_dir(lc($language) . '/web') . '/index.html';
-        _write_file($page, $last_pub->_do_export_html($language));
+        _write_file($page, $last_pub->_do_export_html($language, ${$comic_template}{$language}));
     }
 
-    _do_export_archive(%archive_templates);
-    _do_export_backlog($backlog_template, $backlog_page, sort keys %archive_templates);
+    _do_export_archive(%{$archive_templates});
+    _do_export_backlog($backlog_template, $backlog_page, sort keys %{$archive_templates});
     return;
 }
 
@@ -1188,7 +1186,7 @@ sub _do_export_archive {
         $vars{'modified'} = $filtered[-1]->{modified};
         $vars{'notFor'} = \&_not_for;
 
-        my $templ_file = $text{archiveTemplateFile}{$language};
+        my $templ_file = $archive_templates{$language};
         _write_file($page, _templatize('archive', $templ_file, %vars));
     }
 

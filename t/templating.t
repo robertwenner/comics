@@ -242,13 +242,16 @@ Copyright year: [% year %]
 Keywords: [% keywords %]
 TEMPLATE
     Comic::export_all_html({
+        'Deutsch' => 'templates/deutsch/comic-page.templ',
+    },
+    {
         'Deutsch' => 'templates/deutsch/sitemap-xml.templ',
     },
     {
         'Deutsch' => 'generated/deutsch/web/sitemap.xml',
     });
 
-    my $wrote = $comic->_do_export_html("Deutsch");
+    my $wrote = $comic->_do_export_html("Deutsch", 'templates/deutsch/comic-page.templ');
     like($wrote, qr/Bier trinken/m, "title");
     like($wrote, qr/1970-01-01/m, "last modified");
     like($wrote, qr/bier-trinken\.png/m, "png file name");

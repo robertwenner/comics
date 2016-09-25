@@ -13,9 +13,10 @@ __PACKAGE__->runtests() unless caller;
 
 sub set_up : Test(setup) {
     MockComic::set_up();
-    MockComic::fake_file("templates/deutsch/comic-page.templ", "...");
-    MockComic::fake_file("templates/deutsch/sitemap-xml.templ", "...");
-    MockComic::fake_file("templates/english/sitemap-xml.templ", "...");
+    MockComic::fake_file("de-comic.templ", "...");
+    MockComic::fake_file("en-comic.templ", "[% title %]");
+    MockComic::fake_file("de-sitemap.templ", "...");
+    MockComic::fake_file("en-sitemap.templ", "...");
 }
 
 
@@ -72,7 +73,7 @@ XML
     };
     my $comic = new Comic();
     is_deeply([sort $comic->_languages()], []);
-    Comic::export_all_html({}, {});
+    Comic::export_all_html({}, {}, {});
     ok(1); # Would have failed above
 }
 
@@ -83,7 +84,10 @@ sub navigation_links_first : Tests {
     my $mar = make_comic('English', 'Mar', '2016-03-01');
 
     Comic::export_all_html({
-        'English' => 'templates/english/sitemap-xml.templ',
+        'English' => 'en-comic.templ',
+    },
+    {
+        'English' => 'en-sitemap.templ',
     },
     {
         'English' => 'generated/english/web/sitemap.xml',
@@ -96,13 +100,17 @@ sub navigation_links_first : Tests {
 }
 
 
+
 sub navigation_links_middle : Tests {
     my $jan = make_comic('English', 'Jan', '2016-01-01');
     my $feb = make_comic('English', 'Feb', '2016-02-01');
     my $mar = make_comic('English', 'Mar', '2016-03-01');
 
     Comic::export_all_html({
-        'English' => 'templates/english/sitemap-xml.templ',
+        'English' => 'en-comic.templ',
+    },
+    {
+        'English' => 'en-sitemap.templ',
     },
     {
         'English' => 'generated/english/web/sitemap.xml',
@@ -120,8 +128,11 @@ sub navigation_links_last : Tests {
     my $feb = make_comic('English', 'Feb', '2016-02-01');
     my $mar = make_comic('English', 'Mar', '2016-03-01');
 
-     Comic::export_all_html({
-        'English' => 'templates/english/sitemap-xml.templ',
+    Comic::export_all_html({
+        'English' => 'en-comic.templ',
+    },
+    {
+        'English' => 'en-sitemap.templ',
     },
     {
         'English' => 'generated/english/web/sitemap.xml',
@@ -136,8 +147,11 @@ sub navigation_links_last : Tests {
 
 sub ignores_unknown_language : Test {
     my $comic = make_comic('English', 'Jan', '2016-01-01'),
-     Comic::export_all_html({
-        'English' => 'templates/english/sitemap-xml.templ',
+    Comic::export_all_html({
+        'English' => 'en-comic.templ',
+    },
+    {
+        'English' => 'en-sitemap.templ',
     },
     {
         'English' => 'generated/english/web/sitemap.xml',
@@ -152,8 +166,12 @@ sub skips_comic_without_that_language : Tests {
     my $mar = make_comic('English', 'mar', '2016-03-01');
 
     Comic::export_all_html({
-        'English' => 'templates/english/sitemap-xml.templ',
-        'Deutsch' => 'templates/deutsch/sitemap-xml.templ',
+        'English' => 'en-comic.templ',
+        'Deutsch' => 'de-comic.templ',
+    },
+    {
+        'English' => 'en-sitemap.templ',
+        'Deutsch' => 'de-sitemap.templ',
     },
     {
         'English' => 'generated/english/web/sitemap.xml',
@@ -180,7 +198,10 @@ sub skips_comic_without_that_language : Tests {
 sub skips_comic_without_published_date : Test {
     make_comic('English', 'not yet', '');
     Comic::export_all_html({
-        'English' => 'templates/english/sitemap-xml.templ',
+        'English' => 'en-comic.templ',
+    },
+    {
+        'English' => 'en-sitemap.templ',
     },
     {
         'English' => 'generated/english/web/sitemap.xml',
@@ -192,7 +213,10 @@ sub skips_comic_without_published_date : Test {
 sub skips_comic_in_far_future : Tests {
     my $not_yet = make_comic('English', 'not yet', '2200-01-01');
     Comic::export_all_html({
-        'English' => 'templates/english/sitemap-xml.templ',
+        'English' => 'en-comic.templ',
+    },
+    {
+        'English' => 'en-sitemap.templ',
     },
     {
         'English' => 'generated/english/web/sitemap.xml',
@@ -212,7 +236,10 @@ sub includes_comic_for_next_friday : Tests {
     MockComic::fake_now(DateTime->new(year => 2016, month => 5, day => 1));
     make_comic('English', 'next Friday', '2016-05-01');
     Comic::export_all_html({
-        'English' => 'templates/english/sitemap-xml.templ',
+        'English' => 'en-comic.templ',
+    },
+    {
+        'English' => 'en-sitemap.templ',
     },
     {
         'English' => 'generated/english/web/sitemap.xml',
@@ -228,7 +255,10 @@ sub separate_navs_for_archive_and_backlog : Tests {
     my $b1 = make_comic('Deutsch', 'back1', '2222-01-01');
     my $b2 = make_comic('Deutsch', 'back2', '2222-01-02');
     Comic::export_all_html({
-        'Deutsch' => 'templates/deutsch/sitemap-xml.templ',
+        'Deutsch' => 'de-comic.templ',
+    },
+    {
+        'Deutsch' => 'de-sitemap.templ',
     },
     {
         'Deutsch' => 'generated/deutsch/web/sitemap.xml',
@@ -262,13 +292,16 @@ sub language_links_none : Tests {
             'Deutsch' => 'Bier trinken',
         }
     );
-    MockComic::fake_file('templates/deutsch/comic-page.templ', <<'XML');
+    MockComic::fake_file('de-comic.templ', <<'XML');
 [% FOREACH l IN languages %]
     <a hreflang="[% languagecodes.$l %]" href="[% languageurls.$l %]" title="[% languagetitles.$l %]">[% l %]</a>
 [% END %]
 XML
     Comic::export_all_html({
-        'Deutsch' => 'templates/deutsch/sitemap-xml.templ',
+        'Deutsch' => 'de-comic.templ',
+    },
+    {
+        'Deutsch' => 'de-sitemap.templ',
     },
     {
         'Deutsch' => 'generated/deutsch/web/sitemap.xml',
@@ -284,27 +317,31 @@ sub language_links : Tests {
             'Deutsch' => 'Bier trinken',
         }
     );
-    MockComic::fake_file('templates/deutsch/comic-page.templ', <<'XML');
+    MockComic::fake_file('de-comic.templ', <<'XML');
 [% FOREACH l IN languages %]
     <a hreflang="[% languagecodes.$l %]" href="[% languageurls.$l %]" title="[% languagetitles.$l %]">[% l %]</a>
 [% END %]
 XML
     Comic::export_all_html({
-        'Deutsch' => 'templates/deutsch/sitemap-xml.templ',
-        'English' => 'templates/english/sitemap-xml.templ',
+        'Deutsch' => 'de-comic.templ',
+        'English' => 'en-comic.templ',
+    },
+    {
+        'Deutsch' => 'de-sitemap.templ',
+        'English' => 'en-sitemap.templ',
     },
     {
         'Deutsch' => 'generated/deutsch/web/sitemap.xml',
         'English' => 'generated/english/web/sitemap.xml',
     });
-    my $exported = $comic->_do_export_html('Deutsch');
+    my $exported = $comic->_do_export_html('Deutsch', 'de-comic.templ');
     like($exported, qr{href="https://beercomics\.com/comics/drinking-beer\.html"},
         'URL not found');
     like($exported, qr{>English</a>}, 'Language code not found');
     like($exported, qr{hreflang="en"}, 'hreflang not found');
     like($exported, qr{title="Drinking beer"}, 'title not found');
-    unlike($comic->_do_export_html('Deutsch'), qr{https://biercomics\.de"},
-        'Should not link to self');
+    unlike($comic->_do_export_html('Deutsch', 'de-comic.templ'), 
+        qr{https://biercomics\.de"}, 'Should not link to self');
 }
 
 
@@ -315,43 +352,47 @@ sub language_links_alternate : Tests {
             'Deutsch' => 'Bier trinken',
         }
     );
-    MockComic::fake_file('templates/deutsch/comic-page.templ', <<'XML');
+    MockComic::fake_file('de-comic.templ', <<'XML');
 [% FOREACH l IN languages %]
 <link rel="alternate" hreflang="[% languagecodes.$l %]" href="[% languageurls.$l %]"/>
 [% END %]
 XML
     Comic::export_all_html({
-        'English' => 'templates/english/sitemap-xml.templ',
-        'Deutsch' => 'templates/deutsch/sitemap-xml.templ',
+        'Deutsch' => 'de-comic.templ',
+        'English' => 'en-comic.templ',
+    },
+    {
+        'English' => 'en-sitemap.templ',
+        'Deutsch' => 'de-sitemap.templ',
     },
     {
         'English' => 'generated/english/web/sitemap.xml',
         'Deutsch' => 'generated/deutsch/web/sitemap.xml',
     });
-    my $exported = $comic->_do_export_html('Deutsch');
+    my $exported = $comic->_do_export_html('Deutsch', 'de-comic.templ');
     like($exported, qr{href="https://beercomics\.com/comics/drinking-beer\.html"},
         'URL not found');
     like($exported, qr{hreflang="en"}, 'hreflang not found');
-    unlike($comic->_do_export_html('Deutsch'), qr{https://biercomics\.de"},
-        'Should not link to self');
+    unlike($comic->_do_export_html('Deutsch', 'de-comic.templ'),
+        qr{https://biercomics\.de"}, 'Should not link to self');
 }
 
 
 sub transcript_json_utf8 : Tests {
-    MockComic::fake_file('templates/english/comic-page.templ', '[% transcriptJson %]');
+    MockComic::fake_file('en-comic.templ', '[% transcriptJson %]');
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => { 'English' => ["Ümläuts"] },
     );
-    is($comic->_do_export_html('English'), 'Ümläuts');
+    is($comic->_do_export_html('English', 'en-comic.templ'), 'Ümläuts');
 }
 
 
 sub transcript_json_escapes_quotes : Tests {
-    MockComic::fake_file('templates/english/comic-page.templ', '[% transcriptJson %]');
+    MockComic::fake_file('en-comic.templ', '[% transcriptJson %]');
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => { 'English' => ['"quoted"'] },
     );
-    is($comic->_do_export_html('English'), '\\"quoted\\"');
+    is($comic->_do_export_html('English', 'en-comic.templ'), '\\"quoted\\"');
 }
 
 
@@ -364,7 +405,7 @@ sub fb_open_graph : Tests {
             'Deutsch' => 'Paul und Max \"gehen\" Bier trinken.',
         },
     );
-    MockComic::fake_file('templates/deutsch/comic-page.templ', <<'XML');
+    MockComic::fake_file('de-comic.templ', <<'XML');
 <meta property="og:url" content="[% url %]"/>
 <meta property="og:image:secure_url" content="[% url %]"/>
 <meta property="og:type" content="article"/>
@@ -392,14 +433,15 @@ https://developers.facebook.com/docs/opengraph/guides/internationalization/?_fb_
 [% END %]
 XML
     Comic::export_all_html({
-        'English' => 'templates/english/sitemap-xml.templ',
-        'Deutsch' => 'templates/deutsch/sitemap-xml.templ',
+        'Deutsch' => 'de-comic.templ',
     },
     {
-        'English' => 'generated/english/web/sitemap.xml',
+        'Deutsch' => 'de-sitemap.templ',
+    },
+    {
         'Deutsch' => 'generated/deutsch/web/sitemap.xml',
     });
-    my $exported = $comic->_do_export_html('Deutsch');
+    my $exported = $comic->_do_export_html('Deutsch', 'de-comic.templ');
     like($exported, qr{<meta property="og:url" content="https://biercomics\.de/comics/bier-trinken\.html"/>},
         'URL not found');
     like($exported, qr{<meta property="og:title" content="Bier trinken"/>},
@@ -412,13 +454,14 @@ XML
 
 
 sub html_special_characters : Tests {
-    MockComic::fake_file('templates/english/comic-page.templ', '[% title %]');
+    MockComic::fake_file('en-comic.templ', '[% title %]');
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { 'English' => "&lt;Ale &amp; Lager&gt;" },
     );
-    is($comic->_do_export_html('English'), '&lt;Ale &amp; Lager&gt;');
+    is($comic->_do_export_html('English', 'en-comic.templ'),
+        '&lt;Ale &amp; Lager&gt;');
 
-    $comic->_export_language_html('English');
+    $comic->_export_language_html('English', 'en-comic.templ');
     MockComic::assert_wrote_file('generated/english/web/comics/ale-lager.html',
         '&lt;Ale &amp; Lager&gt;');
 }

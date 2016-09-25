@@ -66,6 +66,10 @@ sub assert_wrote {
     my ($comic, $contentsExpected) = @_;
 
     Comic::export_all_html({
+        'English' => 'templates/english/comic-page.templ',
+        'Deutsch' => 'templates/deutsch/comic-page.templ',
+    },
+    {
         'English' => 'templates/english/sitemap-xml.templ',
         'Deutsch' => 'templates/deutsch/sitemap-xml.templ',
     },
@@ -83,6 +87,10 @@ sub assert_wrote_no_comic {
     my ($comic) = @_;
 
     Comic::export_all_html({
+        'English' => 'templates/english/comic-page.templ',
+        'Deutsch' => 'templates/deutsch/comic-page.templ',
+    },
+    {
         'English' => 'templates/english/sitemap-xml.templ',
         'Deutsch' => 'templates/deutsch/sitemap-xml.templ',
     },
