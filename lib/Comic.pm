@@ -86,14 +86,6 @@ Readonly our $FRAME_SPACING_TOLERANCE => 2.0;
 Readonly our $TRANSFORM => 1;
 
 
-my %text = (
-    domain => { # can we get rid off this? No, needed to put the URL in the PNG.
-        'English' => 'beercomics.com',
-        'Deutsch' => 'biercomics.de',
-    },
-);
-
-
 my %counts;
 my %titles;
 my %language_code_cache;
@@ -117,19 +109,18 @@ Parameters:
 =cut
 
 sub new {
-    my ($class, $file, %options) = @ARG;
+    my ($class, $file, %domains) = @ARG;
     my $self = bless{}, $class;
     $self->{options} = {
         $TRANSFORM => 1,
-        %options
     };
-    $self->_load($file);
+    $self->_load($file, %domains);
     return $self;
 }
 
 
 sub _load {
-    my ($self, $file) = @ARG;
+    my ($self, $file, %domains) = @ARG;
 
     $self->{srcFile} = $file;
     $self->{dom} = XML::LibXML->load_xml(string => _slurp($file));
@@ -162,7 +153,7 @@ sub _load {
         my $name = $self->_normalized_title($language);
         $self->{htmlFile}{$language} = "${name}.html";
         $self->{pngFile}{$language} = "${name}.png";
-        $self->{url}{$language} = "https://$text{domain}{$language}/comics/$name.html";
+        $self->{url}{$language} = "https://$domains{$language}/comics/$name.html";
         $self->{href}{$language} = "comics/$self->{htmlFile}{$language}";
     }
 
