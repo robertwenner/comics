@@ -91,10 +91,6 @@ my %text = (
         'English' => 'beercomics.com',
         'Deutsch' => 'biercomics.de',
     },
-    archiveTitle => {
-        'English' => 'The beercomics.com archive',
-        'Deutsch' => 'Das Biercomics-Archiv',
-    },
 );
 
 
@@ -1176,7 +1172,6 @@ sub _do_export_archive {
         }
 
         my %vars;
-        $vars{'title'} = $text{archiveTitle}{$language};
         $vars{'url'} = ${$archive_pages}{$language};
         $vars{'root'} = '';
         $vars{'comics'} = \@filtered;
