@@ -46,16 +46,51 @@ This document refers to version 0.0.2.
     use Comic;
 
     foreach my $file (@ARGV) {
-        my $c = Comic->new($file);
+        my $c = Comic->new($file, (
+            'Deutsch' => 'biercomics.de',
+            'English' => 'beercomics.com'));
         $c->export_png();
     }
-    Comic::export_all_html();
+    Comic::export_all_html(
+        { # comic templates
+            'English' => 'templates/english/comic-page.templ',
+            'Deutsch' => 'templates/deutsch/comic-page.templ',
+        },
+        { # sitemap templates
+            'English' => 'templates/english/sitemap-xml.templ',
+            'Deutsch' => 'templates/deutsch/sitemap-xml.templ',
+        },
+        { # sitemap output
+            'English' => 'generated/english/web/sitemap.xml',
+            'Deutsch' => 'generated/deutsch/web/sitemap.xml',
+        },
+    );
+    Comic::export_archive('templates/backlog.templ', 'generated/backlog.html',
+        { # archive page template
+            "Deutsch" => "templates/deutsch/archiv.templ",
+            "English" => "templates/english/archive.templ",
+        },
+        { # path and file name of the generated archive, relative to generated/$language/web/
+            'Deutsch' => 'archiv.html',
+            'English' => 'archive.html',
+        },
+        { # index.html template is the same as regular comic templates
+            'English' => 'templates/english/comic-page.templ',
+            'Deutsch' => 'templates/deutsch/comic-page.templ',
+        });
+    Comic::export_rss_feed(10, 'rss.xml', (
+        'Deutsch' => 'templates/deutsch/rss.templ',
+        'English' => 'templates/english/rss.templ',
+    ));
+    Comic::size_map('templates/sizemap.templ', 'generated/sizemap.html');
 
 
 =head1 DESCRIPTION
 
 From on an Inkscape SVG file, exports language layers to create per language
-PNG files. Creates a transcript per language for search engines.
+PNG files. Creates a RSS feed and a transcript per language for search
+engines. Creates an archive overview page, a backlog page of not yet
+published comics, and a sizemap to compare image sizes.
 
 =cut
 
