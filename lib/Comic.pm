@@ -28,7 +28,7 @@ use SVG;
 
 use version; our $VERSION = qv('0.0.2');
 
-=for stopwords Inkscape inkscape html SVG svg PNG png Wenner MERCHANTABILITY perlartistic MetaEnglish RSS sitemap xml
+=for stopwords Inkscape inkscape html SVG svg PNG png Wenner MERCHANTABILITY perlartistic MetaEnglish RSS sitemap sizemap xml
 
 
 =head1 NAME
@@ -176,6 +176,8 @@ sub _load {
     }
 
     foreach my $language ($self->_languages()) {
+        $self->_croak("No domain for $language") unless (defined $domains{$language});
+
         my $base;
         if ($self->_not_yet_published()) {
             $base = 'backlog';

@@ -38,6 +38,9 @@ sub language_code_es : Test {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
             'Español' => 'Tomando cerveza',
+        },
+        $MockComic::DOMAINS => {
+            'Español' => 'cervezacomics.es',
         });
     is_deeply({'Español' => 'es'}, {$comic->_language_codes()});
 }
@@ -47,6 +50,9 @@ sub language_code_unknown : Test {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
             'Pimperanto' => 'WTF?!'
+        },
+        $MockComic::DOMAINS => {
+            'Pimperanto' => 'wtf.com'
         });
     eval {
         $comic->_language_codes();
@@ -62,6 +68,12 @@ sub language_code_for_all_languages_in_comic : Test {
             'English' => 'Beer',
             'Italiano' => 'Birra',
             'Deutsch' => 'Bier',
+        },
+        $MockComic::DOMAINS => {
+            'Español' => 'cervezacomics.es',
+            'English' => 'beercomics.com',
+            'Italiano' => 'birracomics.it',
+            'Deutsch' => 'biercomics.de',
         });
     is_deeply({
             'Deutsch' => 'de',
@@ -72,4 +84,15 @@ sub language_code_for_all_languages_in_comic : Test {
         {
             $comic->_language_codes()
         });
+}
+
+
+sub croaks_on_language_without_domain : Test {
+    eval {
+        MockComic::make_comic(
+            $MockComic::TITLE => {
+                'Pimperanto' => 'WTF?!'
+            });
+    };
+    like($@, qr{no domain for Pimperanto}i);
 }

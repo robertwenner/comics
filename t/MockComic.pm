@@ -34,6 +34,7 @@ our Readonly $COMMENTS = 'comments';
 our Readonly $SERIES = 'series';
 our Readonly $HEIGHT = 'height';
 our Readonly $WIDTH = 'width';
+our Readonly $DOMAINS = 'domains';
 
 
 my %files_read;
@@ -54,6 +55,10 @@ my %defaultArgs = (
     $WHO => {
         $ENGLISH => ['Paul', 'Max'],
         $DEUTSCH => ['Paul', 'Max'],
+    },
+    $DOMAINS => {
+        $ENGLISH => 'beercomics.com',
+        $DEUTSCH => 'biercomics.de',
     },
     $IN_FILE => 'some_comic.svg',
     $MTIME => 0,
@@ -158,9 +163,7 @@ sub make_comic {
     $mtime = $args{$MTIME};
     fake_file($args{$IN_FILE}, fake_comic(%args));
 
-    my $comic = new Comic($args{$IN_FILE}, (
-        'Deutsch' => 'biercomics.de',
-        'English' => 'beercomics.com'));
+    my $comic = new Comic($args{$IN_FILE}, %{$args{$DOMAINS}});
     $comic->export_png();
     $comic->{height} = $args{$HEIGHT};
     $comic->{width} = $args{$WIDTH};
