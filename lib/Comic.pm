@@ -91,10 +91,6 @@ my %text = (
         'English' => 'beercomics.com',
         'Deutsch' => 'biercomics.de',
     },
-    archivePage => {
-        'English' => 'archive.html',
-        'Deutsch' => 'archiv.html',
-    },
     archiveTitle => {
         'English' => 'The beercomics.com archive',
         'Deutsch' => 'Das Biercomics-Archiv',
@@ -1116,8 +1112,6 @@ sub _write_file {
 
 Generates a single HTML page with all comics in chronological order.
 
-The output file will be in generated/web/language/archivePage.html.
-
 Parameters:
 
 =over 4
@@ -1126,8 +1120,11 @@ Parameters:
 
     =item B<$backlog_page> path / file name of the generated backlog html.
 
-    =item B<%archive_templates> reference to a hash of language the archive
-    template file for that language.
+    =item B<%archive_templates> reference to a hash of language to the
+    archive template file for that language.
+
+    =item B<%archive_pages> reference to a hash of language to the archive
+    page html file.
 
     =item B<$%comic_templates> reference to a hash of language to comic
     template file to use for index.html.
@@ -1137,7 +1134,7 @@ Parameters:
 =cut
 
 sub export_archive {
-    my ($backlog_template, $backlog_page, $archive_templates, $comic_template) = @ARG;
+    my ($backlog_template, $backlog_page, $archive_templates, $archive_pages, $comic_template) = @ARG;
 
     foreach my $language (keys %{$archive_templates}) {
         my @sorted = (sort _compare grep { _archive_filter($_, $language) } @comics);
@@ -1148,8 +1145,8 @@ sub export_archive {
         _write_file($page, $last_pub->_do_export_html($language, ${$comic_template}{$language}));
     }
 
-    _do_export_archive(%{$archive_templates});
-    _do_export_backlog($backlog_template, $backlog_page, sort keys %{$archive_templates});
+    _do_export_archive($archive_templates, $archive_pages);
+    _do_export_backlog($backlog_template, $backlog_page, $archive_pages);
     return;
 }
 
@@ -1167,10 +1164,10 @@ sub _backlog_filter {
 
 
 sub _do_export_archive {
-    my (%archive_templates) = @ARG;
+    my ($archive_templates, $archive_pages) = @ARG;
 
-    foreach my $language (sort keys %archive_templates) {
-        my $page = 'generated/' . lc($language) . "/web/$text{archivePage}{$language}";
+    foreach my $language (sort keys %{$archive_templates}) {
+        my $page = 'generated/' . lc($language) . "/web/${$archive_pages}{$language}";
 
         my @filtered = sort _compare grep { _archive_filter($_, $language) } @comics;
         if (!@filtered) {
@@ -1180,13 +1177,13 @@ sub _do_export_archive {
 
         my %vars;
         $vars{'title'} = $text{archiveTitle}{$language};
-        $vars{'url'} = $text{archivePage}{$language};
+        $vars{'url'} = ${$archive_pages}{$language};
         $vars{'root'} = '';
         $vars{'comics'} = \@filtered;
         $vars{'modified'} = $filtered[-1]->{modified};
         $vars{'notFor'} = \&_not_for;
 
-        my $templ_file = $archive_templates{$language};
+        my $templ_file = ${$archive_templates}{$language};
         _write_file($page, _templatize('archive', $templ_file, %vars));
     }
 
@@ -1195,7 +1192,7 @@ sub _do_export_archive {
 
 
 sub _do_export_backlog {
-    my ($templ_file, $page, @languages) = @ARG;
+    my ($templ_file, $page, $archive_pages) = @ARG;
 
     my @filtered = sort _compare grep { _backlog_filter($_) } @comics;
     if (!@filtered) {
@@ -1204,10 +1201,10 @@ sub _do_export_backlog {
     }
 
     my %vars;
-    $vars{'languages'} = \@languages;
+    $vars{'languages'} = [ sort keys %{$archive_pages} ];
     $vars{'comics'} = \@filtered;
     $vars{'notFor'} = \&_not_for;
-    $vars{'archive'} = \$text{archivePage};
+    $vars{'archive'} = $archive_pages;
     $vars{'publishers'} = _publishers();
 
     _write_file($page, _templatize('backlog', $templ_file, %vars));
