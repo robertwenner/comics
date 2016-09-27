@@ -312,3 +312,15 @@ TEMPL
     like(Comic::_templatize('comic.svg', 'file.templ', ("array" => [1 .. 10], 'max' => 3)),
         qr{^\s*1\s+3\s+5\s*$});
 }
+
+
+sub consts_in_templates : Tests {
+    MockComic::fake_file('file.templ', '[% const.name = "foo" %][% const.name %]');
+    is(Comic::_templatize('comic.svg', 'file.templ', ()), "foo");
+}
+
+
+sub in_string : Tests {
+    MockComic::fake_file('file.templ', '[% const.name = "foo" %][% "${const.name}" %]');
+    is(Comic::_templatize('comic.svg', 'file.templ', ()), "foo");
+}
