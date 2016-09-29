@@ -145,14 +145,14 @@ sub comic_not_published_on_my_page : Tests {
 
 
 sub comic_not_published_on_my_page_goes_after_regular_backlog : Tests {
-    make_comic('Coming up', 'English', '2016-10-01', 'web');
-    make_comic('Elsewhere', 'English', '2016-09-01', 'magazine');
+    make_comic('Coming up', 'English', '3016-10-01', 'web');
+    make_comic('Elsewhere', 'English', '3016-09-01', 'magazine');
     Comic::export_all_html(
         {'English' => 'templates/english/comic-page.templ'},
         {'English' => 'templates/sitemap.templ'}, 
         {'English' => 'generated/sitemap.html'});
     Comic::export_archive('backlog.templ', 'generated/backlog.html',
-        {'English' => 'templates/english/archiv.templ'},
+        {'English' => 'templates/english/archive.templ'},
         {'English' => 'archive.html'},
         {'English' => 'templates/english/comic-page.templ'});
     MockComic::assert_wrote_file('generated/backlog.html', qr{
@@ -166,9 +166,9 @@ sub comic_not_published_on_my_page_goes_after_regular_backlog : Tests {
 
 
 sub comics_not_published_grouped_by_publisher : Tests {
-    make_comic('Brau Okt', 'Deutsch', '2016-10-01', 'braumagazin.de');
-    make_comic('Beer Guide', 'English', '2016-11-01', 'Austin Beer Guide');
-    make_comic('Brau Dez', 'Deutsch', '2016-12-01', 'braumagazin.de');
+    make_comic('Brau Okt', 'Deutsch', '2015-10-01', 'braumagazin.de');
+    make_comic('Beer Guide', 'English', '2015-11-01', 'Austin Beer Guide');
+    make_comic('Brau Dez', 'Deutsch', '2015-12-01', 'braumagazin.de');
     Comic::export_all_html(
         {'Deutsch' => 'templates/deutsch/comic-page.templ',
          'English' => 'templates/english/comic-page.templ'},
