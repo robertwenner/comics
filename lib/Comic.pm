@@ -877,6 +877,7 @@ sub _do_export_html {
     if (defined($self->{meta_data}->{tags}->{$language})) {
         $vars{'keywords'} = join q{,}, @{$self->{meta_data}->{tags}->{$language}};
     }
+    $vars{'canonicalUrl'} = '';
 
     # By default, use normal path with comics in comics/
     my $path = '../';
@@ -888,6 +889,7 @@ sub _do_export_html {
         $vars{png_file} = 'comics/' . $self->{pngFile}{$language};
         $vars{'first'} = 'comics/' . $self->{'first'}{$language};
         $vars{'prev'} = 'comics/' . $self->{'prev'}{$language};
+        $vars{'canonicalUrl'} = $self->{url}{$language};
     }
     $vars{'root'} = $path;
     my $contrib = $self->{meta_data}->{contrib};

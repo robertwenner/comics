@@ -470,3 +470,27 @@ sub html_special_characters : Tests {
     MockComic::assert_wrote_file('generated/english/web/comics/ale-lager.html',
         '&lt;Ale &amp; Lager&gt;');
 }
+
+
+sub index_html_with_canonical_link : Tests {
+    MockComic::fake_file('backlog.templ', '');
+    MockComic::fake_file('archive.templ', '');
+    MockComic::fake_file('comic.templ', '[% canonicalUrl %]');
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { 'English' => "Beer" },
+        $MockComic::PUBLISHED_WHEN => '2016-01-01',
+    );
+    is($comic->_do_export_html('English', 'comic.templ'), '');
+
+    $comic->_export_language_html('English', 'comic.templ');
+    MockComic::assert_wrote_file('generated/english/web/comics/ale-lager.html', qr{^\s*$}m);
+
+    $comic->{first}{'English'} = '';
+    $comic->{prev}{'English'} = '';
+    Comic::export_archive('backlog.templ', 'backlog.html',
+        {'English' => 'archive.templ'},
+        {'English' => 'archive.html'},
+        {'English' => 'comic.templ'});
+    MockComic::assert_wrote_file('generated/english/web/index.html',
+        'https://beercomics.com/comics/beer.html');
+}
