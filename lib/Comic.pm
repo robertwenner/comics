@@ -1423,20 +1423,26 @@ sub _by_height($$) {
 
 
 sub _sort_styles {
-    my ($xml) = @ARG;
+    my ($input) = @ARG;
 
-    my $out = '';
-    foreach my $line (split qr{[\r\n]}, $xml) {
-        if ($line =~ m{^(.+\bstyle=")([^"]+)(".+)$}) {
-            my ($pre, $style, $post) = ($1, $2, $3);
-            my $new_style = join '; ', sort split qr{\s*;\s*}, $style;
-            $out .= "$pre$new_style$post\n";
-        }
-        else {
-            $out .= $line;
+    my $xml = XML::LibXML->load_xml(string => $input);
+    _sort_styles_traverse($xml->documentElement());
+    return $xml->toString();
+}
+
+
+sub _sort_styles_traverse {
+    my ($node) = @ARG;
+
+    if ($node->{'style'}) {
+        $node->{'style'} = join '; ', sort split qr{\s*;\s*}, $node->{'style'};
+    }
+    foreach my $child ($node->childNodes()) {
+        if (ref($child) eq 'XML::LibXML::Element') {
+            _sort_styles_traverse($child);
         }
     }
-    return $out;
+    return;
 }
 
 

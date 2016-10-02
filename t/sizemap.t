@@ -99,16 +99,18 @@ sub aggregate_many : Tests {
 
 
 sub sort_styles : Tests {
-    is(Comic::_sort_styles(''), '');
-    is(Comic::_sort_styles(
-        '<rect style="stroke: green; fill-opacity: 0; stroke-width: 3"/>'), 
-        '<rect style="fill-opacity: 0; stroke-width: 3; stroke: green"/>' . "\n");
-    is(Comic::_sort_styles(
-        '<rect style="stroke: green; fill-opacity: 0; stroke-width: 3" width="180" x="0" y="0"/>' . "\n" .
-        '<rect style="stroke: green; fill-opacity: 0; stroke-width: 3" width="180" x="0" y="0"/>' . "\n" .
-        '<rect style="stroke: green; fill-opacity: 0; stroke-width: 3" width="180" x="0" y="0"/>' . "\n"),
-
-        '<rect style="fill-opacity: 0; stroke-width: 3; stroke: green" width="180" x="0" y="0"/>' . "\n" .
-        '<rect style="fill-opacity: 0; stroke-width: 3; stroke: green" width="180" x="0" y="0"/>' . "\n" .
-        '<rect style="fill-opacity: 0; stroke-width: 3; stroke: green" width="180" x="0" y="0"/>' . "\n");
+    like(
+        Comic::_sort_styles('<svg><rect style="stroke: green; fill-opacity: 0; stroke-width: 3"/></svg>'),
+        qr{<rect style="fill-opacity: 0; stroke-width: 3; stroke: green"/>}m);
+    my $in = <<'IN';
+    <svg>
+        <!-- ... -->
+        <rect style="stroke: green; fill-opacity: 0; stroke-width: 3" width="180" x="0" y="0"/>
+        <rect style="stroke: green; fill-opacity: 0; stroke-width: 3" width="180" x="0" y="0"/>
+        <rect style="stroke: green; fill-opacity: 0; stroke-width: 3" width="180" x="0" y="0"/>
+        and some text, even though this will never happen in real life
+    </svg>
+IN
+    my $expected = qr{(<rect style="fill-opacity: 0; stroke-width: 3; stroke: green" width="180" x="0" y="0"/>\s*){3}}m;
+    like(Comic::_sort_styles($in), $expected);
 }
