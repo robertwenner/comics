@@ -95,3 +95,20 @@ sub aggregate_many : Tests {
         },
     });
 }
+
+
+
+sub sort_styles : Tests {
+    is(Comic::_sort_styles(''), '');
+    is(Comic::_sort_styles(
+        '<rect style="stroke: green; fill-opacity: 0; stroke-width: 3"/>'), 
+        '<rect style="fill-opacity: 0; stroke-width: 3; stroke: green"/>' . "\n");
+    is(Comic::_sort_styles(
+        '<rect style="stroke: green; fill-opacity: 0; stroke-width: 3" width="180" x="0" y="0"/>' . "\n" .
+        '<rect style="stroke: green; fill-opacity: 0; stroke-width: 3" width="180" x="0" y="0"/>' . "\n" .
+        '<rect style="stroke: green; fill-opacity: 0; stroke-width: 3" width="180" x="0" y="0"/>' . "\n"),
+
+        '<rect style="fill-opacity: 0; stroke-width: 3; stroke: green" width="180" x="0" y="0"/>' . "\n" .
+        '<rect style="fill-opacity: 0; stroke-width: 3; stroke: green" width="180" x="0" y="0"/>' . "\n" .
+        '<rect style="fill-opacity: 0; stroke-width: 3; stroke: green" width="180" x="0" y="0"/>' . "\n");
+}

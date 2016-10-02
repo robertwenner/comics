@@ -1332,10 +1332,11 @@ sub size_map {
     my $svg = SVG->new(
         width => $aggregate{width}{'max'} * $SCALE_BY,
         height => $aggregate{height}{'max'} * $SCALE_BY,
+        -inline => 1,
         -printerror => 1,
         -raiseerror => 1);
 
-    foreach my $comic (@comics) {
+    foreach my $comic (sort _compare @comics) {
         my $color = 'green';
         $color = 'blue' if ($comic->_not_yet_published());
         $svg->rectangle(x => 0, y => 0,
@@ -1359,11 +1360,7 @@ sub size_map {
     $vars{'width'} = $aggregate{width}{'max'} * $SCALE_BY;
     $vars{'comics_by_width'} = [sort _by_width @comics];
     $vars{'comics_by_height'} = [sort _by_height @comics];
-    $vars{svg} = $svg->xmlify();
-    # Remove XML declaration and doctype; Firefox marks them red in the source
-    # view of the page.
-    $vars{svg} =~ s/<\?xml[^>]+>\n//;
-    $vars{svg} =~ s/<!DOCTYPE[^>]+>\n//;
+    $vars{svg} = _sort_styles($svg->xmlify());
 
     _write_file($output, _templatize('size map', $template, %vars));
 
@@ -1422,6 +1419,24 @@ sub _by_width($$) {
 sub _by_height($$) {
 ## use critic
     return $_[0]->{height} <=> $_[1]->{height};
+}
+
+
+sub _sort_styles {
+    my ($xml) = @ARG;
+
+    my $out = '';
+    foreach my $line (split qr{[\r\n]}, $xml) {
+        if ($line =~ m{^(.+\bstyle=")([^"]+)(".+)$}) {
+            my ($pre, $style, $post) = ($1, $2, $3);
+            my $new_style = join '; ', sort split qr{\s*;\s*}, $style;
+            $out .= "$pre$new_style$post\n";
+        }
+        else {
+            $out .= $line;
+        }
+    }
+    return $out;
 }
 
 
