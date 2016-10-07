@@ -23,7 +23,9 @@ sub set_up : Test(setup) {
                     [% FOREACH l IN languages %]
                     [% DEFAULT c.meta_data.title.$l = 0 %]
                         [% IF c.meta_data.title.$l %]
-                        <li><a href="backlog/[% c.htmlFile.$l %]">[% c.meta_data.title.$l %]</a></li>
+                        <li><a href="backlog/[% c.htmlFile.$l %]">[% c.meta_data.title.$l %]</a>
+                            [% IF c.meta_data.defined('series') %] ([% c.meta_data.series.$l %])[% END %]
+                        </li>
                         [% END %]
                     [% END %]
                 </ul>
@@ -71,7 +73,7 @@ sub future_date : Tests {
     MockComic::assert_wrote_file('generated/backlog.html',
         qr{<li>some_comic.svg\s+3016-01-01\s*<ul>}mx);
     MockComic::assert_wrote_file('generated/backlog.html',
-        qr{<li><a\shref="backlog/eins.html">eins</a></li>}mx);
+        qr{<li><a\shref="backlog/eins.html">eins</a>\s*</li>}mx);
 }
 
 
@@ -88,7 +90,7 @@ sub no_date : Tests {
     MockComic::assert_wrote_file('generated/backlog.html',
         qr{<li>some_comic.svg\s*<ul>}mx);
     MockComic::assert_wrote_file('generated/backlog.html',
-        qr{<li><a\shref="backlog/eins.html">eins</a></li>}mx);
+        qr{<li><a\shref="backlog/eins.html">eins</a>\s*</li>}mx);
 }
 
 
@@ -113,8 +115,8 @@ sub two_languages : Tests {
         {'Deutsch' => 'templates/deutsch/comic-page.templ',
          'English' => 'templates/english/comic-page.templ'});
     MockComic::assert_wrote_file('generated/backlog.html',
-        qr{<li><a\shref="backlog/bier.html">Bier!</a></li>\s*
-           <li><a\shref="backlog/beer.html">Beer!</a></li>}mx);
+        qr{<li><a\shref="backlog/bier.html">Bier!</a>\s*</li>\s*
+           <li><a\shref="backlog/beer.html">Beer!</a>\s*</li>}mx);
 }
 
 
@@ -140,7 +142,7 @@ sub comic_not_published_on_my_page : Tests {
         {'Deutsch' => 'archiv.html'},
         {'Deutsch' => 'templates/deutsch/comic-page.templ'});
     MockComic::assert_wrote_file('generated/backlog.html',
-        qr{<li><a\shref="backlog/magazined\.html">Magazined!</a></li>});
+        qr{<li><a\shref="backlog/magazined\.html">Magazined!</a>\s*</li>});
 }
 
 
@@ -158,9 +160,9 @@ sub comic_not_published_on_my_page_goes_after_regular_backlog : Tests {
     MockComic::assert_wrote_file('generated/backlog.html', qr{
         .*Backlog.*
         .*web.*
-        <li><a\shref="backlog/coming-up\.html">Coming\sup</a></li>
+        <li><a\shref="backlog/coming-up\.html">Coming\sup</a>\s*</li>
         .*magazine.*
-        <li><a\shref="backlog/elsewhere\.html">Elsewhere</a></li>
+        <li><a\shref="backlog/elsewhere\.html">Elsewhere</a>\s*</li>
     }xsm);
 }
 
@@ -185,10 +187,10 @@ sub comics_not_published_grouped_by_publisher : Tests {
          'English' => 'templates/english/comic-page.templ'});
     MockComic::assert_wrote_file('generated/backlog.html', qr{
         <h2>Austin\sBeer\sGuide</h2>.*
-        <li><a\shref="backlog/beer-guide\.html">Beer\sGuide</a></li>.*
+        <li><a\shref="backlog/beer-guide\.html">Beer\sGuide</a>\s*</li>.*
         <h2>braumagazin\.de</h2>.*
-        <li><a\shref="backlog/brau-okt\.html">Brau\sOkt</a></li>.*
-        <li><a\shref="backlog/brau-dez\.html">Brau\sDez</a></li>
+        <li><a\shref="backlog/brau-okt\.html">Brau\sOkt</a>\s*</li>.*
+        <li><a\shref="backlog/brau-dez\.html">Brau\sDez</a>\s*</li>
     }xsm);
 }
 
@@ -200,4 +202,20 @@ sub publisher_order : Tests {
     make_comic('4', 'English', '3016-01-01', 'web');
     is_deeply(Comic::_publishers(),
        ['web', 'Austin Beer Guide', 'braumagazin.de', 'Craft Beer &amp; Brewing']);
+}
+
+
+sub includes_series : Tests {
+    MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::DEUTSCH => 'Bier trinken' },
+        $MockComic::SERIES => { $MockComic::DEUTSCH => 'Bym' },
+        $MockComic::PUBLISHED_WHEN => '3016-01-01',
+    );
+    Comic::export_archive('backlog.templ', 'generated/backlog.html',
+        {'Deutsch' => 'templates/deutsch/archiv.templ'},
+        {'Deutsch' => 'archiv.html'},
+        {'Deutsch' => 'templates/deutsch/comic-page.templ'});
+    MockComic::assert_wrote_file('generated/backlog.html', qr{
+        <li><a\shref="backlog/bier-trinken\.html">Bier\strinken</a>\s+\(Bym\)\s+</li>
+    }xsm);
 }
