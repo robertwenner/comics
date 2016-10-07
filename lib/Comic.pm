@@ -331,7 +331,21 @@ sub _check_date {
 sub _check_dont_publish {
     my ($self) = @ARG;
 
-    $self->_check_json('', $self->{meta_data});
+    my $error = $self->_dont_publish();
+    if ($error) {
+        if (!defined($self->{meta_data}->{published}->{when}) || !$self->_not_yet_published()) {
+            $self->_croak($error);
+        }
+    }
+    return;
+}
+
+
+sub _dont_publish {
+    my ($self) = @ARG;
+
+    my $json_error = $self->_check_json('', $self->{meta_data});
+    return $json_error if ($json_error);
 
     ## no critic(ValuesAndExpressions::RequireInterpolationOfMetachars)
     my $all_layers = _build_xpath('g[@inkscape:groupmode="layer"]');
@@ -340,10 +354,10 @@ sub _check_dont_publish {
         my $text = $layer->textContent();
         my $label = $layer->{'inkscape:label'};
         if ($text =~ m/(\b$DONT_PUBLISH\b[^\n\r]*)/m) {
-            $self->_croak("In layer $label: $1");
+            return "In layer $label: $1";
         }
     }
-    return;
+    return 0;
 }
 
 
@@ -352,18 +366,20 @@ sub _check_json {
 
     if (ref($what) eq 'HASH') {
         foreach my $key (keys %{$what}) {
-            $self->_check_json("$where > $key", $what->{$key});
+            my $error = $self->_check_json("$where > $key", $what->{$key});
+            return $error if ($error);
         }
     }
     elsif (ref($what) eq 'ARRAY') {
         for my $i (0 .. $#{$what}) {
-            $self->_check_json($where . '[' . ($i + 1) . ']', $what->[$i]);
+            my $error = $self->_check_json($where . '[' . ($i + 1) . ']', $what->[$i]);
+            return $error if ($error);
         }
     }
     elsif ($what =~ m/$DONT_PUBLISH/m) {
-        $self->_croak("In JSON$where: $what");
+        return "In JSON$where: $what";
     }
-    return;
+    return 0;
 }
 
 
@@ -1231,6 +1247,7 @@ sub _do_export_backlog {
     $vars{'notFor'} = \&_not_for;
     $vars{'archive'} = $archive_pages;
     $vars{'publishers'} = _publishers();
+    $vars{'dontPublish'} = \&_dont_publish;
 
     _write_file($page, _templatize('backlog', $templ_file, %vars));
 

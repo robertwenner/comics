@@ -17,6 +17,7 @@ sub set_up : Test(setup) {
 
 sub in_json_hash : Test {
     my $comic = MockComic::make_comic(
+        $MockComic::PUBLISHED_WHEN => '2016-01-01',
         $MockComic::TITLE => {
             $MockComic::ENGLISH => 'DONT_PUBLISH fix me'
         }
@@ -30,7 +31,8 @@ sub in_json_hash : Test {
 
 sub in_json_array : Test {
     my $comic = MockComic::make_comic(
-        $MockComic::WHO => { 
+        $MockComic::PUBLISHED_WHEN => '2016-01-01',
+        $MockComic::WHO => {
             $MockComic::ENGLISH => [ 'one', 'two', 'three DONT_PUBLISH', 'four' ]});
     eval {
         $comic->_check_dont_publish();
@@ -41,6 +43,7 @@ sub in_json_array : Test {
 
 sub in_json_top_level_element : Test {
     my $comic = MockComic::make_comic(
+        $MockComic::PUBLISHED_WHEN => '2016-01-01',
         $MockComic::JSON => '&quot;foo&quot;: &quot;DONT_PUBLISH top level&quot;');
     eval {
         $comic->_check_dont_publish();
@@ -51,10 +54,35 @@ sub in_json_top_level_element : Test {
 
 sub in_text : Test {
     my $comic = MockComic::make_comic(
-        $MockComic::TEXTS => {$MockComic::DEUTSCH => 
+        $MockComic::PUBLISHED_WHEN => '2016-01-01',
+        $MockComic::TEXTS => {$MockComic::DEUTSCH =>
             ['blah', 'blubb', 'DONT_PUBLISH oops', 'blahblah']});
     eval {
         $comic->_check_dont_publish("English");
     };
     like($@, qr{In layer Deutsch: DONT_PUBLISH oops}i);
+}
+
+
+sub silent_if_not_yet_published : Test {
+    my $comic = MockComic::make_comic(
+        $MockComic::PUBLISHED_WHEN => '3016-01-01',
+        $MockComic::TEXTS => {$MockComic::DEUTSCH =>
+            ['blah', 'blubb', 'DONT_PUBLISH oops', 'blahblah']});
+    eval {
+        $comic->_check_dont_publish("English");
+    };
+    is($@, '');
+}
+
+
+sub silent_if_no_published_date : Test {
+    my $comic = MockComic::make_comic(
+        $MockComic::PUBLISHED_WHEN => '',
+        $MockComic::TEXTS => {$MockComic::DEUTSCH =>
+            ['blah', 'blubb', 'DONT_PUBLISH oops', 'blahblah']});
+    eval {
+        $comic->_check_dont_publish("English");
+    };
+    is($@, '');
 }
