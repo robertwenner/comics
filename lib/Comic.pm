@@ -158,6 +158,7 @@ sub _load {
     my ($self, $file, %domains) = @ARG;
 
     $self->{srcFile} = $file;
+    $self->{warnings} = [];
     $self->{dom} = XML::LibXML->load_xml(string => _slurp($file));
     $self->{xpath} = XML::LibXML::XPathContext->new($self->{dom});
     $self->{xpath}->registerNs($DEFAULT_NAMESPACE, 'http://www.w3.org/2000/svg');
@@ -297,7 +298,7 @@ sub _check_title {
     $key =~ s/\s+/ /g;
     if (defined $titles{$key}) {
         if ($titles{$key} ne $self->{srcFile}) {
-            $self->_croak("Duplicated $language title '$title' in $titles{$key}");
+            $self->_warn("Duplicated $language title '$title' in $titles{$key}");
         }
     }
     $titles{$key} = $self->{srcFile};
@@ -321,7 +322,7 @@ sub _check_date {
         foreach my $l ($self->_languages()) {
             next if ($self->_is_for($l) != $c->_is_for($l));
             if ($published_when eq $pub_when && $published_where eq $pub_where) {
-                $self->_croak("duplicated date with $c->{srcFile}");
+                $self->_warn("duplicated date with $c->{srcFile}");
             }
         }
     }
@@ -332,22 +333,7 @@ sub _check_date {
 sub _check_dont_publish {
     my ($self) = @ARG;
 
-    my $error = $self->_dont_publish();
-    if ($error) {
-        if (!defined($self->{meta_data}->{published}->{when}) || !$self->_not_yet_published()) {
-            $self->_croak($error);
-        }
-    }
-    return;
-}
-
-
-sub _dont_publish {
-    my ($self) = @ARG;
-
-    my $json_error = $self->_check_json('', $self->{meta_data});
-    return $json_error if ($json_error);
-
+    $self->_check_json('', $self->{meta_data});
     ## no critic(ValuesAndExpressions::RequireInterpolationOfMetachars)
     my $all_layers = _build_xpath('g[@inkscape:groupmode="layer"]');
     ## use critic
@@ -355,10 +341,10 @@ sub _dont_publish {
         my $text = $layer->textContent();
         my $label = $layer->{'inkscape:label'};
         if ($text =~ m/(\b$DONT_PUBLISH\b[^\n\r]*)/m) {
-            return "In layer $label: $1";
+            $self->_warn("In layer $label: $1");
         }
     }
-    return 0;
+    return;
 }
 
 
@@ -367,20 +353,18 @@ sub _check_json {
 
     if (ref($what) eq 'HASH') {
         foreach my $key (keys %{$what}) {
-            my $error = $self->_check_json("$where > $key", $what->{$key});
-            return $error if ($error);
+            $self->_check_json("$where > $key", $what->{$key});
         }
     }
     elsif (ref($what) eq 'ARRAY') {
         for my $i (0 .. $#{$what}) {
-            my $error = $self->_check_json($where . '[' . ($i + 1) . ']', $what->[$i]);
-            return $error if ($error);
+            $self->_check_json($where . '[' . ($i + 1) . ']', $what->[$i]);
         }
     }
     elsif ($what =~ m/$DONT_PUBLISH/m) {
-        return "In JSON$where: $what";
+        $self->_warn("In JSON$where: $what");
     }
-    return 0;
+    return;
 }
 
 
@@ -416,38 +400,38 @@ sub _check_frames {
         if (defined $prev_y) {
             if ($next_row) {
                 if ($prev_bottom > $y) {
-                    $self->_croak("frames overlap y at $prev_bottom and $y");
+                    $self->_warn("frames overlap y at $prev_bottom and $y");
                 }
                 if ($prev_bottom + $FRAME_SPACING > $y) {
-                    $self->_croak('frames too close y (' . ($prev_bottom + $FRAME_SPACING - $y) . "at $prev_bottom and $y");
+                    $self->_warn('frames too close y (' . ($prev_bottom + $FRAME_SPACING - $y) . "at $prev_bottom and $y");
                 }
                 if ($prev_bottom + $FRAME_SPACING + $FRAME_SPACING_TOLERANCE < $y) {
-                    $self->_croak("frames too far y at $prev_bottom and $y");
+                    $self->_warn("frames too far y at $prev_bottom and $y");
                 }
 
                 if (_more_off($left_side, $x, $FRAME_TOLERANCE)) {
-                    $self->_croak("frame left side not aligned: $left_side and $x");
+                    $self->_warn("frame left side not aligned: $left_side and $x");
                 }
                 if (_more_off($prev_side, $right_side, $FRAME_TOLERANCE)) {
-                    $self->_croak("frame right side not aligned: $prev_side and $right_side");
+                    $self->_warn("frame right side not aligned: $prev_side and $right_side");
                 }
             }
             else {
                 if (_more_off($prev_y, $y, $FRAME_TOLERANCE)) {
-                    $self->_croak("frame tops not aligned: $prev_y and $y");
+                    $self->_warn("frame tops not aligned: $prev_y and $y");
                 }
                 if (_more_off($prev_bottom, $bottom, $FRAME_TOLERANCE)) {
-                    $self->_croak("frame bottoms not aligned: $prev_bottom and $bottom");
+                    $self->_warn("frame bottoms not aligned: $prev_bottom and $bottom");
                 }
 
                 if ($prev_side > $x) {
-                    $self->_croak("frames overlap x at $prev_side and $x");
+                    $self->_warn("frames overlap x at $prev_side and $x");
                 }
                 if ($prev_side + $FRAME_SPACING > $x) {
-                    $self->_croak("frames too close x at $prev_side and $x");
+                    $self->_warn("frames too close x at $prev_side and $x");
                 }
                 if ($prev_side + $FRAME_SPACING + $FRAME_SPACING_TOLERANCE < $x) {
-                    $self->_croak('frames too far x (' . ($x - ($prev_side + $FRAME_SPACING + $FRAME_SPACING_TOLERANCE)) . ") at $prev_side and $x");
+                    $self->_warn('frames too far x (' . ($x - ($prev_side + $FRAME_SPACING + $FRAME_SPACING_TOLERANCE)) . ") at $prev_side and $x");
                 }
             }
         }
@@ -482,14 +466,14 @@ sub _check_frame_style {
     if ($style =~ m{;stroke-width:([^;]+);}) {
         my $width = $1;
         if ($width < $FRAME_WIDTH - $FRAME_WIDTH_DEVIATION) {
-            $self->_croak("Frame too narrow ($width)");
+            $self->_warn("Frame too narrow ($width)");
         }
         if ($width > $FRAME_WIDTH + $FRAME_WIDTH_DEVIATION) {
-            $self->_croak("Frame too wide ($width)");
+            $self->_warn("Frame too wide ($width)");
         }
     }
     else {
-        $self->_croak("Cannot find width in '$style'");
+        $self->_warn("Cannot find width in '$style'");
     }
     return;
 }
@@ -505,8 +489,8 @@ sub _check_tags {
     my ($self, $what, $language) = @ARG;
 
     foreach my $tag (@{$self->{meta_data}->{$what}->{$language}}) {
-        $self->_croak("No $language $what") unless(defined $tag);
-        $self->_croak("Empty $language $what") if ($tag =~ m/^\s*$/);
+        $self->_warn("No $language $what") unless(defined $tag);
+        $self->_warn("Empty $language $what") if ($tag =~ m/^\s*$/);
     }
     return;
 }
@@ -997,7 +981,7 @@ sub _texts_for {
 
         if ($text eq '') {
             my $layer = $node->parentNode->{'inkscape:label'};
-            $self->_croak("empty text in $layer with ID $node->{id}");
+            $self->_warn("empty text in $layer with ID $node->{id}");
         }
         push @texts, $text;
     }
@@ -1265,7 +1249,6 @@ sub _do_export_backlog {
     $vars{'notFor'} = \&_not_for;
     $vars{'archive'} = $archive_pages;
     $vars{'publishers'} = _publishers();
-    $vars{'dontPublish'} = \&_dont_publish;
 
     _write_file($page, _templatize('backlog', $templ_file, %vars));
 
@@ -1518,8 +1501,23 @@ sub export_rss_feed {
 
 
 sub _croak {
-    my ($self, $msg) = @_;
+    my ($self, $msg) = @ARG;
     croak "$self->{srcFile}: $msg";
+}
+
+
+sub _warn {
+    my ($self, $msg) = @ARG;
+
+    # Warnings can be duplicated if language-independent code is called in a
+    # per-language loop for simplicity. Ignore those.
+    # PerlCritic doesn't see that the code below is array access.
+    ## no critic(ValuesAndExpressions::ProhibitMagicNumbers)
+    return if (@{$self->{warnings}} && ${$self->{warnings}}[-1] eq $msg);
+    ## use critic
+    push @{$self->{warnings}}, $msg;
+    $self->_croak($msg) unless ($self->_not_yet_published());
+    return;
 }
 
 

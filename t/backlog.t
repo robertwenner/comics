@@ -19,7 +19,9 @@ sub set_up : Test(setup) {
     [% FOREACH c IN comics %]
         [% IF c.meta_data.published.where == publisher %]
             <li>[% c.srcFile %] [% c.meta_data.published.when %]
-                [% IF dontPublish(c) %] <span style="color: red">DONT PUBLISH</span>[% END %]
+                [% FOREACH w IN c.warnings %]
+                    <span style="color: red">[% w %]</span>
+                [% END %]
                 <ul>
                     [% FOREACH l IN languages %]
                     [% DEFAULT c.meta_data.title.$l = 0 %]
@@ -223,15 +225,16 @@ sub includes_series : Tests {
 
 
 sub includes_dont_publish_warning : Tests {
-    MockComic::make_comic(
+    my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::DEUTSCH => 'Bier trinken' },
         $MockComic::TEXTS => { $MockComic::DEUTSCH => ['a', 'b', 'DONT_PUBLISH', 'c']},
         $MockComic::PUBLISHED_WHEN => '3016-01-01',
     );
+    $comic->_check_dont_publish();
     Comic::export_archive('backlog.templ', 'generated/backlog.html',
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
         {'Deutsch' => 'archiv.html'},
         {'Deutsch' => 'templates/deutsch/comic-page.templ'});
     MockComic::assert_wrote_file('generated/backlog.html', qr{
-        <li>some_comic\.svg\s+.+DONT\s+PUBLISH.+<ul>}xsm);
+        <li>some_comic\.svg\s+.+DONT_PUBLISH.+<ul>}xsm);
 }
