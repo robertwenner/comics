@@ -234,9 +234,7 @@ description: [% description %]
 [% transcriptJson %]
 [% transcriptHtml %]
 [% url %]
-[% FOREACH w IN who %]
-[% w %].
-[% END %]
+who: [ [% who %] ]
 Image: [% image %]
 Copyright year: [% year %]
 Keywords: [% keywords %]
@@ -257,7 +255,7 @@ TEMPLATE
     like($wrote, qr/bier-trinken\.png/m, "png file name");
     like($wrote, qr/200 by 600/m, "dimensions");
     like($wrote, qr{https://biercomics.de/comics/bier-trinken.html}m, "url");
-    like($wrote, qr{Max\.\s*Paul\.}m, "who");
+    like($wrote, qr{who:\s+\[\s*"Max",\s*"Paul"\s*\]}m, "who");
     like($wrote, qr{Image: https://biercomics.de/comics/bier-trinken.png}m, "image");
     like($wrote, qr{Copyright year: 2016}m, "copyright year");
     like($wrote, qr{Keywords: Bier,Saufen,Craft}m, "keywords");

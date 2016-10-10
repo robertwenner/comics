@@ -885,7 +885,7 @@ sub _do_export_html {
     $vars{'languagecodes'} = { $self->_language_codes() };
     $vars{'languageurls'} = $self->{url};
     $vars{'languagetitles'} = $self->{meta_data}->{title};
-    $vars{'who'} = [@{$self->{meta_data}->{who}->{$language}}];
+    $vars{'who'} = q{"} . join(q{", "}, @{$self->{meta_data}->{who}->{$language}}) . q{"};
     $vars{'published'} = trim($self->{meta_data}->{published}->{when});
     Readonly my $DIGITS_YEAR => 4;
     $vars{'year'} = substr $vars{'published'}, 0, $DIGITS_YEAR;
