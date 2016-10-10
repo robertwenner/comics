@@ -494,3 +494,11 @@ sub index_html_with_canonical_link : Tests {
     MockComic::assert_wrote_file('generated/english/web/index.html',
         'https://beercomics.com/comics/beer.html');
 }
+
+
+sub to_json_array : Tests {
+    is(Comic::_to_json_array(), '[]', 'empty');
+    is(Comic::_to_json_array('a'), '["a"]', 'single element');
+    is(Comic::_to_json_array('a', 'b', 'c'), '["a", "b", "c"]', 'multiple elements');
+    is(Comic::_to_json_array('"quoted"'), '["\"quoted\""]', 'escapes');
+}

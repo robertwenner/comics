@@ -885,7 +885,7 @@ sub _do_export_html {
     $vars{'languagecodes'} = { $self->_language_codes() };
     $vars{'languageurls'} = $self->{url};
     $vars{'languagetitles'} = $self->{meta_data}->{title};
-    $vars{'who'} = q{"} . join(q{", "}, @{$self->{meta_data}->{who}->{$language}}) . q{"};
+    $vars{'who'} = _to_json_array(@{$self->{meta_data}->{who}->{$language}});
     $vars{'published'} = trim($self->{meta_data}->{published}->{when});
     Readonly my $DIGITS_YEAR => 4;
     $vars{'year'} = substr $vars{'published'}, 0, $DIGITS_YEAR;
@@ -908,10 +908,13 @@ sub _do_export_html {
         $vars{'canonicalUrl'} = $self->{url}{$language};
     }
     $vars{'root'} = $path;
+
     my $contrib = $self->{meta_data}->{contrib};
     $vars{'contrib'} = 0;
+    $vars{'jsonContrib'} = '';
     if (defined($contrib) && join('', @{$contrib}) !~ m{^\s*$}) {
         $vars{'contrib'} = $contrib;
+        $vars{'jsonContrib'} = '"contributor": ' . _to_json_array(@{$contrib}) . ",\n   ";
     }
 
     $vars{transcriptHtml} = '';
@@ -919,9 +922,8 @@ sub _do_export_html {
     foreach my $t ($self->_texts_for($language)) {
         $vars{transcriptHtml} .= '<p>' . encode_entities($t) . "</p>\n";
         $vars{transcriptJson} .= ' ' unless ($vars{transcriptJson} eq '');
-        $vars{transcriptJson} .= $t;
+        $vars{transcriptJson} .= _escape_json($t);
     }
-    $vars{'transcriptJson'} =~ s/"/\\"/mg;
     $vars{'backlog'} = $self->_not_yet_published();
 
     my $tags = '';
@@ -932,6 +934,22 @@ sub _do_export_html {
     $vars{description} = encode_entities($self->{meta_data}->{description}->{$language});
     return _templatize($self->{srcFile}, $template, %vars)
         or $self->_croak("Error writing HTML: $OS_ERROR");
+}
+
+
+sub _to_json_array {
+    return '[]' unless(@ARG);
+    return q{["} .
+        join(q{", "},
+            map { _escape_json($_) } @ARG) .
+        q{"]};
+}
+
+
+sub _escape_json {
+    my ($value) = @_;
+    $value =~ s/"/\\"/g;
+    return $value;
 }
 
 
