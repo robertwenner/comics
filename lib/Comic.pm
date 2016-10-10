@@ -191,6 +191,7 @@ sub _load {
         $self->{htmlFile}{$language} = "${name}.html";
         $self->{pngFile}{$language} = "${name}.png";
         $self->{url}{$language} = "https://$domains{$language}/comics/$name.html";
+        $self->{imageUrl}{$language} = "https://$domains{$language}/comics/$name.png";
         $self->{href}{$language} = "comics/$self->{htmlFile}{$language}";
     }
 
@@ -875,8 +876,7 @@ sub _do_export_html {
     $vars{height} = $self->{height};
     $vars{width} = $self->{width};
     $vars{'url'} = $self->{url}{$language};
-    $vars{'image'} = $self->{url}{$language} || ''; # for tests that don't fake this
-    $vars{'image'} =~ s/\.html$/.png/;
+    $vars{'image'} = $self->{imageUrl}{$language};
     $vars{'first'} = $self->{'first'}{$language};
     $vars{'prev'} = $self->{'prev'}{$language};
     $vars{'next'} = $self->{'next'}{$language};
