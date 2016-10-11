@@ -264,9 +264,10 @@ sub _check {
     $self->_check_dont_publish($language);
     $self->_check_frames();
     $self->_check_tags('tags', $language);
-    $self->_check_tags('people', $language);
+    $self->_check_tags('who', $language);
     $self->_check_transcript($language);
     $self->_check_series($language);
+    $self->_check_persons($language);
     return;
 }
 
@@ -500,7 +501,8 @@ sub _check_tags {
 sub _count_tags {
     my ($self) = @ARG;
 
-    foreach my $what ('tags', 'people') {
+    foreach my $what ('tags', 'who') {
+        next unless ($self->{meta_data}->{$what});
         foreach my $language (keys %{$self->{meta_data}->{$what}}) {
             foreach my $val (@{$self->{meta_data}->{$what}->{$language}}) {
                 $counts{$what}{$language}{$val}++;
@@ -592,6 +594,27 @@ sub _series_for {
 
     return '' unless ($self->{meta_data}->{series});
     return trim($self->{meta_data}->{series}{$language});
+}
+
+
+sub _check_persons {
+    my ($self, $language) = @ARG;
+
+    if (!$self->{meta_data}->{who}) {
+        $self->_warn('No persons metadata at all');
+        return;
+    }
+    foreach my $l (keys %{$self->{meta_data}->{who}}) {
+        my @one = @{$self->{meta_data}->{who}->{$l}};
+        my @two = @{$self->{meta_data}->{who}->{$language}};
+        if (scalar @one  ne scalar @two) {
+            $self->_warn("Different number of persons in $language and $l");
+        }
+    }
+    foreach my $who (@{$self->{meta_data}->{who}{$language}}) {
+        $self->_warn("Empty person name in $language") if ($who =~ m{^\s*$});
+    }
+    return;
 }
 
 
@@ -1368,7 +1391,7 @@ Parameters:
 
 =over 4
 
-    =item B<$what> what counts to get, e.g., "tags" or "people".
+    =item B<$what> what counts to get, e.g., "tags" or "who".
 
     =item B<$language> for what language, e.g., "English".
 

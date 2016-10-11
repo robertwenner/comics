@@ -52,10 +52,6 @@ my %defaultArgs = (
         $ENGLISH => ['beer', 'craft'],
         $DEUTSCH => ['Bier', 'Craft'],
     },
-    $WHO => {
-        $ENGLISH => ['Paul', 'Max'],
-        $DEUTSCH => ['Paul', 'Max'],
-    },
     $DOMAINS => {
         $ENGLISH => 'beercomics.com',
         $DEUTSCH => 'biercomics.de',
