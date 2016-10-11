@@ -266,6 +266,7 @@ sub _check {
     $self->_check_tags('tags', $language);
     $self->_check_tags('people', $language);
     $self->_check_transcript($language);
+    $self->_check_series($language);
     return;
 }
 
@@ -565,6 +566,32 @@ sub _both_names {
         return 1;
     }
     return 0;
+}
+
+
+sub _check_series {
+    my ($self, $language) = @ARG;
+
+    my $need = $self->_series_for($language);
+    foreach my $l ($self->_languages()) {
+        next if ($language eq $l);
+        my $has = $self->_series_for($l);
+        if ($need && !$has) {
+            $self->_warn("No series tag for $l but for $language");
+        }
+        elsif ($need && $need eq $has) {
+            $self->_warn("Duplicated series tag '$need' for $l and $language");
+        }
+    }
+    return;
+}
+
+
+sub _series_for {
+    my ($self, $language) = @ARG;
+
+    return '' unless ($self->{meta_data}->{series});
+    return trim($self->{meta_data}->{series}{$language});
 }
 
 
@@ -1197,12 +1224,12 @@ sub export_archive {
 
 
 sub _check_all_comics {
-    _check_series_tags();
+    _check_all_series();
     return;
 }
 
 
-sub _check_series_tags {
+sub _check_all_series {
     my %series_count;
 
     foreach my $comic (@comics) {
