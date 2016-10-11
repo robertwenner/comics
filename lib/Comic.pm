@@ -118,7 +118,7 @@ Readonly our $FRAME_SPACING_TOLERANCE => 2.0;
 # translated coordinates can be sorted as expected for the comic's transcript.
 # However, it may be easier to just add invisible frames to force a text
 # order in the comic.
-Readonly our $TRANSFORM => 1;
+Readonly our $TRANSFORM => 'TRANSFORM';
 
 
 my %counts;
