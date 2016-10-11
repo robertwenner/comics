@@ -109,7 +109,11 @@ sub mock_methods {
     };
 
     *Comic::_check = sub {
-        # Ignore; indivisual tests call check methods as needed.
+        # Ignore; individual tests call check methods as needed.
+    };
+
+    *Comic::_check_all_comics = sub {
+        # Ignore; individual tests call check methods as needed.
     };
 }
 

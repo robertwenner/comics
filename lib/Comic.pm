@@ -1180,6 +1180,7 @@ Parameters:
 sub export_archive {
     my ($backlog_template, $backlog_page, $archive_templates, $archive_pages, $comic_template) = @ARG;
 
+    _check_all_comics();
     foreach my $language (keys %{$archive_templates}) {
         my @sorted = (sort _compare grep { _archive_filter($_, $language) } @comics);
         next if (@sorted == 0);
@@ -1191,6 +1192,39 @@ sub export_archive {
 
     _do_export_archive($archive_templates, $archive_pages);
     _do_export_backlog($backlog_template, $backlog_page, $archive_pages);
+    return;
+}
+
+
+sub _check_all_comics {
+    _check_series_tags();
+    return;
+}
+
+
+sub _check_series_tags {
+    my %series_count;
+
+    foreach my $comic (@comics) {
+        next unless (defined($comic->{meta_data}->{series}));
+        foreach my $language (keys $comic->{meta_data}->{series}) {
+            foreach my $series ($comic->{meta_data}->{series}->{$language}) {
+                $series_count{$language}{$series}++;
+            }
+        }
+    }
+
+    foreach my $comic (@comics) {
+        next unless (defined($comic->{meta_data}->{series}));
+        foreach my $language (keys $comic->{meta_data}->{series}) {
+            foreach my $series ($comic->{meta_data}->{series}->{$language}) {
+                if ($series_count{$language}{$series} == 1) {
+                    $comic->_warn("$language has only one comic in the '$series' series");
+                }
+            }
+        }
+    }
+
     return;
 }
 
