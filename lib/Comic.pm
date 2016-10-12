@@ -14,6 +14,7 @@ use autodie;
 use String::Util 'trim';
 use DateTime;
 use DateTime::Format::ISO8601;
+use DateTime::Format::RFC3339;
 use File::Path qw(make_path);
 use File::Basename;
 use open ':std', ':encoding(UTF-8)'; # to handle e.g., umlauts correctly
@@ -172,12 +173,20 @@ sub _load {
         $self->{meta_data} = from_json($meta_data);
     } or $self->_croak("Error in JSON for: $EVAL_ERROR");
 
-    $self->{modified} = DateTime->from_epoch(epoch => _mtime($file))->ymd;
+    my $modified = DateTime->from_epoch(epoch => _mtime($file));
+    $modified->set_time_zone(_get_tz());
+    $self->{modified} = $modified->ymd;
+    $self->{rfc3339Modified} = DateTime::Format::RFC3339->new()->format_datetime($modified);
     my $pub = trim($self->{meta_data}->{published}->{when});
     if ($pub) {
-        my $dt = DateTime::Format::ISO8601->parse_datetime($pub);
-        $dt->set_time_zone(_get_tz());
-        $self->{rfc822pubDate} = $dt->strftime('%a, %d %b %Y %H:%M:%S %z');
+        my $published = DateTime::Format::ISO8601->parse_datetime($pub);
+        $published->set_time_zone(_get_tz());
+        # DateTime::Format::Mail does RFC822 dates, but uses spaces instead of
+        # zeros for single digit numbers. The W3C validator complains about
+        # these, saying they're not strictly illegal, but may be a compatibiliy
+        # issue.
+        $self->{rfc822pubDate} = $published->strftime('%a, %d %b %Y %H:%M:%S %z');
+        $self->{rfc3339pubDate} = DateTime::Format::RFC3339->new()->format_datetime($published);
     }
 
     foreach my $language ($self->_languages()) {
@@ -1592,7 +1601,9 @@ sub export_feed {
     my ($items, $to, %templates) = @ARG;
 
     my $now = _now();
-    $now =~ s/T.+$//;
+    $now->set_time_zone(_get_tz());
+    $now = DateTime::Format::RFC3339->new()->format_datetime($now);
+
     foreach my $language (keys %templates) {
         my %vars = (
             'comics' => [reverse sort _compare grep { _archive_filter($_, $language) } @comics],

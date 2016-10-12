@@ -222,6 +222,8 @@ sub from_comic : Tests {
         $MockComic::TAGS => {
             $MockComic::DEUTSCH => [ "Bier", "Saufen", "Craft" ],
         },
+        $MockComic::MTIME => DateTime->new(
+            year => 2016, month => 1, day => 1, time_zone => '-05:00')->epoch,
     );
 
     MockComic::fake_file('templates/deutsch/sitemap-xml.templ', '...');
@@ -251,7 +253,7 @@ TEMPLATE
 
     my $wrote = $comic->_do_export_html("Deutsch", 'templates/deutsch/comic-page.templ');
     like($wrote, qr/Bier trinken/m, "title");
-    like($wrote, qr/1970-01-01/m, "last modified");
+    like($wrote, qr/2016-01-01/m, "last modified");
     like($wrote, qr/bier-trinken\.png/m, "png file name");
     like($wrote, qr/200 by 600/m, "dimensions");
     like($wrote, qr{https://biercomics.de/comics/bier-trinken.html}m, "url");
