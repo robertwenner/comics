@@ -78,9 +78,13 @@ This document refers to version 0.0.2.
             'English' => 'templates/english/comic-page.templ',
             'Deutsch' => 'templates/deutsch/comic-page.templ',
         });
-    Comic::export_rss_feed(10, 'rss.xml', (
+    Comic::export_feed(10, 'rss.xml', (
         'Deutsch' => 'templates/deutsch/rss.templ',
         'English' => 'templates/english/rss.templ',
+    ));
+    Comic::export_feed(10, 'atom.xml', (
+        'Deutsch' => 'templates/deutsch/atom.templ',
+        'English' => 'templates/english/atom.templ',
     ));
     Comic::size_map('templates/sizemap.templ', 'generated/sizemap.html');
 
@@ -88,8 +92,8 @@ This document refers to version 0.0.2.
 =head1 DESCRIPTION
 
 From on an Inkscape SVG file, exports language layers to create per language
-PNG files. Creates a RSS feed and a transcript per language for search
-engines. Creates an archive overview page, a backlog page of not yet
+PNG files. Creates a RSS or Atom feed and a transcript per language for
+search engines. Creates an archive overview page, a backlog page of not yet
 published comics, and a sizemap to compare image sizes.
 
 =cut
@@ -1565,9 +1569,9 @@ sub _sort_styles_traverse {
 }
 
 
-=head2 export_rss_feed
+=head2 export_feed
 
-Writes an RSS feed XML for all comics and each language encountered.
+Writes an RSS or Atom feed XML for all comics and each language encountered.
 
 Parameters:
 
@@ -1584,18 +1588,21 @@ Parameters:
 
 =cut
 
-sub export_rss_feed {
+sub export_feed {
     my ($items, $to, %templates) = @ARG;
 
+    my $now = _now();
+    $now =~ s/T.+$//;
     foreach my $language (keys %templates) {
         my %vars = (
             'comics' => [reverse sort _compare grep { _archive_filter($_, $language) } @comics],
             'notFor' => \&_not_for,
             'max' => $items,
+            'updated' => $now,
         );
-        my $rss =_templatize('(none)', $templates{$language}, %vars)
+        my $feed =_templatize('(none)', $templates{$language}, %vars)
             or croak "Error templatizing $templates{$language}: $OS_ERROR";
-        _write_file('generated/' . lc($language) . "/web/$to", $rss);
+        _write_file('generated/' . lc($language) . "/web/$to", $feed);
     }
     return;
 }

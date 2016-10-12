@@ -15,16 +15,29 @@ sub setup : Test(setup) {
     MockComic::fake_file('rss.templ', <<"RSS");
 [% done = 0 %]
 [% FOREACH c IN comics %]
-[% NEXT IF notFor(c, 'English') %]
-[% LAST IF done == max %]
-[% done = done + 1 %]
-<item>
-<title>[% c.meta_data.title.English %]</title>
-<link>https://beercomics.com/comics/[% c.htmlFile.English %]</link>
-<pubDate>[% c.rfc822pubDate %]</pubDate>
-</item>
+    [% NEXT IF notFor(c, 'English') %]
+    [% LAST IF done == max %]
+    [% done = done + 1 %]
+    <item>
+        <title>[% c.meta_data.title.English %]</title>
+        <link>https://beercomics.com/comics/[% c.htmlFile.English %]</link>
+        <pubDate>[% c.rfc822pubDate %]</pubDate>
+    </item>
 [% END %]
 RSS
+    MockComic::fake_file('atom.templ', <<"ATOM");
+Updated: [% updated %]
+[% FOREACH c IN comics %]
+    Published: [% c.meta_data.published.when %]
+    Description: [% c.meta_data.description.English %]
+    [% DEFAULT c.meta_data.contrib = 0 %]
+    [% IF c.meta_data.contrib %]
+        [% FOREACH con IN c.meta_data.contrib %]
+            <contributor><name>[% con %]</name></contributor>
+        [% END %]
+    [% END %]
+[% END %]
+ATOM
 }
 
 
@@ -43,13 +56,13 @@ sub make_comic {
 sub assert_wrote {
     my ($count, $contentsExpected) = @_;
 
-    Comic::export_rss_feed($count, 'rss.xml', ('English' => 'rss.templ'));
+    Comic::export_feed($count, 'rss.xml', ('English' => 'rss.templ'));
     MockComic::assert_wrote_file('generated/english/web/rss.xml', $contentsExpected);
 }
 
 
 sub no_comic : Test {
-    Comic::export_rss_feed(10, 'rss.xml', ('English' => 'rss.templ'));
+    Comic::export_feed(10, 'rss.xml', ('English' => 'rss.templ'));
     MockComic::assert_didnt_write_in_file('rss.xml', qr{item});
 }
 
@@ -147,7 +160,7 @@ sub by_language : Tests {
 [% END %]
 RSS
 
-    Comic::export_rss_feed(5, 'rss.xml', ('Deutsch' => 'de.templ', 'English' => 'rss.templ'));
+    Comic::export_feed(5, 'rss.xml', ('Deutsch' => 'de.templ', 'English' => 'rss.templ'));
     my $english = qr{<title>Beer</title>};
     my $deutsch = qr{<title>Bier</title>};
     MockComic::assert_wrote_file('generated/deutsch/web/rss.xml', $deutsch);
@@ -168,8 +181,32 @@ sub not_published_on_web : Test {
         $MockComic::TITLE => {
             $MockComic::ENGLISH => 'Bier in der Zeitung',
         },
-        $MockComic::PUBLISHED_WHEN => '2016-01-01',,
+        $MockComic::PUBLISHED_WHEN => '2016-01-01',
         $MockComic::PUBLISHED_WHERE => 'tolle Zeitung');
-    Comic::export_rss_feed(10, 'rss.xml', ('English' => 'rss.templ'));
+    Comic::export_feed(10, 'rss.xml', ('English' => 'rss.templ'));
     MockComic::assert_didnt_write_in_file('rss.xml', qr{item});
+}
+
+
+sub atom_fields : Tests {
+    MockComic::fake_now(DateTime->new(year => 2016, month => 2, day => 2));
+    MockComic::make_comic(
+        $MockComic::PUBLISHED_WHEN => '2016-01-01',
+        $MockComic::DESCRIPTION => {'English' => 'Drinking beer'});
+    Comic::export_feed(10, 'atom.xml', ('English' => 'atom.templ'));
+    MockComic::assert_wrote_file('generated/english/web/atom.xml', qr{Updated: 2016-02-02}m, 'updated');
+    MockComic::assert_wrote_file('generated/english/web/atom.xml', qr{Published: 2016-01-01}m, 'published');
+    MockComic::assert_wrote_file('generated/english/web/atom.xml', qr{Description: Drinking beer}m, 'description');
+    MockComic::assert_didnt_write_in_file('generated/english/web/atom.xml', qr{<contributor>}m, 'contributor');
+}
+
+
+sub atom_contributors : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::PUBLISHED_WHEN => '2016-01-01',
+        $MockComic::DESCRIPTION => {'English' => 'Drinking beer'},
+        $MockComic::CONTRIBUTORS => ['ich']);
+    Comic::export_feed(10, 'atom.xml', ('English' => 'atom.templ'));
+    MockComic::assert_wrote_file('generated/english/web/atom.xml', 
+        qr{<contributor>\s*<name>ich</name>\s*</contributor>}m);
 }
