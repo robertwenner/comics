@@ -1327,12 +1327,29 @@ sub _do_export_backlog {
         return;
     }
 
+    my %tags;
+    my %who;
+    foreach my $comic (@comics) {
+        foreach my $language ($comic->_languages()) {
+            foreach my $tag (@{$comic->{meta_data}->{tags}->{$language}}) {
+                $tags{$tag}++;
+            }
+            foreach my $who (@{$comic->{meta_data}->{who}->{$language}}) {
+                $who{$who}++;
+            }
+        }
+    }
+
     my %vars;
     $vars{'languages'} = [ sort keys %{$archive_pages} ];
     $vars{'comics'} = \@filtered;
     $vars{'notFor'} = \&_not_for;
     $vars{'archive'} = $archive_pages;
     $vars{'publishers'} = _publishers();
+    $vars{'tags'} = \%tags;
+    $vars{'tagsOrder'} = [ reverse sort { $tags{$a} <=> $tags{$b} } keys %tags ];
+    $vars{'who'} = \%who;
+    $vars{'whoOrder'} = [ reverse sort { $who{$a} cmp $who{$b} } keys %who ];
 
     _write_file($page, _templatize('backlog', $templ_file, %vars));
 
