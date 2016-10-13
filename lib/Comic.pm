@@ -817,7 +817,7 @@ sub export_all_html {
     $vars{'notFor'} = \&_not_published_on_the_web;
     foreach my $language (keys %languages) {
         my $templ = ${$site_map_templates}{$language};
-        my $xml =_templatize('(none)', $templ, %vars)
+        my $xml =_templatize('(none)', $templ, $language, %vars)
             or croak "Error templatizing $templ: $OS_ERROR";
         _write_file(${$outputs}{$language}, $xml);
     }
@@ -979,7 +979,7 @@ sub _do_export_html {
         $tags .= $t;
     }
     $vars{description} = encode_entities($self->{meta_data}->{description}->{$language});
-    return _templatize($self->{srcFile}, $template, %vars)
+    return _templatize($self->{srcFile}, $template, $language, %vars)
         or $self->_croak("Error writing HTML: $OS_ERROR");
 }
 
@@ -1177,13 +1177,16 @@ sub _pos_to_frame {
 
 
 sub _templatize {
-    my ($comic_file, $template_file, %vars) = @ARG;
+    my ($comic_file, $template_file, $language, %vars) = @ARG;
 
     my %options = (
         STRICT => 1,
         # PRE_CHOMP => 1, removes space in "with ideas from [% who %]"
         POST_CHOMP => 2,
         # TRIM => 1,
+        VARIABLES => {
+            'language' => lcfirst($language),
+        },
     );
     my $t = Template->new(%options) ||
         croak('Cannot construct template: ' . Template->error());
@@ -1324,7 +1327,7 @@ sub _do_export_archive {
         $vars{'notFor'} = \&_not_for;
 
         my $templ_file = ${$archive_templates}{$language};
-        _write_file($page, _templatize('archive', $templ_file, %vars));
+        _write_file($page, _templatize('archive', $templ_file, '', %vars));
     }
 
     return;
@@ -1364,7 +1367,7 @@ sub _do_export_backlog {
     $vars{'who'} = \%who;
     $vars{'whoOrder'} = [ reverse sort { $who{$a} cmp $who{$b} } keys %who ];
 
-    _write_file($page, _templatize('backlog', $templ_file, %vars));
+    _write_file($page, _templatize('backlog', $templ_file, '', %vars));
 
     return;
 }
@@ -1494,7 +1497,7 @@ sub size_map {
     $vars{'comics_by_height'} = [sort _by_height @comics];
     $vars{svg} = _sort_styles($svg->xmlify());
 
-    _write_file($output, _templatize('size map', $template, %vars));
+    _write_file($output, _templatize('size map', $template, '', %vars));
 
     return;
 }
@@ -1611,7 +1614,7 @@ sub export_feed {
             'max' => $items,
             'updated' => $now,
         );
-        my $feed =_templatize('(none)', $templates{$language}, %vars)
+        my $feed =_templatize('(none)', $templates{$language}, $language, %vars)
             or croak "Error templatizing $templates{$language}: $OS_ERROR";
         _write_file('generated/' . lc($language) . "/web/$to", $feed);
     }
