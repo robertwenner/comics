@@ -1327,7 +1327,7 @@ sub _do_export_archive {
         $vars{'notFor'} = \&_not_for;
 
         my $templ_file = ${$archive_templates}{$language};
-        _write_file($page, _templatize('archive', $templ_file, '', %vars));
+        _write_file($page, _templatize('archive', $templ_file, $language, %vars));
     }
 
     return;
