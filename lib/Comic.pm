@@ -1363,9 +1363,15 @@ sub _do_export_backlog {
     $vars{'archive'} = $archive_pages;
     $vars{'publishers'} = _publishers();
     $vars{'tags'} = \%tags;
-    $vars{'tagsOrder'} = [ reverse sort { $tags{$a} <=> $tags{$b} } keys %tags ];
     $vars{'who'} = \%who;
-    $vars{'whoOrder'} = [ reverse sort { $who{$a} cmp $who{$b} } keys %who ];
+
+    ## no critic(BuiltinFunctions::ProhibitReverseSortBlock)
+    # I need to sort by count first, then alphabetically by name, so I have to use
+    # $b on the left side of the comparison operator. Perl Critic doesn't understand
+    # my sorting needs...
+    $vars{'tagsOrder'} = [ sort { $tags{$b} <=> $tags{$a} or lc $a cmp lc $b} keys %tags ];
+    $vars{'whoOrder'} = [ sort { $who{$b} <=> $who{$a} or lc $a cmp lc $b} keys %who ];
+    # use critic
 
     _write_file($page, _templatize('backlog', $templ_file, '', %vars));
 

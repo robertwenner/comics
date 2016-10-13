@@ -54,6 +54,25 @@ sub make_comic {
 }
 
 
+sub make_tagged_comic {
+    my ($tag) = @_;
+    return MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::DEUTSCH => 'Bier trinken' },
+        $MockComic::TAGS => { $MockComic::DEUTSCH => [$tag]},
+        $MockComic::PUBLISHED_WHEN => '3016-01-01',
+    );
+}
+
+
+sub make_comic_with {
+    return MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::DEUTSCH => 'Bier trinken' },
+        $MockComic::WHO => { $MockComic::DEUTSCH => [@_]},
+        $MockComic::PUBLISHED_WHEN => '3016-01-01',
+    );
+}
+
+
 sub no_comics : Tests {
     Comic::export_archive('backlog.templ', 'generated/backlog.html',
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
@@ -237,4 +256,46 @@ sub includes_dont_publish_warning : Tests {
         {'Deutsch' => 'templates/deutsch/comic-page.templ'});
     MockComic::assert_wrote_file('generated/backlog.html', qr{
         <li>some_comic\.svg\s+.+DONT_PUBLISH.+<ul>}xsm);
+}
+
+
+sub tags : Tests {
+    MockComic::fake_file("backlog.templ", <<'TEMPL');
+       [% FOREACH t IN tagsOrder %]
+            [% t %]=[% tags.$t %]
+       [% END %]
+TEMPL
+    make_tagged_comic('Bym');
+    make_tagged_comic('Bym');
+    make_tagged_comic('YetOther');
+    make_tagged_comic('Other');
+    make_tagged_comic('Bym');
+    make_tagged_comic('Other');
+    make_tagged_comic('AndThenSome');
+    make_tagged_comic('YetOther');
+    Comic::export_archive('backlog.templ', 'generated/backlog.html',
+        {'Deutsch' => 'templates/deutsch/archiv.templ'},
+        {'Deutsch' => 'archiv.html'},
+        {'Deutsch' => 'templates/deutsch/comic-page.templ'});
+    MockComic::assert_wrote_file('generated/backlog.html', 
+        qr{^\s*Bym=3\s*Other=2\s*YetOther=2\s*AndThenSome=1\s*$}xsm);
+}
+
+
+sub who : Tests {
+    MockComic::fake_file("backlog.templ", <<'TEMPL');
+       [% FOREACH w IN whoOrder %]
+            [% w %]=[% who.$w %]
+       [% END %]
+TEMPL
+    make_comic_with('Paul', 'Max');
+    make_comic_with('Paul', 'Max');
+    make_comic_with('Paul');
+    make_comic_with('Mike', 'Robert');
+    Comic::export_archive('backlog.templ', 'generated/backlog.html',
+        {'Deutsch' => 'templates/deutsch/archiv.templ'},
+        {'Deutsch' => 'archiv.html'},
+        {'Deutsch' => 'templates/deutsch/comic-page.templ'});
+    MockComic::assert_wrote_file('generated/backlog.html', 
+        qr{^\s*Paul=3\s*Max=2\s*Mike=1\s*Robert=1\s*$}xsm);
 }
