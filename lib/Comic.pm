@@ -817,8 +817,7 @@ sub export_all_html {
     $vars{'notFor'} = \&_not_published_on_the_web;
     foreach my $language (keys %languages) {
         my $templ = ${$site_map_templates}{$language};
-        my $xml =_templatize('(none)', $templ, $language, %vars)
-            or croak "Error templatizing $templ: $OS_ERROR";
+        my $xml =_templatize('(none)', $templ, $language, %vars);
         _write_file(${$outputs}{$language}, $xml);
     }
 
@@ -979,8 +978,7 @@ sub _do_export_html {
         $tags .= $t;
     }
     $vars{description} = encode_entities($self->{meta_data}->{description}->{$language});
-    return _templatize($self->{srcFile}, $template, $language, %vars)
-        or $self->_croak("Error writing HTML: $OS_ERROR");
+    return _templatize($self->{srcFile}, $template, $language, %vars);
 }
 
 
@@ -1205,6 +1203,9 @@ sub _templatize {
     if ($output =~ m/HASH\(0x[[:xdigit:]]+\)/mg) {
         croak "$template_file for $comic_file: HASH ref found:\n$output";
     }
+    # Remove leading white space from lines. Template options don't work
+    # cause they also remove newlines.
+    $output =~ s/^ *//mg;
     return $output;
 }
 
@@ -1621,8 +1622,7 @@ sub export_feed {
             'max' => $items,
             'updated' => $now,
         );
-        my $feed =_templatize('(none)', $templates{$language}, $language, %vars)
-            or croak "Error templatizing $templates{$language}: $OS_ERROR";
+        my $feed =_templatize('(none)', $templates{$language}, $language, %vars);
         _write_file('generated/' . lc($language) . "/web/$to", $feed);
     }
     return;
