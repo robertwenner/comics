@@ -1181,12 +1181,13 @@ sub _templatize {
 
     my %options = (
         STRICT => 1,
-        # PRE_CHOMP => 1, removes space in "with ideas from [% who %]"
-        POST_CHOMP => 2,
-        # TRIM => 1,
+        PRE_CHOMP => 0, # removes space in beginning of a directive
+        POST_CHOMP => 2, # removes spaces after a directive
+        # TRIM => 1,    # only used for BLOCKs
         VARIABLES => {
             'language' => lcfirst($language),
         },
+        ENCODING => 'utf8',
     );
     my $t = Template->new(%options) ||
         croak('Cannot construct template: ' . Template->error());
