@@ -502,3 +502,18 @@ sub to_json_array : Tests {
     is(Comic::_to_json_array('a', 'b', 'c'), '["a", "b", "c"]', 'multiple elements');
     is(Comic::_to_json_array('"quoted"'), '["\"quoted\""]', 'escapes');
 }
+
+
+sub url_encoded_values : Tests {
+    MockComic::fake_file('comic.templ', <<'XML');
+URL: [% urlUrlEncoded %]
+Title: [% titleUrlEncoded %]
+XML
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Drinking Beer' },
+        $MockComic::DESCRIPTION => { $MockComic::ENGLISH => 'Paul and Max drink beer' },
+    );
+    my $exported = $comic->_do_export_html('English', 'comic.templ');
+    like($exported, qr{URL: https%3A%2F%2Fbeercomics.com%2Fcomics%2Fdrinking-beer.html}m, 'URL');
+    like($exported, qr{Title: Drinking%20Beer}m, 'title');
+}

@@ -25,6 +25,7 @@ use HTML::Entities;
 use Image::ExifTool qw(:Public);
 use Template;
 use SVG;
+use URI::Encode qw(uri_encode uri_decode);
 
 
 use version; our $VERSION = qv('0.0.2');
@@ -922,6 +923,9 @@ sub _do_export_html {
     $vars{height} = $self->{height};
     $vars{width} = $self->{width};
     $vars{'url'} = $self->{url}{$language};
+    my %enc_opts = (encode_reserved => 1);
+    $vars{'urlUrlEncoded'} = uri_encode($vars{'url'}, %enc_opts);
+    $vars{'titleUrlEncoded'} = uri_encode($self->{meta_data}->{title}->{$language}, %enc_opts);
     $vars{'image'} = $self->{imageUrl}{$language};
     $vars{'first'} = $self->{'first'}{$language};
     $vars{'prev'} = $self->{'prev'}{$language};
