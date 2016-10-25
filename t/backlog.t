@@ -67,7 +67,17 @@ sub make_tagged_comic {
 sub make_comic_with {
     return MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::DEUTSCH => 'Bier trinken' },
-        $MockComic::WHO => { $MockComic::DEUTSCH => [@_]},
+        $MockComic::WHO => { $MockComic::DEUTSCH => [@_] },
+        $MockComic::PUBLISHED_WHEN => '3016-01-01',
+    );
+}
+
+
+sub make_comic_with_series {
+    my ($series) = @_;
+    return MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::DEUTSCH => 'Bier trinken' },
+        $MockComic::SERIES => { $MockComic::DEUTSCH => $series },
         $MockComic::PUBLISHED_WHEN => '3016-01-01',
     );
 }
@@ -298,4 +308,22 @@ TEMPL
         {'Deutsch' => 'templates/deutsch/comic-page.templ'});
     MockComic::assert_wrote_file('generated/backlog.html', 
         qr{^\s*Paul=3\s*Max=2\s*Mike=1\s*Robert=1\s*$}xsm);
+}
+
+
+sub series : Tests {
+    MockComic::fake_file("backlog.templ", <<'TEMPL');
+       [% FOREACH s IN seriesOrder %]
+            [% s %]=[% series.$s %]
+       [% END %]
+TEMPL
+    make_comic_with_series('Buckimude');
+    make_comic_with_series('Buckimude');
+    make_comic_with_series('Philosophie');
+    Comic::export_archive('backlog.templ', 'generated/backlog.html',
+        {'Deutsch' => 'templates/deutsch/archiv.templ'},
+        {'Deutsch' => 'archiv.html'},
+        {'Deutsch' => 'templates/deutsch/comic-page.templ'});
+    MockComic::assert_wrote_file('generated/backlog.html', 
+        qr{^\s*Buckimude=2\s*Philosophie=1\s*$}xsm);
 }

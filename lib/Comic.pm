@@ -1351,6 +1351,7 @@ sub _do_export_backlog {
 
     my %tags;
     my %who;
+    my %series;
     foreach my $comic (@comics) {
         foreach my $language ($comic->_languages()) {
             foreach my $tag (@{$comic->{meta_data}->{tags}->{$language}}) {
@@ -1358,6 +1359,10 @@ sub _do_export_backlog {
             }
             foreach my $who (@{$comic->{meta_data}->{who}->{$language}}) {
                 $who{$who}++;
+            }
+            if ($comic->{meta_data}->{series}) {
+                my $serie = $comic->{meta_data}->{series}->{$language};
+                $series{$serie}++ if ($serie);
             }
         }
     }
@@ -1370,6 +1375,7 @@ sub _do_export_backlog {
     $vars{'publishers'} = _publishers();
     $vars{'tags'} = \%tags;
     $vars{'who'} = \%who;
+    $vars{'series'} = \%series;
 
     ## no critic(BuiltinFunctions::ProhibitReverseSortBlock)
     # I need to sort by count first, then alphabetically by name, so I have to use
@@ -1378,6 +1384,7 @@ sub _do_export_backlog {
     $vars{'tagsOrder'} = [ sort { $tags{$b} <=> $tags{$a} or lc $a cmp lc $b} keys %tags ];
     $vars{'whoOrder'} = [ sort { $who{$b} <=> $who{$a} or lc $a cmp lc $b} keys %who ];
     # use critic
+    $vars{'seriesOrder'} = [ sort keys %series ];
 
     _write_file($page, _templatize('backlog', $templ_file, '', %vars));
 
