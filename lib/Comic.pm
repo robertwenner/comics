@@ -282,6 +282,7 @@ sub _check {
     $self->_check_transcript($language);
     $self->_check_series($language);
     $self->_check_persons($language);
+    $self->_check_meta($language);
     return;
 }
 
@@ -628,6 +629,32 @@ sub _check_persons {
     foreach my $who (@{$self->{meta_data}->{who}{$language}}) {
         $self->_warn("Empty person name in $language") if ($who =~ m{^\s*$});
     }
+    return;
+}
+
+
+sub _check_meta {
+    my ($self, $language) = @ARG;
+
+    my $xpath = _build_xpath(
+        "g[\@inkscape:groupmode='layer' and \@inkscape:label='Meta$language']");
+    unless ($self->{xpath}->findnodes($xpath)) {
+        $self->_warn("No Meta$language layer");
+        return;
+    }
+
+    my $first_text = ($self->_texts_for($language))[0];
+    my $text_found = 0;
+    my $first_text_is_meta = 0;
+    foreach my $text ($self->{xpath}->findnodes(_text("Meta$language"))) {
+        $text_found = 1;
+        if ($first_text eq _text_content($text)) {
+            $first_text_is_meta = 1;
+        }
+    }
+    $self->_warn("No texts in Meta$language layer") unless ($text_found);
+    $self->_warn("First text in transcript must be from Meta$language, but is $first_text")
+        unless ($first_text_is_meta);
     return;
 }
 
@@ -1033,17 +1060,7 @@ sub _texts_for {
     $self->_find_frames();
     my @texts;
     foreach my $node (sort { $self->_text_pos_sort($a, $b) } $self->{xpath}->findnodes(_text($language))) {
-        my XML::LibXML::Node $tspan = $node->firstChild();
-        my $text = '';
-        do {
-            $text .= $tspan->textContent() . ' ';
-            $tspan = $tspan->nextSibling();
-        }
-        while ($tspan);
-        $text =~ s/-\s+/-/mg;
-        $text =~ s/ +/ /mg;
-        $text = trim ($text);
-
+        my $text = _text_content($node);
         if ($text eq '') {
             my $layer = $node->parentNode->{'inkscape:label'};
             $self->_warn("empty text in $layer with ID $node->{id}");
@@ -1051,6 +1068,23 @@ sub _texts_for {
         push @texts, $text;
     }
     return @texts;
+}
+
+
+sub _text_content {
+    my ($node) = @ARG;
+
+    my XML::LibXML::Node $tspan = $node->firstChild();
+    my $text = '';
+    do {
+        $text .= $tspan->textContent() . ' ';
+        $tspan = $tspan->nextSibling();
+    }
+    while ($tspan);
+    $text =~ s/-\s+/-/mg;
+    $text =~ s/ +/ /mg;
+    $text = trim ($text);
+    return $text;
 }
 
 
