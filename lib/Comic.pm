@@ -983,6 +983,12 @@ sub _do_export_html {
         $vars{'first'} = 'comics/' . $self->{'first'}{$language};
         $vars{'prev'} = 'comics/' . $self->{'prev'}{$language};
         $vars{'canonicalUrl'} = $self->{url}{$language};
+        foreach my $l (keys %{$vars{'languageurls'}}) {
+            # On index.html, link to the other language's index.html, not to
+            # the canonical URL of the comic. Google trips over that and thinks
+            # there is no backlink.
+            ${$vars{'languageurls'}}{$l} =~ s{^(https://[^/]+/).+}{$1};
+        }
     }
     $vars{'root'} = $path;
 

@@ -383,6 +383,36 @@ XML
 }
 
 
+sub language_link_index_html : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            'English' => 'Drinking beer',
+            'Deutsch' => 'Bier trinken',
+        }
+    );
+    MockComic::fake_file('de-comic.templ', <<'XML');
+[% FOREACH l IN languages %]
+<link rel="alternate" hreflang="[% languagecodes.$l %]" href="[% languageurls.$l %]"/>
+[% END %]
+XML
+    $comic->{isLatestPublished} = 1;
+    Comic::export_all_html({
+        'Deutsch' => 'de-comic.templ',
+        'English' => 'en-comic.templ',
+    },
+    {
+        'English' => 'en-sitemap.templ',
+        'Deutsch' => 'de-sitemap.templ',
+    },
+    {
+        'English' => 'generated/english/web/sitemap.xml',
+        'Deutsch' => 'generated/deutsch/web/sitemap.xml',
+    });
+    my $exported = $comic->_do_export_html('Deutsch', 'de-comic.templ');
+    like($exported, qr{\s+hreflang="en"\s+href="https://beercomics.com/"}, 'wrong hreflang');
+}
+
+
 sub transcript_json_utf8 : Tests {
     MockComic::fake_file('en-comic.templ', '[% transcriptJson %]');
     my $comic = MockComic::make_comic(
