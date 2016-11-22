@@ -1697,6 +1697,10 @@ sub _warn {
     ## use critic
     push @{$self->{warnings}}, $msg;
     $self->_croak($msg) unless ($self->_not_yet_published());
+    # PerlCritic wants me to check that I/O to the console worked.
+    ## no critic(InputOutput::RequireCheckedSyscalls)
+    print "$msg\n";
+    ## use critic
     return;
 }
 
