@@ -345,7 +345,7 @@ XML
     like($exported, qr{>English</a>}, 'Language code not found');
     like($exported, qr{hreflang="en"}, 'hreflang not found');
     like($exported, qr{title="Drinking beer"}, 'title not found');
-    unlike($comic->_do_export_html('Deutsch', 'de-comic.templ'), 
+    unlike($comic->_do_export_html('Deutsch', 'de-comic.templ'),
         qr{https://biercomics\.de"}, 'Should not link to self');
 }
 
@@ -510,7 +510,8 @@ sub index_html_with_canonical_link : Tests {
         $MockComic::TITLE => { 'English' => "Beer" },
         $MockComic::PUBLISHED_WHEN => '2016-01-01',
     );
-    is($comic->_do_export_html('English', 'comic.templ'), '');
+    is($comic->_do_export_html('English', 'comic.templ'),
+        'https://beercomics.com/comics/beer.html');
 
     $comic->_export_language_html('English', 'comic.templ');
     MockComic::assert_wrote_file('generated/english/web/comics/ale-lager.html', qr{^\s*$}m);
@@ -522,7 +523,7 @@ sub index_html_with_canonical_link : Tests {
         {'English' => 'archive.html'},
         {'English' => 'comic.templ'});
     MockComic::assert_wrote_file('generated/english/web/index.html',
-        'https://beercomics.com/comics/beer.html');
+        'https://beercomics.com/');
 }
 
 
