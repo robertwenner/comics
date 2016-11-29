@@ -26,11 +26,12 @@ use Image::ExifTool qw(:Public);
 use Template;
 use SVG;
 use URI::Encode qw(uri_encode uri_decode);
+use Net::Twitter;
 
 
 use version; our $VERSION = qv('0.0.2');
 
-=for stopwords Inkscape inkscape html SVG svg PNG png Wenner MERCHANTABILITY perlartistic MetaEnglish RSS sitemap sizemap xml
+=for stopwords Inkscape inkscape html SVG svg PNG png Wenner MERCHANTABILITY perlartistic MetaEnglish RSS sitemap sizemap xml dbus
 
 
 =head1 NAME
@@ -89,7 +90,7 @@ This document refers to version 0.0.2.
         'English' => 'templates/english/atom.templ',
     ));
     Comic::size_map('templates/sizemap.templ', 'generated/sizemap.html');
-
+    Comic::post_to_social_media('English');
 
 =head1 DESCRIPTION
 
@@ -1705,6 +1706,61 @@ sub _warn {
 }
 
 
+=head2 post_to_social_media
+
+Promotes the latest comic on social media.
+
+Parameters:
+
+=over 4
+
+    =item B<@languages> for which languages to promote the last comic.
+
+=back
+
+=cut
+
+sub post_to_social_media {
+    my @languages = @ARG;
+
+    foreach my $language (@languages) {
+        my @published = sort _compare grep { _archive_filter($_, $language) } @comics;
+        my $comic = $published[-1];
+        my $png_file = "$comic->{whereTo}{$language}/$comic->{pngFile}{$language}";
+        my $description = $comic->{meta_data}->{description}->{$language};
+        _tweet($png_file, _shorten_for_twitter($description));
+    }
+    return;
+}
+
+
+sub _tweet {
+    my ($image_file_name, $text) = @_;
+
+    my $twitter = Net::Twitter->new(
+        # App page: https://apps.twitter.com/app/13139251
+        # owner_id => '762868533403332609',
+        traits => [qw/API::RESTv1_1/],
+        access_token_secret => 'iewrH8UYNU1irfUg8hlF9W5WsEtOmgkPhHok3EXaaiiDM',
+        consumer_secret => '1T3u9XtrBzGuWPGcoqw1u5glSDZK1rePkwggeoQzvJJDSTG4cb',
+        access_token => '762868533403332609-fHpxJJG0aSAWFlOd46sFi5bGYUPKw7q',
+        consumer_key => 'F4lnbr6CxhZBD3w6spsgidRRc',
+        ssl => 1,
+    );
+    my $status = $twitter->update_with_media($text, [$image_file_name]);
+#    use Data::Dumper; print STDERR Dumper($status), "\n";
+    return;
+}
+
+
+sub _shorten_for_twitter {
+    my $text = shift;
+
+    Readonly my $MAX_LEN => 130;
+    return substr $text, 0, $MAX_LEN;
+}
+
+
 1;
 
 
@@ -1721,6 +1777,8 @@ Inkscape 0.91.
 =head1 CONFIGURATION AND ENVIRONMENT
 
 The inkscape binary must be in the current $PATH.
+
+Inkscape needs an active dbus session to export files.
 
 
 =head1 INCOMPATIBILITIES
