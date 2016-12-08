@@ -1727,6 +1727,7 @@ sub post_to_social_media {
         my @published = sort _compare grep { _archive_filter($_, $language) } @comics;
         my $comic = $published[-1];
         my $png_file = "$comic->{whereTo}{$language}/$comic->{pngFile}{$language}";
+        # my $png_file = $comic->{url}{$language};
         my $description = $comic->{meta_data}->{description}->{$language};
         _tweet($png_file, _shorten_for_twitter($description));
     }
@@ -1747,6 +1748,7 @@ sub _tweet {
         consumer_key => 'F4lnbr6CxhZBD3w6spsgidRRc',
         ssl => 1,
     );
+#    my $status = $twitter->update($image_file_name);
     my $status = $twitter->update_with_media($text, [$image_file_name]);
 #    use Data::Dumper; print STDERR Dumper($status), "\n";
     return;
