@@ -387,6 +387,8 @@ sub _check_json {
 
 
 sub _check_frames {
+    # frame coordinate is bottom left corner of a rectangle
+    # higher y means higher on the page, higher x means further to the right
     my ($self) = @ARG;
 
     my $prev_y;
@@ -421,7 +423,7 @@ sub _check_frames {
                     $self->_warn("frames overlap y at $prev_bottom and $y");
                 }
                 if ($prev_bottom + $FRAME_SPACING > $y) {
-                    $self->_warn('frames too close y (' . ($prev_bottom + $FRAME_SPACING - $y) . "at $prev_bottom and $y");
+                    $self->_warn('frames too close y (' . ($prev_bottom + $FRAME_SPACING - $y) . ") at $prev_bottom and $y");
                 }
                 if ($prev_bottom + $FRAME_SPACING + $FRAME_SPACING_TOLERANCE < $y) {
                     $self->_warn("frames too far y at $prev_bottom and $y");
