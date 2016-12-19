@@ -350,16 +350,24 @@ sub _add_text_layers {
      style="display:inline">
 LAYER
         foreach my $t (@{$args{$TEXTS}{$layerName}}) {
+            my $x = 100;
+            my $y = 100;
+            my $text = $t;
+            if (ref($t) eq ref {}) {
+                $x = $t->{x};
+                $y = $t->{y};
+                $text = $t->{t};
+            }
             $xml .= <<TEXT;
     <text
        xml:space="preserve"
-       x="100"
-       y="100"
+       x="$x"
+       y="$y"
        style="font-style:normal;font-variant:normal;font-weight:500;font-stretch:normal;font-size:25px;line-height:125%;font-family:RW5;-inkscape-font-specification:'RW Medium';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        id="$TEXT_ID"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
-         id="tspan16222">$t</tspan>
+         id="tspan16222">$text</tspan>
      </text>
 TEXT
         }

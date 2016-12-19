@@ -1008,6 +1008,7 @@ sub _do_export_html {
         $vars{transcriptJson} .= ' ' unless ($vars{transcriptJson} eq '');
         $vars{transcriptJson} .= _escape_json($t);
     }
+    $vars{transcriptHtml} =~ s{:</p>\s*<p>}{: }g;
     $vars{'backlog'} = $self->_not_yet_published();
 
     my $tags = '';
