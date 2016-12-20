@@ -1226,6 +1226,17 @@ sub _pos_to_frame {
 }
 
 
+sub _bottom_right {
+    my ($self) = @ARG;
+
+    my @frames = $self->_all_frames_sorted();
+    my $bottom_right = $frames[-1];
+    # from 0/0, x increases to right, y increases to the top
+    return [$bottom_right->getAttribute('x') + $bottom_right->getAttribute('width'),
+        $bottom_right->getAttribute('y')];
+}
+
+
 sub _templatize {
     my ($comic_file, $template_file, $language, %vars) = @ARG;
 
