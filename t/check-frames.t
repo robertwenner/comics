@@ -27,7 +27,8 @@ sub assert_ok {
 }
 
 
-sub try_comic {                                          # width height x y
+sub try_comic {
+    # params is a bunch of width height x y numbers
     my $comic = MockComic::make_comic($MockComic::FRAMES => [@_]);
     eval {
         $comic->_check_frames();
@@ -124,14 +125,14 @@ sub misaligned_right_next_row : Tests {
 
 
 sub misaligned_top_middle_row : Tests {
-    assert_bad(qr{align},
+    assert_bad(qr{too far},
         # top row
         100, 100,   0,   0,
         100, 100, 110,   0,
         100, 100, 220,   0,
         # 2nd row
         100, 100,   0, 110,
-        100, 100, 110, 112, # 112 is off
+        100, 100, 110, 108, # 108 is off
         100, 100, 220, 110,
         # 3rd row
         100, 100,   0, 220,
@@ -237,7 +238,7 @@ sub negative_coordinates : Tests {
 
 sub double : Tests {
     assert_ok(
-        100, 100, 0.5, 0.5, # 0.5 - 100.5 
+        100, 100, 0.5, 0.5, # 0.5 - 100.5
         100, 100, 111, 0);  # 111 - 211
 }
 

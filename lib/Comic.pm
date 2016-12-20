@@ -115,7 +115,7 @@ Readonly our $FRAME_TOLERANCE => 1.0;
 # Allowed deviation from expected frame width in pixels.
 Readonly our $FRAME_WIDTH_DEVIATION => 0.25;
 # After how many pixels a frame is assumed to be in the next row.
-Readonly our $FRAME_ROW_HEIGHT => 50;
+Readonly our $FRAME_ROW_HEIGHT => 10;
 # How many pixels space there should be between frames (both x and y).
 Readonly our $FRAME_SPACING => 10;
 # Maximum tolerance in pixels for distance between frames.
@@ -391,84 +391,91 @@ sub _check_frames {
     # higher y means higher on the page, higher x means further to the right
     my ($self) = @ARG;
 
-    my $prev_y;
     my $prev_bottom;
-    my $prev_x;
-    my $prev_side;
+    my $prev_top;
+    my $prev_right;
 
-    my $left_side;
-    my $right_side;
+    my $left_most;
+    my $right_most;
 
     my $first_row = 1;
 
-    ## no critic(ValuesAndExpressions::RequireInterpolationOfMetachars)
-    my $frame_xpath = _build_xpath('g[@inkscape:label="Rahmen"]', 'rect');
-    ## use critic
-    foreach my $f (sort _framesort $self->{xpath}->findnodes($frame_xpath)) {
+    foreach my $f ($self->_all_frames_sorted()) {
         $self->_check_frame_style($f);
 
-        my $y = $f->getAttribute('y') * 1.0;
-        my $bottom = $y + $f->getAttribute('height') * 1.0;
-        my $x = $f->getAttribute('x') * 1.0;
-        $left_side = $x unless (defined $left_side);
+        my $bottom = $f->getAttribute('y') * 1.0;
+        my $top = $bottom + $f->getAttribute('height') * 1.0;
+        my $left_side = $f->getAttribute('x') * 1.0;
+        $left_most = $left_side unless (defined $left_most);
 
-        my $side = $x + $f->getAttribute('width') * 1.0;
-        my $next_row = defined($prev_y) && _more_off($prev_y, $y, $FRAME_ROW_HEIGHT);
+        my $right_side = $left_side + $f->getAttribute('width') * 1.0;
+        my $next_row = defined($prev_bottom) && _more_off($prev_bottom, $bottom, $FRAME_ROW_HEIGHT);
         $first_row = 0 if ($next_row);
-        $right_side = $side if ($first_row);
+        $right_most = $right_side if ($first_row);
 
-        if (defined $prev_y) {
+        if (defined $prev_bottom) {
             if ($next_row) {
-                if ($prev_bottom > $y) {
-                    $self->_warn("frames overlap y at $prev_bottom and $y");
+                if ($prev_bottom < $top) {
+                    $self->_warn("frames overlap y at $prev_bottom and $top");
                 }
-                if ($prev_bottom + $FRAME_SPACING > $y) {
-                    $self->_warn('frames too close y (' . ($prev_bottom + $FRAME_SPACING - $y) . ") at $prev_bottom and $y");
+                if ($prev_bottom < $FRAME_SPACING + $top) {
+                    $self->_warn('frames too close y (' . ($prev_bottom - $FRAME_SPACING - $top) . ") at $prev_bottom and $top");
                 }
-                if ($prev_bottom + $FRAME_SPACING + $FRAME_SPACING_TOLERANCE < $y) {
-                    $self->_warn("frames too far y at $prev_bottom and $y");
+                if ($prev_bottom - $FRAME_SPACING - $FRAME_SPACING_TOLERANCE > $top) {
+                    $self->_warn("frames too far y at $prev_bottom and $top");
                 }
 
-                if (_more_off($left_side, $x, $FRAME_TOLERANCE)) {
-                    $self->_warn("frame left side not aligned: $left_side and $x");
+                if (_more_off($left_most, $left_side, $FRAME_TOLERANCE)) {
+                    $self->_warn("frame left side not aligned: $left_most and $left_side");
                 }
-                if (_more_off($prev_side, $right_side, $FRAME_TOLERANCE)) {
-                    $self->_warn("frame right side not aligned: $prev_side and $right_side");
+                if (_more_off($prev_right, $right_most, $FRAME_TOLERANCE)) {
+                    $self->_warn("frame right side not aligned: $right_side and $right_most");
                 }
             }
             else {
-                if (_more_off($prev_y, $y, $FRAME_TOLERANCE)) {
-                    $self->_warn("frame tops not aligned: $prev_y and $y");
-                }
                 if (_more_off($prev_bottom, $bottom, $FRAME_TOLERANCE)) {
                     $self->_warn("frame bottoms not aligned: $prev_bottom and $bottom");
                 }
+                if (_more_off($prev_top, $top, $FRAME_TOLERANCE)) {
+                    $self->_warn("frame tops not aligned: $prev_top and $top");
+                }
 
-                if ($prev_side > $x) {
-                    $self->_warn("frames overlap x at $prev_side and $x");
+                if ($prev_right > $left_side) {
+                    $self->_warn("frames overlap x at $prev_right and $left_side");
                 }
-                if ($prev_side + $FRAME_SPACING > $x) {
-                    $self->_warn("frames too close x at $prev_side and $x");
+                if ($prev_right + $FRAME_SPACING > $left_side) {
+                    $self->_warn("frames too close x at $prev_right and $left_side");
                 }
-                if ($prev_side + $FRAME_SPACING + $FRAME_SPACING_TOLERANCE < $x) {
-                    $self->_warn('frames too far x (' . ($x - ($prev_side + $FRAME_SPACING + $FRAME_SPACING_TOLERANCE)) . ") at $prev_side and $x");
+                if ($prev_right + $FRAME_SPACING + $FRAME_SPACING_TOLERANCE < $left_side) {
+                    $self->_warn('frames too far x (' . ($left_side - ($prev_right + $FRAME_SPACING + $FRAME_SPACING_TOLERANCE)) . ") at $prev_right and $left_side");
                 }
             }
         }
 
-        $prev_y = $y;
         $prev_bottom = $bottom;
-        $prev_x = $x;
-        $prev_side = $side;
+        $prev_top = $top;
+        $prev_right = $right_side;
     }
     return;
 }
 
 
+sub _all_frames_sorted {
+    my ($self) = @ARG;
+
+    ## no critic(ValuesAndExpressions::RequireInterpolationOfMetachars)
+    my $frame_xpath = _build_xpath('g[@inkscape:label="Rahmen"]', 'rect');
+    ## use critic
+    # Needs the extra @sorted array cause the behavior of sort in scalar context
+    # is undefined. (WTF?!)
+    # http://search.cpan.org/~thaljef/Perl-Critic/lib/Perl/Critic/Policy/Subroutines/ProhibitReturnSort.pm
+    my @sorted = sort _framesort $self->{xpath}->findnodes($frame_xpath);
+    return @sorted;
+}
+
+
 sub _framesort {
-    # Need to normalize, so that e.g., y 0 and 0.5 are considered in the same row.
-    # No need to normalize x, these values are not close together for a row.
-    return _rowify($a->getAttribute('y')) <=> _rowify($b->getAttribute('y'))
+    return _rowify($b->getAttribute('y')) <=> _rowify($a->getAttribute('y'))
         || $a->getAttribute('x') <=> $b->getAttribute('x');
 }
 
@@ -1105,10 +1112,7 @@ sub _find_frames {
     # Assume frames that have their top within a certain $FRAME_TOLERANCE
     # distance from each other are meant to be at the same position.
     my @frame_tops;
-    ## no critic(ValuesAndExpressions::RequireInterpolationOfMetachars)
-    my $frame_xpath = _build_xpath('g[@inkscape:label="Rahmen"]', 'rect');
-    ## use critic
-    foreach my $f ($self->{xpath}->findnodes($frame_xpath)) {
+    foreach my $f ($self->_all_frames_sorted()) {
         my $y = floor($f->getAttribute('y'));
         my $found = 0;
         foreach my $ff (@frame_tops) {
