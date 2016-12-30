@@ -527,6 +527,39 @@ sub index_html_with_canonical_link : Tests {
 }
 
 
+sub index_html_does_not_break_perm_link : Tests {
+    MockComic::fake_file('comic.templ', '[% url %]');
+    MockComic::fake_file('sitemap.templ', '...');
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            'English' => "Beer",
+            'Deutsch' => "Bier",
+        },
+        $MockComic::PUBLISHED_WHEN => '2016-01-01',
+    );
+
+    Comic::export_all_html({
+        'English' => 'comic.templ',
+        'Deutsch' => 'comic.templ',
+    },
+    {
+        'English' => 'sitemap.templ',
+        'Deutsch' => 'sitemap.templ',
+    },
+    {
+        'English' => 'generated/english/web/sitemap.xml',
+        'Deutsch' => 'generated/english/web/sitemap.xml',
+    });
+
+    $comic->{isLatestPublished} = 1;
+    $comic->_do_export_html('English', 'comic.templ');
+    is_deeply(
+        {'English' => 'https://beercomics.com/comics/beer.html',
+         'Deutsch' => 'https://biercomics.de/comics/bier.html'},
+        $comic->{url});
+}
+
+
 sub to_json_array : Tests {
     is(Comic::_to_json_array(), '[]', 'empty');
     is(Comic::_to_json_array('a'), '["a"]', 'single element');

@@ -27,6 +27,7 @@ use Template;
 use SVG;
 use URI::Encode qw(uri_encode uri_decode);
 use Net::Twitter;
+use Clone qw(clone);
 
 
 use version; our $VERSION = qv('0.0.2');
@@ -970,7 +971,11 @@ sub _do_export_html {
     $vars{'last'} = $self->{'last'}{$language};
     $vars{'languages'} = [grep { $_ ne $language } sort $self->_languages()];
     $vars{'languagecodes'} = { $self->_language_codes() };
-    $vars{'languageurls'} = $self->{url};
+    # Need clone the URLs so that there is no reference stored here, cause
+    # later code may change these vars when creating index.html}, but if
+    # it's a reference, the actual URL values get changed, too, and that
+    # leads to wrong links.
+    $vars{'languageurls'} = clone($self->{url});
     $vars{'languagetitles'} = $self->{meta_data}->{title};
     $vars{'who'} = _to_json_array(@{$self->{meta_data}->{who}->{$language}});
     $vars{'published'} = trim($self->{meta_data}->{published}->{when});
