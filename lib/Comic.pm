@@ -715,8 +715,18 @@ sub _write_temp_svg_file {
     my ($self, $language) = @ARG;
 
     my $temp_file_name = $self->_make_file_name($language, 'tmp/svgs', 'svg');
-    $self->{dom}->toFile($temp_file_name);
+    $self->_insert_url($language)->toFile($temp_file_name);
     return $temp_file_name;
+}
+
+
+sub _insert_url {
+    my ($self, $language) = @ARG;
+
+    my ($x, $y) = $self->_bottom_right();
+    my $copy = XML::LibXML->load_xml(string => $self->{dom}->toString());
+
+    return $copy;
 }
 
 
@@ -1237,8 +1247,8 @@ sub _bottom_right {
     my @frames = $self->_all_frames_sorted();
     my $bottom_right = $frames[-1];
     # from 0/0, x increases to right, y increases to the top
-    return [$bottom_right->getAttribute('x') + $bottom_right->getAttribute('width'),
-        $bottom_right->getAttribute('y')];
+    return ($bottom_right->getAttribute('x') + $bottom_right->getAttribute('width'),
+        $bottom_right->getAttribute('y'));
 }
 
 

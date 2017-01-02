@@ -141,5 +141,5 @@ sub bottom_right_corner : Tests {
         10, 10,  0, -15,
         10, 10, 15, -15,
         10, 10, 30, -15);
-    is_deeply($comic->_bottom_right(), [40, -15]);
+    is_deeply([$comic->_bottom_right()], [40, -15]);
 }
