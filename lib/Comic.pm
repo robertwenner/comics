@@ -207,6 +207,7 @@ sub _load {
         my $name = $self->_normalized_title($language);
         $self->{htmlFile}{$language} = "${name}.html";
         $self->{pngFile}{$language} = "${name}.png";
+        $self->{domain}{$language} = $domains{$language};
         $self->{url}{$language} = "https://$domains{$language}/comics/$name.html";
         $self->{imageUrl}{$language} = "https://$domains{$language}/comics/$name.png";
         $self->{href}{$language} = "comics/$self->{htmlFile}{$language}";
@@ -715,18 +716,128 @@ sub _write_temp_svg_file {
     my ($self, $language) = @ARG;
 
     my $temp_file_name = $self->_make_file_name($language, 'tmp/svgs', 'svg');
-    $self->_insert_url($language)->toFile($temp_file_name);
+    my $svg = $self->_copy_svg($language);
+    $self->_insert_url($svg, $language);
+    $svg->toFile($temp_file_name);
     return $temp_file_name;
 }
 
 
+sub _copy_svg {
+    my ($self) = @ARG;
+    return XML::LibXML->load_xml(string => $self->{dom}->toString());
+}
+
+
 sub _insert_url {
-    my ($self, $language) = @ARG;
+    my ($self, $svg, $language) = @ARG;
 
-    my ($x, $y) = $self->_bottom_right();
-    my $copy = XML::LibXML->load_xml(string => $self->{dom}->toString());
+    my $payload = XML::LibXML::Text->new("$self->{domain}{$language} — CC BY-NC-SA 4.0");
+    my $tspan = XML::LibXML::Element->new('tspan');
+    $tspan->setAttribute('sodipodi:role', 'line');
+    $tspan->appendChild($payload);
 
-    return $copy;
+    my $text = XML::LibXML::Element->new('text');
+    my ($x, $y, $transform) = $self->_where_to_place_the_text();
+    $text->setAttribute('x', $x);
+    $text->setAttribute('y', $y);
+    $text->setAttribute('id', 'UrlLicense');
+    $text->setAttribute('xml:space', 'preserve');
+    my $style = <<'STYLE';
+        color:#000000;font-style:normal;font-variant:normal;font-weight:normal;
+        font-stretch:normal;font-size:10px;line-height:125%;font-family:
+        'Comic Relief';-inkscape-font-specification:'Comic Relief, Normal';
+        text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;
+        text-anchor:start;clip-rule:nonzero;display:inline;overflow:visible;
+        visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;.
+        color-interpolation:sRGB;color-interpolation-filters:linearRGB;
+        solid-color:#000000;solid-opacity:1;fill:#000000;fill-opacity:1;
+        fill-rule:nonzero;stroke:none;stroke-width:1px;stroke-linecap:butt;
+        stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;
+        stroke-dashoffset:0;stroke-opacity:1;color-rendering:auto;
+        image-rendering:auto;shape-rendering:auto;text-rendering:auto;
+        enable-background:accumulate");
+STYLE
+    $style =~ s/\s//mg;
+    $text->setAttribute('style', $style);
+    $text->setAttribute('transform', $transform) if ($transform);
+
+    $text->appendChild($tspan);
+
+    my $layer = XML::LibXML::Element->new('g');
+    $layer->setAttribute('inkscape:groupmode', 'layer');
+    $layer->setAttribute('inkscape:label', "License$language");
+    $layer->setAttribute('style', 'display:inline');
+    $layer->setAttribute('id', 'License');
+    $layer->appendChild($text);
+
+    my $root = $svg->documentElement();
+    $root->appendChild($layer);
+    return;
+}
+
+
+sub _where_to_place_the_text {
+    my ($self) = @ARG;
+
+    Readonly my $SPACING => 2;
+    my ($x, $y, $transform);
+    my @frames = $self->_all_frames_sorted();
+
+    if (@frames == 0) {
+        # If the comic has no frames, place the text at the bottom.
+        # Ask Inkscape about the drawing size.
+        my $width = $self->_inkscape_query('W');
+        my $height = $self->_inkscape_query('H');
+        my $xpos = $self->_inkscape_query('X');
+        my $ypos = $self->_inkscape_query('Y');
+        $x = $xpos;# - $width;
+        $y = $ypos;# + $height;
+    }
+    elsif (@frames == 1) {
+        # If there is only one frame, place the text at the bottom left
+        # corner just inside the frame.
+        $x = $frames[0]->getAttribute('x') + $SPACING;
+        $y = $frames[0]->getAttribute('y') + $frames[0]->getAttribute('height') - $SPACING;
+    }
+    elsif (_frames_in_rows(@frames)) {
+        # Prefer putting the text between two rows of frames so that it's
+        # easier to read.
+        $x = $frames[0]->getAttribute('x');
+        $y = $frames[0]->getAttribute('y') - $SPACING;
+    }
+    else {
+        # If there are no rows of frames but more than two frames, put the text
+        # between the first two frames, rotated 90 degrees.
+        ($x, $y) = $self->_bottom_right();
+        $x = $frames[0]->getAttribute('x') + $frames[0]->getAttribute('width') + $SPACING;
+        $y = $frames[0]->getAttribute('y');
+        $transform = "rotate(90, $x, $y)";
+    }
+
+    return ($x, $y, $transform);
+}
+
+
+sub _inkscape_query {
+    my ($self, $what) = @ARG;
+    ## no critic( InputOutput::ProhibitBacktickOperators)
+    return `inkscape --without-gui -$what $self->{srcFile}`;
+    ## use critic
+}
+
+
+sub _frames_in_rows {
+    my @frames = @ARG;
+    my $prev = shift @frames;
+    foreach my $frame (@frames) {
+        my $off_by = $frame->getAttribute('y') - $prev->getAttribute('y');
+        if ($off_by < -$FRAME_SPACING || $off_by > $FRAME_SPACING) {
+            return 1;
+        }
+        $prev = $frame;
+    }
+    return 0;
 }
 
 
