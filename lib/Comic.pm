@@ -1152,6 +1152,8 @@ sub _do_export_html {
         $tags .= $t;
     }
     $vars{description} = encode_entities($self->{meta_data}->{description}->{$language});
+
+    $vars{see} = $self->_references($language);
     return _templatize($self->{srcFile}, $template, $language, %vars);
 }
 
@@ -1349,6 +1351,31 @@ sub _pos_to_frame {
         return $i if ($y < @{$self->{frame_tops}}[$i]);
     }
     return @{$self->{frame_tops}};
+}
+
+
+sub _references {
+    my ($self, $language) = @ARG;
+
+    my %links;
+    if (!defined $self->{meta_data}->{see} || !defined $self->{meta_data}->{see}{$language}) {
+        return %links;
+    }
+
+    my $references = $self->{meta_data}->{see}{$language};
+    foreach my $ref (keys %{$references}) {
+        my $found = 0;
+        foreach my $comic (@comics) {
+            if ($comic->{srcFile} eq ${$references}{$ref}) {
+                $links{$ref} = $comic->{url}{$language};
+                $found = 1;
+            }
+        }
+        if (!$found) {
+            $self->_warn("$language link refers to non-existent ${$references}{$ref}");
+        }
+    }
+    return \%links;
 }
 
 

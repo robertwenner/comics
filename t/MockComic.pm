@@ -35,6 +35,7 @@ our Readonly $SERIES = 'series';
 our Readonly $HEIGHT = 'height';
 our Readonly $WIDTH = 'width';
 our Readonly $DOMAINS = 'domains';
+our Readonly $SEE = 'see';
 
 
 my %files_read;
@@ -181,6 +182,7 @@ sub _build_json {
     # the JSON as needed, but this way it's easier to fail fast if a test
     # tries to build a JSON structure that would not exist in real life.
     $json = _array_per_language_json($json, \%args, $TAGS, $WHO);
+    $json = _hash_per_language_json($json, \%args, $SEE);
 
     # Meta info: value, language independent
     my $wrote = 0;
@@ -276,6 +278,38 @@ sub _array_per_language_json {
                 $elems .= "&quot;$v&quot;";
             }
             $json .= "[$elems]";
+        }
+        $json .= "\n    }" if ($hadOne);
+    }
+    return $json;
+}
+
+
+sub _hash_per_language_json {
+    my ($json, $args, @names) = @_;
+
+    my %a = %{$args};
+    foreach my $what (@names) {
+        next unless(defined($a{$what})); # Tests may not define all properties
+
+        my $hadOne = 0;
+        foreach my $lang (keys $a{$what}) {
+            if ($hadOne) {
+                $json .= ",\n";
+            }
+            else {
+                $json .= ",\n" if ($json ne '');
+                $json .= "    &quot;$what&quot;: {\n";
+                $hadOne = 1;
+            }
+
+            $json .= "        &quot;$lang&quot;: {\n";
+            my $elems = '';
+            foreach my $v (keys %{$a{$what}{$lang}}) {
+                $elems .= ', ' unless ($elems eq '');
+                $elems .= "            &quot;$v&quot;: &quot;${a{$what}{$lang}{$v}}&quot;\n";
+            }
+            $json .= "$elems        }";
         }
         $json .= "\n    }" if ($hadOne);
     }

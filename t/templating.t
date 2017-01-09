@@ -102,14 +102,24 @@ sub array : Test {
 }
 
 
-sub hash_one_element : Test {
+sub hash_hard_coded_key : Test {
     MockComic::fake_file('file.templ', "[% hash.key %]");
     is(Comic::_templatize('comic.svg', 'file.templ', '', ("hash" => {"key" => "the key"})),
         "the key");
 }
 
 
-sub hash_all_elements : Tests {
+sub simple_hash : Tests {
+    MockComic::fake_file("file.templ", '[% FOREACH h IN hash %][% h.key %] => [% h.value %][% END %]');
+    my %hash = ("a" => "1");
+    my %vars;
+    $vars{'hash'} = \%hash;
+    is(Comic::_templatize('comic.svg', 'file.templ', '', %vars),
+        'a => 1');
+}
+
+
+sub hash_all_elements_with_order : Tests {
     MockComic::fake_file("file.templ", '[% FOREACH o IN order %][% hash.$o %][% END %]');
     my %hash = ("a" => "1", "b" => "2", "c" => "3");
     my @order = sort keys %hash;
