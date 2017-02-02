@@ -36,6 +36,7 @@ our Readonly $HEIGHT = 'height';
 our Readonly $WIDTH = 'width';
 our Readonly $DOMAINS = 'domains';
 our Readonly $SEE = 'see';
+our Readonly $NAMESPACE_DECLARATION = 'namespace_declaration';
 
 
 my %files_read;
@@ -63,6 +64,7 @@ my %defaultArgs = (
     $WIDTH => 600,
     $PUBLISHED_WHEN => '2016-08-01',
     $PUBLISHED_WHERE => 'web',
+    $NAMESPACE_DECLARATION => '',
 );
 
 
@@ -130,6 +132,7 @@ sub fake_comic {
     my %args = @_;
 
     my $json = _build_json(%args);
+    my $namespace = ${args}{$NAMESPACE_DECLARATION};
     my $xml = <<"HEADER";
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
@@ -138,6 +141,7 @@ sub fake_comic {
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   $namespace
    xmlns="http://www.w3.org/2000/svg">
   <metadata id="metadata7">
     <rdf:RDF>

@@ -23,6 +23,7 @@ use XML::LibXML::XPathContext;
 use JSON;
 use HTML::Entities;
 use Image::ExifTool qw(:Public);
+use Image::SVG::Transform;
 use Template;
 use SVG;
 use URI::Encode qw(uri_encode uri_decode);
@@ -121,12 +122,6 @@ Readonly our $FRAME_ROW_HEIGHT => 10;
 Readonly our $FRAME_SPACING => 10;
 # Maximum tolerance in pixels for distance between frames.
 Readonly our $FRAME_SPACING_TOLERANCE => 2.0;
-# Whether to transform SVG coordinates if the transform atttribute is used.
-# This may be needed for fancy texts (tilted or on a path) so that the new
-# translated coordinates can be sorted as expected for the comic's transcript.
-# However, it may be easier to just add invisible frames to force a text
-# order in the comic.
-Readonly our $TRANSFORM => 'TRANSFORM';
 
 
 my %counts;
@@ -154,9 +149,7 @@ Parameters:
 sub new {
     my ($class, $file, %domains) = @ARG;
     my $self = bless{}, $class;
-    $self->{options} = {
-        $TRANSFORM => 1,
-    };
+    $self->{options} = {};
     $self->_load($file, %domains);
     return $self;
 }
@@ -1255,11 +1248,12 @@ sub _find_frames {
 
 sub _text_pos_sort {
     my ($self, $a, $b) = @ARG;
-    # Inkscape coordinate system has 0/0 as bottom left corner
-    my $ya = $self->_pos_to_frame($self->_transformed($a, 'y'));
-    my $yb = $self->_pos_to_frame($self->_transformed($b, 'y'));
-    return $ya <=> $yb
-        || $self->_transformed($a, 'x') <=> $self->_transformed($b, 'x');
+
+    my ($xa, $ya) = $self->_transformed($a);
+    $ya = $self->_pos_to_frame($ya);
+    my ($xb, $yb) = $self->_transformed($b);
+    $yb = $self->_pos_to_frame($yb);
+    return $ya <=> $yb || $xa <=> $xb;
 }
 
 
@@ -1267,54 +1261,20 @@ sub _transformed {
     my ($self, $node, $attribute) = @ARG;
 
     my ($x, $y) = ($node->getAttribute('x'), $node->getAttribute('y'));
-    if (!defined($node->getAttribute('x')) || !defined($node->getAttribute('y'))) {
+    if (!defined $x || !defined $y) {
         ($x, $y) = _text_from_path($self, $node);
     }
     $self->_croak('no x') unless(defined $x);
     $self->_croak('no y') unless(defined $y);
 
     my $transform = $node->getAttribute('transform');
-    if (!$transform || !$self->{options}{$TRANSFORM}) {
-        return $x if ($attribute eq 'x');
-        return $y if ($attribute eq 'y');
-        return $node->getAttribute($attribute);
+    if ($transform) {
+        my $trans = Image::SVG::Transform->new();
+        $trans->extract_transforms($transform);
+        ($x, $y) = @{$trans->transform([$x, $y])};
     }
 
-    ## no critic(RegularExpressions::ProhibitCaptureWithoutTest)
-    # Perl::Critic does not understand the if and croak here.
-    if ($transform !~ m/^(\w+)\(([^)]+)\)$/) {
-        $self->_croak('Cannot handle multiple transformations');
-    }
-    my ($operation, $params) = ($1, $2);
-    ## use critic
-    my ($a, $b, $c, $d, $e, $f);
-    # Inkscape sources:
-    # Operations in Inkscape's src/cvg/svg-affine.cpp
-    # Actual matrix math in src/2geom/affine.cpp
-    if ($operation eq 'matrix') {
-        ## no critic(Variables::RequireLocalizedPunctuationVars)
-        ($a, $b, $c, $d, $e, $f) = split /,/, $params;
-        ## use critic
-    }
-    elsif ($operation eq 'scale') {
-        my ($sx, $sy) = split /,/, $params;
-        ## no critic(Variables::RequireLocalizedPunctuationVars)
-        ($a, $b, $c, $d, $e, $f) = ($sx, 0, 0, $sy, 0, 0);
-        ## use critic
-    }
-    else {
-        $self->_croak("Unsupported operation $operation");
-    }
-    # http://www.w3.org/TR/SVG/coords.html#TransformMatrixDefined
-    # a c e   x
-    # b d f * y
-    # 0 0 1   1
-    # FIXME: Ignores inkscape:transform-center-x and inkscape:transform-center-y
-    # attributes.
-    return $a * $x + $c * $y if ($attribute eq 'x');
-    return $b * $x + $d * $y if ($attribute eq 'y');
-    $self->_croak("Unsupported attribute $attribute to transform");
-    return; # PerlCritic does not see that this is unreachable.
+    return ($x, $y);
 }
 
 

@@ -10,55 +10,105 @@ use MockComic;
 __PACKAGE__->runtests() unless caller;
 
 
-my $comic;
-
 sub before : Test(setup) {
     MockComic::set_up();
-    $comic = MockComic::make_comic();
 }
 
 
-sub make_node {
-    my ($xml) = @_;
-    my $dom = XML::LibXML->load_xml(string => $xml);
-    return $dom->documentElement();
+sub assert_order {
+    my ($svg, $expected) = @_;
+    my $comic = MockComic::make_comic(
+        $MockComic::NAMESPACE_DECLARATION => 'xmlns:xlink="http://www.w3.org/1999/xlink"',
+        $MockComic::XML => $svg);
+    my $is = join "", $comic->_texts_for('English');
+    is($is, $expected);
 }
 
 
-sub fails_on_bad_attribute : Test {
-    eval {
-        $comic->_transformed(
-            make_node('<text x="1" y="1" transform="matrix(1,2,3,4,5,6)"/>'), "foo");
-    };
-    like($@, qr/unsupported attribute/i);
+
+sub simple_texts : Tests {
+    assert_order(<<'SVG', "123");
+  <g inkscape:groupmode="layer" inkscape:label="English">
+    <text x="327" y="1085.3622">
+        <tspan>2</tspan>
+    </text>
+    <text x="6" y="828.36218">
+        <tspan>1</tspan>
+    </text>
+    <text x="582.62695" y="1082.1501">
+        <tspan>3</tspan>
+    </text>
+  </g>
+SVG
 }
 
 
-sub no_transformation : Test {
-    is($comic->_transformed(
-        make_node('<text x="329.6062" y="-1456.9886"/>'), "x"), 
-    329.6062);
+sub rotated_text : Tests {
+    assert_order(<<'SVG', "IntroSpeak1Meta1Rotate1Meta2Speak2Meta3Speak3Meta4Rotate4");
+  <g inkscape:groupmode="layer" inkscape:label="English">
+    <text x="329.48169" y="806.60828" transform="rotate(17.251546)">
+      <tspan>Rotate1</tspan>
+    </text>
+    <text x="209.64128" y="826.38843">
+      <tspan>Speak2</tspan>
+    </text>
+    <text x="704.39362" y="683.81781" transform="rotate(17.251546)">
+      <tspan>Rotate4</tspan>
+    </text>
+    <text x="5.8287659" y="823.57593">
+      <tspan>Speak1</tspan>
+    </text>
+    <text x="415.42969" y="826.74243">
+      <tspan>Speak3</tspan>
+    </text>
+  </g>
+  <g inkscape:groupmode="layer" inkscape:label="MetaEnglish">
+    <text x="-48" y="786.36218">
+      <tspan>Intro</tspan>
+    </text>
+    <text x="18.684189" y="892.88269">
+      <tspan>Meta1</tspan>
+    </text>
+    <text x="428.65439" y="899.23718">
+      <tspan>Meta4</tspan>
+    </text>
+    <text x="381.65439" y="826.23718">
+      <tspan>Meta3</tspan>
+    </text>
+    <text x="191.65439" y="839.23718">
+      <tspan>Meta2</tspan></text>
+  </g>
+SVG
 }
 
-
-sub matrix : Test {
-    is($comic->_transformed(make_node(
-        '<text x="5" y="7" transform="matrix(1,2,3,4,5,6)"/>'), "x"),
-    1 * 5 + 3 * 7);
-}
-
-
-sub scale : Test {
-    is($comic->_transformed(make_node(
-        '<text x="5" y="7" transform="scale(7,9)"/>'), "x"),
-    5 * 7);
-}
-
-
-sub multiple_operations : Test {
-    eval {
-        $comic->_transformed(
-            make_node('<text x="1" y="1" transform="scale(1,2) scale(3,4)"/>'), "foo");
-    };
-    like($@, qr/cannot handle multiple/i);
+__END__
+sub text_on_path : Tests {
+    assert_order(<<'SVG', "IntroTitleI can drink itAll by myself");
+  <g inkscape:groupmode="layer" inkscape:label="MetaEnglish">
+    <text x="-42.23204" y="861.86578">
+      <tspan>Intro</tspan>
+    </text>
+  </g>
+  <g inkscape:groupmode="layer" inkscape:label="English">
+    <text x="-83.029472" y="1017.0272" transform="rotate(-5.6931704)">
+      <tspan>Title</tspan>
+    </text>
+    <text x="-2.1428571" y="-15">
+      <textPath xlink:href="#path3887">
+        <tspan dx="80.812202">I can drink it</tspan>
+      </textPath>
+    </text>
+    <g id="g3426" transform="rotate(180,320.57846,970.1288)">
+      <ellipse ry="38.88921" rx="34.891293"  cy="1007.3622" cx="373.91425" id="path3887-6"/>
+      <text>
+         <textPath xlink:href="#path3887-6">
+           <tspan dx="71.785721 0 0 -3.5714285">All by myself</tspan>
+         </textPath>
+      </text>
+    </g>
+  </g>
+  <g inkscape:groupmode="layer" inkscape:label="Figuren">
+    <ellipse id="path3887" cx="267.1633" cy="932.95453" rx="34.891293" ry="38.88921"/>
+  </g>
+SVG
 }
