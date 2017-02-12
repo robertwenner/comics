@@ -82,27 +82,90 @@ SVG
 }
 
 __END__
-sub text_on_path : Tests {
-    assert_order(<<'SVG', "IntroTitleI can drink itAll by myself");
+# Maybe http://search.cpan.org/~colink/SVG-Estimate-1.0107/ would help?
+# I could copy path and text node to a new document and then get its size.
+# But does that tell me where in the old one it is located?
+
+sub text_on_path_simple : Tests {
+    my $svg = <<'SVG';
+    <text x="-20" y="-15">
+      <textPath xlink:href="#dreieck">text</textPath>
+    </text>
+    <path d="M 100 100 L 300 100 L 200 300 z" id="dreieck"/>
+SVG
+    my $comic = MockComic::make_comic(
+        $MockComic::NAMESPACE_DECLARATION => 'xmlns:xlink="http://www.w3.org/1999/xlink"',
+        $MockComic::XML => $svg);
+    # this fucking sucks if I need to write code for each possible path and shape
+    # for the off-chance I might actually eventually use it.
+    my @texts = $comic->{xpath}->findnodes(Comic::_build_xpath('text'));
+    my ($x, $y) = $comic->_transformed($texts[0]);
+    is($x, '...', 'wrong x');
+    is($y, '...', 'wrong y');
+}
+
+__END__
+
+
+sub text_on_path_ellipse : Tests {
+    my $svg = <<'SVG';
+    <text x="-20" y="-15">
+      <textPath xlink:href="#path">text</textPath>
+    </text>
+    <ellipse id="path" cx="267.1633" cy="932.95453" rx="34.891293" ry="38.88921"/>
+SVG
+    my $comic = MockComic::make_comic(
+        $MockComic::NAMESPACE_DECLARATION => 'xmlns:xlink="http://www.w3.org/1999/xlink"',
+        $MockComic::XML => $svg);
+    my @texts = $comic->{xpath}->findnodes(Comic::_build_xpath('text'));
+    my ($x, $y) = $comic->_transformed($texts[0]);
+    is($x, 100, 'wrong x');
+    is($y, 100, 'wrong y');
+}
+
+
+__END__
+sub text_on_path_tspan_with_dx : Tests {
+    ok(0);
+}
+
+
+start with the text coordintates
+    what if the text does not have any? use the path?
+apply transform on linked path
+ignore a transform on a g element enclosing the text
+
+
+textPath attributes: 
+startOffest (default 0, can be % (0 start, 100 end), or user coordinate system
+
+can probably ignore font size, startOffset and such cause in my comics I won't
+have overlapping text. left most (smallest) x is fine, as is y for that x.
+
+
+
+__END__
+sub text_on_path_real_world : Tests {
+    assert_order(<<'SVG', "Intro:Title:I can drink it!All by myself!");
   <g inkscape:groupmode="layer" inkscape:label="MetaEnglish">
     <text x="-42.23204" y="861.86578">
-      <tspan>Intro</tspan>
+      <tspan>Intro:</tspan>
     </text>
   </g>
   <g inkscape:groupmode="layer" inkscape:label="English">
     <text x="-83.029472" y="1017.0272" transform="rotate(-5.6931704)">
-      <tspan>Title</tspan>
+      <tspan>Title:</tspan>
     </text>
     <text x="-2.1428571" y="-15">
       <textPath xlink:href="#path3887">
-        <tspan dx="80.812202">I can drink it</tspan>
+        <tspan dx="80.812202">I can drink it!</tspan>
       </textPath>
     </text>
     <g id="g3426" transform="rotate(180,320.57846,970.1288)">
-      <ellipse ry="38.88921" rx="34.891293"  cy="1007.3622" cx="373.91425" id="path3887-6"/>
+      <ellipse ry="38.88921" rx="34.891293" cy="1007.3622" cx="373.91425" id="path3887-6"/>
       <text>
          <textPath xlink:href="#path3887-6">
-           <tspan dx="71.785721 0 0 -3.5714285">All by myself</tspan>
+           <tspan dx="71.785721 0 0 -3.5714285">All by myself!</tspan>
          </textPath>
       </text>
     </g>
