@@ -43,3 +43,14 @@ sub shortens_twitter_text : Tests {
     Comic::post_to_social_media('English');
     is($desc, 'x' x 130);
 }
+
+
+sub hashtags : Tests {
+    MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+        $MockComic::DESCRIPTION => { $MockComic::ENGLISH => 'Funny stuff' },
+        $MockComic::TWITTER => { $MockComic::ENGLISH => ['#beer', '#craftbeer', '@you'] },
+    );
+    Comic::post_to_social_media('English');
+    is($desc, '#beer #craftbeer @you Funny stuff');
+}

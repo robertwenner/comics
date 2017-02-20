@@ -1871,7 +1871,11 @@ sub post_to_social_media {
         my $png_file = "$comic->{whereTo}{$language}/$comic->{pngFile}{$language}";
         # my $png_file = $comic->{url}{$language};
         my $description = $comic->{meta_data}->{description}->{$language};
-        _tweet($png_file, _shorten_for_twitter($description));
+        my $tags = '';
+        if ($comic->{meta_data}->{twitter}->{$language}) {
+            $tags = join(' ', @{$comic->{meta_data}->{twitter}->{$language}}) . ' ';
+        }
+        _tweet($png_file, _shorten_for_twitter("$tags$description"));
     }
     return;
 }
