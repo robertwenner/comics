@@ -326,6 +326,17 @@ sub _check_date {
     my $published_where = trim($self->{meta_data}->{published}->{where});
     return unless($published_when);
 
+    my $published_date = DateTime::Format::ISO8601->parse_datetime($published_when);
+    $published_date->set_time_zone(_get_tz());
+    my $today = _now();
+    $today->set_time_zone(_get_tz());
+    if (DateTime->compare($published_date, $today) > 0) {
+        Readonly my $FRIDAY => 5;
+        if ($published_date->day_of_week() != $FRIDAY) {
+            $self->_warn('scheduled for ' . $published_date->day_name());
+        }
+    }
+
     foreach my $c (@comics) {
         next if ($c == $self);
         my $pub_when = trim($c->{meta_data}->{published}->{when});
