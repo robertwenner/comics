@@ -358,10 +358,7 @@ sub _check_dont_publish {
     my ($self) = @ARG;
 
     $self->_check_json('', $self->{meta_data});
-    ## no critic(ValuesAndExpressions::RequireInterpolationOfMetachars)
-    my $all_layers = _build_xpath('g[@inkscape:groupmode="layer"]');
-    ## use critic
-    foreach my $layer ($self->{xpath}->findnodes($all_layers)) {
+    foreach my $layer ($self->{xpath}->findnodes(_find_layers())) {
         my $text = $layer->textContent();
         my $label = $layer->{'inkscape:label'};
         if ($text =~ m/(\b$DONT_PUBLISH\b[^\n\r]*)/m) {
@@ -652,9 +649,7 @@ sub _check_persons {
 sub _check_meta {
     my ($self, $language) = @ARG;
 
-    my $xpath = _build_xpath(
-        "g[\@inkscape:groupmode='layer' and \@inkscape:label='Meta$language']");
-    unless ($self->{xpath}->findnodes($xpath)) {
+    unless ($self->{xpath}->findnodes(_find_layers("Meta$language"))) {
         $self->_warn("No Meta$language layer");
         return;
     }
@@ -680,10 +675,7 @@ sub _flip_language_layers {
 
     # Hide all but current language layers
     my $had_lang = 0;
-    ## no critic(ValuesAndExpressions::RequireInterpolationOfMetachars)
-    my $all_layers = _build_xpath('g[@inkscape:groupmode="layer"]');
-    ## use critic
-    foreach my $layer ($self->{xpath}->findnodes($all_layers)) {
+    foreach my $layer ($self->{xpath}->findnodes(_find_layers())) {
         my $label = $layer->{'inkscape:label'};
         $layer->{'style'} = 'display:inline' unless (defined($layer->{'style'}));
         foreach my $other_lang ($self->_languages()) {
@@ -705,6 +697,27 @@ sub _flip_language_layers {
 }
 
 
+sub _find_layers {
+    my (@labels) = @ARG;
+
+    my $xpath = "/$DEFAULT_NAMESPACE:svg//$DEFAULT_NAMESPACE:g[\@inkscape:groupmode='layer'";
+    my $had_labels = 0;
+    foreach my $l (@labels) {
+        if ($had_labels == 0) {
+            $xpath .= ' and (';
+        }
+        elsif ($had_labels > 0) {
+            $xpath .= ' or ';
+        }
+        $xpath .= "\@inkscape:label='$l'";
+        $had_labels++;
+    }
+    $xpath .= ')' if ($had_labels > 0);
+    $xpath .= ']';
+    return $xpath;
+}
+
+
 sub _build_xpath {
     my (@fragments) = @ARG;
 
@@ -713,6 +726,12 @@ sub _build_xpath {
         $xpath .= "/$DEFAULT_NAMESPACE:$p";
     }
     return $xpath;
+}
+
+
+sub _text {
+    my ($label) = @ARG;
+    return _find_layers($label, "Meta$label") . "//$DEFAULT_NAMESPACE:text";
 }
 
 
@@ -1304,14 +1323,6 @@ sub _text_from_path {
     my $type = $path_nodes[0]->nodeName;
     $self->_croak("Cannot handle $type nodes") unless ($type eq 'ellipse');
     return ($path_nodes[0]->getAttribute('cx'), $path_nodes[0]->getAttribute('cy'));
-}
-
-
-sub _text {
-    my ($label) = @ARG;
-    return _build_xpath(
-        "g[\@inkscape:label=\"$label\" or \@inkscape:label=\"Meta$label\"]/",
-        'text');
 }
 
 

@@ -51,10 +51,7 @@ sub setup_xml {
 
 sub assert_visible {
     my %expected = map {$_ => 1} @_;
-    my $xpath = XML::LibXML::XPathContext->new($comic->{dom});
-    $xpath->registerNs($Comic::DEFAULT_NAMESPACE, 'http://www.w3.org/2000/svg');
-    my $allLayers = Comic::_build_xpath('g[@inkscape:groupmode="layer"]');
-    foreach my $layer ($comic->{xpath}->findnodes($allLayers)) {
+    foreach my $layer ($comic->{xpath}->findnodes(Comic::_find_layers())) {
         my $label = $layer->{"inkscape:label"};
         my $style = $layer->{"style"};
         if (exists($expected{$label})) {
@@ -126,4 +123,20 @@ sub no_style_on_layer : Tests {
     setup_xml('<g inkscape:groupmode="layer" id="layer18" inkscape:label="HintergrundDeutsch"/>');
     $comic->_flip_language_layers("Deutsch", ("Deutsch", "English"));
     assert_visible(qw(Deutsch HintergrundDeutsch));
+}
+
+
+sub container_layer : Tests {
+    $comic = MockComic::make_comic($MockComic::XML => <<XML);
+    <g inkscape:groupmode="layer" id="layer18" inkscape:label="ContainerDeutsch">
+        <g inkscape:groupmode="layer" id="layer20" inkscape:label="Deutsch"/>
+        <g inkscape:groupmode="layer" id="layer21" inkscape:label="HintergrundDeutsch"/>
+    </g>
+    <g inkscape:groupmode="layer" id="layer28" inkscape:label="ContainerEnglish">
+        <g inkscape:groupmode="layer" id="layer30" inkscape:label="English"/>
+        <g inkscape:groupmode="layer" id="layer31" inkscape:label="HintergrundEnglish"/>
+    </g>
+XML
+    $comic->_flip_language_layers("Deutsch", ("Deutsch", "English"));
+    assert_visible(qw(ContainerDeutsch Deutsch HintergrundDeutsch));
 }

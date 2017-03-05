@@ -93,3 +93,35 @@ sub full_context() : Test {
     };
     like($@, qr{\[one\]\[two\]\[three\]\[Paul:\]\[Paul:\]}i);
 }
+
+
+sub container_layer() : Test {
+    my $comic = MockComic::make_comic($MockComic::XML => <<XML);
+    <g inkscape:groupmode="layer" id="layer18" inkscape:label="ContainerDeutsch">
+        <g inkscape:groupmode="layer" id="layer20" inkscape:label="MetaDeutsch">
+            <text x="1" y="1">Max:</text>
+            <text x="100" y="100">Paul:</text>
+        </g>
+    </g>
+XML
+    eval {
+        $comic->_check_transcript('Deutsch');
+    };
+    like($@, qr{\[Max:\]\[Paul:\]}i);
+}
+
+
+sub layer_with_noise() : Test {
+    my $comic = MockComic::make_comic($MockComic::XML => <<XML);
+    <g inkscape:groupmode="layer" id="layer18" inkscape:label="Deutsch">
+        <a transform="translate(0, 4)">
+            <text x="1" y="1">Max:</text>
+            <text x="10" y="1">Paul:</text>
+        </a>
+    </g>
+XML
+    eval {
+        $comic->_check_transcript('Deutsch');
+    };
+    like($@, qr{\[Max:\]\[Paul:\]}i);
+}

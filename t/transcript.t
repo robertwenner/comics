@@ -45,3 +45,19 @@ sub merges_speaker_and_speech : Tests {
     my $wrote = $comic->_do_export_html('Deutsch', 'template');
     is($wrote, "<p>Max: Bier?</p>\n");
 }
+
+
+sub container_layer : Tests {
+    my $comic = MockComic::make_comic($MockComic::XML => <<XML);
+    <g inkscape:groupmode="layer" id="layer18" inkscape:label="ContainerDeutsch">
+        <g inkscape:groupmode="layer" id="layer20" inkscape:label="MetaDeutsch">
+            <text x="1" y="1">Max:</text>
+        </g>
+        <g inkscape:groupmode="layer" id="layer21" inkscape:label="MetaDeutsch">
+            <text x="10" y="1">Bier!</text>
+        </g>
+    </g>
+XML
+    my $wrote = $comic->_do_export_html('Deutsch', 'template');
+    is($wrote, "<p>Max: Bier!</p>\n");
+}

@@ -140,3 +140,23 @@ sub duplicated_word_parts : Tests {
     };
     like($@, qr{duplicated text});
 }
+
+
+sub duplicated_in_container_layers : Tests {
+    my $comic = MockComic::make_comic($MockComic::XML => <<XML);
+    <g inkscape:groupmode="layer" id="layer18" inkscape:label="ContainerDeutsch">
+        <g inkscape:groupmode="layer" id="layer20" inkscape:label="Deutsch">
+            <text>oops</text>
+        </g>
+    </g>
+    <g inkscape:groupmode="layer" id="layer19" inkscape:label="ContainerEnglish">
+        <g inkscape:groupmode="layer" id="layer21" inkscape:label="English">
+            <text>oops</text>
+        </g>
+    </g>
+XML
+    eval {
+        $comic->_check_transcript("Deutsch");
+    };
+    like($@, qr{duplicated text});
+}
