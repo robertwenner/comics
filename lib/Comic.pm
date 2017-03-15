@@ -1951,17 +1951,17 @@ Works only with Inkscape files.
 
 No bugs have been reported.
 
-Please report any bugs or feature requests to C<< <robert.wenner@posteo.de> >>
+Please report any bugs or feature requests to C<< <rwenner@cpan.org> >>
 
 
 =head1 AUTHOR
 
-Robert Wenner  C<< <robert.wenner@posteo.de> >>
+Robert Wenner  C<< <rwenner@cpan.org> >>
 
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2015 - 2016, Robert Wenner C<< <robert.wenner@posteo.de> >>.
+Copyright (c) 2015 - 2017, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or
