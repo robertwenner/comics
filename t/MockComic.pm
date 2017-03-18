@@ -28,6 +28,7 @@ our Readonly $JSON = 'json';
 our Readonly $TEXT_ID = 'theText';
 our Readonly $FRAMES = 'frames';
 our Readonly $CONTRIBUTORS = 'contrib';
+our Readonly $TRANSLATOR = 'translator';
 our Readonly $XML = 'xml';
 our Readonly $DESCRIPTION = 'description';
 our Readonly $COMMENTS = 'comments';
@@ -182,7 +183,8 @@ sub _build_json {
 
     my $json = '';
 
-    $json .= _single_per_language_json($json, \%args, $TITLE, $DESCRIPTION, $COMMENTS, $SERIES);
+    $json .= _single_per_language_json($json, \%args, $TITLE, $DESCRIPTION,
+        $COMMENTS, $SERIES, $TRANSLATOR);
     # Could check whether a scalar or array was passed and then generate
     # the JSON as needed, but this way it's easier to fail fast if a test
     # tries to build a JSON structure that would not exist in real life.

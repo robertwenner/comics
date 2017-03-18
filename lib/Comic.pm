@@ -1158,6 +1158,10 @@ sub _do_export_html {
         $vars{'contrib'} = $contrib;
         $vars{'jsonContrib'} = '"contributor": ' . _to_json_array(@{$contrib}) . ",\n   ";
     }
+    $vars{'translator'} = '';
+    if ($self->{meta_data}->{translator} && $self->{meta_data}->{translator}->{$language}) {
+        $vars{'translator'} = $self->{meta_data}->{translator}->{$language};
+    }
 
     $vars{transcriptHtml} = '';
     $vars{transcriptJson} = '';

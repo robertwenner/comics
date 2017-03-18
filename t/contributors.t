@@ -134,3 +134,29 @@ sub contributor_credit_de_many : Test {
     like(write_templ_de($comic),
         qr{Mit\s+Ideen\s+von\s+Mark\s+Dilger,\s+Mike\s+Karr\s+und\s+My\s+Self}xim);
 }
+
+
+sub translator_ok : Tests {
+    my $template = <<'TEMPL';
+[% IF translator %]
+    <p style="contributors">Übersetzt von [% translator %].</p>
+[% END %]
+TEMPL
+    my $comic = MockComic::make_comic($MockComic::TRANSLATOR => {
+        $MockComic::ENGLISH => 'mir',
+    });
+    like(fake_template($template, $comic), qr{Übersetzt von mir}im);
+}
+
+
+sub translator_none : Tests {
+    my $template = <<'TEMPL';
+[% IF translator %]
+    <p style="contributors">Übersetzt von [% translator %].</p>
+[% END %]
+TEMPL
+    my $comic = MockComic::make_comic($MockComic::TRANSLATOR => {
+        $MockComic::DEUTSCH => 'mir',
+    });
+    like(fake_template($template, $comic), qr{^\s*$}m);
+}
