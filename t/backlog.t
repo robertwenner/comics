@@ -288,7 +288,8 @@ TEMPL
         {'Deutsch' => 'archiv.html'},
         {'Deutsch' => 'templates/deutsch/comic-page.templ'});
     MockComic::assert_wrote_file('generated/backlog.html', 
-        qr{^\s*Bym=3\s*Other=2\s*YetOther=2\s*AndThenSome=1\s*$}xsm);
+        qr{^\s*Bym\s\(Deutsch\)=3\s*Other\s\(Deutsch\)=2\s*
+           YetOther\s\(Deutsch\)=2\s*AndThenSome\s\(Deutsch\)=1\s*$}xsm);
 }
 
 
@@ -307,7 +308,8 @@ TEMPL
         {'Deutsch' => 'archiv.html'},
         {'Deutsch' => 'templates/deutsch/comic-page.templ'});
     MockComic::assert_wrote_file('generated/backlog.html', 
-        qr{^\s*Paul=3\s*Max=2\s*Mike=1\s*Robert=1\s*$}xsm);
+        qr{^\s*Paul\s\(Deutsch\)=3\s*Max\s\(Deutsch\)=2\s*
+          Mike\s\(Deutsch\)=1\s*Robert\s\(Deutsch\)=1\s*$}xsm);
 }
 
 
@@ -325,5 +327,5 @@ TEMPL
         {'Deutsch' => 'archiv.html'},
         {'Deutsch' => 'templates/deutsch/comic-page.templ'});
     MockComic::assert_wrote_file('generated/backlog.html', 
-        qr{^\s*Buckimude=2\s*Philosophie=1\s*$}xsm);
+        qr{^\s*Buckimude\s\(Deutsch\)=2\s*Philosophie\s\(Deutsch\)=1\s*$}xsm);
 }

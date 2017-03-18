@@ -1553,14 +1553,14 @@ sub _do_export_backlog {
     foreach my $comic (@comics) {
         foreach my $language ($comic->_languages()) {
             foreach my $tag (@{$comic->{meta_data}->{tags}->{$language}}) {
-                $tags{$tag}++;
+                $tags{"$tag ($language)"}++;
             }
             foreach my $who (@{$comic->{meta_data}->{who}->{$language}}) {
-                $who{$who}++;
+                $who{"$who ($language)"}++;
             }
             if ($comic->{meta_data}->{series}) {
                 my $serie = $comic->{meta_data}->{series}->{$language};
-                $series{$serie}++ if ($serie);
+                $series{"$serie ($language)"}++ if ($serie);
             }
         }
     }
