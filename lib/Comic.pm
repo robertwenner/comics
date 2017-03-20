@@ -1013,7 +1013,11 @@ sub _languages {
 
     my @languages;
     push @languages, keys $self->{meta_data}->{title};
-    return @languages;
+    # Needs the extra @sorted array cause the behavior of sort in scalar context
+    # is undefined. (WTF?!)
+    # http://search.cpan.org/~thaljef/Perl-Critic/lib/Perl/Critic/Policy/Subroutines/ProhibitReturnSort.pm
+    my @sorted = sort @languages;
+    return @sorted;
 }
 
 
