@@ -120,7 +120,7 @@ sub no_comics : Tests {
 
 sub index_html : Tests {
     MockComic::fake_file("templates/deutsch/comic-page.templ",
-        '<li><a href="[% first %]" title="zum ersten Biercomic">&lt;&lt; Erstes</a></li>');
+        '<li><a href="[% hrsn %][% comic.first.$Language %]" title="zum ersten Biercomic">&lt;&lt; Erstes</a></li>');
     my $c = make_comic('zwei', 'Deutsch', '2016-01-02');
     $c->{'first'}{'Deutsch'} = 'eins.html';
     $c->{'prev'}{'Deutsch'} = 'eins.html';

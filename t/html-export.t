@@ -299,7 +299,7 @@ sub language_links_none : Tests {
     );
     MockComic::fake_file('de-comic.templ', <<'XML');
 [% FOREACH l IN languages %]
-    <a hreflang="[% languagecodes.$l %]" href="[% languageurls.$l %]" title="[% languagetitles.$l %]">[% l %]</a>
+    <a hreflang="[% languagecodes.$l %]" href="[% languageurls.$l %]" title="[% comic.title.$l %]">[% l %]</a>
 [% END %]
 XML
     Comic::export_all_html({
@@ -324,7 +324,7 @@ sub language_links : Tests {
     );
     MockComic::fake_file('de-comic.templ', <<'XML');
 [% FOREACH l IN languages %]
-    <a hreflang="[% languagecodes.$l %]" href="[% languageurls.$l %]" title="[% languagetitles.$l %]">[% l %]</a>
+    <a hreflang="[% languagecodes.$l %]" href="[% languageurls.$l %]" title="[% comic.meta_data.title.$l %]">[% l %]</a>
 [% END %]
 XML
     Comic::export_all_html({
@@ -441,19 +441,19 @@ sub fb_open_graph : Tests {
         },
     );
     MockComic::fake_file('de-comic.templ', <<'XML');
-<meta property="og:url" content="[% url %]"/>
-<meta property="og:image:secure_url" content="[% url %]"/>
+<meta property="og:url" content="[% comic.url.$Language %]"/>
+<meta property="og:image:secure_url" content="[% comic.url.$Language %]"/>
 <meta property="og:type" content="article"/>
 <meta property="og:title" content="[% title %]"/>
 <meta property="og:site_name" content="Biercomics"/>
 <meta property="og:description" content="[% description %]"/>
-<meta property="og:image" content="[% image %]"/>
+<meta property="og:image" content="[% comic.imageUrl.$Language %]"/>
 <meta property="og:locale" content="de"/>
 <meta property="og:image:type" content="image/png"/>
-<meta property="og:image:height" content="[% height %]"/>
-<meta property="og:image:width" content="[% width %]"/>
-<meta property="og:article:published" content="[% published %]"/>
-<meta property="og:article:modified" content="[% modified %]"/>
+<meta property="og:image:height" content="[% comic.height %]"/>
+<meta property="og:image:width" content="[% comic.width %]"/>
+<meta property="og:article:published" content="[% comic.meta_data.published.when %]"/>
+<meta property="og:article:modified" content="[% comic.modified %]"/>
 <meta property="og:article:author" content="Robert Wenner"/>
 <meta property="og:article:tag" content="[% keywords %]"/>
 <meta property="og:website" content="https://biercomics.de"/>
@@ -528,7 +528,7 @@ sub index_html_with_canonical_link : Tests {
 
 
 sub index_html_does_not_break_perm_link : Tests {
-    MockComic::fake_file('comic.templ', '[% url %]');
+    MockComic::fake_file('comic.templ', '[% comic.url.$Language %]');
     MockComic::fake_file('sitemap.templ', '...');
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {

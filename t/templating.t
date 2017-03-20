@@ -59,6 +59,19 @@ sub utf8 : Test {
 }
 
 
+sub filter_html_special_in_variable : Tests {
+    MockComic::fake_file("file.templ", "[% FILTER html %][%var%][% END %]");
+    is(Comic::_templatize('comic.svg', 'file.templ', '', ("var" => "<>")), "&lt;&gt;");
+    is(Comic::_templatize('comic.svg', 'file.templ', '', ("var" => "ü")), "ü");
+}
+
+
+sub filter_html_special_in_markup : Tests {
+    MockComic::fake_file("file.templ", "[% FILTER html %]<[%var%]>[% END %]");
+    is(Comic::_templatize('comic.svg', 'file.templ', '', ("var" => "&")), "&lt;&amp;&gt;");
+}
+
+
 sub template_syntax_error : Test {
     MockComic::fake_file("file.templ", "[% modified ");
     eval {
@@ -239,15 +252,15 @@ sub from_comic : Tests {
     MockComic::fake_file('templates/deutsch/sitemap-xml.templ', '...');
     MockComic::fake_file('templates/deutsch/comic-page.templ', <<'TEMPLATE');
 Biercomics: [% title %]
-last-modified: [% modified %]
+last-modified: [% comic.modified %]
 description: [% description %]
 [% title %]
-[% png_file %] [% height %] by [% width %]
+[% png_file %] [% comic.height %] by [% comic.width %]
 [% transcriptJson %]
 [% transcriptHtml %]
-[% url %]
+[% comic.url.$Language %]
 who: [% who %]
-Image: [% image %]
+Image: [% comic.imageUrl.$Language %]
 Copyright year: [% year %]
 Keywords: [% keywords %]
 TEMPLATE
@@ -268,7 +281,7 @@ TEMPLATE
     like($wrote, qr/200 by 600/m, "dimensions");
     like($wrote, qr{https://biercomics.de/comics/bier-trinken.html}m, "url");
     like($wrote, qr{who:\s+\[\s*"Max",\s*"Paul"\s*\]}m, "who");
-    like($wrote, qr{Image: https://biercomics.de/comics/bier-trinken.png}m, "image");
+    like($wrote, qr{Image: https://biercomics.de/comics/bier-trinken.png}m, "image URL");
     like($wrote, qr{Copyright year: 2016}m, "copyright year");
     like($wrote, qr{Keywords: Bier,Saufen,Craft}m, "keywords");
 }
@@ -341,3 +354,8 @@ sub sets_language : Tests {
     is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', ()), "some/deutsch/path");
 }
 
+
+sub variable_case : Tests {
+    MockComic::fake_file('file.templ', '[% a %][% A %]');
+    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', ('a' => 'a', 'A' => 'A')), "aA");
+}

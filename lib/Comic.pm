@@ -1099,45 +1099,54 @@ sub _do_export_html {
     my ($self, $language, $template) = @ARG;
 
     my %vars;
+    $vars{'comic'} = $self;
     my $title = $self->{meta_data}->{title}->{$language};
     # SVG, being XML, needs to encode XML special characters, but does not do
     # HTML encoding. So first reverse the XML encoding, then apply any HTML
     # encoding.
+# @dontCommit but should it encode e.g., Ü as &Uuml; if I specify utf8?
     $vars{title} = encode_entities(decode_entities($title));
     $vars{png_file} = $self->{pngFile}{$language};
-    $vars{modified} = $self->{modified};
-    $vars{height} = $self->{height};
-    $vars{width} = $self->{width};
+#    $vars{modified} = $self->{modified};
+#    $vars{height} = $self->{height};
+#    $vars{width} = $self->{width};
+    # Still need to define url for non-per-comic pages like the archive.
+    # Since they share the same footer with comic pages, they both need url.
+    # Or define a dummy hash named comic for archive et al.
     $vars{'url'} = $self->{url}{$language};
     my %enc_opts = (encode_reserved => 1);
-    $vars{'urlUrlEncoded'} = uri_encode($vars{'url'}, %enc_opts);
+    $vars{'urlUrlEncoded'} = uri_encode($self->{url}{$language}, %enc_opts);
     $vars{'titleUrlEncoded'} = uri_encode($self->{meta_data}->{title}->{$language}, %enc_opts);
-    $vars{'image'} = $self->{imageUrl}{$language};
-    $vars{'first'} = $self->{'first'}{$language};
-    $vars{'prev'} = $self->{'prev'}{$language};
-    $vars{'next'} = $self->{'next'}{$language};
-    $vars{'last'} = $self->{'last'}{$language};
-    $vars{'languages'} = [grep { $_ ne $language } sort $self->_languages()];
+#    $vars{'image'} = $self->{imageUrl}{$language};
+#    $vars{'first'} = $self->{'first'}{$language};
+#    $vars{'prev'} = $self->{'prev'}{$language};
+#    $vars{'next'} = $self->{'next'}{$language};
+#    $vars{'last'} = $self->{'last'}{$language};
+    $vars{'languages'} = [grep { $_ ne $language } $self->_languages()];
     $vars{'languagecodes'} = { $self->_language_codes() };
     # Need clone the URLs so that there is no reference stored here, cause
     # later code may change these vars when creating index.html}, but if
     # it's a reference, the actual URL values get changed, too, and that
     # leads to wrong links.
     $vars{'languageurls'} = clone($self->{url});
-    $vars{'languagetitles'} = $self->{meta_data}->{title};
+# @dontCommit title was encoded, but this not?
+#    $vars{'languagetitles'} = $self->{meta_data}->{title};
     $vars{'who'} = _to_json_array(@{$self->{meta_data}->{who}->{$language}});
-    $vars{'published'} = trim($self->{meta_data}->{published}->{when});
+#    $vars{'published'} = $self->{meta_data}->{published}->{when};
     Readonly my $DIGITS_YEAR => 4;
-    $vars{'year'} = substr $vars{'published'}, 0, $DIGITS_YEAR;
+    $vars{'year'} = substr $self->{meta_data}->{published}->{when}, 0, $DIGITS_YEAR;
     $vars{'keywords'} = '';
     if (defined($self->{meta_data}->{tags}->{$language})) {
         $vars{'keywords'} = join q{,}, @{$self->{meta_data}->{tags}->{$language}};
     }
+# @dontCommit canonicalUrl is different for index.html (main url vs deep link)
     $vars{'canonicalUrl'} = $self->{url}{$language};
 
     # By default, use normal path with comics in comics/
     my $path = '../';
     $vars{'comicsPath'} = 'comics/';
+# @dontCommit clean up hrsn
+    $vars{'hrsn'} = '';
     # Adjust the path for backlog comics.
     $path = '../' . lc($language) . '/web/' if ($self->_not_yet_published());
     # Adjust the path for top-level index.html: the comics are in their own
@@ -1145,9 +1154,10 @@ sub _do_export_html {
     if ($self->{isLatestPublished}) {
         $path = '';
         $vars{'comicsPath'} = '';
+        $vars{'hrsn'} = 'comics/';
         $vars{png_file} = 'comics/' . $self->{pngFile}{$language};
-        $vars{'first'} = 'comics/' . $self->{'first'}{$language};
-        $vars{'prev'} = 'comics/' . $self->{'prev'}{$language};
+ #       $vars{'first'} = 'comics/' . $self->{'first'}{$language};
+ #       $vars{'prev'} = 'comics/' . $self->{'prev'}{$language};
         foreach my $l (keys %{$vars{'languageurls'}}) {
             # On index.html, link to the other language's index.html, not to
             # the canonical URL of the comic. Google trips over that and thinks
@@ -1165,6 +1175,8 @@ sub _do_export_html {
         $vars{'contrib'} = $contrib;
         $vars{'jsonContrib'} = '"contributor": ' . _to_json_array(@{$contrib}) . ",\n   ";
     }
+# @dontCommit [% IF comic.meta_data.translator.$Language %] errors out if
+# translator does not exit.
     $vars{'translator'} = '';
     if ($self->{meta_data}->{translator} && $self->{meta_data}->{translator}->{$language}) {
         $vars{'translator'} = $self->{meta_data}->{translator}->{$language};
@@ -1392,6 +1404,7 @@ sub _templatize {
         POST_CHOMP => 2, # removes spaces after a directive
         # TRIM => 1,    # only used for BLOCKs
         VARIABLES => {
+            'Language' => $language,
             'language' => lcfirst($language),
         },
         ENCODING => 'utf8',
