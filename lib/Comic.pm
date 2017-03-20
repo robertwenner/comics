@@ -1137,11 +1137,14 @@ sub _do_export_html {
 
     # By default, use normal path with comics in comics/
     my $path = '../';
+    $vars{'comicsPath'} = 'comics/';
     # Adjust the path for backlog comics.
     $path = '../' . lc($language) . '/web/' if ($self->_not_yet_published());
-    # Adjust the path for top-level index.html
+    # Adjust the path for top-level index.html: the comics are in their own
+    # folder, but index.html is in that folder's parent folder.
     if ($self->{isLatestPublished}) {
         $path = '';
+        $vars{'comicsPath'} = '';
         $vars{png_file} = 'comics/' . $self->{pngFile}{$language};
         $vars{'first'} = 'comics/' . $self->{'first'}{$language};
         $vars{'prev'} = 'comics/' . $self->{'prev'}{$language};
