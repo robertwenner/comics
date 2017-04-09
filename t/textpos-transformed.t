@@ -82,9 +82,35 @@ SVG
 }
 
 __END__
+
 # Maybe http://search.cpan.org/~colink/SVG-Estimate-1.0107/ would help?
-# I could copy path and text node to a new document and then get its size.
-# But does that tell me where in the old one it is located?
+# Unfortunately, it does not pass its tests and does not install :-(
+
+# Then I could get the dimensions of the text (maybe, SVG::Estimate does not
+# mention it supports text, even though it supports lots of other shapes and
+# things), and subtract the x lenbth from the x coordinate.
+
+sub right_aligned_texts : Tests {
+    assert_order(<<'SVG', "123");
+  <g inkscape:groupmode="layer" inkscape:label="English">
+    <text x="10" y="0">
+        <tspan x="10" y="0">1</tspan>
+    </text>
+    <text x="30" y="0">
+        <tspan x="30" y="0">3</tspan>
+    </text>
+    <text x="40" y="0" style="text-align:end;">
+        <tspan x="40" y="0">2</tspan>
+    </text>
+  </g>
+SVG
+}
+
+
+__END__
+# With SVG::Estimate, I could copy path and text node to a new document and
+# then get its size. But does that tell me where in the old one it is
+# located?
 
 sub text_on_path_simple : Tests {
     my $svg = <<'SVG';
@@ -126,7 +152,7 @@ SVG
 
 __END__
 sub text_on_path_tspan_with_dx : Tests {
-    ok(0);
+    ok(0, 'write me');
 }
 
 
