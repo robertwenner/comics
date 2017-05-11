@@ -36,7 +36,7 @@ sub tweets : Tests {
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
         $MockComic::DESCRIPTION => { $MockComic::ENGLISH => 'This is the latest beercomic!' },
     );
-    Comic::post_to_social_media('English');
+    Comic::post_to_social_media('png', 'English');
     is($file{$MockComic::ENGLISH}, 'generated/english/web/comics/latest-comic.png');
     is($desc{$MockComic::ENGLISH}, 'This is the latest beercomic!');
 }
@@ -47,7 +47,7 @@ sub shortens_twitter_text : Tests {
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
         $MockComic::DESCRIPTION => { $MockComic::ENGLISH => 'x' x 150 },
     );
-    Comic::post_to_social_media('English');
+    Comic::post_to_social_media('png', 'English');
     is($desc{$MockComic::ENGLISH}, 'x' x 130);
 }
 
@@ -58,7 +58,7 @@ sub hashtags : Tests {
         $MockComic::DESCRIPTION => { $MockComic::ENGLISH => 'Funny stuff' },
         $MockComic::TWITTER => { $MockComic::ENGLISH => ['#beer', '#craftbeer', '@you'] },
     );
-    Comic::post_to_social_media('English');
+    Comic::post_to_social_media('png', 'English');
     is($desc{$MockComic::ENGLISH}, '#beer #craftbeer @you Funny stuff');
 }
 
@@ -78,7 +78,7 @@ sub multiple_languages : Tests {
             $MockComic::DEUTSCH => ['#Bier', '#selbstbrauen', '@duda'],
         },
     );
-    Comic::post_to_social_media($MockComic::ENGLISH, $MockComic::DEUTSCH);
+    Comic::post_to_social_media('png', $MockComic::ENGLISH, $MockComic::DEUTSCH);
     is($desc{$MockComic::ENGLISH}, '#beer #craftbeer @you Funny stuff');
     is($desc{$MockComic::DEUTSCH}, '#Bier #selbstbrauen @duda Lustiges Bier');
 }
@@ -102,7 +102,7 @@ sub no_languages_tweets_all_languages_with_meta_data : Tests {
             # no Twitter tags for Spanish; ignore it
         },
     );
-    Comic::post_to_social_media();
+    Comic::post_to_social_media('png');
     is($desc{$MockComic::ENGLISH}, '#beer #craftbeer @you Funny stuff');
     is($file{$MockComic::ENGLISH}, 'generated/english/web/comics/latest-comic.png');
     is($desc{$MockComic::DEUTSCH}, '#Bier #selbstbrauen @duda Lustiges Bier');
@@ -126,9 +126,33 @@ sub does_not_tweet_if_no_new_comic : Tests {
         $MockComic::DESCRIPTION => { $MockComic::ENGLISH => 'Funny stuff' },
         $MockComic::TWITTER => { $MockComic::ENGLISH => ['#beer', '#craftbeer', '@you'] },
     );
-    is(Comic::post_to_social_media(), 1, 'wrong return code');
+    is(Comic::post_to_social_media('png'), 1, 'wrong return code');
     is($desc{$MockComic::ENGLISH}, undef);
 }
+
+
+sub complains_about_bad_mode : Tests {
+    eval {
+        Comic::post_to_social_media('whatever');
+    };
+    like($@, qr(Unknown twitter mode 'whatever'));
+    eval {
+        Comic::post_to_social_media();
+    };
+    like($@, qr(Missing twitter mode));
+}
+
+
+sub html_tweet : Tests {
+    MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+        $MockComic::DESCRIPTION => { $MockComic::ENGLISH => 'Funny stuff' },
+        $MockComic::TWITTER => { $MockComic::ENGLISH => ['#beer', '#craftbeer', '@you'] },
+    );
+    Comic::post_to_social_media('html', 'English');
+    is($file{$MockComic::ENGLISH}, 'https://beercomics.com/comics/latest-comic.html');
+}
+
 
 __END__
 sub toots : Tests {

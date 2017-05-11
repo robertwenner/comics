@@ -1900,6 +1900,9 @@ Parameters:
 
 =over 4
 
+    =item B<mode> png or html to decide whether to post the PNG file directly
+        or rather the link to the comic's page.
+
     =item B<@languages> for which languages to promote the last comic. If not
         given, the comic is tweeted for all languages that have a meta data
         twitter entry.
@@ -1912,7 +1915,10 @@ comic isn't from today.
 =cut
 
 sub post_to_social_media {
-    my @languages = @ARG;
+    my ($mode, @languages) = @ARG;
+
+    croak('Missing twitter mode') unless ($mode);
+    croak("Unknown twitter mode '$mode'") unless ($mode eq 'png' || $mode eq 'html');
 
     my @published = sort _compare grep { _no_language_archive_filter($_) } @comics;
     my $comic = $published[-1];
@@ -1923,14 +1929,16 @@ sub post_to_social_media {
         push @languages, sort keys %{$comic->{meta_data}->{twitter}};
     }
     foreach my $language (@languages) {
-        my $png_file = "$comic->{whereTo}{$language}/$comic->{pngFile}{$language}";
-        # my $png_file = $comic->{url}{$language};
+        my $file_or_url;
+        $file_or_url = "$comic->{whereTo}{$language}/$comic->{pngFile}{$language}" if ($mode eq 'png');
+        $file_or_url = "$comic->{url}{$language}" if ($mode eq 'html');
+
         my $description = $comic->{meta_data}->{description}->{$language};
         my $tags = '';
         if ($comic->{meta_data}->{twitter}->{$language}) {
             $tags = join(' ', @{$comic->{meta_data}->{twitter}->{$language}}) . ' ';
         }
-        _tweet($png_file, $language, _shorten_for_twitter("$tags$description"));
+        _tweet($file_or_url, $language, _shorten_for_twitter("$tags$description"));
     }
     return 0;
 }
@@ -1947,7 +1955,7 @@ sub _is_not_current {
 
 
 sub _tweet {
-    my ($image_file_name, $language, $text) = @_;
+    my ($file_or_url, $language, $text) = @_;
 
     my $twitter = Net::Twitter->new(
         # App page: https://apps.twitter.com/app/13139251
@@ -1959,9 +1967,15 @@ sub _tweet {
         consumer_key => 'F4lnbr6CxhZBD3w6spsgidRRc',
         ssl => 1,
     );
-#    my $status = $twitter->update($image_file_name);
-    my $status = $twitter->update_with_media($text, [$image_file_name]);
-#    use Data::Dumper; print STDERR Dumper($status), "\n";
+    my $status;
+    if ($file_or_url =~ m{^https?://}) {
+        $status = $twitter->update($file_or_url);
+    }
+    else {
+        $status = $twitter->update_with_media($text, [$file_or_url]);
+    }
+
+    # use Data::Dumper; print STDERR Dumper($status), "\n";
     return;
 }
 
