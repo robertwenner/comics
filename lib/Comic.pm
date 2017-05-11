@@ -1521,7 +1521,13 @@ sub _check_all_series {
 
 sub _archive_filter {
     my ($comic, $language) = @ARG;
-    return !$comic->_not_yet_published() && $comic->_is_for($language)
+    return !$comic->_not_yet_published() && $comic->_is_for($language);
+}
+
+
+sub _no_language_archive_filter {
+    my ($comic) = @ARG;
+    return !$comic->_not_yet_published();
 }
 
 
@@ -1885,24 +1891,38 @@ sub _warn {
 
 =head2 post_to_social_media
 
-Promotes the latest comic on social media.
+Posts the latest comic on social media.
+
+Will not post a comic if it isn't scheduled for today, to avoid not having a
+comic and then blasting out the post for previous week's comic.
 
 Parameters:
 
 =over 4
 
-    =item B<@languages> for which languages to promote the last comic.
+    =item B<@languages> for which languages to promote the last comic. If not
+        given, the comic is tweeted for all languages that have a meta data
+        twitter entry.
 
 =back
+
+Returns 0 if successful, or 1 if no current comic was found or the last
+comic isn't from today.
 
 =cut
 
 sub post_to_social_media {
     my @languages = @ARG;
 
+    my @published = sort _compare grep { _no_language_archive_filter($_) } @comics;
+    my $comic = $published[-1];
+
+    return 1 if ($comic->_is_not_current());
+
+    if (@languages == 0) {
+        push @languages, sort keys %{$comic->{meta_data}->{twitter}};
+    }
     foreach my $language (@languages) {
-        my @published = sort _compare grep { _archive_filter($_, $language) } @comics;
-        my $comic = $published[-1];
         my $png_file = "$comic->{whereTo}{$language}/$comic->{pngFile}{$language}";
         # my $png_file = $comic->{url}{$language};
         my $description = $comic->{meta_data}->{description}->{$language};
@@ -1910,14 +1930,24 @@ sub post_to_social_media {
         if ($comic->{meta_data}->{twitter}->{$language}) {
             $tags = join(' ', @{$comic->{meta_data}->{twitter}->{$language}}) . ' ';
         }
-        _tweet($png_file, _shorten_for_twitter("$tags$description"));
+        _tweet($png_file, $language, _shorten_for_twitter("$tags$description"));
     }
-    return;
+    return 0;
+}
+
+
+sub _is_not_current {
+    my ($self) = @ARG;
+
+    my $today = _now();
+    $today->set_time_zone(_get_tz());
+    my $published = $self->{meta_data}->{published}->{when} || $UNPUBLISHED;
+    return ($published cmp $today->ymd) < 0;
 }
 
 
 sub _tweet {
-    my ($image_file_name, $text) = @_;
+    my ($image_file_name, $language, $text) = @_;
 
     my $twitter = Net::Twitter->new(
         # App page: https://apps.twitter.com/app/13139251

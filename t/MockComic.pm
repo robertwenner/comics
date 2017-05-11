@@ -3,6 +3,7 @@ package MockComic;
 use strict;
 use warnings;
 no warnings qw/redefine/;
+use utf8;
 use Readonly;
 use Test::More;
 use Comic;
@@ -13,6 +14,8 @@ our Readonly $ENGLISH = 'English';
 our Readonly $META_ENGLISH = 'MetaEnglish';
 our Readonly $DEUTSCH = 'Deutsch';
 our Readonly $META_DEUTSCH = 'MetaDeutsch';
+our Readonly $ESPAÑOL = 'Español';
+our Readonly $META_ESPAÑOL = 'MetaEspañol';
 our Readonly $FRAMEWIDTH = 'framewidth';
 our Readonly $FIGUREN = 'Figuren';
 our Readonly $HINTERGRUND = 'Hintergrund';
@@ -59,6 +62,7 @@ my %defaultArgs = (
     $DOMAINS => {
         $ENGLISH => 'beercomics.com',
         $DEUTSCH => 'biercomics.de',
+        $ESPAÑOL => 'cervezacomcs.es',
     },
     $IN_FILE => 'some_comic.svg',
     $MTIME => 0,
