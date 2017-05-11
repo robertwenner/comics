@@ -104,8 +104,11 @@ sub no_languages_tweets_all_languages_with_meta_data : Tests {
     );
     Comic::post_to_social_media();
     is($desc{$MockComic::ENGLISH}, '#beer #craftbeer @you Funny stuff');
+    is($file{$MockComic::ENGLISH}, 'generated/english/web/comics/latest-comic.png');
     is($desc{$MockComic::DEUTSCH}, '#Bier #selbstbrauen @duda Lustiges Bier');
+    is($file{$MockComic::DEUTSCH}, 'generated/deutsch/web/comics/neustes-comic.png');
     is($desc{$MockComic::ESPAÑOL}, undef);
+    is($file{$MockComic::ESPAÑOL}, undef);
 }
 
 
