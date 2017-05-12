@@ -113,7 +113,7 @@ sub no_languages_tweets_all_languages_with_meta_data : Tests {
 
 
 sub test_resets_comics : Tests {
-    # Makes I don't forget to clear the %desc and %file hashes between tests.
+    # Makes sure I don't forget to clear the %desc and %file hashes between tests.
     is($desc{$MockComic::ENGLISH}, undef);
 }
 
@@ -150,6 +150,7 @@ sub html_tweet : Tests {
         $MockComic::TWITTER => { $MockComic::ENGLISH => ['#beer', '#craftbeer', '@you'] },
     );
     Comic::post_to_social_media('html', 'English');
+
     is($file{$MockComic::ENGLISH}, 'https://beercomics.com/comics/latest-comic.html');
 }
 
