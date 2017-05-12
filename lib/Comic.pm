@@ -1975,7 +1975,8 @@ sub _tweet {
         $status = $twitter->update_with_media($text, [$file_or_url]);
     }
 
-    # use Data::Dumper; print STDERR Dumper($status), "\n";
+    use Data::Dumper;
+    print {*STDERR} Dumper($status), "\n" or croak("Cannot dump twitter status: $OS_ERROR");
     return;
 }
 
