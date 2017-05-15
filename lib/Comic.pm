@@ -1976,7 +1976,7 @@ sub _tweet {
     }
 
     use Data::Dumper;
-    print {*STDERR} Dumper($status), "\n" or croak("Cannot dump twitter status: $OS_ERROR");
+    print {*STDOUT} Dumper($status), "\n" or croak("Cannot dump twitter status: $OS_ERROR");
     return;
 }
 
