@@ -247,7 +247,7 @@ sub _single_per_language_json {
         next unless(defined($a{$what})); # Tests may not define all possible properties
 
         my $hadOne = 0;
-        foreach my $lang (keys $a{$what}) {
+        foreach my $lang (keys %{$a{$what}}) {
             if ($hadOne) {
                 $json .= ",\n";
             }
@@ -272,7 +272,7 @@ sub _array_per_language_json {
         next unless(defined($a{$what})); # Tests may not define all properties
 
         my $hadOne = 0;
-        foreach my $lang (keys $a{$what}) {
+        foreach my $lang (keys %{$a{$what}}) {
             if ($hadOne) {
                 $json .= ",\n";
             }
@@ -304,7 +304,7 @@ sub _hash_per_language_json {
         next unless(defined($a{$what})); # Tests may not define all properties
 
         my $hadOne = 0;
-        foreach my $lang (keys $a{$what}) {
+        foreach my $lang (keys %{$a{$what}}) {
             if ($hadOne) {
                 $json .= ",\n";
             }
@@ -386,7 +386,7 @@ sub _add_text_layers {
     return '' unless(defined $args{$TEXTS});
 
     my $xml = '';
-    foreach my $layerName (keys $args{$TEXTS}) {
+    foreach my $layerName (keys %{$args{$TEXTS}}) {
         $xml .= <<"LAYER";
   <g
      inkscape:groupmode="layer"

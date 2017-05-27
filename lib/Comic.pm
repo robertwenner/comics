@@ -1012,7 +1012,7 @@ sub _languages {
     my ($self) = @ARG;
 
     my @languages;
-    push @languages, keys $self->{meta_data}->{title};
+    push @languages, keys %{$self->{meta_data}->{title}};
     # Needs the extra @sorted array cause the behavior of sort in scalar context
     # is undefined. (WTF?!)
     # http://search.cpan.org/~thaljef/Perl-Critic/lib/Perl/Critic/Policy/Subroutines/ProhibitReturnSort.pm
@@ -1224,7 +1224,7 @@ sub _language_codes {
     my ($self) = @_;
 
     my %codes;
-    LANG: foreach my $lang (keys $self->{meta_data}->{title}) {
+    LANG: foreach my $lang (keys %{$self->{meta_data}->{title}}) {
         if ($language_code_cache{$lang}) {
             $codes{$lang} = $language_code_cache{$lang};
             next LANG;
@@ -1497,7 +1497,7 @@ sub _check_all_series {
 
     foreach my $comic (@comics) {
         next unless (defined($comic->{meta_data}->{series}));
-        foreach my $language (keys $comic->{meta_data}->{series}) {
+        foreach my $language (keys %{$comic->{meta_data}->{series}}) {
             foreach my $series ($comic->{meta_data}->{series}->{$language}) {
                 $series_count{$language}{$series}++;
             }
@@ -1506,7 +1506,7 @@ sub _check_all_series {
 
     foreach my $comic (@comics) {
         next unless (defined($comic->{meta_data}->{series}));
-        foreach my $language (keys $comic->{meta_data}->{series}) {
+        foreach my $language (keys %{$comic->{meta_data}->{series}}) {
             foreach my $series ($comic->{meta_data}->{series}->{$language}) {
                 if ($series_count{$language}{$series} == 1) {
                     $comic->_warn("$language has only one comic in the '$series' series");
