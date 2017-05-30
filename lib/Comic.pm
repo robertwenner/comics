@@ -190,7 +190,7 @@ sub _load {
 
         my $base;
         if ($self->_not_yet_published()) {
-            $base = 'backlog';
+            $base = 'backlog/' . lc $language;
         }
         else {
             $base = lc($language) . '/web/comics';
@@ -1166,7 +1166,12 @@ sub _do_export_html {
         }
         $vars{'canonicalUrl'} =~ s{^(https://[^/]+/).+}{$1};
     }
-    $vars{'root'} = $path;
+    if ($self->_not_yet_published()) {
+        $vars{'root'} = "../$path";
+    }
+    else {
+        $vars{'root'} = $path;
+    }
 
     my $contrib = $self->{meta_data}->{contrib};
     $vars{'contrib'} = 0;
@@ -1588,6 +1593,7 @@ sub _do_export_backlog {
                 my $serie = $comic->{meta_data}->{series}->{$language};
                 $series{"$serie ($language)"}++ if ($serie);
             }
+            $comic->{htmlFile}{$language} = lc $language  . "/$comic->{htmlFile}{$language}";
         }
     }
 
