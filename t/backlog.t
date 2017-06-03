@@ -156,10 +156,9 @@ sub transcript : Test {
     my $comic = make_comic('Beer flavored', 'Deutsch', '4001-01-01');
     no warnings qw/redefine/;
     local *Comic::_slurp = sub {
-        return '[% IF backlog %][% transcriptHtml %][% END %]';
+        return '[% IF comic.not_yet_published() %][% transcriptHtml %][% END %]';
     };
     $comic->_do_export_html('Deutsch');
-    # Would have fail if the backlog variable was not set.
 }
 
 

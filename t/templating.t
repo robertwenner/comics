@@ -230,6 +230,23 @@ sub object_function_wrapped : Tests {
 }
 
 
+sub object_function_public : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::DEUTSCH => 'Bier trinken',
+        },
+        $MockComic::PUBLISHED_WHEN => '2099-01-01',
+    );
+    # Cannot call a private function (starting with an underscore), that always
+    # gets a var.undef error.
+    MockComic::fake_file('file.templ', "[%IF comic.not_yet_published()%]not yet[%END%]");
+    is(Comic::_templatize('comic.svg', 'file.templ', '', (
+            "comic" => $comic,
+        )),
+        'not yet');
+}
+
+
 sub from_comic : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
@@ -255,7 +272,7 @@ Biercomics: [% title %]
 last-modified: [% comic.modified %]
 description: [% description %]
 [% title %]
-[% png_file %] [% comic.height %] by [% comic.width %]
+[% comic.pngFile.$Language %] [% comic.height %] by [% comic.width %]
 [% transcriptJson %]
 [% transcriptHtml %]
 [% comic.url.$Language %]

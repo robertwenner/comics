@@ -189,7 +189,7 @@ sub _load {
         $self->_croak("No domain for $language") unless (defined $domains{$language});
 
         my $base;
-        if ($self->_not_yet_published()) {
+        if ($self->not_yet_published()) {
             $base = 'backlog/' . lc $language;
         }
         else {
@@ -1021,7 +1021,13 @@ sub _languages {
 }
 
 
-sub _not_yet_published {
+=head2 not_yet_published
+
+Checks whether this Comic is not yet published.
+
+=cut
+
+sub not_yet_published {
     my ($self) = @ARG;
 
     return 1 if ($self->{meta_data}->{published}->{where} ne 'web');
@@ -1058,7 +1064,7 @@ sub _find_next {
 
     foreach my $i (@{$nums}) {
         next if (@{$comics}[$i]->_not_for($language));
-        if (@{$comics}[$i]->_not_yet_published() == @{$comics}[$pos]->_not_yet_published()) {
+        if (@{$comics}[$i]->not_yet_published() == @{$comics}[$pos]->not_yet_published()) {
             return @{$comics}[$i];
         }
 
@@ -1091,7 +1097,7 @@ sub _is_for {
 
 sub _not_published_on_the_web {
     my ($self, $language) = @ARG;
-    return !$self->_is_for($language) || $self->_not_yet_published();
+    return !$self->_is_for($language) || $self->not_yet_published();
 }
 
 
@@ -1106,10 +1112,6 @@ sub _do_export_html {
     # encoding.
 # @dontCommit but should it encode e.g., Ü as &Uuml; if I specify utf8?
     $vars{title} = encode_entities(decode_entities($title));
-    $vars{png_file} = $self->{pngFile}{$language};
-#    $vars{modified} = $self->{modified};
-#    $vars{height} = $self->{height};
-#    $vars{width} = $self->{width};
     # Still need to define url for non-per-comic pages like the archive.
     # Since they share the same footer with comic pages, they both need url.
     # Or define a dummy hash named comic for archive et al.
@@ -1117,22 +1119,16 @@ sub _do_export_html {
     my %enc_opts = (encode_reserved => 1);
     $vars{'urlUrlEncoded'} = uri_encode($self->{url}{$language}, %enc_opts);
     $vars{'titleUrlEncoded'} = uri_encode($self->{meta_data}->{title}->{$language}, %enc_opts);
-#    $vars{'image'} = $self->{imageUrl}{$language};
-#    $vars{'first'} = $self->{'first'}{$language};
-#    $vars{'prev'} = $self->{'prev'}{$language};
-#    $vars{'next'} = $self->{'next'}{$language};
-#    $vars{'last'} = $self->{'last'}{$language};
     $vars{'languages'} = [grep { $_ ne $language } $self->_languages()];
     $vars{'languagecodes'} = { $self->_language_codes() };
     # Need clone the URLs so that there is no reference stored here, cause
-    # later code may change these vars when creating index.html}, but if
+    # later code may change these vars when creating index.html, but if
     # it's a reference, the actual URL values get changed, too, and that
     # leads to wrong links.
-    $vars{'languageurls'} = clone($self->{url});
+   $vars{'languageurls'} = clone($self->{url});
 # @dontCommit title was encoded, but this not?
 #    $vars{'languagetitles'} = $self->{meta_data}->{title};
     $vars{'who'} = _to_json_array(@{$self->{meta_data}->{who}->{$language}});
-#    $vars{'published'} = $self->{meta_data}->{published}->{when};
     Readonly my $DIGITS_YEAR => 4;
     $vars{'year'} = substr $self->{meta_data}->{published}->{when}, 0, $DIGITS_YEAR;
     $vars{'keywords'} = '';
@@ -1143,21 +1139,18 @@ sub _do_export_html {
     $vars{'canonicalUrl'} = $self->{url}{$language};
 
     # By default, use normal path with comics in comics/
-    my $path = '../';
     $vars{'comicsPath'} = 'comics/';
 # @dontCommit clean up hrsn
     $vars{'hrsn'} = '';
     # Adjust the path for backlog comics.
-    $path = '../' . lc($language) . '/web/' if ($self->_not_yet_published());
+    my $path = '../';
+    $path = '../' . lc($language) . '/web/' if ($self->not_yet_published());
     # Adjust the path for top-level index.html: the comics are in their own
     # folder, but index.html is in that folder's parent folder.
     if ($self->{isLatestPublished}) {
         $path = '';
         $vars{'comicsPath'} = '';
         $vars{'hrsn'} = 'comics/';
-        $vars{png_file} = 'comics/' . $self->{pngFile}{$language};
- #       $vars{'first'} = 'comics/' . $self->{'first'}{$language};
- #       $vars{'prev'} = 'comics/' . $self->{'prev'}{$language};
         foreach my $l (keys %{$vars{'languageurls'}}) {
             # On index.html, link to the other language's index.html, not to
             # the canonical URL of the comic. Google trips over that and thinks
@@ -1166,7 +1159,7 @@ sub _do_export_html {
         }
         $vars{'canonicalUrl'} =~ s{^(https://[^/]+/).+}{$1};
     }
-    if ($self->_not_yet_published()) {
+    if ($self->not_yet_published()) {
         $vars{'root'} = "../$path";
     }
     else {
@@ -1195,7 +1188,6 @@ sub _do_export_html {
         $vars{transcriptJson} .= _escape_json($t);
     }
     $vars{transcriptHtml} =~ s{:</p>\s*<p>}{: }g;
-    $vars{'backlog'} = $self->_not_yet_published();
 
     my $tags = '';
     foreach my $t (@{$self->{meta_data}->{tags}->{$language}}) {
@@ -1526,19 +1518,19 @@ sub _check_all_series {
 
 sub _archive_filter {
     my ($comic, $language) = @ARG;
-    return !$comic->_not_yet_published() && $comic->_is_for($language);
+    return !$comic->not_yet_published() && $comic->_is_for($language);
 }
 
 
 sub _no_language_archive_filter {
     my ($comic) = @ARG;
-    return !$comic->_not_yet_published();
+    return !$comic->not_yet_published();
 }
 
 
 sub _backlog_filter {
     my ($comic) = @ARG;
-    return $comic->_not_yet_published();
+    return $comic->not_yet_published();
 }
 
 
@@ -1722,7 +1714,7 @@ sub size_map {
 
     foreach my $comic (sort _compare @comics) {
         my $color = 'green';
-        $color = 'blue' if ($comic->_not_yet_published());
+        $color = 'blue' if ($comic->not_yet_published());
         $svg->rectangle(x => 0, y => 0,
             width => $comic->{width} * $SCALE_BY,
             height => $comic->{height} * $SCALE_BY,
@@ -1886,7 +1878,7 @@ sub _warn {
     return if (@{$self->{warnings}} && ${$self->{warnings}}[-1] eq $msg);
     ## use critic
     push @{$self->{warnings}}, $msg;
-    $self->_croak($msg) unless ($self->_not_yet_published());
+    $self->_croak($msg) unless ($self->not_yet_published());
     # PerlCritic wants me to check that I/O to the console worked.
     ## no critic(InputOutput::RequireCheckedSyscalls)
     print "$msg\n";
