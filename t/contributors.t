@@ -126,8 +126,9 @@ sub contributor_credit_de_many : Test {
 
 sub translator_ok : Tests {
     my $template = <<'TEMPL';
-[% IF translator %]
-    <p style="contributors">Übersetzt von [% translator %].</p>
+[% DEFAULT comic.meta_datax.translator.$Language = 0 %]
+[% IF comic.meta_data.translator.$Language %]
+    <p style="contributors">Übersetzt von [% comic.meta_data.translator.$Language %].</p>
 [% END %]
 TEMPL
     my $comic = MockComic::make_comic($MockComic::TRANSLATOR => {
@@ -139,8 +140,9 @@ TEMPL
 
 sub translator_none : Tests {
     my $template = <<'TEMPL';
-[% IF translator %]
-    <p style="contributors">Übersetzt von [% translator %].</p>
+[% DEFAULT comic.meta_data.translator.$Language = 0 %]
+[% IF comic.meta_data.translator.$Language %]
+    <p style="contributors">Übersetzt von [% comic.meta_data.translator.$Language %].</p>
 [% END %]
 TEMPL
     my $comic = MockComic::make_comic($MockComic::TRANSLATOR => {
