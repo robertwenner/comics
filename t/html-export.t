@@ -581,3 +581,9 @@ XML
     like($exported, qr{URL: https%3A%2F%2Fbeercomics.com%2Fcomics%2Fdrinking-beer.html}m, 'URL');
     like($exported, qr{Title: Drinking%20Beer}m, 'title');
 }
+
+
+sub unhtml : Tests {
+    is(Comic::_unhtml('&lt;&quot;&amp;&quot;&gt;'), '<"&">');
+    is(Comic::_unhtml("isn't it?"), "isn't it?");
+}

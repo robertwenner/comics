@@ -239,8 +239,8 @@ sub _get_tz {
 
 Exports PNGs for all languages with meta data in the graphic.
 
-The png file will be the lower case title of the comic, limited to ASCII
-only characters. It will be placed in F<generated/web/$language/>.
+The png file will be the lower case title of the comic, limited to letters,
+numbers, and hyphens only. It will be placed in F<generated/web/$language/>.
 
 Inkscape files must have meta data matching layer names, e.g., "English" in
 the meta data and an "English" layer and an "MetaEnglish" layer
@@ -874,9 +874,10 @@ sub _svg_to_png {
     system($export_cmd) && $self->_croak("could not export: $export_cmd: $OS_ERROR");
 
     my $tool = Image::ExifTool->new();
-    $self->_set_png_meta($tool, 'Title', $self->{meta}->{title}->{$language});
+    $self->_set_png_meta($tool, 'Title', _unhtml($self->{meta_data}->{title}->{$language}));
     $self->_set_png_meta($tool, 'Artist', 'Robert Wenner');
-    $self->_set_png_meta($tool, 'Description', join ' ', $self->_texts_for($language));
+    $self->_set_png_meta($tool, 'Author', 'Robert Wenner');
+    $self->_set_png_meta($tool, 'Description', _unhtml(join ' ', $self->_texts_for($language)));
     $self->_set_png_meta($tool, 'CreationTime', $self->{modified});
     $self->_set_png_meta($tool, 'Copyright', 'CC BY-NC-SA 4.0');
     $self->_set_png_meta($tool, 'URL', $self->{url}{$language});
@@ -889,6 +890,15 @@ sub _svg_to_png {
     system($shrink_cmd) && $self->_croak("Could not shrink: $shrink_cmd: $OS_ERROR");
 
     return;
+}
+
+
+sub _unhtml {
+    # Inkscape is XML, so it uses &lt;, &gt;, &amp;, and &quot; in it's meta
+    # data. This is convenient for the HTML export, but not for adding meta
+    # data to the .png file.
+    my ($text) = @ARG;
+    return decode_entities($text);
 }
 
 
@@ -1119,9 +1129,7 @@ sub _do_export_html {
     # later code may change these vars when creating index.html, but if
     # it's a reference, the actual URL values get changed, too, and that
     # leads to wrong links.
-   $vars{'languageurls'} = clone($self->{url});
-# @dontCommit title was encoded, but this not?
-#    $vars{'languagetitles'} = $self->{meta_data}->{title};
+    $vars{'languageurls'} = clone($self->{url});
     $vars{'who'} = _to_json_array(@{$self->{meta_data}->{who}->{$language}});
     Readonly my $DIGITS_YEAR => 4;
     $vars{'year'} = substr $self->{meta_data}->{published}->{when}, 0, $DIGITS_YEAR;
