@@ -1183,11 +1183,6 @@ sub _do_export_html {
     }
     $vars{transcriptHtml} =~ s{:</p>\s*<p>}{: }g;
 
-    my $tags = '';
-    foreach my $t (@{$self->{meta_data}->{tags}->{$language}}) {
-        $tags .= ', ' unless ($tags eq '');
-        $tags .= $t;
-    }
     $vars{description} = encode_entities($self->{meta_data}->{description}->{$language});
 
     $vars{see} = $self->_references($language);
