@@ -446,7 +446,7 @@ sub fb_open_graph : Tests {
 <meta property="og:type" content="article"/>
 <meta property="og:title" content="[% comic.meta_data.title.$Language %]"/>
 <meta property="og:site_name" content="Biercomics"/>
-<meta property="og:description" content="[% description %]"/>
+<meta property="og:description" content="[% FILTER html %][% comic.meta_data.description.$Language %][% END %]"/>
 <meta property="og:image" content="[% comic.imageUrl.$Language %]"/>
 <meta property="og:locale" content="de"/>
 <meta property="og:image:type" content="image/png"/>

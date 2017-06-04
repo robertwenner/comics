@@ -270,7 +270,7 @@ sub from_comic : Tests {
     MockComic::fake_file('templates/deutsch/comic-page.templ', <<'TEMPLATE');
 Biercomics: [% comic.meta_data.title.$Language %]
 last-modified: [% comic.modified %]
-description: [% description %]
+description: [% FILTER html %][% comic.meta_data.description.$Language %][% END %]
 [% comic.meta_data.title.$Language %]
 [% comic.pngFile.$Language %] [% comic.height %] by [% comic.width %]
 [% transcriptJson %]
