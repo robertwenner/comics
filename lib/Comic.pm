@@ -1169,14 +1169,10 @@ sub _do_export_html {
     }
 
     my $contrib = $self->{meta_data}->{contrib};
-    $vars{'contrib'} = 0;
     $vars{'jsonContrib'} = '';
-    if (defined($contrib) && join('', @{$contrib}) !~ m{^\s*$}) {
-        $vars{'contrib'} = $contrib;
+    if ($contrib && @{$contrib}) {
         $vars{'jsonContrib'} = '"contributor": ' . _to_json_array(@{$contrib}) . ",\n   ";
     }
-# @dontCommit [% IF comic.meta_data.translator.$Language %] errors out if
-# translator does not exit.
     $vars{'translator'} = '';
     if ($self->{meta_data}->{translator} && $self->{meta_data}->{translator}->{$language}) {
         $vars{'translator'} = $self->{meta_data}->{translator}->{$language};

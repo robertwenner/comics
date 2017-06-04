@@ -17,11 +17,12 @@ sub set_up : Test(setup) {
 
 sub write_templ_en {
     my $template = <<'TEMPL';
-[% IF contrib %]
+[% DEFAULT comic.meta_data.contrib = 0 %]
+[% IF comic.meta_data.contrib && comic.meta_data.contrib.size %]
     <p style="contributors">With help from
-        [% FOREACH c IN contrib %]
-            [% c != contrib.first && c == contrib.last ? ' and ' : '' %]
-            [% c %][% contrib.defined(2) ? ', ' : '' %]
+        [% FOREACH c IN comic.meta_data.contrib %]
+            [% c != comic.meta_data.contrib.first && c == comic.meta_data.contrib.last ? ' and ' : '' %]
+            [% c %][% comic.meta_data.contrib.defined(2) ? ', ' : '' %]
         [% END %]
     </p>
 [% END %]
@@ -32,9 +33,10 @@ TEMPL
 
 sub write_templ_de {
     my $template = <<'TEMPL';
-[% IF contrib %]
+[% DEFAULT comic.meta_data.contrib = 0 %]
+[% IF comic.meta_data.contrib && comic.meta_data.contrib.size %]
     <p style="contributors">Mit Ideen von
-[% FOREACH c IN contrib %][% c != contrib.first && c == contrib.last ? ' und ' : '' %][% c != contrib.first && c != contrib.last ? ', ' : '' %][% c %][% END %]
+[% FOREACH c IN comic.meta_data.contrib %][% c != comic.meta_data.contrib.first && c == comic.meta_data.contrib.last ? ' und ' : '' %][% c != comic.meta_data.contrib.first && c != comic.meta_data.contrib.last ? ', ' : '' %][% c %][% END %]
     </p>
 [% END %]
 TEMPL
@@ -61,20 +63,6 @@ sub contributor_credit_en_none : Tests {
 sub contributor_credit_en_empty : Tests {
     my $comic = MockComic::make_comic($MockComic::JSON =>
         "&quot;contrib&quot;: []");
-    like(write_templ_en($comic), qr{\A\s*\z}xim);
-}
-
-
-sub contributor_credit_en_empty_quotes : Tests {
-    my $comic = MockComic::make_comic($MockComic::JSON =>
-        "&quot;contrib&quot;: [ &quot;&quot;]");
-    like(write_templ_en($comic), qr{\A\s*\z}xim);
-}
-
-
-sub contributor_credit_en_whitespace_quotes : Tests {
-    my $comic = MockComic::make_comic($MockComic::JSON =>
-        "&quot;contrib&quot;: [ &quot;   &quot;  ,  \t  &quot; &quot;]");
     like(write_templ_en($comic), qr{\A\s*\z}xim);
 }
 
