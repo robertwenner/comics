@@ -18,7 +18,8 @@ sub set_up : Test(setup) {
 [% END %]
 [% modified %]
 TEMPL
-    MockComic::fake_file("templates/deutsch/comic-page.templ", "[% title %]");
+    MockComic::fake_file("templates/deutsch/comic-page.templ",
+        '[% comic.meta_data.title.$Language %]');
 }
 
 
@@ -36,7 +37,7 @@ sub make_comic {
 
 sub one_comic : Tests {
     my $comic = make_comic('Bier', 'Deutsch', '2016-01-01');
-    Comic::export_archive('backlog.templ', 'generated/backlog.html', 
+    Comic::export_archive('backlog.templ', 'generated/backlog.html',
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
         {'Deutsch' => 'archiv.html'},
         {'Deutsch' => 'templates/deutsch/comic-page.templ'});

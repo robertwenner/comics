@@ -1106,12 +1106,6 @@ sub _do_export_html {
 
     my %vars;
     $vars{'comic'} = $self;
-    my $title = $self->{meta_data}->{title}->{$language};
-    # SVG, being XML, needs to encode XML special characters, but does not do
-    # HTML encoding. So first reverse the XML encoding, then apply any HTML
-    # encoding.
-# @dontCommit but should it encode e.g., Ü as &Uuml; if I specify utf8?
-    $vars{title} = encode_entities(decode_entities($title));
     # Still need to define url for non-per-comic pages like the archive.
     # Since they share the same footer with comic pages, they both need url.
     # Or define a dummy hash named comic for archive et al.

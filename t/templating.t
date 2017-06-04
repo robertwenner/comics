@@ -268,10 +268,10 @@ sub from_comic : Tests {
 
     MockComic::fake_file('templates/deutsch/sitemap-xml.templ', '...');
     MockComic::fake_file('templates/deutsch/comic-page.templ', <<'TEMPLATE');
-Biercomics: [% title %]
+Biercomics: [% comic.meta_data.title.$Language %]
 last-modified: [% comic.modified %]
 description: [% description %]
-[% title %]
+[% comic.meta_data.title.$Language %]
 [% comic.pngFile.$Language %] [% comic.height %] by [% comic.width %]
 [% transcriptJson %]
 [% transcriptHtml %]

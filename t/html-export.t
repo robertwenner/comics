@@ -14,7 +14,7 @@ __PACKAGE__->runtests() unless caller;
 sub set_up : Test(setup) {
     MockComic::set_up();
     MockComic::fake_file("de-comic.templ", "...");
-    MockComic::fake_file("en-comic.templ", "[% title %]");
+    MockComic::fake_file("en-comic.templ", '[% comic.meta_data.title.$Language %]');
     MockComic::fake_file("de-sitemap.templ", "...");
     MockComic::fake_file("en-sitemap.templ", "...");
 }
@@ -299,7 +299,7 @@ sub language_links_none : Tests {
     );
     MockComic::fake_file('de-comic.templ', <<'XML');
 [% FOREACH l IN languages %]
-    <a hreflang="[% languagecodes.$l %]" href="[% languageurls.$l %]" title="[% comic.title.$l %]">[% l %]</a>
+    <a hreflang="[% languagecodes.$l %]" href="[% languageurls.$l %]" title="[% comic.meta_data.title.$l %]">[% l %]</a>
 [% END %]
 XML
     Comic::export_all_html({
@@ -444,7 +444,7 @@ sub fb_open_graph : Tests {
 <meta property="og:url" content="[% comic.url.$Language %]"/>
 <meta property="og:image:secure_url" content="[% comic.url.$Language %]"/>
 <meta property="og:type" content="article"/>
-<meta property="og:title" content="[% title %]"/>
+<meta property="og:title" content="[% comic.meta_data.title.$Language %]"/>
 <meta property="og:site_name" content="Biercomics"/>
 <meta property="og:description" content="[% description %]"/>
 <meta property="og:image" content="[% comic.imageUrl.$Language %]"/>
@@ -489,7 +489,7 @@ XML
 
 
 sub html_special_characters : Tests {
-    MockComic::fake_file('en-comic.templ', '[% title %]');
+    MockComic::fake_file('en-comic.templ', '[% comic.meta_data.title.$Language %]');
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { 'English' => "&lt;Ale &amp; Lager&gt;" },
     );
