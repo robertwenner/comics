@@ -1960,8 +1960,13 @@ sub _tweet {
         $status = $twitter->update_with_media($text, [$file_or_url]);
     }
 
-    use Data::Dumper;
-    print {*STDOUT} Dumper($status), "\n" or croak("Cannot dump twitter status: $OS_ERROR");
+    if (my $err = $EVAL_ERROR) {
+        croak $err unless blessed $status && $status->isa('Net::Twitter::Error');
+        croak $err->code, ': ', $err->message, "\n", $err->error, "\n";
+    }
+    print {*STDOUT} $status->{text}, "\n"
+        or croak("Cannot print twitter status: $OS_ERROR");
+
     return;
 }
 
