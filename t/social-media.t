@@ -126,7 +126,11 @@ sub does_not_tweet_if_no_new_comic : Tests {
         $MockComic::DESCRIPTION => { $MockComic::ENGLISH => 'Funny stuff' },
         $MockComic::TWITTER => { $MockComic::ENGLISH => ['#beer', '#craftbeer', '@you'] },
     );
-    is(Comic::post_to_social_media('png'), 1, 'wrong return code');
+    eval {
+        Comic::post_to_social_media('png');
+    };
+    like($@, qr(Not tweeting), 'Error message');
+    like($@, qr(2017-01-01), 'Includes date of the comic');
     is($desc{$MockComic::ENGLISH}, undef);
 }
 

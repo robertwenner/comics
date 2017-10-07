@@ -666,7 +666,7 @@ sub _check_meta {
     }
     $self->_warn("No texts in Meta$language layer") unless ($text_found);
     $self->_warn("First text in transcript must be from Meta$language, but is $first_text")
-        unless ($first_text_is_meta);
+        unless ($first_text_is_meta);  # would be nice to show the layer here, too
     return;
 }
 
@@ -1910,7 +1910,10 @@ sub post_to_social_media {
     my @published = sort _compare grep { _no_language_archive_filter($_) } @comics;
     my $comic = $published[-1];
 
-    return 1 if ($comic->_is_not_current());
+    if ($comic->_is_not_current()) {
+        $comic->_croak("Not tweeting cause latest comic is not current ($comic->{meta_data}->{published}->{when}");
+        return 1;
+    }
 
     if (@languages == 0) {
         push @languages, sort keys %{$comic->{meta_data}->{twitter}};
