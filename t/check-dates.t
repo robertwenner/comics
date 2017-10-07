@@ -94,11 +94,21 @@ sub no_collision_published_elsewhere : Tests {
 }
 
 
-sub not_a_friday : Tests {
+sub web_comic_scheduled_for_saturday : Tests {
     my $comic = MockComic::make_comic($MockComic::PUBLISHED_WHEN => '3000-01-04');
     eval {
         $comic->_check_date();
     };
     is($@, '');
     is_deeply($comic->{warnings}, ['scheduled for Saturday']);
+}
+
+
+sub web_comic_scheduled_for_thursday : Tests {
+    my $comic = MockComic::make_comic($MockComic::PUBLISHED_WHEN => '3000-01-02');
+    eval {
+        $comic->_check_date();
+    };
+    is($@, '');
+    is_deeply($comic->{warnings}, ['scheduled for Thursday']);
 }
