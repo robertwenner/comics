@@ -330,6 +330,7 @@ sub _check_date {
     $published_date->set_time_zone(_get_tz());
     my $today = _now();
     $today->set_time_zone(_get_tz());
+    # Allow older comics (initial set) to have non-Friday dates.
     if (DateTime->compare($published_date, $today) > 0) {
         Readonly my $FRIDAY => 5;
         if ($published_date->day_of_week() != $FRIDAY) {
@@ -730,8 +731,9 @@ sub _build_xpath {
 
 
 sub _text {
-    my ($label) = @ARG;
-    return _find_layers($label, "Meta$label") . "//$DEFAULT_NAMESPACE:text";
+    my ($language) = @ARG;
+    return _find_layers($language, "Meta$language", "HintergrundText$language") .
+        "//$DEFAULT_NAMESPACE:text";
 }
 
 
