@@ -109,12 +109,12 @@ sub one_frame_places_text_at_the_bottom : Tests {
 }
 
 
-sub two_frames_in_row_places_text_between : Tests {
+sub two_frames_in_columns_places_text_between : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::FRAMES => [
             # Frames takes height, width, x, y
-            100, 200, 0, 0,
-            100, 200, 110, 0,
+            100, 100, 0, 0,
+            100, 100, 110, 0,
         ],
     );
     is_deeply([102, 0, 'rotate(90, 102, 0)'], [$comic->_where_to_place_the_text()]);
@@ -126,15 +126,15 @@ sub two_frames_in_row_places_text_between : Tests {
 }
 
 
-sub two_frames_in_column_places_text_between : Tests {
+sub two_frames_in_rows_places_text_between : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::FRAMES => [
             # Frames takes height, width, x, y
-            100, 200, 0, 0,
-            100, 200, 0, 110,
+            100, 100, 0, 0,
+            100, 100, 0, 110,
         ],
     );
-    is_deeply([0, 108, undef], [$comic->_where_to_place_the_text()]);
+    is_deeply([$comic->_where_to_place_the_text()], [0, 108, undef]);
     $comic->_insert_url($comic->{dom}, 'Deutsch');
     my $text = get_layer($comic->{dom}, 'LicenseDeutsch')->getFirstChild();
     is($text->getAttribute('x'), 0);

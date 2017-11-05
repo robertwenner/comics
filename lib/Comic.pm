@@ -391,8 +391,8 @@ sub _check_json {
 
 
 sub _check_frames {
-    # frame coordinate is bottom left corner of a rectangle
-    # higher y means higher on the page, higher x means further to the right
+    # frame coordinate is top left corner of a rectangle
+    # higher y means lower on the page, higher x means further to the right
     my ($self) = @ARG;
 
     my $prev_bottom;
@@ -407,8 +407,8 @@ sub _check_frames {
     foreach my $f ($self->_all_frames_sorted()) {
         $self->_check_frame_style($f);
 
-        my $bottom = $f->getAttribute('y') * 1.0;
-        my $top = $bottom + $f->getAttribute('height') * 1.0;
+        my $top = $f->getAttribute('y') * 1.0;
+        my $bottom = $top + $f->getAttribute('height') * 1.0;
         my $left_side = $f->getAttribute('x') * 1.0;
         $left_most = $left_side unless (defined $left_most);
 
@@ -416,16 +416,15 @@ sub _check_frames {
         my $next_row = defined($prev_bottom) && _more_off($prev_bottom, $bottom, $FRAME_ROW_HEIGHT);
         $first_row = 0 if ($next_row);
         $right_most = $right_side if ($first_row);
-
         if (defined $prev_bottom) {
             if ($next_row) {
-                if ($prev_bottom < $top) {
+                if ($prev_bottom > $top) {
                     $self->_warn("frames overlap y at $prev_bottom and $top");
                 }
-                if ($prev_bottom < $FRAME_SPACING + $top) {
+                if ($prev_bottom + $FRAME_SPACING > $top) {
                     $self->_warn('frames too close y (' . ($prev_bottom - $FRAME_SPACING - $top) . ") at $prev_bottom and $top");
                 }
-                if ($prev_bottom - $FRAME_SPACING - $FRAME_SPACING_TOLERANCE > $top) {
+                if ($prev_bottom + $FRAME_SPACING + $FRAME_SPACING_TOLERANCE < $top) {
                     $self->_warn("frames too far y at $prev_bottom and $top");
                 }
 
@@ -479,14 +478,15 @@ sub _all_frames_sorted {
 
 
 sub _framesort {
-    return _rowify($b->getAttribute('y')) <=> _rowify($a->getAttribute('y'))
-        || $a->getAttribute('x') <=> $b->getAttribute('x');
-}
+    my ($xa, $ya) = ($a->getAttribute('x'), $a->getAttribute('y'));
+    my ($xb, $yb) = ($b->getAttribute('x'), $b->getAttribute('y'));
 
-
-sub _rowify {
-    my $y = shift;
-    return floor($y / $FRAME_ROW_HEIGHT); # too much? just use 10 to move the comma?
+    if (abs($ya - $yb) < $FRAME_ROW_HEIGHT) {
+        # If frames are at roughly equal height, they are in the same row, and
+        # their x position matters.
+        return $xa <=> $xb;
+    }
+    return $ya <=> $yb;
 }
 
 
@@ -828,8 +828,8 @@ sub _where_to_place_the_text {
     elsif (_frames_in_rows(@frames)) {
         # Prefer putting the text between two rows of frames so that it's
         # easier to read.
-        $x = $frames[0]->getAttribute('x');
-        $y = $frames[0]->getAttribute('y') - $SPACING;
+        $x = $frames[-1]->getAttribute('x');
+        $y = $frames[-1]->getAttribute('y') - $SPACING;
     }
     else {
         # If there are no rows of frames but more than two frames, put the text
@@ -1280,7 +1280,7 @@ sub _find_frames {
         }
         push @frame_tops, $y unless($found);
     }
-    @{$self->{frame_tops}} = sort @frame_tops;
+    @{$self->{frame_tops}} = sort { $a <=> $b } @frame_tops;
     return;
 }
 
@@ -1375,7 +1375,7 @@ sub _bottom_right {
 
     my @frames = $self->_all_frames_sorted();
     my $bottom_right = $frames[-1];
-    # from 0/0, x increases to right, y increases to the top
+    # from 0/0, x increases to right, y increases to the bottom
     return ($bottom_right->getAttribute('x') + $bottom_right->getAttribute('width'),
         $bottom_right->getAttribute('y'));
 }

@@ -37,6 +37,7 @@ sub try_comic {
 }
 
 
+
 sub width_ok : Test {
     my $comic = MockComic::make_comic($MockComic::FRAMEWIDTH => 1.25);
     $comic->_check_frames();
@@ -84,7 +85,7 @@ sub misaligned_top : Tests {
 sub misaligned_top_ok_different_row : Test {
     assert_ok(
         100, 100, 0, 0,
-        100, 100, 0, 110);
+        100, 100, 0, -110);
 }
 
 
@@ -124,15 +125,33 @@ sub misaligned_right_next_row : Tests {
 }
 
 
-sub misaligned_top_middle_row : Tests {
-    assert_bad(qr{too far},
+
+sub misaligned_top_middle_row_too_close : Tests {
+    assert_bad(qr{bottoms not aligned},
         # top row
         100, 100,   0,   0,
         100, 100, 110,   0,
         100, 100, 220,   0,
         # 2nd row
         100, 100,   0, 110,
-        100, 100, 110, 108, # 108 is off
+        100, 100, 110, 108, # width, height, x, y --- 108 is off
+        100, 100, 220, 110,
+        # 3rd row
+        100, 100,   0, 220,
+        100, 100, 110, 220,
+        100, 100, 220, 220);
+}
+
+
+sub misaligned_top_middle_row_too_far: Tests {
+    assert_bad(qr{bottoms not aligned},
+        # top row
+        100, 100,   0,   0,
+        100, 100, 110,   0,
+        100, 100, 220,   0,
+        # 2nd row
+        100, 100,   0, 110,
+        100, 100, 110, 113, # width, height, x, y --- 113 is off
         100, 100, 220, 110,
         # 3rd row
         100, 100,   0, 220,
