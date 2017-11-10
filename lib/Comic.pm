@@ -28,6 +28,7 @@ use Template;
 use SVG;
 use URI::Encode qw(uri_encode uri_decode);
 use Net::Twitter;
+use Reddit::Client;
 use Clone qw(clone);
 
 
@@ -1919,7 +1920,7 @@ sub post_to_social_media {
     my $comic = $published[-1];
 
     if ($comic->_is_not_current()) {
-        $comic->_croak("Not tweeting cause latest comic is not current ($comic->{meta_data}->{published}->{when}");
+        $comic->_croak("Not posting cause latest comic is not current ($comic->{meta_data}->{published}->{when}");
         return 1;
     }
 
@@ -1927,9 +1928,9 @@ sub post_to_social_media {
         push @languages, sort keys %{$comic->{meta_data}->{twitter}};
     }
     foreach my $language (@languages) {
-        my $file_or_url;
-        $file_or_url = "$comic->{whereTo}{$language}/$comic->{pngFile}{$language}" if ($mode eq 'png');
-        $file_or_url = "$comic->{url}{$language}" if ($mode eq 'html');
+        my $png = "$comic->{whereTo}{$language}/$comic->{pngFile}{$language}";
+        my $page = "$comic->{url}{$language}";
+        my $file_or_url = $mode eq 'html' ? $page : $png;
 
         my $description = $comic->{meta_data}->{description}->{$language};
         my $tags = '';
@@ -1937,6 +1938,7 @@ sub post_to_social_media {
             $tags = join(' ', @{$comic->{meta_data}->{twitter}->{$language}}) . ' ';
         }
         _tweet($file_or_url, $language, _shorten_for_twitter("$tags$description"));
+        _reddit($page, "[OC] $comic->{meta_data}->{title}{$language}", 'comics');
     }
     return 0;
 }
@@ -1992,6 +1994,63 @@ sub _shorten_for_twitter {
 }
 
 
+sub _reddit {
+    my ($comic_link, $title, $subreddit) = @ARG;
+
+    # https://redditclient.readthedocs.io/en/latest/oauth/
+    my $reddit = Reddit::Client->new(
+        user_agent => 'comicupload using Reddit::Client',
+        username => 'beercomics',
+        password => 'r0tes B1er',
+        client_id => 'XxyhGTejbltlYw',
+        secret => '9zorhGicpPunUwoCKJtPiHOvXh8',
+    );
+    my $post = undef;
+    while (!$post) {
+        eval {
+            $post = $reddit->submit_link(
+                subreddit => $subreddit,
+                title => $title,
+                url => $comic_link,
+            );
+        }
+        or _wait_for_reddit_limit($EVAL_ERROR);
+    }
+
+    # PerlCritic wants me to check that I/O to the console worked.
+    ## no critic(InputOutput::RequireCheckedSyscalls)
+    print {*STDOUT} "Posted '$title' ($comic_link) to reddit at $post\n";
+    ## use critic
+
+    return;
+}
+
+
+sub _wait_for_reddit_limit {
+    my ($error) = @ARG;
+
+    if ($error =~ m{\btry again in (\d+) (minutes|seconds)}i) {
+        my ($count, $unit) = ($1, $2);
+        if ($unit =~ m/minutes/i) {
+            Readonly my $SECS_PER_MINUTE => 60;
+            $count *= $SECS_PER_MINUTE;
+        }
+        _sleep($count);
+    }
+    else {
+        croak("Don't know what reddit complains about: '$error'");
+    }
+
+    return;
+}
+
+
+sub _sleep {
+    sleep @ARG;
+    return;
+}
+
+
 1;
 
 
@@ -2002,14 +2061,14 @@ None.
 
 =head1 DEPENDENCIES
 
-Inkscape 0.91.
+Inkscape 0.91 or later.
 
 
 =head1 CONFIGURATION AND ENVIRONMENT
 
 The inkscape binary must be in the current $PATH.
 
-Inkscape needs an active dbus session to export files.
+On Linux, Inkscape needs an active dbus session to export files.
 
 
 =head1 INCOMPATIBILITIES
@@ -2021,7 +2080,9 @@ None known.
 
 Works only with Inkscape files.
 
-No bugs have been reported.
+Has only been tested / used on Linux.
+
+No bugs have been reported cause nobody but me uses this.
 
 Please report any bugs or feature requests to C<< <rwenner@cpan.org> >>
 
