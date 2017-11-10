@@ -37,7 +37,7 @@ sub happy_with_multiple_tags_per_language : Tests {
 }
 
 
-sub complains_if_unique_tag : Tests {
+sub warns_if_unique_tag : Tests {
     my $comic = MockComic::make_comic($MockComic::SERIES => {
             $MockComic::DEUTSCH => 'Buckimude'},
         $MockComic::PUBLISHED_WHEN => '3016-01-01');

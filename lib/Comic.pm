@@ -1495,7 +1495,7 @@ sub _check_all_series {
         foreach my $language (keys %{$comic->{meta_data}->{series}}) {
             foreach my $series ($comic->{meta_data}->{series}->{$language}) {
                 if ($series_count{$language}{$series} == 1) {
-                    $comic->_warn("$language has only one comic in the '$series' series");
+                    $comic->_note("$language has only one comic in the '$series' series");
                 }
             }
         }
@@ -1860,6 +1860,15 @@ sub _croak {
 sub _warn {
     my ($self, $msg) = @ARG;
 
+    $self->_croak($msg) unless ($self->not_yet_published());
+    $self->_note($msg);
+    return;
+}
+
+
+sub _note {
+    my ($self, $msg) = @ARG;
+
     # Warnings can be duplicated if language-independent code is called in a
     # per-language loop for simplicity. Ignore those.
     # PerlCritic doesn't see that the code below is array access.
@@ -1867,7 +1876,6 @@ sub _warn {
     return if (@{$self->{warnings}} && ${$self->{warnings}}[-1] eq $msg);
     ## use critic
     push @{$self->{warnings}}, $msg;
-    $self->_croak($msg) unless ($self->not_yet_published());
     # PerlCritic wants me to check that I/O to the console worked.
     ## no critic(InputOutput::RequireCheckedSyscalls)
     print "$msg\n";
