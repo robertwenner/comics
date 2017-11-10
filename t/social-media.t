@@ -45,10 +45,10 @@ sub tweets : Tests {
 sub shortens_twitter_text : Tests {
     MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
-        $MockComic::DESCRIPTION => { $MockComic::ENGLISH => 'x' x 150 },
+        $MockComic::DESCRIPTION => { $MockComic::ENGLISH => 'x' x 290 },
     );
     Comic::post_to_social_media('png', 'English');
-    is($desc{$MockComic::ENGLISH}, 'x' x 130);
+    is($desc{$MockComic::ENGLISH}, 'x' x 280);
 }
 
 

@@ -1987,7 +1987,7 @@ sub _tweet {
 sub _shorten_for_twitter {
     my $text = shift;
 
-    Readonly my $MAX_LEN => 130;
+    Readonly my $MAX_LEN => 280;
     return substr $text, 0, $MAX_LEN;
 }
 
