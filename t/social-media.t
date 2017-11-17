@@ -186,6 +186,9 @@ sub post_to_reddit_retries_on_rate_limit : Tests {
 
     my $comic = MockComic::make_comic();
 
+    Comic::_wait_for_reddit_limit('Error(s): [RATELIMIT] you are doing that too much. try again in 1 minute.');
+    is($slept, 60);
+
     Comic::_wait_for_reddit_limit('Error(s): [RATELIMIT] you are doing that too much. try again in 9 minutes.');
     is($slept, 60 * 9);
 

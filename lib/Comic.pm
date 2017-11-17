@@ -2029,9 +2029,9 @@ sub _reddit {
 sub _wait_for_reddit_limit {
     my ($error) = @ARG;
 
-    if ($error =~ m{\btry again in (\d+) (minutes|seconds)}i) {
+    if ($error =~ m{\btry again in (\d+) (minutes?|seconds)}i) {
         my ($count, $unit) = ($1, $2);
-        if ($unit =~ m/minutes/i) {
+        if ($unit =~ m/minutes?/i) {
             Readonly my $SECS_PER_MINUTE => 60;
             $count *= $SECS_PER_MINUTE;
         }
