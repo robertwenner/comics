@@ -1911,34 +1911,18 @@ comic isn't from today.
 =cut
 
 sub post_to_social_media {
-    my ($mode, @languages) = @ARG;
-
-    croak('Missing twitter mode') unless ($mode);
-    croak("Unknown twitter mode '$mode'") unless ($mode eq 'png' || $mode eq 'html');
+    my %settings = @ARG;
 
     my @published = sort _compare grep { _no_language_archive_filter($_) } @comics;
     my $comic = $published[-1];
-
     if ($comic->_is_not_current()) {
-        $comic->_croak("Not posting cause latest comic is not current ($comic->{meta_data}->{published}->{when}");
+        $comic->_croak("Not posting cause latest comic is not current ($comic->{meta_data}->{published}->{when})");
         return 1;
     }
 
-    if (@languages == 0) {
-        push @languages, sort keys %{$comic->{meta_data}->{twitter}};
-    }
-    foreach my $language (@languages) {
-        my $png = "$comic->{whereTo}{$language}/$comic->{pngFile}{$language}";
-        my $page = "$comic->{url}{$language}";
-        my $file_or_url = $mode eq 'html' ? $page : $png;
-
-        my $description = $comic->{meta_data}->{description}->{$language};
-        my $tags = '';
-        if ($comic->{meta_data}->{twitter}->{$language}) {
-            $tags = join(' ', @{$comic->{meta_data}->{twitter}->{$language}}) . ' ';
-        }
-        _tweet($file_or_url, $language, _shorten_for_twitter("$tags$description"));
-        _reddit($page, "[OC] $comic->{meta_data}->{title}{$language}", 'comics');
+    foreach my $language (sort keys %{$comic->{meta_data}->{title}}) {
+        _tweet($comic, $language, %{$settings{'twitter'}});
+        _reddit($comic, $language, %{$settings{'reddit'}});
     }
     return 0;
 }
@@ -1955,24 +1939,35 @@ sub _is_not_current {
 
 
 sub _tweet {
-    my ($file_or_url, $language, $text) = @_;
+    my ($comic, $language, %twitter_settings) = @_;
 
-    my $twitter = Net::Twitter->new(
-        # App page: https://apps.twitter.com/app/13139251
-        # owner_id => '762868533403332609',
+    my %settings = (
+        mode => 'png',
         traits => [qw/API::RESTv1_1/],
-        access_token_secret => 'iewrH8UYNU1irfUg8hlF9W5WsEtOmgkPhHok3EXaaiiDM',
-        consumer_secret => '1T3u9XtrBzGuWPGcoqw1u5glSDZK1rePkwggeoQzvJJDSTG4cb',
-        access_token => '762868533403332609-fHpxJJG0aSAWFlOd46sFi5bGYUPKw7q',
-        consumer_key => 'F4lnbr6CxhZBD3w6spsgidRRc',
         ssl => 1,
+        %twitter_settings,
     );
+
+    unless ($settings{'mode'} eq 'png' || $settings{'mode'} eq 'html') {
+        croak("Unknown twitter mode '$settings{'mode'}'");
+    }
+
+    my $description = $comic->{meta_data}->{description}->{$language};
+    my $tags = '';
+    if ($comic->{meta_data}->{twitter}->{$language}) {
+        $tags = join(' ', @{$comic->{meta_data}->{twitter}->{$language}}) . ' ';
+    }
+    my $text = _shorten_for_twitter("$tags$description");
+
+    my $twitter = Net::Twitter->new(%settings);
     my $status;
-    if ($file_or_url =~ m{^https?://}) {
-        $status = $twitter->update($file_or_url);
+    if ($settings{'mode'} eq 'html') {
+        $status = $twitter->update($comic->{url}{$language});
     }
     else {
-        $status = $twitter->update_with_media($text, [$file_or_url]);
+        $status = $twitter->update_with_media($text, [
+            "$comic->{whereTo}{$language}/$comic->{pngFile}{$language}"
+        ]);
     }
 
     if (my $err = $EVAL_ERROR) {
@@ -1995,23 +1990,24 @@ sub _shorten_for_twitter {
 
 
 sub _reddit {
-    my ($comic_link, $title, $subreddit) = @ARG;
+    my ($comic, $language, %reddit_settings) = @ARG;
 
-    # https://redditclient.readthedocs.io/en/latest/oauth/
-    my $reddit = Reddit::Client->new(
+    my %settings = (
+        subreddit => 'comics',
         user_agent => 'comicupload using Reddit::Client',
-        username => 'beercomics',
-        password => 'r0tes B1er',
-        client_id => 'XxyhGTejbltlYw',
-        secret => '9zorhGicpPunUwoCKJtPiHOvXh8',
+        %reddit_settings,
     );
-    my $post = undef;
+
+    my $title = "[OC] $comic->{meta_data}->{title}{$language}";
+    # https://redditclient.readthedocs.io/en/latest/oauth/
+    my $reddit = Reddit::Client->new(%settings);
+    my $post = 0;
     while (!$post) {
         eval {
             $post = $reddit->submit_link(
-                subreddit => $subreddit,
+                subreddit => $settings{'subreddit'},
                 title => $title,
-                url => $comic_link,
+                url => $comic->{url}{$language},
             );
         }
         or _wait_for_reddit_limit($EVAL_ERROR);
@@ -2019,7 +2015,7 @@ sub _reddit {
 
     # PerlCritic wants me to check that I/O to the console worked.
     ## no critic(InputOutput::RequireCheckedSyscalls)
-    print {*STDOUT} "Posted '$title' ($comic_link) to reddit at $post\n";
+    print {*STDOUT} "Posted '$title' ($comic->{url}{$language}) to reddit at $post\n";
     ## use critic
 
     return;
