@@ -292,6 +292,23 @@ TEMPL
 }
 
 
+sub tags_case : Tests {
+    MockComic::fake_file("backlog.templ", <<'TEMPL');
+       [% FOREACH t IN tagsOrder %]
+            [% t %]=[% tags.$t %]
+       [% END %]
+TEMPL
+    make_tagged_comic('Bym');
+    make_tagged_comic('bym');
+    Comic::export_archive('backlog.templ', 'generated/backlog.html',
+        {'Deutsch' => 'templates/deutsch/archiv.templ'},
+        {'Deutsch' => 'archiv.html'},
+        {'Deutsch' => 'templates/deutsch/comic-page.templ'});
+    MockComic::assert_wrote_file('generated/backlog.html',
+        qr{^\s*Bym\s\(Deutsch\)=1\s*bym\s\(Deutsch\)=1\s*$}xsm);
+}
+
+
 sub who : Tests {
     MockComic::fake_file("backlog.templ", <<'TEMPL');
        [% FOREACH w IN whoOrder %]
@@ -309,6 +326,23 @@ TEMPL
     MockComic::assert_wrote_file('generated/backlog.html', 
         qr{^\s*Paul\s\(Deutsch\)=3\s*Max\s\(Deutsch\)=2\s*
           Mike\s\(Deutsch\)=1\s*Robert\s\(Deutsch\)=1\s*$}xsm);
+}
+
+
+sub who_case : Tests {
+    MockComic::fake_file("backlog.templ", <<'TEMPL');
+       [% FOREACH w IN whoOrder %]
+            [% w %]=[% who.$w %]
+       [% END %]
+TEMPL
+    make_comic_with('Paul');
+    make_comic_with('paul');
+    Comic::export_archive('backlog.templ', 'generated/backlog.html',
+        {'Deutsch' => 'templates/deutsch/archiv.templ'},
+        {'Deutsch' => 'archiv.html'},
+        {'Deutsch' => 'templates/deutsch/comic-page.templ'});
+    MockComic::assert_wrote_file('generated/backlog.html',
+        qr{^\s*Paul\s\(Deutsch\)=1\s*paul\s\(Deutsch\)=1\s*}xsm);
 }
 
 
