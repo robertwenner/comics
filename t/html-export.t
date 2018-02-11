@@ -291,6 +291,34 @@ sub separate_navs_for_archive_and_backlog : Tests {
 }
 
 
+sub nav_template : Tests {
+    MockComic::make_comic(
+        $MockComic::TITLE => { 'English' => 'One' },
+        $MockComic::PUBLISHED_WHEN => '2015-12-01',
+    );
+    my $two = MockComic::make_comic(
+        $MockComic::TITLE => { 'English' => 'Two' },
+        $MockComic::PUBLISHED_WHEN => '2015-12-02',
+    );
+    MockComic::fake_file('en-comic.templ', <<'XML');
+    [% IF comic.first.English %]
+        <a href="[% hrsn %][% comic.first.English %]">First</a>
+    [% END %]
+XML
+    Comic::export_all_html({
+        'English' => 'en-comic.templ',
+    },
+    {
+        'English' => 'en-sitemap.templ',
+    },
+    {
+        'English' => 'generated/english/web/sitemap.xml',
+    });
+    my $exported = $two->_do_export_html('English', 'en-comic.templ');
+    like($exported, qr{<a\s+href="one\.html">First</a>});
+}
+
+
 sub language_links_none : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
