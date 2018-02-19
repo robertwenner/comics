@@ -260,7 +260,7 @@ sub export_png {
             my $language_svg = $self->_write_temp_svg_file($language);
             $self->_svg_to_png($language, $language_svg);
         }
-        $self->_get_png_info("$self->{whereTo}{$language}/$self->{pngFile}{$language}");
+        $self->_get_png_info("$self->{whereTo}{$language}/$self->{pngFile}{$language}", $language);
     }
     $self->_count_tags();
     return;
@@ -915,14 +915,24 @@ sub _set_png_meta {
 
 
 sub _get_png_info {
-    my ($self, $png_file) = @_;
+    my ($self, $png_file, $language) = @_;
 
     my $tool = Image::ExifTool->new();
     my $info = $tool->ImageInfo($png_file);
 
+    # @fixme should height and width be different per language?
     $self->{height} = ${$info}{'ImageHeight'};
     $self->{width} = ${$info}{'ImageWidth'};
+    $self->{pngSize}{$language} = _file_size($png_file);
     return;
+}
+
+
+sub _file_size {
+    my ($name) = @_;
+
+    Readonly my $SIZE => 7;
+    return (stat $name)[$SIZE];
 }
 
 

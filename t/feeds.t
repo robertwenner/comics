@@ -214,3 +214,18 @@ sub atom_contributors : Tests {
     MockComic::assert_wrote_file('generated/english/web/atom.xml', 
         qr{<contributor>\s*<name>ich</name>\s*</contributor>}m);
 }
+
+
+sub png_size : Tests {
+    MockComic::fake_file('atom.templ', <<"ATOM");
+[% FOREACH c IN comics %]
+[% c.pngSize.English %]
+[% END %]
+ATOM
+    
+    my $comic = MockComic::make_comic(
+        $MockComic::PUBLISHED_WHEN => '2016-01-01',
+        $MockComic::DESCRIPTION => {'English' => 'Drinking beer'});
+    Comic::export_feed(10, 'atom.xml', ('English' => 'atom.templ'));
+    MockComic::assert_wrote_file('generated/english/web/atom.xml', qr{^\s*1024\s*}m);
+}

@@ -120,6 +120,10 @@ sub mock_methods {
     *Comic::_check_all_comics = sub {
         # Ignore; individual tests call check methods as needed.
     };
+
+    *Comic::_file_size = sub {
+        return 1024;
+    }
 }
 
 
