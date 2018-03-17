@@ -30,7 +30,6 @@ Updated: [% updated %]
 [% FOREACH c IN comics %]
     Published: [% c.rfc3339pubDate %]
     Description: [% c.meta_data.description.English %]
-    Modified: [% c.rfc3339Modified %]
     [% DEFAULT c.meta_data.contrib = 0 %]
     [% IF c.meta_data.contrib %]
         [% FOREACH con IN c.meta_data.contrib %]
@@ -199,7 +198,6 @@ sub atom_fields : Tests {
     Comic::export_feed(10, 'atom.xml', ('English' => 'atom.templ'));
     MockComic::assert_wrote_file('generated/english/web/atom.xml', qr{Updated: 2016-02-02T00:00:00-05:00}m, 'updated');
     MockComic::assert_wrote_file('generated/english/web/atom.xml', qr{Published: 2016-01-01T00:00:00-05:00}m, 'published');
-    MockComic::assert_wrote_file('generated/english/web/atom.xml', qr{Modified: 2016-03-03T00:00:00-05:00}m, 'modified');
     MockComic::assert_wrote_file('generated/english/web/atom.xml', qr{Description: Drinking beer}m, 'description');
     MockComic::assert_didnt_write_in_file('generated/english/web/atom.xml', qr{<contributor>}m, 'contributor');
 }

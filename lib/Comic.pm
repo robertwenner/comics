@@ -173,7 +173,7 @@ sub _load {
     my $modified = DateTime->from_epoch(epoch => _mtime($file));
     $modified->set_time_zone(_get_tz());
     $self->{modified} = $modified->ymd;
-    $self->{rfc3339Modified} = DateTime::Format::RFC3339->new()->format_datetime($modified);
+    # $self->{rfc3339Modified} = DateTime::Format::RFC3339->new()->format_datetime($modified);
     my $pub = trim($self->{meta_data}->{published}->{when});
     if ($pub) {
         my $published = DateTime::Format::ISO8601->parse_datetime($pub);
