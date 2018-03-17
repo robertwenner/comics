@@ -83,3 +83,55 @@ sub passes_options : Tests {
     is_deeply(\%twitter, {mode => 'png'}, 'wrong twitter settings');
     is_deeply(\%reddit, {blah => 'blubb'}, 'wrong reddit settings');
 }
+
+
+sub multiple_comics_different_languages : Tests {
+    my $de = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::DEUTSCH => 'Neustes Comic' },
+    );
+    my $en = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+    );
+
+    my %tweeted;
+    no warnings qw/redefine/;
+    local *Comic::_tweet = sub {
+        my ($comic, $language) = @_;
+        $tweeted{$language} = $comic;
+    };
+    local *Comic::_reddit = sub {};
+    use warnings;
+
+    Comic::post_to_social_media();
+    is_deeply(\%tweeted, {'English' => $en, 'Deutsch' => $de}, 'Tweeted wrong comics'); 
+}
+
+
+sub only_latest_comics : Tests {
+    my $old = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Old comic' },
+        $MockComic::PUBLISHED_WHEN => '2010-01-01',
+    );
+    my $current1 = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+    );
+    my $current2 = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Also latest comic' },
+    );
+    my $future = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Way too new comic' },
+        $MockComic::PUBLISHED_WHEN => '2121-01-01',
+    );
+
+    my @tweeted;
+    no warnings qw/redefine/;
+    local *Comic::_tweet = sub {
+        my ($comic, $language) = @_;
+        push @tweeted, $comic;
+    };
+    local *Comic::_reddit = sub {};
+    use warnings;
+
+    Comic::post_to_social_media();
+    is_deeply(\@tweeted, [$current2, $current1], 'Tweeted wrong comics'); 
+}

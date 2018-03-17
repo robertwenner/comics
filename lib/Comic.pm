@@ -1923,16 +1923,22 @@ comic isn't from today.
 sub post_to_social_media {
     my %settings = @ARG;
 
-    my @published = sort _compare grep { _no_language_archive_filter($_) } @comics;
-    my $comic = $published[-1];
-    if ($comic->_is_not_current()) {
-        $comic->_croak("Not posting cause latest comic is not current ($comic->{meta_data}->{published}->{when})");
-        return 1;
+    my $posted = 0;
+    my @published = reverse sort _compare grep { _no_language_archive_filter($_) } @comics;
+    foreach my $comic (@published) {
+        # Sorting is by date first, so it's safe to exit the loop at the first
+        # comic that's not up to date.
+        last if ($comic->_is_not_current());
+        foreach my $language (sort keys %{$comic->{meta_data}->{title}}) {
+            _tweet($comic, $language, %{$settings{'twitter'}});
+            _reddit($comic, $language, %{$settings{'reddit'}});
+            $posted = 1;
+        }
     }
-
-    foreach my $language (sort keys %{$comic->{meta_data}->{title}}) {
-        _tweet($comic, $language, %{$settings{'twitter'}});
-        _reddit($comic, $language, %{$settings{'reddit'}});
+    if (!$posted) {
+        my $latest = $published[0];
+        $latest->_croak("Not posting cause latest comic is not current ($latest->{meta_data}->{published}->{when})");
+        return 1;
     }
     return 0;
 }
