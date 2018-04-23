@@ -102,7 +102,7 @@ sub mock_methods {
     };
 
     *Comic::_now = sub {
-        return $now || DateTime->now;
+        return $now ? $now->clone() : DateTime->now;
     };
 
     *Comic::_up_to_date = sub {
