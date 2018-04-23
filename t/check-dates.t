@@ -112,3 +112,15 @@ sub web_comic_scheduled_for_thursday : Tests {
     is($@, '');
     is_deeply($comic->{warnings}, ['scheduled for Thursday']);
 }
+
+
+sub web_comic_scheduled_for_today_thursday : Tests {
+    MockComic::fake_now(DateTime->new(year => 3000, month => 1, day => 02));
+    my $comic = MockComic::make_comic($MockComic::PUBLISHED_WHEN => '3000-01-02');
+    eval {
+        $comic->_check_date();
+    };
+    # Need to check an error, not just a warning, like in the other tests, cause
+    # the comic is already (being) published.
+    like($@, qr/scheduled for Thursday/);
+}

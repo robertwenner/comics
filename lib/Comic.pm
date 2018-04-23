@@ -331,8 +331,9 @@ sub _check_date {
     $published_date->set_time_zone(_get_tz());
     my $today = _now();
     $today->set_time_zone(_get_tz());
-    # Allow older comics (initial set) to have non-Friday dates.
-    if (DateTime->compare($published_date, $today) > 0) {
+    # Allow older beer comics (initial set) to have non-Friday dates.
+    Readonly my $FRIDAYS_ONLY => DateTime->new(year => 2016, month => 8, day => 1);
+    if (DateTime->compare($published_date, $FRIDAYS_ONLY) > 0) {
         Readonly my $FRIDAY => 5;
         if ($published_date->day_of_week() != $FRIDAY) {
             $self->_warn('scheduled for ' . $published_date->day_name());
