@@ -45,6 +45,7 @@ our Readonly $TWITTER = 'twitter';
 
 
 my %files_read;
+my @made_dirs;
 my %file_written;
 my $now;
 my $mtime;
@@ -76,6 +77,7 @@ my %defaultArgs = (
 
 sub set_up {
     %file_written = ();
+    @made_dirs = ();
     Comic::reset_statics();
     mock_methods();
 }
@@ -93,6 +95,7 @@ sub mock_methods {
     };
 
     *File::Path::make_path = sub {
+        push @made_dirs, @_;
         return 1;
     };
 
@@ -123,6 +126,14 @@ sub mock_methods {
 
     *Comic::_file_size = sub {
         return 1024;
+    };
+
+    *Imager::QRCode::plot_qrcode = sub {
+        return Imager->new;
+    };
+
+    *Imager::write = sub {
+        return 1;
     }
 }
 
@@ -423,6 +434,11 @@ TEXT
         $xml .= "</g>\n";
     }
     return $xml;
+}
+
+
+sub assert_made_dirs {
+    is_deeply([@made_dirs], [@_], 'Created wrong dirs'); 
 }
 
 

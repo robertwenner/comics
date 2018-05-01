@@ -24,6 +24,7 @@ use JSON;
 use HTML::Entities;
 use Image::ExifTool qw(:Public);
 use Image::SVG::Transform;
+use Imager::QRCode;
 use Template;
 use SVG;
 use URI::Encode qw(uri_encode uri_decode);
@@ -198,12 +199,12 @@ sub _load {
         }
 
         $self->{whereTo}{$language} = _make_dir($base);
-        my $name = $self->_normalized_title($language);
-        $self->{htmlFile}{$language} = "${name}.html";
-        $self->{pngFile}{$language} = "${name}.png";
+        $self->{baseName}{$language} = $self->_normalized_title($language);
+        $self->{htmlFile}{$language} = "$self->{baseName}{$language}.html";
+        $self->{pngFile}{$language} = "$self->{baseName}{$language}.png";
         $self->{domain}{$language} = $domains{$language};
-        $self->{url}{$language} = "https://$domains{$language}/comics/$name.html";
-        $self->{imageUrl}{$language} = "https://$domains{$language}/comics/$name.png";
+        $self->{url}{$language} = "https://$domains{$language}/comics/$self->{baseName}{$language}.html";
+        $self->{imageUrl}{$language} = "https://$domains{$language}/comics/$self->{baseName}{$language}.png";
         $self->{href}{$language} = "comics/$self->{htmlFile}{$language}";
     }
 
@@ -940,7 +941,7 @@ sub _file_size {
 sub _make_file_name {
     my ($self, $language, $where, $ext) = @ARG;
 
-    return _make_dir(lc($language) . "/$where/") . $self->_normalized_title($language) . ".$ext";
+    return _make_dir(lc($language) . "/$where/") . $self->{baseName}($language) . ".$ext";
 }
 
 
@@ -1001,6 +1002,10 @@ sub export_all_html {
     foreach my $i (0 .. @sorted - 1) {
         my $comic = $sorted[$i];
         foreach my $language ($comic->_languages()) {
+            # Must export QR code before exporting HTML so that the HTML template can
+            # already refer to the QR code URL.
+            $comic->_export_qr_code($language);
+
             my $first_comic = _find_next($language, $i, \@sorted, [0 .. $i - 1]);
             $comic->{'first'}{$language} = $first_comic ? $first_comic->{htmlFile}{$language} : 0;
             my $prev_comic = _find_next($language, $i, \@sorted, [reverse 0 .. $i - 1]);
@@ -1100,8 +1105,34 @@ sub _find_next {
 sub _export_language_html {
     my ($self, $language, $template) = @ARG;
 
-    return _write_file("$self->{whereTo}{$language}/$self->{htmlFile}{$language}",
+    _write_file("$self->{whereTo}{$language}/$self->{htmlFile}{$language}",
         $self->_do_export_html($language, $template));
+    return 0;
+}
+
+
+sub _export_qr_code {
+    my ($self, $language) = @ARG;
+
+    my $dir;
+    my $png;
+    if ($self->_not_published_on_the_web($language)) {
+        $dir = 'generated/backlog/qr';
+        $png = "../qr/$self->{baseName}{$language}.png";
+    }
+    else {
+        $dir = 'generated/' . lc($language) . '/web/qr';
+        $png = "$self->{baseName}{$language}.png";
+    }
+    $self->{qrcode}{$language} = $png;
+    _make_dir($dir);
+
+    my $qrcode = Imager::QRCode::plot_qrcode($self->{url}{$language}, {
+        casesensitive => 1,
+        mode => '8-bit'
+    });
+    $qrcode->write(file => "$dir/$png") or $self->_croak($qrcode->errstr);
+    return 0;
 }
 
 
