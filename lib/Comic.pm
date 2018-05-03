@@ -941,7 +941,7 @@ sub _file_size {
 sub _make_file_name {
     my ($self, $language, $where, $ext) = @ARG;
 
-    return _make_dir(lc($language) . "/$where/") . $self->{baseName}($language) . ".$ext";
+    return _make_dir(lc($language) . "/$where/") . $self->{baseName}{$language} . ".$ext";
 }
 
 
