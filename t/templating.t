@@ -115,6 +115,13 @@ sub array : Test {
 }
 
 
+sub array_with_separators : Tests {
+    MockComic::fake_file("file.templ", "[% FOREACH a IN array %][% a %][% IF !loop.last() %],[% END %][% END %]");
+    is(Comic::_templatize('comic.svg', 'file.templ', '', ("array" => ["a", "b", "c"])),
+        "a,b,c");
+}
+
+
 sub hash_hard_coded_key : Test {
     MockComic::fake_file('file.templ', "[% hash.key %]");
     is(Comic::_templatize('comic.svg', 'file.templ', '', ("hash" => {"key" => "the key"})),
@@ -276,7 +283,7 @@ description: [% FILTER html %][% comic.meta_data.description.$Language %][% END 
 [% transcriptJson %]
 [% transcriptHtml %]
 [% comic.url.$Language %]
-who: [% who %]
+who: [% FOREACH w IN comic.meta_data.who.$Language %][% w %][% IF !loop.last() %],[% END %][% END %]
 Image: [% comic.imageUrl.$Language %]
 Copyright year: [% year %]
 Keywords: [% keywords %]
@@ -297,7 +304,7 @@ TEMPLATE
     like($wrote, qr/bier-trinken\.png/m, "png file name");
     like($wrote, qr/200 by 600/m, "dimensions");
     like($wrote, qr{https://biercomics.de/comics/bier-trinken.html}m, "url");
-    like($wrote, qr{who:\s+\[\s*"Max",\s*"Paul"\s*\]}m, "who");
+    like($wrote, qr{who: Max,Paul}m, "who");
     like($wrote, qr{Image: https://biercomics.de/comics/bier-trinken.png}m, "image URL");
     like($wrote, qr{Copyright year: 2016}m, "copyright year");
     like($wrote, qr{Keywords: Bier,Saufen,Craft}m, "keywords");
@@ -375,4 +382,61 @@ sub sets_language : Tests {
 sub variable_case : Tests {
     MockComic::fake_file('file.templ', '[% a %][% A %]');
     is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', ('a' => 'a', 'A' => 'A')), "aA");
+}
+
+
+sub replace_filter : Tests {
+    MockComic::fake_file('file.templ', '[% FILTER replace("a", "A") %][% a %][% END %]');
+    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', ('a' => 'a')), "A");
+}
+
+
+sub dquote : Tests {
+    MockComic::fake_file('file.templ', '[% a.dquote %]');
+    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', ('a' => 'so, "what"?')), 'so, \"what\"?');
+}
+
+
+sub joined : Tests {
+    MockComic::fake_file('file.templ', '[% a.join(",") %]');
+    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', ('a' => [1, 2, 3])), '1,2,3');
+}
+
+
+sub json : Tests {
+    MockComic::fake_file('file.templ', '[% USE JSON %][% a.json %]');
+    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', ('a' => '"x"')), '"\"x\""');
+    MockComic::fake_file('file.templ', '[% USE JSON %][% a.json %]');
+    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', ('a' => [])), '[]');
+    MockComic::fake_file('file.templ', '[% USE JSON %][% a.json %]');
+    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', ('a' => ['x','"'])), '["x","\""]');
+}
+
+
+sub default : Tests {
+    MockComic::fake_file('file.templ', '[% DEFAULT a = "default" %][% a %]');
+    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', ()), 'default');
+    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', (a => 'set')), 'set');
+}
+
+
+sub check_defined_scalar : Tests {
+    MockComic::fake_file('file.templ', '[% DEFAULT a = "" %][% IF a %][% a %][% END %]');
+    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', ()), '');
+    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', (a => 'set')), 'set');
+}
+
+
+sub check_array_empty : Tests {
+    MockComic::fake_file('file.templ', '[% IF a %][% a.join(",") %][% END %]');
+    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', (a => [])), '');
+    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', (a => ['set'])), 'set');
+}
+
+
+__END__
+sub check_defined_array : Tests {
+    MockComic::fake_file('file.templ', '[% IF a %][% a.join(",") %][% END %]');
+    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', ()), '');
+    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', (a => ['set'])), 'set');
 }

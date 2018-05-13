@@ -588,18 +588,10 @@ sub index_html_does_not_break_perm_link : Tests {
 }
 
 
-sub to_json_array : Tests {
-    is(Comic::_to_json_array(), '[]', 'empty');
-    is(Comic::_to_json_array('a'), '["a"]', 'single element');
-    is(Comic::_to_json_array('a', 'b', 'c'), '["a", "b", "c"]', 'multiple elements');
-    is(Comic::_to_json_array('"quoted"'), '["\"quoted\""]', 'escapes');
-}
-
-
 sub url_encoded_values : Tests {
     MockComic::fake_file('comic.templ', <<'XML');
-URL: [% urlUrlEncoded %]
-Title: [% titleUrlEncoded %]
+URL: [% comic.urlUrlEncoded.English %]
+Title: [% comic.titleUrlEncoded.English %]
 XML
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Drinking Beer' },

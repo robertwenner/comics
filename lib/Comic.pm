@@ -26,6 +26,7 @@ use Image::ExifTool qw(:Public);
 use Image::SVG::Transform;
 use Imager::QRCode;
 use Template;
+use Template::Plugin::JSON;
 use SVG;
 use URI::Encode qw(uri_encode uri_decode);
 use Net::Twitter;
@@ -187,6 +188,7 @@ sub _load {
         $self->{rfc3339pubDate} = DateTime::Format::RFC3339->new()->format_datetime($published);
     }
 
+    my %uri_encoding_options = (encode_reserved => 1);
     foreach my $language ($self->_languages()) {
         $self->_croak("No domain for $language") unless (defined $domains{$language});
 
@@ -198,12 +200,14 @@ sub _load {
             $base = lc($language) . '/web/comics';
         }
 
+        $self->{titleUrlEncoded}{$language} = uri_encode($self->{meta_data}->{title}->{$language}, %uri_encoding_options);
         $self->{whereTo}{$language} = _make_dir($base);
         $self->{baseName}{$language} = $self->_normalized_title($language);
         $self->{htmlFile}{$language} = "$self->{baseName}{$language}.html";
         $self->{pngFile}{$language} = "$self->{baseName}{$language}.png";
         $self->{domain}{$language} = $domains{$language};
         $self->{url}{$language} = "https://$domains{$language}/comics/$self->{baseName}{$language}.html";
+        $self->{urlUrlEncoded}{$language} = uri_encode($self->{url}{$language}, %uri_encoding_options);
         $self->{imageUrl}{$language} = "https://$domains{$language}/comics/$self->{baseName}{$language}.png";
         $self->{href}{$language} = "comics/$self->{htmlFile}{$language}";
     }
@@ -1161,13 +1165,6 @@ sub _do_export_html {
 
     my %vars;
     $vars{'comic'} = $self;
-    # Still need to define url for non-per-comic pages like the archive.
-    # Since they share the same footer with comic pages, they both need url.
-    # Or define a dummy hash named comic for archive et al.
-    $vars{'url'} = $self->{url}{$language};
-    my %enc_opts = (encode_reserved => 1);
-    $vars{'urlUrlEncoded'} = uri_encode($self->{url}{$language}, %enc_opts);
-    $vars{'titleUrlEncoded'} = uri_encode($self->{meta_data}->{title}->{$language}, %enc_opts);
     $vars{'languages'} = [grep { $_ ne $language } $self->_languages()];
     $vars{'languagecodes'} = { $self->_language_codes() };
     # Need clone the URLs so that there is no reference stored here, cause
@@ -1175,7 +1172,6 @@ sub _do_export_html {
     # it's a reference, the actual URL values get changed, too, and that
     # leads to wrong links.
     $vars{'languageurls'} = clone($self->{url});
-    $vars{'who'} = _to_json_array(@{$self->{meta_data}->{who}->{$language}});
     Readonly my $DIGITS_YEAR => 4;
     $vars{'year'} = substr $self->{meta_data}->{published}->{when}, 0, $DIGITS_YEAR;
     $vars{'keywords'} = '';
@@ -1213,12 +1209,6 @@ sub _do_export_html {
         $vars{'root'} = $path;
     }
 
-    my $contrib = $self->{meta_data}->{contrib};
-    $vars{'jsonContrib'} = '';
-    if ($contrib && @{$contrib}) {
-        $vars{'jsonContrib'} = '"contributor": ' . _to_json_array(@{$contrib}) . ",\n   ";
-    }
-
     $vars{transcriptHtml} = '';
     $vars{transcriptJson} = '';
     foreach my $t ($self->_texts_for($language)) {
@@ -1230,15 +1220,6 @@ sub _do_export_html {
 
     $vars{see} = $self->_references($language);
     return _templatize($self->{srcFile}, $template, $language, %vars);
-}
-
-
-sub _to_json_array {
-    return '[]' unless(@ARG);
-    return q{["} .
-        join(q{", "},
-            map { _escape_json($_) } @ARG) .
-        q{"]};
 }
 
 
