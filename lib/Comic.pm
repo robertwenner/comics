@@ -169,7 +169,7 @@ sub _load {
     my $meta_xpath = _build_xpath('metadata/rdf:RDF/cc:Work/dc:description/text()');
     my $meta_data = join ' ', $self->{xpath}->findnodes($meta_xpath);
     eval {
-        $self->{meta_data} = from_json($meta_data);
+        $self->{meta_data} = from_json(_unhtml($meta_data));
     } or $self->_croak("Error in JSON for: $EVAL_ERROR");
 
     my $modified = DateTime->from_epoch(epoch => _mtime($file));
@@ -210,10 +210,28 @@ sub _load {
         $self->{urlUrlEncoded}{$language} = uri_encode($self->{url}{$language}, %uri_encoding_options);
         $self->{imageUrl}{$language} = "https://$domains{$language}/comics/$self->{baseName}{$language}.png";
         $self->{href}{$language} = "comics/$self->{htmlFile}{$language}";
+        @{$self->{transcript}{$language}} = _append_speech_to_speaker($self->_texts_for($language));
     }
 
     push @comics, $self;
     return;
+}
+
+
+sub _append_speech_to_speaker {
+    my @texts;
+    my $prev = '';
+    foreach my $t (@ARG) {
+        if ($prev =~ m/:$/) {
+            pop @texts;
+            push @texts, "$prev $t";
+        }
+        else {
+            push @texts, $t;
+        }
+        $prev = $t;
+    }
+    return @texts;
 }
 
 
@@ -281,6 +299,7 @@ sub _check {
     $self->_check_frames();
     $self->_check_tags('tags', $language);
     $self->_check_tags('who', $language);
+    $self->_check_empty_texts($language);
     $self->_check_transcript($language);
     $self->_check_series($language);
     $self->_check_persons($language);
@@ -529,6 +548,20 @@ sub _check_tags {
     foreach my $tag (@{$self->{meta_data}->{$what}->{$language}}) {
         $self->_warn("No $language $what") unless(defined $tag);
         $self->_warn("Empty $language $what") if ($tag =~ m/^\s*$/);
+    }
+    return;
+}
+
+
+sub _check_empty_texts {
+    my ($self, $language) = @ARG;
+
+    foreach my $node (sort { $self->_text_pos_sort($a, $b) } $self->{xpath}->findnodes(_text($language))) {
+        my $text = _text_content($node);
+        if ($text eq '') {
+            my $layer = $node->parentNode->{'inkscape:label'};
+            $self->_warn("empty text in $layer with ID $node->{id}");
+        }
     }
     return;
 }
@@ -883,10 +916,10 @@ sub _svg_to_png {
     system($export_cmd) && $self->_croak("could not export: $export_cmd: $OS_ERROR");
 
     my $tool = Image::ExifTool->new();
-    $self->_set_png_meta($tool, 'Title', _unhtml($self->{meta_data}->{title}->{$language}));
+    $self->_set_png_meta($tool, 'Title', $self->{meta_data}->{title}->{$language});
     $self->_set_png_meta($tool, 'Artist', 'Robert Wenner');
     $self->_set_png_meta($tool, 'Author', 'Robert Wenner');
-    $self->_set_png_meta($tool, 'Description', _unhtml(join ' ', $self->_texts_for($language)));
+    $self->_set_png_meta($tool, 'Description', join '', $self->{tanscript}{$language});
     $self->_set_png_meta($tool, 'CreationTime', $self->{modified});
     $self->_set_png_meta($tool, 'Copyright', 'CC BY-NC-SA 4.0');
     $self->_set_png_meta($tool, 'URL', $self->{url}{$language});
@@ -965,7 +998,7 @@ sub _normalized_title {
 
     my $title = $self->{meta_data}->{title}->{$language};
     $self->_croak("No $language title in $self->{srcFile}") unless($title);
-    $title =~ s/&\w+;//g;
+    $title =~ s/[&<>*?]//g;
     $title =~ s/\s{2}/ /g;
     $title =~ s/\s/-/g;
     $title =~ s/[^\w\d_-]//gi;
@@ -1209,14 +1242,11 @@ sub _do_export_html {
         $vars{'root'} = $path;
     }
 
-    $vars{transcriptHtml} = '';
     $vars{transcriptJson} = '';
     foreach my $t ($self->_texts_for($language)) {
-        $vars{transcriptHtml} .= '<p>' . encode_entities($t) . "</p>\n";
         $vars{transcriptJson} .= ' ' unless ($vars{transcriptJson} eq '');
         $vars{transcriptJson} .= _escape_json($t);
     }
-    $vars{transcriptHtml} =~ s{:</p>\s*<p>}{: }g;
 
     $vars{see} = $self->_references($language);
     return _templatize($self->{srcFile}, $template, $language, %vars);
@@ -1261,12 +1291,7 @@ sub _texts_for {
     $self->_find_frames();
     my @texts;
     foreach my $node (sort { $self->_text_pos_sort($a, $b) } $self->{xpath}->findnodes(_text($language))) {
-        my $text = _text_content($node);
-        if ($text eq '') {
-            my $layer = $node->parentNode->{'inkscape:label'};
-            $self->_warn("empty text in $layer with ID $node->{id}");
-        }
-        push @texts, $text;
+        push @texts, _text_content($node);
     }
     return @texts;
 }

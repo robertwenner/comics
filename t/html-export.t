@@ -14,7 +14,7 @@ __PACKAGE__->runtests() unless caller;
 sub set_up : Test(setup) {
     MockComic::set_up();
     MockComic::fake_file("de-comic.templ", "...");
-    MockComic::fake_file("en-comic.templ", '[% comic.meta_data.title.$Language %]');
+    MockComic::fake_file("en-comic.templ", '[% FILTER html %][% comic.meta_data.title.$Language %][% END %]');
     MockComic::fake_file("de-sitemap.templ", "...");
     MockComic::fake_file("en-sitemap.templ", "...");
 }
@@ -517,7 +517,7 @@ XML
 
 
 sub html_special_characters : Tests {
-    MockComic::fake_file('en-comic.templ', '[% comic.meta_data.title.$Language %]');
+    MockComic::fake_file('en-comic.templ', '[% FILTER html %][% comic.meta_data.title.$Language %][% END %]');
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { 'English' => "&lt;Ale &amp; Lager&gt;" },
     );

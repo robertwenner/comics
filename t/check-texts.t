@@ -19,7 +19,7 @@ sub empty_text_found : Test {
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => {$MockComic::DEUTSCH => ['']});
     eval {
-        $comic->_texts_for($MockComic::DEUTSCH);
+        $comic->_check_empty_texts($MockComic::DEUTSCH);
     };
     like($@, qr{Empty text in Deutsch with ID $MockComic::TEXT_ID}i);
 }
@@ -29,7 +29,7 @@ sub whitespace_only_text_found : Test {
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => {$MockComic::DEUTSCH => [' ']});
     eval {
-        $comic->_texts_for($MockComic::DEUTSCH);
+        $comic->_check_empty_texts($MockComic::DEUTSCH);
     };
     like($@, qr{Empty text in Deutsch with ID $MockComic::TEXT_ID}i);
 }
@@ -39,7 +39,7 @@ sub empty_text_other_language_ignored : Test {
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => {$MockComic::DEUTSCH => ['']});
     eval {
-        $comic->_texts_for("English");
+        $comic->_check_empty_texts("English");
     };
     is($@, '');
 }

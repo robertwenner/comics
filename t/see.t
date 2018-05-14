@@ -14,7 +14,7 @@ sub set_up : Test(setup) {
     MockComic::set_up();
     MockComic::fake_file('template', <<'TEMPL');
     [% FOREACH s IN see %]
-        [% s.key %] -> [% s.value %]
+        [% FILTER html %][% s.key %][% END %] -> [% s.value %]
     [% END %]
 TEMPL
 }

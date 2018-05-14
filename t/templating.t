@@ -281,7 +281,6 @@ description: [% FILTER html %][% comic.meta_data.description.$Language %][% END 
 [% comic.meta_data.title.$Language %]
 [% comic.pngFile.$Language %] [% comic.height %] by [% comic.width %]
 [% transcriptJson %]
-[% transcriptHtml %]
 [% comic.url.$Language %]
 who: [% FOREACH w IN comic.meta_data.who.$Language %][% w %][% IF !loop.last() %],[% END %][% END %]
 Image: [% comic.imageUrl.$Language %]

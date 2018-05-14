@@ -152,16 +152,6 @@ sub two_languages : Tests {
 }
 
 
-sub transcript : Test {
-    my $comic = make_comic('Beer flavored', 'Deutsch', '4001-01-01');
-    no warnings qw/redefine/;
-    local *Comic::_slurp = sub {
-        return '[% IF comic.not_yet_published() %][% transcriptHtml %][% END %]';
-    };
-    $comic->_do_export_html('Deutsch');
-}
-
-
 sub comic_not_published_on_my_page : Tests {
     my $comic = make_comic('Magazined!', 'Deutsch', '2016-01-01', 'some beer magazine');
     Comic::export_all_html(
@@ -232,7 +222,7 @@ sub publisher_order : Tests {
     make_comic('3', 'English', '3016-01-01', 'Austin Beer Guide');
     make_comic('4', 'English', '3016-01-01', 'web');
     is_deeply(Comic::_publishers(),
-       ['web', 'Austin Beer Guide', 'braumagazin.de', 'Craft Beer &amp; Brewing']);
+       ['web', 'Austin Beer Guide', 'braumagazin.de', 'Craft Beer & Brewing']);
 }
 
 

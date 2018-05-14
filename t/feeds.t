@@ -19,7 +19,7 @@ sub setup : Test(setup) {
     [% LAST IF done == max %]
     [% done = done + 1 %]
     <item>
-        <title>[% c.meta_data.title.English %]</title>
+        <title>[% FILTER html %][% c.meta_data.title.English %][% END  %]</title>
         <link>https://beercomics.com/comics/[% c.htmlFile.English %]</link>
         <pubDate>[% c.rfc822pubDate %]</pubDate>
     </item>

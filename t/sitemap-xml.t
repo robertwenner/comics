@@ -19,7 +19,7 @@ sub setup : Test(setup) {
         <loc>https://beercomics.com/comics/[% c.htmlFile.English %]</loc>
         <image:image>
             <image:loc>https://beercomics.com/comics/[% c.pngFile.English %]</image:loc>
-            <image:title>[% c.meta_data.title.English %]</image:title>
+            <image:title>[% FILTER html %][% c.meta_data.title.English %][% END %]</image:title>
             <image:license>https://beercomics.com/imprint.html</image:license>
         </image:image>
         <lastmod>[% c.modified %]</lastmod>
@@ -33,7 +33,7 @@ SITEMAP
         <loc>https://biercomics.de/comics/[% c.htmlFile.Deutsch %]</loc>
         <image:image>
             <image:loc>https://biercomics.de/comics/[% c.pngFile.Deutsch %]</image:loc>
-            <image:title>[% c.meta_data.title.Deutsch %]</image:title>
+            <image:title>[% FILTER html %][% c.meta_data.title.Deutsch %][% END %]</image:title>
             <image:license>https://biercomics.de/imprint.html</image:license>
         </image:image>
         <lastmod>[% c.modified %]</lastmod>
