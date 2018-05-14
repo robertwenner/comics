@@ -1242,21 +1242,8 @@ sub _do_export_html {
         $vars{'root'} = $path;
     }
 
-    $vars{transcriptJson} = '';
-    foreach my $t ($self->_texts_for($language)) {
-        $vars{transcriptJson} .= ' ' unless ($vars{transcriptJson} eq '');
-        $vars{transcriptJson} .= _escape_json($t);
-    }
-
     $vars{see} = $self->_references($language);
     return _templatize($self->{srcFile}, $template, $language, %vars);
-}
-
-
-sub _escape_json {
-    my ($value) = @_;
-    $value =~ s/"/\\"/g;
-    return $value;
 }
 
 

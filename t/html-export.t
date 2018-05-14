@@ -441,24 +441,6 @@ XML
 }
 
 
-sub transcript_json_utf8 : Tests {
-    MockComic::fake_file('en-comic.templ', '[% transcriptJson %]');
-    my $comic = MockComic::make_comic(
-        $MockComic::TEXTS => { 'English' => ["Ümläuts"] },
-    );
-    is($comic->_do_export_html('English', 'en-comic.templ'), 'Ümläuts');
-}
-
-
-sub transcript_json_escapes_quotes : Tests {
-    MockComic::fake_file('en-comic.templ', '[% transcriptJson %]');
-    my $comic = MockComic::make_comic(
-        $MockComic::TEXTS => { 'English' => ['"quoted"'] },
-    );
-    is($comic->_do_export_html('English', 'en-comic.templ'), '\\"quoted\\"');
-}
-
-
 sub fb_open_graph : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
