@@ -281,10 +281,11 @@ description: [% FILTER html %][% comic.meta_data.description.$Language %][% END 
 [% comic.meta_data.title.$Language %]
 [% comic.pngFile.$Language %] [% comic.height %] by [% comic.width %]
 [% comic.url.$Language %]
-who: [% FOREACH w IN comic.meta_data.who.$Language %][% w %][% IF !loop.last() %],[% END %][% END %]
+who: [% USE JSON %][% comic.meta_data.who.$Language.join(',') %]
 Image: [% comic.imageUrl.$Language %]
 Copyright year: [% year %]
-Keywords: [% keywords %]
+Keywords: [% comic.meta_data.tags.$Language.join(',') %]
+Transript: [% comic.transcript.$Language.join(' ') %]
 TEMPLATE
     Comic::export_all_html({
         'Deutsch' => 'templates/deutsch/comic-page.templ',
@@ -305,7 +306,7 @@ TEMPLATE
     like($wrote, qr{who: Max,Paul}m, "who");
     like($wrote, qr{Image: https://biercomics.de/comics/bier-trinken.png}m, "image URL");
     like($wrote, qr{Copyright year: 2016}m, "copyright year");
-    like($wrote, qr{Keywords: Bier,Saufen,Craft}m, "keywords");
+    like($wrote, qr{Keywords: Bier,Saufen,Craft}m, "tags");
 }
 
 

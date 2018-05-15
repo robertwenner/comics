@@ -1207,10 +1207,6 @@ sub _do_export_html {
     $vars{'languageurls'} = clone($self->{url});
     Readonly my $DIGITS_YEAR => 4;
     $vars{'year'} = substr $self->{meta_data}->{published}->{when}, 0, $DIGITS_YEAR;
-    $vars{'keywords'} = '';
-    if (defined($self->{meta_data}->{tags}->{$language})) {
-        $vars{'keywords'} = join q{,}, @{$self->{meta_data}->{tags}->{$language}};
-    }
 # @dontCommit canonicalUrl is different for index.html (main url vs deep link)
     $vars{'canonicalUrl'} = $self->{url}{$language};
 

@@ -465,7 +465,7 @@ sub fb_open_graph : Tests {
 <meta property="og:article:published" content="[% comic.meta_data.published.when %]"/>
 <meta property="og:article:modified" content="[% comic.modified %]"/>
 <meta property="og:article:author" content="Robert Wenner"/>
-<meta property="og:article:tag" content="[% keywords %]"/>
+<meta property="og:article:tag" content="[% USE JSON %][% comic.meta_data.tags.$Language.json %]"/>
 <meta property="og:website" content="https://biercomics.de"/>
 [% FOREACH l IN languages %]
 <!-- This is pointless because you cannot specify the other language URL here.
