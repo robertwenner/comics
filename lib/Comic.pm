@@ -919,7 +919,7 @@ sub _svg_to_png {
     $self->_set_png_meta($tool, 'Title', $self->{meta_data}->{title}->{$language});
     $self->_set_png_meta($tool, 'Artist', 'Robert Wenner');
     $self->_set_png_meta($tool, 'Author', 'Robert Wenner');
-    $self->_set_png_meta($tool, 'Description', join '', $self->{tanscript}{$language});
+    $self->_set_png_meta($tool, 'Description', join '', $self->{transcript}{$language});
     $self->_set_png_meta($tool, 'CreationTime', $self->{modified});
     $self->_set_png_meta($tool, 'Copyright', 'CC BY-NC-SA 4.0');
     $self->_set_png_meta($tool, 'URL', $self->{url}{$language});
