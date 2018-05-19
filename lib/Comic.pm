@@ -1382,7 +1382,7 @@ sub _references {
 
     my %links;
     if (!defined $self->{meta_data}->{see} || !defined $self->{meta_data}->{see}{$language}) {
-        return %links;
+        return \%links;
     }
 
     my $references = $self->{meta_data}->{see}{$language};
