@@ -41,7 +41,7 @@ sub one_comic : Tests {
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
         {'Deutsch' => 'archiv.html'},
         {'Deutsch' => 'templates/deutsch/comic-page.templ'});
-    MockComic::assert_wrote_file('generated/deutsch/web/archiv.html',
+    MockComic::assert_wrote_file('web/deutsch/archiv.html',
         qr{<li><a href="comics/bier.html">Bier</a></li>}m);
 }
 
@@ -54,7 +54,7 @@ sub some_comics : Tests {
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
         {'Deutsch' => 'archiv.html'},
         {'Deutsch' => 'templates/deutsch/comic-page.templ'});
-    MockComic::assert_wrote_file('generated/deutsch/web/archiv.html', qr{
+    MockComic::assert_wrote_file('web/deutsch/archiv.html', qr{
         <li><a\shref="comics/eins.html">eins</a></li>\s+
         <li><a\shref="comics/zwei.html">zwei</a></li>\s+
         <li><a\shref="comics/drei.html">drei</a></li>\s+
@@ -70,11 +70,11 @@ sub ignores_if_not_that_language : Tests {
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
         {'Deutsch' => 'archiv.html'},
         {'Deutsch' => 'templates/deutsch/comic-page.templ'});
-    MockComic::assert_wrote_file('generated/deutsch/web/archiv.html', qr{
+    MockComic::assert_wrote_file('web/deutsch/archiv.html', qr{
         <li><a\shref="comics/eins.html">eins</a></li>\s+
         <li><a\shref="comics/drei.html">drei</a></li>\s+
         }mx);
-    MockComic::assert_wrote_file('generated/deutsch/web/archiv.html', qr{(?!two)}mx);
+    MockComic::assert_wrote_file('web/deutsch/archiv.html', qr{(?!two)}mx);
 }
 
 
@@ -88,7 +88,7 @@ sub ignores_unpublished : Tests {
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
         {'Deutsch' => 'archiv.html'},
         {'Deutsch' => 'templates/deutsch/comic-page.templ'});
-    MockComic::assert_wrote_file('generated/deutsch/web/archiv.html', qr{
+    MockComic::assert_wrote_file('web/deutsch/archiv.html', qr{
         <li><a\shref="comics/eins.html">eins</a></li>\s+
         <li><a\shref="comics/zwei.html">zwei</a></li>\s+
         }mx);
@@ -103,7 +103,7 @@ sub thursday_gets_next_days_comic : Tests {
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
         {'Deutsch' => 'archiv.html'},
         {'Deutsch' => 'templates/deutsch/comic-page.templ'});
-    MockComic::assert_wrote_file('generated/deutsch/web/archiv.html', qr{
+    MockComic::assert_wrote_file('web/deutsch/archiv.html', qr{
         <li><a\shref="comics/eins.html">eins</a></li>\s+
         <li><a\shref="comics/zwei.html">zwei</a></li>\s+
         }mx);
@@ -115,7 +115,7 @@ sub no_comics : Tests {
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
         {'Deutsch' => 'archiv.html'},
         {'Deutsch' => 'templates/deutsch/comic-page.templ'});
-    MockComic::assert_wrote_file('generated/deutsch/web/archiv.html', qr{No comics in archive}m);
+    MockComic::assert_wrote_file('web/deutsch/archiv.html', qr{No comics in archive}m);
 }
 
 
@@ -139,7 +139,7 @@ sub ignores_comics_not_published_on_my_page : Tests {
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
         {'Deutsch' => 'archiv.html'},
         {'Deutsch' => 'templates/deutsch/comic-page.templ'});
-    MockComic::assert_wrote_file('generated/deutsch/web/archiv.html', qr{No comics in archive}m);
+    MockComic::assert_wrote_file('web/deutsch/archiv.html', qr{No comics in archive}m);
 }
 
 
@@ -149,5 +149,5 @@ sub last_modified_from_archive_language : Test {
     make_comic('zwei', "2016-01-02", 'Deutsch');
     make_comic('drei', "2016-01-03", 'English');
     Comic::export_archive('backlog.templ', %archives);
-    MockComic::assert_wrote_file('generated/deutsch/web/archiv.html', qr{2016-01-02}m);
+    MockComic::assert_wrote_file('web/deutsch/archiv.html', qr{2016-01-02}m);
 }

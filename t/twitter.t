@@ -66,7 +66,7 @@ sub tweet_png : Tests {
     );
     Comic::_tweet($comic, 'English', mode => 'png');
     is_deeply([@{$twitter_args{'update_with_media'}}],
-        ['This is the latest beercomic!', ['generated/english/web/comics/latest-comic.png']]);
+        ['This is the latest beercomic!', ['/generated/web/english/comics/latest-comic.png']]);
     is($twitter_args{'update'}, undef);
 }
 
@@ -90,7 +90,7 @@ sub shortens_text : Tests {
     );
     Comic::_tweet($comic, 'English', mode => 'png');
     is_deeply([@{$twitter_args{'update_with_media'}}],
-        ['x' x 280, ['generated/english/web/comics/latest-comic.png']]);
+        ['x' x 280, ['/generated/web/english/comics/latest-comic.png']]);
 }
 
 
@@ -102,5 +102,5 @@ sub hashtags_from_meta : Tests {
     );
     Comic::_tweet($comic, 'English', mode => 'png');
     is_deeply([@{$twitter_args{'update_with_media'}}],
-        ['#beer #craftbeer @you Funny stuff', ['generated/english/web/comics/latest-comic.png']]);
+        ['#beer #craftbeer @you Funny stuff', ['/generated/web/english/comics/latest-comic.png']]);
 }

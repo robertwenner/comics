@@ -197,7 +197,7 @@ sub _load {
             $base = 'backlog/' . lc $language;
         }
         else {
-            $base = lc($language) . '/web/comics';
+            $base = 'web/' . lc $language . '/comics';
         }
 
         $self->{titleUrlEncoded}{$language} = uri_encode($self->{meta_data}->{title}->{$language}, %uri_encoding_options);
@@ -985,7 +985,7 @@ sub _make_file_name {
 sub _make_dir {
     my $dir = shift;
 
-    $dir = "generated/$dir" if ($dir !~ m{^generated/});
+    $dir = "/generated/$dir" if ($dir !~ m{^generated/});
     unless (-d $dir) {
         File::Path::make_path($dir) or croak("Cannot mkdir $dir: $OS_ERROR");
     }
@@ -1154,11 +1154,11 @@ sub _export_qr_code {
     my $dir;
     my $png;
     if ($self->_not_published_on_the_web($language)) {
-        $dir = 'generated/backlog/qr';
+        $dir = 'backlog/qr';
         $png = "../qr/$self->{baseName}{$language}.png";
     }
     else {
-        $dir = 'generated/' . lc($language) . '/web/qr';
+        $dir = 'web/' . lc($language) . '/qr';
         $png = "$self->{baseName}{$language}.png";
     }
     $self->{qrcode}{$language} = $png;
@@ -1494,7 +1494,7 @@ sub export_archive {
         next if (@sorted == 0);
         my $last_pub = $sorted[-1];
         $last_pub->{isLatestPublished} = 1;
-        my $page = _make_dir(lc($language) . '/web') . '/index.html';
+        my $page = _make_dir('web/' . lc($language) . '/index.html');
         _write_file($page, $last_pub->_do_export_html($language, ${$comic_template}{$language}));
     }
 
@@ -1559,7 +1559,7 @@ sub _do_export_archive {
     my ($archive_templates, $archive_pages) = @ARG;
 
     foreach my $language (sort keys %{$archive_templates}) {
-        my $page = 'generated/' . lc($language) . "/web/${$archive_pages}{$language}";
+        my $page = 'web/' . lc($language) . "/${$archive_pages}{$language}";
 
         my @filtered = sort _compare grep { _archive_filter($_, $language) } @comics;
         if (!@filtered) {
@@ -1854,7 +1854,7 @@ Parameters:
     =item B<$items> number of comics to include in the feed.
 
     =item B<$toFile> to which file to write the feed, e.g., rss.xml. This
-        will be within 'generated/<language>/web'.
+        will be within 'generated/web/<language>'.
 
     =item B<%templates> hash of language to RSS template file name.
 
@@ -1877,7 +1877,7 @@ sub export_feed {
             'updated' => $now,
         );
         my $feed =_templatize('(none)', $templates{$language}, $language, %vars);
-        _write_file('generated/' . lc($language) . "/web/$to", $feed);
+        _write_file('web/' . lc($language) . "/$to", $feed);
     }
     return;
 }
