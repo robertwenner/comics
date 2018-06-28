@@ -1154,11 +1154,11 @@ sub _export_qr_code {
     my $dir;
     my $png;
     if ($self->_not_published_on_the_web($language)) {
-        $dir = 'backlog/qr';
+        $dir = 'generated/backlog/qr';
         $png = "../qr/$self->{baseName}{$language}.png";
     }
     else {
-        $dir = 'web/' . lc($language) . '/qr';
+        $dir = 'generated/web/' . lc($language) . '/qr';
         $png = "$self->{baseName}{$language}.png";
     }
     $self->{qrcode}{$language} = $png;

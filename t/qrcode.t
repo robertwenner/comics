@@ -78,5 +78,5 @@ sub writes_qr_code_image_file : Tests {
         });
     $comic->_export_qr_code($MockComic::ENGLISH);
     MockComic::assert_made_dirs('generated/web/english/comics', 'generated/web/english/qr');
-    is($write_args{file}, 'web/english/qr/drinking-beer.png');
+    is($write_args{file}, 'generated/web/english/qr/drinking-beer.png');
 }
