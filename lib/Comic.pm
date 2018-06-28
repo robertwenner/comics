@@ -1494,7 +1494,8 @@ sub export_archive {
         next if (@sorted == 0);
         my $last_pub = $sorted[-1];
         $last_pub->{isLatestPublished} = 1;
-        my $page = _make_dir('web/' . lc($language) . '/index.html');
+        my $page = _make_dir('web/' . lc $language);
+        $page.= '/index.html';
         _write_file($page, $last_pub->_do_export_html($language, ${$comic_template}{$language}));
     }
 
