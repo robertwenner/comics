@@ -1216,7 +1216,7 @@ sub _do_export_html {
     $vars{'hrsn'} = '';
     # Adjust the path for backlog comics.
     my $path = '../';
-    $path = '../' . lc($language) . '/web/' if ($self->not_yet_published());
+    $path = '../web/' . lc $language if ($self->not_yet_published());
     # Adjust the path for top-level index.html: the comics are in their own
     # folder, but index.html is in that folder's parent folder.
     if ($self->{isLatestPublished}) {
@@ -1877,7 +1877,7 @@ sub export_feed {
             'updated' => $now,
         );
         my $feed =_templatize('(none)', $templates{$language}, $language, %vars);
-        _write_file('web/' . lc($language) . "/$to", $feed);
+        _write_file('generated/web/' . lc($language) . "/$to", $feed);
     }
     return;
 }

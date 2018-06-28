@@ -57,7 +57,7 @@ sub assert_wrote {
     my ($count, $contentsExpected) = @_;
 
     Comic::export_feed($count, 'rss.xml', ('English' => 'rss.templ'));
-    MockComic::assert_wrote_file('web/english/rss.xml', $contentsExpected);
+    MockComic::assert_wrote_file('generated/web/english/rss.xml', $contentsExpected);
 }
 
 
@@ -163,10 +163,10 @@ RSS
     Comic::export_feed(5, 'rss.xml', ('Deutsch' => 'de.templ', 'English' => 'rss.templ'));
     my $english = qr{<title>Beer</title>};
     my $deutsch = qr{<title>Bier</title>};
-    MockComic::assert_wrote_file('web/deutsch/rss.xml', $deutsch);
-    MockComic::assert_didnt_write_in_file('web/deutsch/rss.xml', $english);
-    MockComic::assert_wrote_file('web/english/rss.xml', $english);
-    MockComic::assert_didnt_write_in_file('web/english/rss.xml', $deutsch);
+    MockComic::assert_wrote_file('generated/web/deutsch/rss.xml', $deutsch);
+    MockComic::assert_didnt_write_in_file('generated/web/deutsch/rss.xml', $english);
+    MockComic::assert_wrote_file('generated/web/english/rss.xml', $english);
+    MockComic::assert_didnt_write_in_file('generated/web/english/rss.xml', $deutsch);
 }
 
 
@@ -184,7 +184,7 @@ sub not_published_on_web : Test {
         $MockComic::PUBLISHED_WHEN => '2016-01-01',
         $MockComic::PUBLISHED_WHERE => 'tolle Zeitung');
     Comic::export_feed(10, 'rss.xml', ('English' => 'rss.templ'));
-    MockComic::assert_didnt_write_in_file('rss.xml', qr{item});
+    MockComic::assert_didnt_write_in_file('generated/web/english/rss.xml', qr{item});
 }
 
 
@@ -196,10 +196,10 @@ sub atom_fields : Tests {
             year => 2016, month => 3, day => 3, time_zone => '-05:00')->epoch,
         $MockComic::DESCRIPTION => {'English' => 'Drinking beer'});
     Comic::export_feed(10, 'atom.xml', ('English' => 'atom.templ'));
-    MockComic::assert_wrote_file('web/english/atom.xml', qr{Updated: 2016-02-02T00:00:00-05:00}m, 'updated');
-    MockComic::assert_wrote_file('web/english/atom.xml', qr{Published: 2016-01-01T00:00:00-05:00}m, 'published');
-    MockComic::assert_wrote_file('web/english/atom.xml', qr{Description: Drinking beer}m, 'description');
-    MockComic::assert_didnt_write_in_file('web/english/atom.xml', qr{<contributor>}m, 'contributor');
+    MockComic::assert_wrote_file('generated/web/english/atom.xml', qr{Updated: 2016-02-02T00:00:00-05:00}m, 'updated');
+    MockComic::assert_wrote_file('generated/web/english/atom.xml', qr{Published: 2016-01-01T00:00:00-05:00}m, 'published');
+    MockComic::assert_wrote_file('generated/web/english/atom.xml', qr{Description: Drinking beer}m, 'description');
+    MockComic::assert_didnt_write_in_file('generated/web/english/atom.xml', qr{<contributor>}m, 'contributor');
 }
 
 
@@ -209,7 +209,7 @@ sub atom_contributors : Tests {
         $MockComic::DESCRIPTION => {'English' => 'Drinking beer'},
         $MockComic::CONTRIBUTORS => ['ich']);
     Comic::export_feed(10, 'atom.xml', ('English' => 'atom.templ'));
-    MockComic::assert_wrote_file('web/english/atom.xml', 
+    MockComic::assert_wrote_file('generated/web/english/atom.xml', 
         qr{<contributor>\s*<name>ich</name>\s*</contributor>}m);
 }
 
@@ -225,5 +225,5 @@ ATOM
         $MockComic::PUBLISHED_WHEN => '2016-01-01',
         $MockComic::DESCRIPTION => {'English' => 'Drinking beer'});
     Comic::export_feed(10, 'atom.xml', ('English' => 'atom.templ'));
-    MockComic::assert_wrote_file('web/english/atom.xml', qr{^\s*1024\s*}m);
+    MockComic::assert_wrote_file('generated/web/english/atom.xml', qr{^\s*1024\s*}m);
 }
