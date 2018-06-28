@@ -249,7 +249,7 @@ sub includes_comic_for_next_friday : Tests {
     {
         'English' => 'generated/web/english/sitemap.xml',
     });
-    MockComic::assert_wrote_file('/generated/web/english/comics/next-friday.html',
+    MockComic::assert_wrote_file('generated/web/english/comics/next-friday.html',
         qr{next Friday});
 }
 
@@ -337,9 +337,9 @@ XML
         'Deutsch' => 'de-sitemap.templ',
     },
     {
-        'Deutsch' => '/generated/web/deutsch/sitemap.xml',
+        'Deutsch' => 'generated/web/deutsch/sitemap.xml',
     });
-    MockComic::assert_wrote_file('/generated/web/deutsch/comics/bier-trinken.html', qr{^\s*$});
+    MockComic::assert_wrote_file('generated/web/deutsch/comics/bier-trinken.html', qr{^\s*$});
 }
 
 
@@ -364,8 +364,8 @@ XML
         'English' => 'en-sitemap.templ',
     },
     {
-        'Deutsch' => '/generated/web/deutsch/sitemap.xml',
-        'English' => '/generated/web/english/sitemap.xml',
+        'Deutsch' => 'generated/web/deutsch/sitemap.xml',
+        'English' => 'generated/web/english/sitemap.xml',
     });
     my $exported = $comic->_do_export_html('Deutsch', 'de-comic.templ');
     like($exported, qr{href="https://beercomics\.com/comics/drinking-beer\.html"},
@@ -399,8 +399,8 @@ XML
         'Deutsch' => 'de-sitemap.templ',
     },
     {
-        'English' => '/generated/web/english/sitemap.xml',
-        'Deutsch' => '/generated/web/deutsch/sitemap.xml',
+        'English' => 'generated/web/english/sitemap.xml',
+        'Deutsch' => 'generated/web/deutsch/sitemap.xml',
     });
     my $exported = $comic->_do_export_html('Deutsch', 'de-comic.templ');
     like($exported, qr{href="https://beercomics\.com/comics/drinking-beer\.html"},
@@ -433,8 +433,8 @@ XML
         'Deutsch' => 'de-sitemap.templ',
     },
     {
-        'English' => '/generated/web/english/sitemap.xml',
-        'Deutsch' => '/generated/web/deutsch/sitemap.xml',
+        'English' => 'generated/web/english/sitemap.xml',
+        'Deutsch' => 'generated/web/deutsch/sitemap.xml',
     });
     my $exported = $comic->_do_export_html('Deutsch', 'de-comic.templ');
     like($exported, qr{\s+hreflang="en"\s+href="https://beercomics.com/"}, 'wrong hreflang');
@@ -484,7 +484,7 @@ XML
         'Deutsch' => 'de-sitemap.templ',
     },
     {
-        'Deutsch' => '/generated/web/deutsch/sitemap.xml',
+        'Deutsch' => 'generated/web/deutsch/sitemap.xml',
     });
     my $exported = $comic->_do_export_html('Deutsch', 'de-comic.templ');
     like($exported, qr{<meta property="og:url" content="https://biercomics\.de/comics/bier-trinken\.html"/>},
@@ -507,7 +507,7 @@ sub html_special_characters : Tests {
         '&lt;Ale &amp; Lager&gt;');
 
     $comic->_export_language_html('English', 'en-comic.templ');
-    MockComic::assert_wrote_file('/generated/web/english/comics/ale-lager.html',
+    MockComic::assert_wrote_file('generated/web/english/comics/ale-lager.html',
         '&lt;Ale &amp; Lager&gt;');
 }
 
@@ -532,7 +532,7 @@ sub index_html_with_canonical_link : Tests {
         {'English' => 'archive.templ'},
         {'English' => 'archive.html'},
         {'English' => 'comic.templ'});
-    MockComic::assert_wrote_file('/generated/web/english/index.html',
+    MockComic::assert_wrote_file('generated/web/english/index.html',
         'https://beercomics.com/');
 }
 
@@ -557,8 +557,8 @@ sub index_html_does_not_break_perm_link : Tests {
         'Deutsch' => 'sitemap.templ',
     },
     {
-        'English' => '/generated/web/english/sitemap.xml',
-        'Deutsch' => '/generated/web/english/sitemap.xml',
+        'English' => 'generated/web/english/sitemap.xml',
+        'Deutsch' => 'generated/web/english/sitemap.xml',
     });
 
     $comic->{isLatestPublished} = 1;

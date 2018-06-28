@@ -985,7 +985,7 @@ sub _make_file_name {
 sub _make_dir {
     my $dir = shift;
 
-    $dir = "/generated/$dir" if ($dir !~ m{^generated/});
+    $dir = "generated/$dir" if ($dir !~ m{^generated/});
     unless (-d $dir) {
         File::Path::make_path($dir) or croak("Cannot mkdir $dir: $OS_ERROR");
     }
