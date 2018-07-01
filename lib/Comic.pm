@@ -1569,7 +1569,6 @@ sub _do_export_archive {
         }
 
         my %vars;
-        $vars{'url'} = ${$archive_pages}{$language};
         $vars{'root'} = '';
         $vars{'comics'} = \@filtered;
         $vars{'modified'} = $filtered[-1]->{modified};
@@ -1614,7 +1613,6 @@ sub _do_export_backlog {
     my %vars;
     $vars{'languages'} = \@languages;
     $vars{'comics'} = \@filtered;
-    $vars{'notFor'} = \&_not_for;
     $vars{'publishers'} = _publishers();
     $vars{'tags'} = \%tags;
     $vars{'who'} = \%who;
