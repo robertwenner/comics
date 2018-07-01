@@ -1500,7 +1500,7 @@ sub export_archive {
     }
 
     _do_export_archive($archive_templates, $archive_pages);
-    _do_export_backlog($backlog_template, $backlog_page, $archive_pages);
+    _do_export_backlog($backlog_template, $backlog_page, sort keys %{$archive_pages});
     return;
 }
 
@@ -1584,7 +1584,7 @@ sub _do_export_archive {
 
 
 sub _do_export_backlog {
-    my ($templ_file, $page, $archive_pages) = @ARG;
+    my ($templ_file, $page, @languages) = @ARG;
 
     my @filtered = sort _compare grep { _backlog_filter($_) } @comics;
     if (!@filtered) {
@@ -1612,10 +1612,9 @@ sub _do_export_backlog {
     }
 
     my %vars;
-    $vars{'languages'} = [ sort keys %{$archive_pages} ];
+    $vars{'languages'} = \@languages;
     $vars{'comics'} = \@filtered;
     $vars{'notFor'} = \&_not_for;
-    $vars{'archive'} = $archive_pages;
     $vars{'publishers'} = _publishers();
     $vars{'tags'} = \%tags;
     $vars{'who'} = \%who;
