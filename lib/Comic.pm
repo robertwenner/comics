@@ -1560,7 +1560,7 @@ sub _do_export_archive {
     my ($archive_templates, $archive_pages) = @ARG;
 
     foreach my $language (sort keys %{$archive_templates}) {
-        my $page = 'web/' . lc($language) . "/${$archive_pages}{$language}";
+        my $page = 'generated/web/' . lc($language) . "/${$archive_pages}{$language}";
 
         my @filtered = sort _compare grep { _archive_filter($_, $language) } @comics;
         if (!@filtered) {
