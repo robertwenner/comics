@@ -39,7 +39,7 @@ sub one_comic : Tests {
     my $comic = make_comic('Bier', 'Deutsch', '2016-01-01');
     Comic::export_archive('backlog.templ', 'generated/backlog.html',
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
-        {'Deutsch' => 'archiv.html'},
+        {'Deutsch' => 'generated/web/deutsch/archiv.html'},
         {'Deutsch' => 'templates/deutsch/comic-page.templ'});
     MockComic::assert_wrote_file('generated/web/deutsch/archiv.html',
         qr{<li><a href="comics/bier.html">Bier</a></li>}m);
@@ -52,7 +52,7 @@ sub some_comics : Tests {
     make_comic("drei", 'Deutsch', "2016-01-03");
     Comic::export_archive('backlog.templ', 'generated/backlog.html',
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
-        {'Deutsch' => 'archiv.html'},
+        {'Deutsch' => 'generated/web/deutsch/archiv.html'},
         {'Deutsch' => 'templates/deutsch/comic-page.templ'});
     MockComic::assert_wrote_file('generated/web/deutsch/archiv.html', qr{
         <li><a\shref="comics/eins.html">eins</a></li>\s+
@@ -68,7 +68,7 @@ sub ignores_if_not_that_language : Tests {
     make_comic("drei", 'Deutsch', "2016-01-03");
     Comic::export_archive('backlog.templ', 'generated/backlog.html',
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
-        {'Deutsch' => 'archiv.html'},
+        {'Deutsch' => 'generated/web/deutsch/archiv.html'},
         {'Deutsch' => 'templates/deutsch/comic-page.templ'});
     MockComic::assert_wrote_file('generated/web/deutsch/archiv.html', qr{
         <li><a\shref="comics/eins.html">eins</a></li>\s+
@@ -86,7 +86,7 @@ sub ignores_unpublished : Tests {
     make_comic('drei', 'Deutsch', "2016-05-02"); # Mon
     Comic::export_archive('backlog.templ', 'generated/backlog.html',
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
-        {'Deutsch' => 'archiv.html'},
+        {'Deutsch' => 'generated/web/deutsch/archiv.html'},
         {'Deutsch' => 'templates/deutsch/comic-page.templ'});
     MockComic::assert_wrote_file('generated/web/deutsch/archiv.html', qr{
         <li><a\shref="comics/eins.html">eins</a></li>\s+
@@ -101,7 +101,7 @@ sub thursday_gets_next_days_comic : Tests {
     make_comic('zwei', 'Deutsch', "2016-08-12"); # Fri
     Comic::export_archive('backlog.templ', 'generated/backlog.html',
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
-        {'Deutsch' => 'archiv.html'},
+        {'Deutsch' => 'generated/web/deutsch/archiv.html'},
         {'Deutsch' => 'templates/deutsch/comic-page.templ'});
     MockComic::assert_wrote_file('generated/web/deutsch/archiv.html', qr{
         <li><a\shref="comics/eins.html">eins</a></li>\s+
@@ -113,7 +113,7 @@ sub thursday_gets_next_days_comic : Tests {
 sub no_comics : Tests {
     Comic::export_archive('backlog.templ', 'generated/backlog.html',
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
-        {'Deutsch' => 'archiv.html'},
+        {'Deutsch' => 'generated/web/deutsch/archiv.html'},
         {'Deutsch' => 'templates/deutsch/comic-page.templ'});
     MockComic::assert_wrote_file('generated/web/deutsch/archiv.html', qr{No comics in archive}m);
 }
@@ -137,7 +137,7 @@ sub ignores_comics_not_published_on_my_page : Tests {
     MockComic::fake_file('backlog.templ', '');
     Comic::export_archive('backlog.templ', 'generated/backlog.html',
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
-        {'Deutsch' => 'archiv.html'},
+        {'Deutsch' => 'generated/web/deutsch/archiv.html'},
         {'Deutsch' => 'templates/deutsch/comic-page.templ'});
     MockComic::assert_wrote_file('generated/web/deutsch/archiv.html', qr{No comics in archive}m);
 }

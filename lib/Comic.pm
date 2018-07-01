@@ -78,9 +78,9 @@ This document refers to version 0.0.2.
             "Deutsch" => "templates/deutsch/archiv.templ",
             "English" => "templates/english/archive.templ",
         },
-        { # path and file name of the generated archive, relative to generated/$language/web/
-            'Deutsch' => 'archiv.html',
-            'English' => 'archive.html',
+        { # path and file name of the generated archive
+            'Deutsch' => 'generated/web/deutsch/archiv.html',
+            'English' => 'generated/web/english/archive.html',
         },
         { # index.html template is the same as regular comic templates
             'English' => 'templates/english/comic-page.templ',
@@ -1560,7 +1560,7 @@ sub _do_export_archive {
     my ($archive_templates, $archive_pages) = @ARG;
 
     foreach my $language (sort keys %{$archive_templates}) {
-        my $page = 'generated/web/' . lc($language) . "/${$archive_pages}{$language}";
+        my $page = ${$archive_pages}{$language};
 
         my @filtered = sort _compare grep { _archive_filter($_, $language) } @comics;
         if (!@filtered) {
