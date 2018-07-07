@@ -302,7 +302,7 @@ sub nav_template : Tests {
     );
     MockComic::fake_file('en-comic.templ', <<'XML');
     [% IF comic.first.English %]
-        <a href="[% hrsn %][% comic.first.English %]">First</a>
+        <a href="[% indexAdjust %][% comic.first.English %]">First</a>
     [% END %]
 XML
     Comic::export_all_html({

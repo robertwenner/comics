@@ -1207,13 +1207,11 @@ sub _do_export_html {
     $vars{'languageurls'} = clone($self->{url});
     Readonly my $DIGITS_YEAR => 4;
     $vars{'year'} = substr $self->{meta_data}->{published}->{when}, 0, $DIGITS_YEAR;
-# @dontCommit canonicalUrl is different for index.html (main url vs deep link)
     $vars{'canonicalUrl'} = $self->{url}{$language};
 
     # By default, use normal path with comics in comics/
     $vars{'comicsPath'} = 'comics/';
-# @dontCommit clean up hrsn
-    $vars{'hrsn'} = '';
+    $vars{'indexAdjust'} = '';
     # Adjust the path for backlog comics.
     my $path = '../';
     $path = '../web/' . lc $language if ($self->not_yet_published());
@@ -1221,14 +1219,14 @@ sub _do_export_html {
     # folder, but index.html is in that folder's parent folder.
     if ($self->{isLatestPublished}) {
         $path = '';
-        $vars{'comicsPath'} = '';
-        $vars{'hrsn'} = 'comics/';
+        $vars{'indexAdjust'} = $vars{'comicsPath'};
         foreach my $l (keys %{$vars{'languageurls'}}) {
             # On index.html, link to the other language's index.html, not to
             # the canonical URL of the comic. Google trips over that and thinks
             # there is no backlink.
             ${$vars{'languageurls'}}{$l} =~ s{^(https://[^/]+/).+}{$1};
         }
+        # canonicalUrl is different for index.html (main url vs deep link)
         $vars{'canonicalUrl'} =~ s{^(https://[^/]+/).+}{$1};
     }
     if ($self->not_yet_published()) {
