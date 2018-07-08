@@ -308,7 +308,7 @@ sub check {
     foreach my $language ($self->_languages()) {
         $self->_check_title($language);
         $self->_check_date();
-        $self->_check_dont_publish($language, $dont_publish_marker);
+        $self->_check_dont_publish($dont_publish_marker);
         $self->_check_frames();
         $self->_check_tags('tags', $language);
         $self->_check_tags('who', $language);
