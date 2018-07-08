@@ -259,23 +259,13 @@ sub _get_tz {
 
 =head2 export_png
 
-Exports PNGs for all languages with meta data in the graphic.
+Exports PNGs for all languages with meta data in this Comic.
 
 The png file will be the lower case title of the comic, limited to letters,
 numbers, and hyphens only. It will be placed in F<generated/web/$language/>.
 
 Inkscape files must have meta data matching layer names, e.g., "English" in
 the meta data and an "English" layer and an "MetaEnglish" layer
-
-Parameters:
-
-=over 4
-
-    =item B<dont_publish_marker> marker that indicates a comic should not be
-        published. If this marker is found in the comic, the export fails.
-
-=back
-
 
 =cut
 
@@ -284,7 +274,6 @@ sub export_png {
 
     foreach my $language ($self->_languages()) {
         $counts{'comics'}{$language}++;
-        $self->_check($language, $dont_publish_marker);
 
         unless (_up_to_date($self->{srcFile}, "$self->{whereTo}{$language}/$self->{pngFile}{$language}")) {
             $self->_flip_language_layers($language);
@@ -298,20 +287,37 @@ sub export_png {
 }
 
 
-sub _check {
-    my ($self, $language, $dont_publish_marker) = @_;
+=head2 check
 
-    $self->_check_title($language);
-    $self->_check_date();
-    $self->_check_dont_publish($language, $dont_publish_marker);
-    $self->_check_frames();
-    $self->_check_tags('tags', $language);
-    $self->_check_tags('who', $language);
-    $self->_check_empty_texts($language);
-    $self->_check_transcript($language);
-    $self->_check_series($language);
-    $self->_check_persons($language);
-    $self->_check_meta($language);
+Runs some checks on this comic.
+
+Parameters:
+
+=over 4
+
+    =item B<dont_publish_marker> marker that indicates a comic should not be
+        published. If this marker is found in the comic, the export fails.
+
+=back
+
+=cut
+
+sub check {
+    my ($self, $dont_publish_marker) = @_;
+
+    foreach my $language ($self->_languages()) {
+        $self->_check_title($language);
+        $self->_check_date();
+        $self->_check_dont_publish($language, $dont_publish_marker);
+        $self->_check_frames();
+        $self->_check_tags('tags', $language);
+        $self->_check_tags('who', $language);
+        $self->_check_empty_texts($language);
+        $self->_check_transcript($language);
+        $self->_check_series($language);
+        $self->_check_persons($language);
+        $self->_check_meta($language);
+    }
     return;
 }
 

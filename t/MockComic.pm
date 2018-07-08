@@ -116,14 +116,6 @@ sub mock_methods {
         return '-0500';
     };
 
-    *Comic::_check = sub {
-        # Ignore; individual tests call check methods as needed.
-    };
-
-    *Comic::_check_all_comics = sub {
-        # Ignore; individual tests call check methods as needed.
-    };
-
     *Comic::_file_size = sub {
         return 1024;
     };
