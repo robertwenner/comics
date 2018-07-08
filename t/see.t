@@ -53,7 +53,7 @@ sub dead_link : Tests {
     eval {
         $comic->_do_export_html('English', 'template');
     };
-    like($@, qr{^referrer\.svg: English link refers to non-existent oops\.svg});
+    like($@, qr{^referrer\.svg : English link refers to non-existent oops\.svg});
 }
 
 

@@ -32,5 +32,5 @@ sub warn_croaks_on_published : Tests {
     eval {
         $comic->_warn("a");
     };
-    like($@, qr{some_comic\.svg: a\b.*}i);
+    like($@, qr{some_comic\.svg : a\b.*}i);
 }

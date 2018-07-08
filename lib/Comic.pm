@@ -1892,7 +1892,7 @@ sub export_feed {
 
 sub _croak {
     my ($self, $msg) = @ARG;
-    croak "$self->{srcFile}: $msg";
+    croak "$self->{srcFile} : $msg";
 }
 
 

@@ -54,7 +54,7 @@ sub duplicated_text_in_other_language : Tests {
     eval {
         $comic->_check_transcript("English");
     };
-    like($@, qr{^some_comic.svg:}, 'should include file name');
+    like($@, qr{^some_comic.svg}, 'should include file name');
     like($@, qr{duplicated text}, 'wrong error message');
     like($@, qr{'Paul shows Max his bym\.'}, 'should mention duplicated text');
     like($@, qr{English and Deutsch}, 'should mention offending languages');

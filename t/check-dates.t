@@ -41,7 +41,7 @@ sub collision : Test {
     eval {
         $comic->_check_date();
     };
-    like($@, qr{three\.svg: duplicated date .+ one\.svg});
+    like($@, qr{three\.svg : duplicated date .+ one\.svg});
 }
 
 
@@ -56,7 +56,7 @@ sub collision_ignores_whitespace : Test {
     eval {
         $comic->_check_date();
     };
-    like($@, qr{three\.svg: duplicated date .+ one\.svg});
+    like($@, qr{three\.svg : duplicated date .+ one\.svg});
 }
 
 
