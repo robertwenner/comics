@@ -109,8 +109,6 @@ published comics, and a sizemap to compare image sizes.
 
 # XPath default namespace name.
 Readonly our $DEFAULT_NAMESPACE => 'defNs';
-# How to mark a comic as not publishable, so that the converter can flag it.
-Readonly our $DONT_PUBLISH => 'DONT_PUBLISH';
 # What date to use for sorting unpublished comics.
 Readonly our $UNPUBLISHED => '3000-01-01';
 # Expected frame thickness in pixels.
@@ -269,14 +267,24 @@ numbers, and hyphens only. It will be placed in F<generated/web/$language/>.
 Inkscape files must have meta data matching layer names, e.g., "English" in
 the meta data and an "English" layer and an "MetaEnglish" layer
 
+Parameters:
+
+=over 4
+
+    =item B<dont_publish_marker> marker that indicates a comic should not be
+        published. If this marker is found in the comic, the export fails.
+
+=back
+
+
 =cut
 
 sub export_png {
-    my ($self) = @ARG;
+    my ($self, $dont_publish_marker) = @ARG;
 
     foreach my $language ($self->_languages()) {
         $counts{'comics'}{$language}++;
-        $self->_check($language);
+        $self->_check($language, $dont_publish_marker);
 
         unless (_up_to_date($self->{srcFile}, "$self->{whereTo}{$language}/$self->{pngFile}{$language}")) {
             $self->_flip_language_layers($language);
@@ -291,11 +299,11 @@ sub export_png {
 
 
 sub _check {
-    my ($self, $language) = @_;
+    my ($self, $language, $dont_publish_marker) = @_;
 
     $self->_check_title($language);
     $self->_check_date();
-    $self->_check_dont_publish($language);
+    $self->_check_dont_publish($language, $dont_publish_marker);
     $self->_check_frames();
     $self->_check_tags('tags', $language);
     $self->_check_tags('who', $language);
@@ -382,13 +390,13 @@ sub _check_date {
 
 
 sub _check_dont_publish {
-    my ($self) = @ARG;
+    my ($self, $marker) = @ARG;
 
-    $self->_check_json('', $self->{meta_data});
+    $self->_check_json('', $self->{meta_data}, $marker);
     foreach my $layer ($self->{xpath}->findnodes(_find_layers())) {
         my $text = $layer->textContent();
         my $label = $layer->{'inkscape:label'};
-        if ($text =~ m/(\b$DONT_PUBLISH\b[^\n\r]*)/m) {
+        if ($text =~ m/(\b$marker\b[^\n\r]*)/m) {
             $self->_warn("In layer $label: $1");
         }
     }
@@ -397,19 +405,19 @@ sub _check_dont_publish {
 
 
 sub _check_json {
-    my ($self, $where, $what) = @ARG;
+    my ($self, $where, $what, $marker) = @ARG;
 
     if (ref($what) eq 'HASH') {
         foreach my $key (keys %{$what}) {
-            $self->_check_json("$where > $key", $what->{$key});
+            $self->_check_json("$where > $key", $what->{$key}, $marker);
         }
     }
     elsif (ref($what) eq 'ARRAY') {
         for my $i (0 .. $#{$what}) {
-            $self->_check_json($where . '[' . ($i + 1) . ']', $what->[$i]);
+            $self->_check_json($where . '[' . ($i + 1) . ']', $what->[$i], $marker);
         }
     }
-    elsif ($what =~ m/$DONT_PUBLISH/m) {
+    elsif ($what =~ m/$marker/m) {
         $self->_warn("In JSON$where: $what");
     }
     return;

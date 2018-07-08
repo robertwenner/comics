@@ -23,7 +23,7 @@ sub in_json_hash : Test {
         }
     );
     eval {
-        $comic->_check_dont_publish();
+        $comic->_check_dont_publish('DONT_PUBLISH');
     };
     like($@, qr{in JSON > title > English: DONT_PUBLISH fix me}i);
 }
@@ -35,7 +35,7 @@ sub in_json_array : Test {
         $MockComic::WHO => {
             $MockComic::ENGLISH => [ 'one', 'two', 'three DONT_PUBLISH', 'four' ]});
     eval {
-        $comic->_check_dont_publish();
+        $comic->_check_dont_publish('DONT_PUBLISH');
     };
     like($@, qr{In JSON > who > English\[3\]: three DONT_PUBLISH}i);
 }
@@ -46,7 +46,7 @@ sub in_json_top_level_element : Test {
         $MockComic::PUBLISHED_WHEN => '2016-01-01',
         $MockComic::JSON => '&quot;foo&quot;: &quot;DONT_PUBLISH top level&quot;');
     eval {
-        $comic->_check_dont_publish();
+        $comic->_check_dont_publish('DONT_PUBLISH');
     };
     like($@, qr{In JSON > foo: DONT_PUBLISH top level}i);
 }
@@ -58,7 +58,7 @@ sub in_text : Test {
         $MockComic::TEXTS => {$MockComic::DEUTSCH =>
             ['blah', 'blubb', 'DONT_PUBLISH oops', 'blahblah']});
     eval {
-        $comic->_check_dont_publish("English");
+        $comic->_check_dont_publish('DONT_PUBLISH');
     };
     like($@, qr{In layer Deutsch: DONT_PUBLISH oops}i);
 }
@@ -70,7 +70,7 @@ sub silent_if_not_yet_published : Test {
         $MockComic::TEXTS => {$MockComic::DEUTSCH =>
             ['blah', 'blubb', 'DONT_PUBLISH oops', 'blahblah']});
     eval {
-        $comic->_check_dont_publish("English");
+        $comic->_check_dont_publish('DONT_PUBLISH');
     };
     is($@, '');
 }
@@ -82,7 +82,7 @@ sub silent_if_no_published_date : Test {
         $MockComic::TEXTS => {$MockComic::DEUTSCH =>
             ['blah', 'blubb', 'DONT_PUBLISH oops', 'blahblah']});
     eval {
-        $comic->_check_dont_publish("English");
+        $comic->_check_dont_publish('DONT_PUBLISH');
     };
     is($@, '');
 }

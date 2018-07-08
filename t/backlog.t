@@ -248,7 +248,7 @@ sub includes_dont_publish_warning : Tests {
         $MockComic::TEXTS => { $MockComic::DEUTSCH => ['a', 'b', 'DONT_PUBLISH', 'c']},
         $MockComic::PUBLISHED_WHEN => '3016-01-01',
     );
-    $comic->_check_dont_publish();
+    $comic->_check_dont_publish('DONT_PUBLISH');
     Comic::export_archive('backlog.templ', 'generated/backlog.html',
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
         {'Deutsch' => 'archiv.html'},
