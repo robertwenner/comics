@@ -549,6 +549,17 @@ sub _check_tags {
         $self->_warn("No $language $what") unless(defined $tag);
         $self->_warn("Empty $language $what") if ($tag =~ m/^\s*$/);
     }
+
+    foreach my $comic (@comics) {
+        foreach my $oldtag (@{$comic->{meta_data}->{$what}->{$language}}) {
+            foreach my $newtag (@{$self->{meta_data}->{$what}->{$language}}) {
+                if ($oldtag ne $newtag && lc $oldtag eq lc $newtag) {
+                    $self->_warn("$what $newtag and $oldtag from $comic->{srcFile} only differ in case");
+                }
+            }
+        }
+    }
+
     return;
 }
 
