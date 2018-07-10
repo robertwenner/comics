@@ -805,7 +805,7 @@ sub _text {
 sub _write_temp_svg_file {
     my ($self, $language) = @ARG;
 
-    my $temp_file_name = $self->_make_file_name($language, 'tmp/svgs', 'svg');
+    my $temp_file_name = _make_dir('tmp/' . lc $language . '/svg/') . "$self->{baseName}{$language}.svg";
     my $svg = $self->_copy_svg($language);
     $self->_insert_url($svg, $language);
     $svg->toFile($temp_file_name);
@@ -999,12 +999,6 @@ sub _file_size {
     return (stat $name)[$SIZE];
 }
 
-
-sub _make_file_name {
-    my ($self, $language, $where, $ext) = @ARG;
-
-    return _make_dir(lc($language) . "/$where/") . $self->{baseName}{$language} . ".$ext";
-}
 
 
 sub _make_dir {
