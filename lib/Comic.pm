@@ -1231,12 +1231,14 @@ sub _do_export_html {
     # By default, use normal path with comics in comics/
     $vars{'comicsPath'} = 'comics/';
     $vars{'indexAdjust'} = '';
-    # Adjust the path for backlog comics.
     my $path = '../';
-    $path = '../web/' . lc $language if ($self->not_yet_published());
-    # Adjust the path for top-level index.html: the comics are in their own
-    # folder, but index.html is in that folder's parent folder.
+    if ($self->not_yet_published()) {
+        # Adjust the path for backlog comics.
+        $path = '../web/' . lc $language;
+    }
     if ($self->{isLatestPublished}) {
+        # Adjust the path for top-level index.html: the comics are in their own
+        # folder, but index.html is in that folder's parent folder.
         $path = '';
         $vars{'indexAdjust'} = $vars{'comicsPath'};
         foreach my $l (keys %{$vars{'languageurls'}}) {
@@ -1249,7 +1251,7 @@ sub _do_export_html {
         $vars{'canonicalUrl'} =~ s{^(https://[^/]+/).+}{$1};
     }
     if ($self->not_yet_published()) {
-        $vars{'root'} = "../$path";
+        $vars{'root'} = "../$path/";
     }
     else {
         $vars{'root'} = $path;
