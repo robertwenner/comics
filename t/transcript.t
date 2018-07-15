@@ -35,7 +35,7 @@ sub order : Tests {
             ],
         }
     );
-    my @transcript = @{$comic->{transcript}{'Deutsch'}};
+    my @transcript = $comic->_get_transcript('Deutsch');
     is_deeply([@transcript], [ 'Max', 'Bier?', 'Paul', 'Nein danke!']);
 }
 
@@ -59,7 +59,7 @@ sub uses_background_text : Tests {
             ],
         }
     );
-    my @transcript = @{$comic->{transcript}{'Deutsch'}};
+    my @transcript = $comic->_get_transcript('Deutsch');
     is_deeply([@transcript], [ 'Max', 'Bier?', 'Fass springt auf', 'Paul', 'Nein danke!']);
 }
 
@@ -75,7 +75,7 @@ sub container_layer : Tests {
         </g>
     </g>
 XML
-    my @transcript = @{$comic->{transcript}{'Deutsch'}};
+    my @transcript = $comic->_get_transcript('Deutsch');
     is_deeply([@transcript], [ 'Max', 'Bier!']);
 }
 
@@ -93,6 +93,6 @@ sub appends_speech_to_speaker : Tests {
             ],
         }
     );
-    my @transcript = @{$comic->{transcript}{'Deutsch'}};
+    my @transcript = $comic->_get_transcript('Deutsch');
     is_deeply([@transcript], [ 'Max: Bier?', 'Paul: Nein danke!']);
 }

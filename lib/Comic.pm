@@ -208,7 +208,6 @@ sub _load {
         $self->{urlUrlEncoded}{$language} = uri_encode($self->{url}{$language}, %uri_encoding_options);
         $self->{imageUrl}{$language} = "https://$domains{$language}/comics/$self->{baseName}{$language}.png";
         $self->{href}{$language} = "comics/$self->{htmlFile}{$language}";
-        @{$self->{transcript}{$language}} = _append_speech_to_speaker($self->_texts_for($language));
     }
 
     push @comics, $self;
@@ -306,6 +305,7 @@ sub check {
     my ($self, $dont_publish_marker) = @_;
 
     foreach my $language ($self->_languages()) {
+        $self->_get_transcript($language);
         $self->_check_title($language);
         $self->_check_date();
         $self->_check_dont_publish($dont_publish_marker);
@@ -322,10 +322,20 @@ sub check {
 }
 
 
+sub _get_transcript {
+    my ($self, $language) = @ARG;
+
+    if (!defined($self->{transcript}{$language})) {
+        @{$self->{transcript}{$language}} = _append_speech_to_speaker($self->_texts_for($language));
+    }
+    return @{$self->{transcript}{$language}};
+}
+
+
 sub _up_to_date {
     # Takes file names as arguments rather than being a member method for
     # easier mocking.
-    my ($svg_file, $png_file) = @_;
+    my ($svg_file, $png_file) = @ARG;
 
     my $up_to_date = 0;
     if (_exists($png_file)) {
@@ -944,7 +954,7 @@ sub _svg_to_png {
     $self->_set_png_meta($tool, 'Title', $self->{meta_data}->{title}->{$language});
     $self->_set_png_meta($tool, 'Artist', 'Robert Wenner');
     $self->_set_png_meta($tool, 'Author', 'Robert Wenner');
-    $self->_set_png_meta($tool, 'Description', join '', $self->{transcript}{$language});
+    $self->_set_png_meta($tool, 'Description', join '', $self->_get_transcript($language));
     $self->_set_png_meta($tool, 'CreationTime', $self->{modified});
     $self->_set_png_meta($tool, 'Copyright', 'CC BY-NC-SA 4.0');
     $self->_set_png_meta($tool, 'URL', $self->{url}{$language});
@@ -1161,6 +1171,7 @@ sub _find_next {
 sub _export_language_html {
     my ($self, $language, $template) = @ARG;
 
+    $self->_get_transcript($language);
     _write_file("$self->{whereTo}{$language}/$self->{htmlFile}{$language}",
         $self->_do_export_html($language, $template));
     return 0;
