@@ -1,0 +1,78 @@
+- rework variables available for templates: standardize names, pick decent
+  names, DRY up them up, generate them in one place, document them
+
+- backlog: list comics under series headings (hideable?)
+
+- don't post to reddit if the link is dead
+
+- allow specifying the subreddit(s) on a per-comic basis, plus a default
+  subredditin the code
+
+- define comic order by refering the previous or next comic, instead of
+  having a date, so that inserting one for current events doesn't ripple
+  through the backlog
+
+- plugable customizable checkers and actors (reddit poster, ...)
+
+- internal archive with published dates and (source svg) file names and
+  comic counts
+
+- transcript needs to check all frames for ordering, not just rows; that
+  should get rid of space padding
+
+- comic by email: could use Sparkpost, but the list management (software)
+  is probably the bigger concern, as is the privacy concerns and GDPR
+
+- handle more frame varieties, e.g., long frame over 2 rows on the side
+
+- print language independent errors (e.g., frame errors) only once, not for
+  each language
+
+- add "previously published in ..." link to the bottom of the page
+
+- comics by series pages
+
+- can a comic be in more than one series? (why not?)
+
+- prev next first last buttons per series
+
+- spellcheck
+
+- tag cloud
+
+- tags under each comics, as hyperlinks to the tag cloud
+
+- tag cloud (see https://www.w3.org/TR/html5/common-idioms.html#tag-clouds)
+  or comics by tag pages
+
+- export svg instead of png (for a truly fluent / responsive web design),
+  but would also need to offer the font for download, I guess?
+  or chop the svgs or pngs up per frame (ugly)
+
+- minimize svg file sizes with svgo
+
+- generate latex code for pdf
+
+- liner notes with comments in pdf, suck in other interesting documentation
+
+- liner notes can pull stats from comics: how long between creation and
+  publication, how long was the backlog each Fri, how big was the ideas file
+  each Fri...
+
+- sizemap should have colors depending on the comic was published
+
+- add a thumbnail / preview for really large images (posters), especially in
+  RSS
+
+- cleanup hard-coded names, e.g., "Rahmen" or even "Meta", "generated"
+
+- check for date holes (why? are those bad? only in the future? but I could
+  schedule a xmas or Fri 13 comic ahead and then have holes and that's ok)
+
+- break code into different modules
+
+- toot automatically on Mastodon
+
+- post to Google+
+
+- use a configuration file to avoid passing lots of parameters
