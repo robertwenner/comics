@@ -168,3 +168,19 @@ sub encodes_xml_special_characters : Tests {
 sub no_relative_paths : Tests {
     assert_wrote(make_comic('2016-01-01', 'Beer', 'English'), qr{(?!generated)}m);
 }
+
+
+sub creates_directories : Tests {
+    my $comic = make_comic('3000-01-01', 'web', 'English');
+    Comic::export_all_html({
+        'English' => 'templates/english/comic-page.templ',
+    },
+    {
+        'English' => 'templates/english/sitemap-xml.templ',
+    },
+    {
+        'English' => 'generated/web/english/sitemap.xml',
+    });
+    MockComic::assert_made_dirs(
+        'generated/backlog/english', 'generated/backlog/qr', 'generated/web/english');
+}

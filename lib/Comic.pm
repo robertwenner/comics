@@ -1081,6 +1081,8 @@ sub export_all_html {
             my $last_comic = _find_next($language, $i, \@sorted, [reverse $i + 1 .. @sorted - 1]);
             $comic->{'last'}{$language} = $last_comic ? $last_comic->{htmlFile}{$language} : 0;
             $comic->_export_language_html($language, ${$comic_templates}{$language});
+
+            _make_dir('web/' . lc $language);
         }
     }
 
