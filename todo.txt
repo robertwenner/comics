@@ -25,9 +25,6 @@
 
 - handle more frame varieties, e.g., long frame over 2 rows on the side
 
-- print language independent errors (e.g., frame errors) only once, not for
-  each language
-
 - add "previously published in ..." link to the bottom of the page
 
 - comics by series pages
