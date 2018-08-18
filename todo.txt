@@ -1,6 +1,8 @@
 - rework variables available for templates: standardize names, pick decent
   names, DRY up them up, generate them in one place, document them
 
+- twitter with @someone does not get tweeted for some reason
+
 - backlog: list comics under series headings (hideable?)
 
 - don't post to reddit if the link is dead
@@ -16,6 +18,8 @@
 
 - internal archive with published dates and (source svg) file names and
   comic counts
+
+- allow adding (invisible) watermarks;
 
 - transcript needs to check all frames for ordering, not just rows; that
   should get rid of space padding
@@ -33,9 +37,7 @@
 
 - prev next first last buttons per series
 
-- spellcheck
-
-- tag cloud
+- spellcheck (but that's already available in Inkscape anyway)
 
 - tags under each comics, as hyperlinks to the tag cloud
 
@@ -70,6 +72,6 @@
 
 - toot automatically on Mastodon
 
-- post to Google+
+- post automatically to Google+
 
 - use a configuration file to avoid passing lots of parameters
