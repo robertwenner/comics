@@ -74,4 +74,10 @@
 
 - post automatically to Google+
 
+- post automatically to Openbook
+
+- post automatically to Ello
+
+- post automatically to Diaspora
+
 - use a configuration file to avoid passing lots of parameters
