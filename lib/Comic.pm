@@ -817,6 +817,7 @@ sub _write_temp_svg_file {
 
     my $temp_file_name = _make_dir('tmp/' . lc $language . '/svg/') . "$self->{baseName}{$language}.svg";
     my $svg = $self->_copy_svg($language);
+    _drop_layers($svg, 'Raw');
     $self->_insert_url($svg, $language);
     $svg->toFile($temp_file_name);
     return $temp_file_name;
@@ -826,6 +827,36 @@ sub _write_temp_svg_file {
 sub _copy_svg {
     my ($self) = @ARG;
     return XML::LibXML->load_xml(string => $self->{dom}->toString());
+}
+
+
+sub _drop_layers {
+    my ($svg, @layers) = @ARG;
+
+    my $node = $svg->documentElement()->firstChild();
+    _drop_layers_recursively($node, @layers);
+    return;
+}
+
+
+sub _drop_layers_recursively {
+    my ($node, @layers) = @ARG;
+
+    while ($node) {
+        my $next = $node->nextSibling();
+        foreach my $child($node->childNodes()) {
+            _drop_layers_recursively($child, @layers);
+        }
+        foreach my $drop (@layers) {
+            if ($node->nodeName() eq 'g'
+            && ($node->getAttribute('inkscape:groupmode') || '') eq 'layer'
+            && ($node->getAttribute('inkscape:label') || '') eq $drop) {
+                $node->unbindNode();
+            }
+        }
+        $node = $next;
+    }
+    return;
 }
 
 
