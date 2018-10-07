@@ -80,4 +80,10 @@
 
 - post automatically to Diaspora
 
+- use a inrupt.com solid pod?
+
 - use a configuration file to avoid passing lots of parameters
+
+- use inkscape shell to export in bulk (could be faster than creating
+  multiple inkscape processes), would be great to avoid writing temp svg
+  files if inkscape accepts the svg on stdin;
