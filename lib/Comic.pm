@@ -161,7 +161,7 @@ sub _load {
 
     $self->{srcFile} = $file;
     $self->{warnings} = [];
-    $self->{dom} = XML::LibXML->load_xml(string => _slurp($file));
+    $self->{dom} = _parse_xml(_slurp($file));
     $self->{xpath} = XML::LibXML::XPathContext->new($self->{dom});
     $self->{xpath}->registerNs($DEFAULT_NAMESPACE, 'http://www.w3.org/2000/svg');
     my $meta_xpath = _build_xpath('metadata/rdf:RDF/cc:Work/dc:description/text()');
@@ -212,6 +212,14 @@ sub _load {
 
     push @comics, $self;
     return;
+}
+
+
+sub _parse_xml {
+    my ($xml) = @ARG;
+    my $parser = XML::LibXML->new();
+    $parser->set_option(huge => 1);
+    return $parser->load_xml(string => $xml);
 }
 
 
@@ -826,7 +834,7 @@ sub _write_temp_svg_file {
 
 sub _copy_svg {
     my ($self) = @ARG;
-    return XML::LibXML->load_xml(string => $self->{dom}->toString());
+    return _parse_xml($self->{dom}->toString());
 }
 
 
