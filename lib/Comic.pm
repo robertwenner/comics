@@ -95,7 +95,7 @@ This document refers to version 0.0.2.
         'English' => 'templates/english/atom.templ',
     ));
     Comic::size_map('templates/sizemap.templ', 'generated/sizemap.html');
-    Comic::post_to_social_media('English');
+    print Comic::post_to_social_media('English');
 
 =head1 DESCRIPTION
 
@@ -2005,8 +2005,8 @@ Parameters:
 
 =back
 
-Returns 0 if successful, or 1 if no current comic was found or the last
-comic isn't from today.
+Returns log information (usually the URLs posted to and such) if successful,
+or croaks if no current comic was found or the last comic isn't from today.
 
 =cut
 
@@ -2014,23 +2014,23 @@ sub post_to_social_media {
     my %settings = @ARG;
 
     my $posted = 0;
+    my $log;
     my @published = reverse sort _compare grep { _no_language_archive_filter($_) } @comics;
     foreach my $comic (@published) {
         # Sorting is by date first, so it's safe to exit the loop at the first
         # comic that's not up to date.
         last if ($comic->_is_not_current());
         foreach my $language (sort keys %{$comic->{meta_data}->{title}}) {
-            _tweet($comic, $language, %{$settings{'twitter'}});
-            _reddit($comic, $language, %{$settings{'reddit'}});
+            $log .= _tweet($comic, $language, %{$settings{'twitter'}}) . "\n";
+            $log .= _reddit($comic, $language, %{$settings{'reddit'}}) . "\n";
             $posted = 1;
         }
     }
     if (!$posted) {
         my $latest = $published[0];
         $latest->_croak("Not posting cause latest comic is not current ($latest->{meta_data}->{published}->{when})");
-        return 1;
     }
-    return 0;
+    return $log;
 }
 
 
@@ -2080,10 +2080,7 @@ sub _tweet {
         croak $err unless blessed $status && $status->isa('Net::Twitter::Error');
         croak $err->code, ': ', $err->message, "\n", $err->error, "\n";
     }
-    print {*STDOUT} $status->{text}, "\n"
-        or croak("Cannot print twitter status: $OS_ERROR");
-
-    return;
+    return $status->{text};
 }
 
 
@@ -2107,10 +2104,10 @@ sub _reddit {
     my $title = "[OC] $comic->{meta_data}->{title}{$language}";
     # https://redditclient.readthedocs.io/en/latest/oauth/
     my $reddit = Reddit::Client->new(%settings);
-    my $post = 0;
-    while (!$post) {
+    my $full_name = 0;
+    while (!$full_name) {
         eval {
-            $post = $reddit->submit_link(
+            $full_name = $reddit->submit_link(
                 subreddit => $settings{'subreddit'},
                 title => $title,
                 url => $comic->{url}{$language},
@@ -2119,12 +2116,8 @@ sub _reddit {
         or _wait_for_reddit_limit($EVAL_ERROR);
     }
 
-    # PerlCritic wants me to check that I/O to the console worked.
-    ## no critic(InputOutput::RequireCheckedSyscalls)
-    print {*STDOUT} "Posted '$title' ($comic->{url}{$language}) to reddit at $post\n";
-    ## use critic
-
-    return;
+    my $url = $reddit->get_link($full_name);
+    return "Posted '$title' ($comic->{url}{$language}) at $url ($full_name)\n";
 }
 
 

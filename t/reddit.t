@@ -20,13 +20,18 @@ sub set_up : Test(setup) {
     MockComic::set_up();
 
     %reddit_args = ();
+    my $reddit_full_name;
     $reddit = Test::MockModule->new('Reddit::Client');
     $reddit->redefine('submit_link', sub {
-        my ($comic, @args) = @_;
+        my ($r, @args) = @_;
         %reddit_args = @args;
     });
+    $reddit->redefine('get_link', sub {
+        my ($r, $full_name) = @_;
+        $reddit_full_name = $full_name;
+        return "/r/comics/beercomic";
+    });
 }
-
 
 
 sub adds_oc_tag_and_subreddit : Tests {
@@ -72,4 +77,15 @@ sub post_to_reddit_retries_on_rate_limit : Tests {
         Comic::_wait_for_reddit_limit('Error(s): whatever');
     };
     like($@, qr{Don't know what reddit complains about}i);
+    like($@, qr{whatever}i);
 }
+
+
+sub gets_url_for_full_name : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+    );
+    Comic::_reddit($comic, 'English', (subreddit => 'beer'));
+    is($reddit_args{'subreddit'}, 'beer');
+}
+

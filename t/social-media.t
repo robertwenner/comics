@@ -99,7 +99,9 @@ sub multiple_comics_different_languages : Tests {
         my ($comic, $language) = @_;
         $tweeted{$language} = $comic;
     };
-    local *Comic::_reddit = sub {};
+    local *Comic::_reddit = sub {
+        return '';
+    };
     use warnings;
 
     Comic::post_to_social_media();
@@ -129,7 +131,9 @@ sub only_latest_comics : Tests {
         my ($comic, $language) = @_;
         push @tweeted, $comic;
     };
-    local *Comic::_reddit = sub {};
+    local *Comic::_reddit = sub {
+        return '';
+    };
     use warnings;
 
     Comic::post_to_social_media();
