@@ -73,6 +73,9 @@ sub post_to_reddit_retries_on_rate_limit : Tests {
     Comic::_wait_for_reddit_limit('Error(s): [RATELIMIT] you are doing that too much. try again in 10 seconds.');
     is($slept, 10);
 
+    Comic::_wait_for_reddit_limit('Error(s): [RATELIMIT] you are doing that too much. try again in 1 second.');
+    is($slept, 1);
+
     eval {
         Comic::_wait_for_reddit_limit('Error(s): whatever');
     };
