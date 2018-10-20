@@ -88,7 +88,6 @@ sub gets_url_for_full_name : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
     );
-    Comic::_reddit($comic, 'English', (subreddit => 'beer'));
-    is($reddit_args{'subreddit'}, 'beer');
+    my $log = Comic::_reddit($comic, 'English', (subreddit => 'beer'));
+    like($log, qr{/r/comics/beercomic});
 }
-
