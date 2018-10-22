@@ -141,7 +141,7 @@ Parameters:
 
 =over 4
 
-    =item B<$path/file> path and file name to the SVG input file.
+=item B<$path/file> path and file name to the SVG input file.
 
 =back
 
@@ -302,8 +302,8 @@ Parameters:
 
 =over 4
 
-    =item B<dont_publish_marker> marker that indicates a comic should not be
-        published. If this marker is found in the comic, the export fails.
+=item B<dont_publish_marker> marker that indicates a comic should not be
+    published. If this marker is found in the comic, the export fails.
 
 =back
 
@@ -1087,14 +1087,14 @@ Parameters:
 
 =over 4
 
-    =item B<%comic_templates> hash of language to path / file name of the
-    comic templates.
+=item B<%comic_templates> hash of language to path / file name of the
+comic templates.
 
-    =item B<%site_map_templates> hash of language to path / file name of the
-    sitemap templates.
+=item B<%site_map_templates> hash of language to path / file name of the
+sitemap templates.
 
-    =item B<%outputs> hash of language to path / file name of the generated
-    sitemaps.
+=item B<%outputs> hash of language to path / file name of the generated
+sitemaps.
 
 =back
 
@@ -1539,18 +1539,18 @@ Parameters:
 
 =over 4
 
-    =item B<$backlog_template> path / file name of the template file.
+=item B<$backlog_template> path / file name of the template file.
 
-    =item B<$backlog_page> path / file name of the generated backlog html.
+=item B<$backlog_page> path / file name of the generated backlog html.
 
-    =item B<%archive_templates> reference to a hash of language to the
-    archive template file for that language.
+=item B<%archive_templates> reference to a hash of language to the
+archive template file for that language.
 
-    =item B<%archive_pages> reference to a hash of language to the archive
-    page html file.
+=item B<%archive_pages> reference to a hash of language to the archive
+page html file.
 
-    =item B<$%comic_templates> reference to a hash of language to comic
-    template file to use for index.html.
+=item B<$%comic_templates> reference to a hash of language to comic
+template file to use for index.html.
 
 =back
 
@@ -1755,9 +1755,9 @@ Parameters:
 
 =over 4
 
-    =item B<$what> what counts to get, e.g., "tags" or "who".
+=item B<$what> what counts to get, e.g., "tags" or "who".
 
-    =item B<$language> for what language, e.g., "English".
+=item B<$language> for what language, e.g., "English".
 
 =back
 
@@ -1782,9 +1782,9 @@ Parameters:
 
 =over 4
 
-    =item B<$template> path / file name of the template file.
+=item B<$template> path / file name of the template file.
 
-    =item B<$language> path / file name of the generated sizemap.
+=item B<$language> path / file name of the generated sizemap.
 
 =back
 
@@ -1920,12 +1920,12 @@ Parameters:
 
 =over 4
 
-    =item B<$items> number of comics to include in the feed.
+=item B<$items> number of comics to include in the feed.
 
-    =item B<$toFile> to which file to write the feed, e.g., rss.xml. This
-        will be within 'generated/web/<language>'.
+=item B<$toFile> to which file to write the feed, e.g., rss.xml. This
+will be within 'generated/web/<language>'.
 
-    =item B<%templates> hash of language to RSS template file name.
+=item B<%templates> hash of language to RSS template file name.
 
 =back
 
@@ -1996,12 +1996,12 @@ Parameters:
 
 =over 4
 
-    =item B<mode> png or html to decide whether to post the PNG file directly
-        or rather the link to the comic's page.
+=item B<mode> png or html to decide whether to post the PNG file directly
+or rather the link to the comic's page.
 
-    =item B<@languages> for which languages to promote the last comic. If not
-        given, the comic is tweeted for all languages that have a meta data
-        twitter entry.
+=item B<@languages> for which languages to promote the last comic. If not
+given, the comic is tweeted for all languages that have a meta data twitter
+entry.
 
 =back
 
