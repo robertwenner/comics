@@ -36,7 +36,7 @@ use Clone qw(clone);
 
 use version; our $VERSION = qv('0.0.2');
 
-=for stopwords Inkscape inkscape html SVG svg PNG png Wenner MERCHANTABILITY perlartistic MetaEnglish RSS sitemap sizemap xml dbus
+=for stopwords inkscape html svg png Wenner merchantability perlartistic MetaEnglish rss sitemap sizemap xml dbus
 
 
 =head1 NAME
@@ -1550,7 +1550,7 @@ archive template file for that language.
 page html file.
 
 =item B<$%comic_templates> reference to a hash of language to comic
-template file to use for index.html.
+template file to use for F<index.html>.
 
 =back
 
@@ -1922,8 +1922,8 @@ Parameters:
 
 =item B<$items> number of comics to include in the feed.
 
-=item B<$toFile> to which file to write the feed, e.g., rss.xml. This
-will be within 'generated/web/<language>'.
+=item B<$toFile> to which file to write the feed, e.g., F<rss.xml>. This
+will be within F<generated/web/<language>>.
 
 =item B<%templates> hash of language to RSS template file name.
 
