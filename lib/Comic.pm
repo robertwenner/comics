@@ -2021,8 +2021,27 @@ sub post_to_social_media {
         # comic that's not up to date.
         last if ($comic->_is_not_current());
         foreach my $language (sort keys %{$comic->{meta_data}->{title}}) {
+            # Twitter
             $log .= _tweet($comic, $language, %{$settings{'twitter'}}) . "\n";
-            $log .= _reddit($comic, $language, %{$settings{'reddit'}}) . "\n";
+
+            # Global default subredit
+            my $use_default = $comic->{meta_data}->{reddit}->{'use-default'} // 1;
+            if ($use_default) {
+                $log .= _reddit($comic, $language, %{$settings{'reddit'}}) . "\n";
+            }
+
+            # Subreddits specified in the comic
+            foreach my $s ($comic->_get_subreddits($language)) {
+                if ($s) {
+                    my %options;
+                    if (defined($comic->{meta_data}->{reddit}->{$language})) {
+                        %options = %{$comic->{meta_data}->{reddit}->{$language}};
+                    }
+                    $options{'subreddit'} = $s;
+                    $log .= _reddit($comic, $language, %options) . "\n";
+                }
+            }
+
             $posted = 1;
         }
     }
@@ -2031,6 +2050,23 @@ sub post_to_social_media {
         $latest->_croak("Not posting cause latest comic is not current ($latest->{meta_data}->{published}->{when})");
     }
     return $log;
+}
+
+
+sub _get_subreddits {
+    my ($self, $language) = @ARG;
+
+    my @subreddits;
+    my $json = $self->{meta_data}->{reddit}->{$language}->{subreddit};
+    if (defined $json) {
+        if (ref($json) eq 'ARRAY') {
+            push @subreddits, @{$json};
+        }
+        else {
+            push @subreddits, $json;
+        }
+    }
+    return @subreddits;
 }
 
 

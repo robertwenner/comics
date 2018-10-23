@@ -105,7 +105,7 @@ sub multiple_comics_different_languages : Tests {
     use warnings;
 
     Comic::post_to_social_media();
-    is_deeply(\%tweeted, {'English' => $en, 'Deutsch' => $de}, 'Tweeted wrong comics'); 
+    is_deeply(\%tweeted, {'English' => $en, 'Deutsch' => $de}, 'Tweeted wrong comics');
 }
 
 
@@ -137,5 +137,129 @@ sub only_latest_comics : Tests {
     use warnings;
 
     Comic::post_to_social_media();
-    is_deeply(\@tweeted, [$current2, $current1], 'Tweeted wrong comics'); 
+    is_deeply(\@tweeted, [$current2, $current1], 'Tweeted wrong comics');
+}
+
+
+sub subreddit_from_meta_data_override : Tests {
+    my $json = <<'JSON';
+            "reddit": {
+                "use-default": false,
+                "English": {
+                    "subreddit": "homebrewing"
+                },
+                "Deutsch": {
+                    "subreddit": "heimbrauen"
+                }
+            }
+JSON
+    MockComic::make_comic(
+        $MockComic::JSON => $json,
+    );
+    my %subreddits;
+    no warnings qw/redefine/;
+    local *Comic::_reddit = sub {
+        my ($comic, $language, %settings) = @_;
+        push @{$subreddits{$language}}, $settings{subreddit};
+    };
+    local *Comic::_tweet = sub {
+        return '';
+    };
+    use warnings;
+
+    Comic::post_to_social_media(reddit => { subreddit => 'comics'});
+    is_deeply(\%subreddits,
+        { 'Deutsch' => ['heimbrauen'], 'English' => ['homebrewing'] });
+}
+
+
+sub subreddit_from_meta_data_plus_default : Tests {
+    my $json = <<'JSON';
+            "reddit": {
+                "use-default": true,
+                "English": {
+                    "subreddit": "homebrewing"
+                },
+                "Deutsch": {
+                    "subreddit": "heimbrauen"
+                }
+            }
+JSON
+    MockComic::make_comic(
+        $MockComic::JSON => $json,
+    );
+    my %subreddits;
+    no warnings qw/redefine/;
+    local *Comic::_reddit = sub {
+        my ($comic, $language, %settings) = @_;
+        push @{$subreddits{$language}}, $settings{subreddit};
+    };
+    local *Comic::_tweet = sub {
+        return '';
+    };
+    use warnings;
+
+    Comic::post_to_social_media(reddit => { subreddit => 'comics'});
+    is_deeply(\%subreddits,
+        { 'Deutsch' => ['comics', 'heimbrauen'], 'English' => ['comics', 'homebrewing'] });
+}
+
+
+sub subreddit_from_meta_data_array : Tests {
+    my $json = <<'JSON';
+            "reddit": {
+                "use-default": false,
+                "English": {
+                    "subreddit": [ "foo", "bar", "baz" ]
+                }
+            }
+JSON
+    MockComic::make_comic(
+        $MockComic::JSON => $json,
+    );
+    my %subreddits;
+    no warnings qw/redefine/;
+    local *Comic::_reddit = sub {
+        my ($comic, $language, %settings) = @_;
+        push @{$subreddits{$language}}, $settings{subreddit};
+    };
+    local *Comic::_tweet = sub {
+        return '';
+    };
+    use warnings;
+
+    Comic::post_to_social_media(reddit => { subreddit => 'comics'});
+    is_deeply(\%subreddits, { 'English' => ['foo', 'bar', 'baz'] });
+}
+
+
+sub preserves_reddit_options_for_each_subreddit : Tests {
+    my $json = <<'JSON';
+            "reddit": {
+                "use-default": false,
+                "English": {
+                    "client": "me",
+                    "subreddit": "foo",
+                    "key": "value",
+                    "arr": [ 1, 2, 3]
+                }
+            }
+JSON
+    MockComic::make_comic(
+        $MockComic::JSON => $json,
+    );
+    my %options;
+    no warnings qw/redefine/;
+    local *Comic::_reddit = sub {
+        my ($comic, $language, %settings) = @_;
+        %options = %settings;
+    };
+    local *Comic::_tweet = sub {
+        return '';
+    };
+    use warnings;
+
+    Comic::post_to_social_media(reddit => { subreddit => 'comics'});
+    is_deeply(\%options,
+        { "client" => "me", "subreddit" => "foo", "key" => "value", "arr" => [1, 2, 3]});
 }
