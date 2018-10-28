@@ -2140,6 +2140,7 @@ sub _reddit {
     my $title = "[OC] $comic->{meta_data}->{title}{$language}";
     # https://redditclient.readthedocs.io/en/latest/oauth/
     my $reddit = Reddit::Client->new(%settings);
+    my $message;
     my $full_name = 0;
     while (!$full_name) {
         eval {
@@ -2149,16 +2150,20 @@ sub _reddit {
                 url => $comic->{url}{$language},
             );
         }
-        or _wait_for_reddit_limit($EVAL_ERROR);
+        or do {
+            $message = $comic->_wait_for_reddit_limit($EVAL_ERROR);
+            last if ($message);
+        }
     }
 
-    my $url = $reddit->get_link($full_name);
-    return "Posted '$title' ($comic->{url}{$language}) at $url ($full_name)\n";
+    my $link = $reddit->get_link($full_name);
+    return $message || "Posted '$title' ($comic->{url}{$language}) to " .
+        "$settings{subreddit} (permalink $link->{permalink} and full name $full_name)\n";
 }
 
 
 sub _wait_for_reddit_limit {
-    my ($error) = @ARG;
+    my ($self, $error) = @ARG;
 
     if ($error =~ m{\btry again in (\d+) (minutes?|seconds?)}i) {
         my ($count, $unit) = ($1, $2);
@@ -2168,11 +2173,15 @@ sub _wait_for_reddit_limit {
         }
         _sleep($count);
     }
+    elsif ($error =~ m/ALREADY_SUB/) {
+        chomp $error;
+        return $error;
+    }
     else {
-        croak("Don't know what reddit complains about: '$error'");
+        $self->_croak("Don't know what reddit complains about: '$error'");
     }
 
-    return;
+    return '';
 }
 
 

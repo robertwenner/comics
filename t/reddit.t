@@ -29,7 +29,9 @@ sub set_up : Test(setup) {
     $reddit->redefine('get_link', sub {
         my ($r, $full_name) = @_;
         $reddit_full_name = $full_name;
-        return "/r/comics/beercomic";
+        my $link = Reddit::Client::Link->new();
+        $link->{permalink} = '/r/comics/reddit-test';
+        return $link;
     });
 }
 
@@ -64,20 +66,20 @@ sub post_to_reddit_retries_on_rate_limit : Tests {
 
     my $comic = MockComic::make_comic();
 
-    Comic::_wait_for_reddit_limit('Error(s): [RATELIMIT] you are doing that too much. try again in 1 minute.');
+    $comic->_wait_for_reddit_limit('Error(s): [RATELIMIT] you are doing that too much. try again in 1 minute.');
     is($slept, 60);
 
-    Comic::_wait_for_reddit_limit('Error(s): [RATELIMIT] you are doing that too much. try again in 9 minutes.');
+    $comic->_wait_for_reddit_limit('Error(s): [RATELIMIT] you are doing that too much. try again in 9 minutes.');
     is($slept, 60 * 9);
 
-    Comic::_wait_for_reddit_limit('Error(s): [RATELIMIT] you are doing that too much. try again in 10 seconds.');
+    $comic->_wait_for_reddit_limit('Error(s): [RATELIMIT] you are doing that too much. try again in 10 seconds.');
     is($slept, 10);
 
-    Comic::_wait_for_reddit_limit('Error(s): [RATELIMIT] you are doing that too much. try again in 1 second.');
+    $comic->_wait_for_reddit_limit('Error(s): [RATELIMIT] you are doing that too much. try again in 1 second.');
     is($slept, 1);
 
     eval {
-        Comic::_wait_for_reddit_limit('Error(s): whatever');
+        $comic->_wait_for_reddit_limit('Error(s): whatever');
     };
     like($@, qr{Don't know what reddit complains about}i);
     like($@, qr{whatever}i);
@@ -89,5 +91,21 @@ sub gets_url_for_full_name : Tests {
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
     );
     my $log = Comic::_reddit($comic, 'English', (subreddit => 'beer'));
-    like($log, qr{/r/comics/beercomic});
+    like($log, qr{/r/comics/reddit-test});
+}
+
+
+sub already_submitted_doesnt_fail_script : Tests {
+    my $reddit = Test::MockModule->new('Reddit::Client');
+    $reddit->redefine('submit_link', sub {
+        my ($r, @args) = @_;
+        die "[ALREADY_SUB] that link has already been submitted";
+    });
+    my $comic = MockComic::make_comic();
+    my $log;
+    eval {
+        $log = $comic->_reddit('English');
+    };
+    is($@, '');
+    like($log, qr{has already been submitted});
 }
