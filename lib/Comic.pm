@@ -2033,9 +2033,9 @@ sub post_to_social_media {
             # Subreddits specified in the comic
             foreach my $s ($comic->_get_subreddits($language)) {
                 if ($s) {
-                    my %options;
+                    my %options = %{$settings{'reddit'}};
                     if (defined($comic->{meta_data}->{reddit}->{$language})) {
-                        %options = %{$comic->{meta_data}->{reddit}->{$language}};
+                        %options = (%options, %{$comic->{meta_data}->{reddit}->{$language}});
                     }
                     $options{'subreddit'} = $s;
                     $log .= _reddit($comic, $language, %options) . "\n";
@@ -2129,6 +2129,7 @@ sub _shorten_for_twitter {
 
 
 sub _reddit {
+    # Account must not have 2FA enabled!
     my ($comic, $language, %reddit_settings) = @ARG;
 
     my %settings = (
@@ -2140,25 +2141,36 @@ sub _reddit {
     my $title = "[OC] $comic->{meta_data}->{title}{$language}";
     # https://redditclient.readthedocs.io/en/latest/oauth/
     my $reddit = Reddit::Client->new(%settings);
+    my $subreddit = $settings{'subreddit'};
+    # Remove leading /r/ and trailing / to make specifiying the subreddit more
+    # lenient / user friendly.
+    $subreddit =~ s{^/r/}{};
+    $subreddit =~ s{/$}{};
     my $message;
     my $full_name = 0;
     while (!$full_name) {
         eval {
             $full_name = $reddit->submit_link(
-                subreddit => $settings{'subreddit'},
+                subreddit => $subreddit,
                 title => $title,
                 url => $comic->{url}{$language},
             );
         }
         or do {
             $message = $comic->_wait_for_reddit_limit($EVAL_ERROR);
-            last if ($message);
+            last if (defined $message);
         }
     }
 
-    my $link = $reddit->get_link($full_name);
-    return $message || "Posted '$title' ($comic->{url}{$language}) to " .
-        "$settings{subreddit} (permalink $link->{permalink} and full name $full_name)\n";
+    if ($message) {
+        return "$language: /r/$subreddit: $message";
+    }
+
+    $message = "Posted '$title' ($comic->{url}{$language}) to $subreddit";
+    if ($full_name) {
+        $message .= " ($full_name) at " . $reddit->get_link($full_name)->{permalink};
+    }
+    return $message;
 }
 
 
@@ -2177,7 +2189,7 @@ sub _wait_for_reddit_limit {
         chomp $error;
         return $error;
     }
-    else {
+    elsif ($error) {
         $self->_croak("Don't know what reddit complains about: '$error'");
     }
 

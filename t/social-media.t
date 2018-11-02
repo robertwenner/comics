@@ -263,3 +263,31 @@ JSON
     is_deeply(\%options,
         { "client" => "me", "subreddit" => "foo", "key" => "value", "arr" => [1, 2, 3]});
 }
+
+
+sub combines_global_reddit_options_with_per_comic_options : Tests {
+    my $json = <<'JSON';
+            "reddit": {
+                "use-default": false,
+                "English": {
+                    "subreddit": "foo"
+                }
+            }
+JSON
+    MockComic::make_comic(
+        $MockComic::JSON => $json,
+    );
+    my %options;
+    no warnings qw/redefine/;
+    local *Comic::_reddit = sub {
+        my ($comic, $language, %settings) = @_;
+        %options = %settings;
+    };
+    local *Comic::_tweet = sub {
+        return '';
+    };
+    use warnings;
+
+    Comic::post_to_social_media(reddit => { subreddit => 'comics', username => 'me', password => 'secret'});
+    is_deeply(\%options, { username => 'me', password => 'secret', subreddit => 'foo' });
+}

@@ -56,6 +56,15 @@ sub override_subreddit : Tests {
 }
 
 
+sub strips_r_slash_from_subreddit : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+    );
+    my $log = Comic::_reddit($comic, 'English', (subreddit => '/r/beer/'));
+    is($reddit_args{'subreddit'}, 'beer');
+}
+
+
 sub post_to_reddit_retries_on_rate_limit : Tests {
     my $slept;
     no warnings qw/redefine/;
@@ -107,5 +116,22 @@ sub already_submitted_doesnt_fail_script : Tests {
         $log = $comic->_reddit('English');
     };
     is($@, '');
-    like($log, qr{has already been submitted});
+    like($log, qr{has already been submitted}, 'has actual error message');
+    like($log, qr{\bcomics\b}, 'includes subreddit');
+    like($log, qr{\bEnglish\b}, 'includes language');
+}
+
+
+sub no_full_name : Tests {
+    my $reddit = Test::MockModule->new('Reddit::Client');
+    $reddit->redefine('submit_link', sub {
+        return undef;
+    });
+    my $comic = MockComic::make_comic();
+    my $log;
+    eval {
+        $log = $comic->_reddit('English');
+    };
+    is($@, '');
+    like($log, qr{Posted});
 }
