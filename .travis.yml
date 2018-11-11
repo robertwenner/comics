@@ -15,6 +15,13 @@ install:
     - cpanm --quiet --notest JSON
     - cpanm --quiet --notest Image::ExifTool 
     - cpanm --quiet --notest Imager::QRCode
+    - cpanm --quiet --notest Template
+    - cpanm --quiet --notest Template::Plugin::JSON
+    - cpanm --quiet --notest SVG
+    - cpanm --quiet --notest URI::Encode
+    - cpanm --quiet --notest Net::Twitter
+    - cpanm --quiet --notest Reddit::Client
+    - cpanm --quiet -- notest Clone
     - cpanm --quiet --notest Test::Class
     - cpanm --quiet --notest Test::MockModule
     - cpanm --quiet --notest Test::Perl::Critic
