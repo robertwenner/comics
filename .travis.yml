@@ -4,8 +4,6 @@ perl:
     - "5.14"
     - "5.10"
 install:
-    - cpanm --quiet --installdeps --notest .
-    - cpanm --quiet --notest Readonly
-    - cpanm --quiet --notest Test::Class
+    - cpanm --quiet --installdeps --notest . lib/ t/
     - cpanm --quiet --notest Devel::Cover
     - cpanm --quiet --notest Devel::Cover::Report::Coveralls
