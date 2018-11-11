@@ -21,7 +21,7 @@ install:
     - cpanm --quiet --notest URI::Encode
     - cpanm --quiet --notest Net::Twitter
     - cpanm --quiet --notest Reddit::Client
-    - cpanm --quiet -- notest Clone
+    - cpanm --quiet --notest Clone
     - cpanm --quiet --notest Test::Class
     - cpanm --quiet --notest Test::MockModule
     - cpanm --quiet --notest Test::Perl::Critic
