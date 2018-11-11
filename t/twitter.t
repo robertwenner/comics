@@ -12,17 +12,19 @@ use MockComic;
 __PACKAGE__->runtests() unless caller;
 
 
-package TestTwitterStatus {
-    use base 'Net::Twitter::Error';
+package TestTwitterStatus;
 
-    sub new {
-        my ($class) = @_;
-        my $self = bless{}, $class;
-        $self->{text} = 'all good';
-        return $self;
-    }
+use base 'Net::Twitter::Error';
+
+sub new {
+    my ($class) = @_;
+    my $self = bless{}, $class;
+    $self->{text} = 'all good';
+    return $self;
 }
 
+
+package main;
 
 my $twitter;
 my %twitter_args;
