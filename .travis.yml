@@ -10,7 +10,6 @@ install:
     - cpanm --quiet --notest String::Util
     - cpanm --quiet --notest Image::SVG::Transform
     - cpanm --quiet --notest DateTime::Format::ISO8601 
-    - cpanm --quiet --notest 
     - cpanm --quiet --notest Test::Class
     - cpanm --quiet --notest Test::MockModule
     - cpanm --quiet --notest Test::Perl::Critic
