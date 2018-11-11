@@ -8,8 +8,8 @@
 The Comic Perl module generates static web pages for web comics in
 multiple languages from comics made in Inkscape.
 
-I use it for my [https://beercomics.com](beercomics.com) and
-[https://biercomics.de](biercomics.de) web comics.
+I use it for my [beercomics.com](https://beercomics.com) and
+[biercomics.de](https://biercomics.de) web comics.
 
 
 ## Dependencies
@@ -17,10 +17,10 @@ I use it for my [https://beercomics.com](beercomics.com) and
 Use cpanminus and run `cpanm --installdeps --notest .` to install all dependencies.
 
 Alternatively, install the dependencies from [CPAN](https://cpan.org); see
-[lib/Comic.pm](the `use` statements in the beginning of the Comic.pm main
-module) for dependencies.
+[the `use` statements in the beginning of the Comic.pm main module](lib/Comic.pm)
+for dependencies.
 
-You'll need [https://inkscape.org](Inkscape) in the `$PATH` to actually
+You'll need [Inkscape](https://inkscape.org) in the `$PATH` to actually
 export your comics to png.
 
 
