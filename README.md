@@ -1,7 +1,5 @@
 [![License: Artistic-2.0](https://img.shields.io/badge/License-Perl-0298c3.svg)](https://opensource.org/licenses/Artistic-2.0)
-
-[![Build Status](https://travis-ci.org/robertwenner/comics.png?branch=master)](https://travis-ci.org/robertwenner/comics)
-
+[![Build Status](https://travis-ci.org/robertwenner/comics.svg?branch=master)](https://travis-ci.org/robertwenner/comics)
 
 ## What is this?
 
@@ -14,11 +12,13 @@ I use it for my [beercomics.com](https://beercomics.com) and
 
 ## Dependencies
 
-Use cpanminus and run `cpanm --installdeps --notest .` to install all dependencies.
+Use cpanminus and run `cpanm --installdeps --notest .` to install all
+dependencies, and hope that it works.
 
-Alternatively, install the dependencies from [CPAN](https://cpan.org); see
+It probably won't, so install the dependencies from [CPAN](https://cpan.org); see
 [the `use` statements in the beginning of the Comic.pm main module](lib/Comic.pm)
-for dependencies.
+for dependencies. You'll also need to install test modules, in particular
+Test::Class and Test::Perl::Critic, if you want to run the tests.
 
 You'll need [Inkscape](https://inkscape.org) in the `$PATH` to actually
 export your comics to png.
