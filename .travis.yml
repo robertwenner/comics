@@ -13,6 +13,7 @@ install:
     - cpanm --quiet --notest DateTime::Format::RFC3339
     - cpanm --quiet --notest XML::LibXML
     - cpanm --quiet --notest JSON
+    - cpanm --quiet --notest Image::ExifTool 
     - cpanm --quiet --notest Test::Class
     - cpanm --quiet --notest Test::MockModule
     - cpanm --quiet --notest Test::Perl::Critic
