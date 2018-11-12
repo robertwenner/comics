@@ -1,8 +1,14 @@
 language: perl
+
 perl:
     - "5.26"
     - "5.14"
     - "5.10"
+
+before_install:
+    - cpanm --quiet --notest Devel::Cover
+    - cpanm --quiet --notest Devel::Cover::Report::Coveralls
+
 install:
     - cpanm --quiet --installdeps --notest .
     - cpanm --quiet --notest Readonly
@@ -26,5 +32,6 @@ install:
     - cpanm --quiet --notest Test::MockModule
     - cpanm --quiet --notest Test::Perl::Critic
     - cpanm --quiet --notest Test::Pod::Coverage
-    - cpanm --quiet --notest Devel::Cover
-    - cpanm --quiet --notest Devel::Cover::Report::Coveralls
+
+after_success:
+    - cover -test -report coveralls
