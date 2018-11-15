@@ -277,7 +277,7 @@ the meta data and an "English" layer and an "MetaEnglish" layer
 =cut
 
 sub export_png {
-    my ($self, $dont_publish_marker) = @ARG;
+    my ($self, $dont_publish_marker, %meta_data) = @ARG;
 
     foreach my $language ($self->_languages()) {
         $counts{'comics'}{$language}++;
@@ -285,7 +285,7 @@ sub export_png {
         unless (_up_to_date($self->{srcFile}, "$self->{whereTo}{$language}/$self->{pngFile}{$language}")) {
             $self->_flip_language_layers($language);
             my $language_svg = $self->_write_temp_svg_file($language);
-            $self->_svg_to_png($language, $language_svg);
+            $self->_svg_to_png($language, $language_svg, %meta_data);
         }
         $self->_get_png_info("$self->{whereTo}{$language}/$self->{pngFile}{$language}", $language);
     }
@@ -981,29 +981,35 @@ sub _frames_in_rows {
 
 
 sub _svg_to_png {
-    my ($self, $language, $svg_file) = @ARG;
+    my ($self, $language, $svg_file, %global_meta_data) = @ARG;
 
     my $png_file = "$self->{whereTo}{$language}/$self->{pngFile}{$language}";
     my $export_cmd = "inkscape --without-gui --file=$svg_file" .
         ' --g-fatal-warnings' .
         " --export-png=$png_file --export-area-drawing --export-background=#ffffff";
-    system($export_cmd) && $self->_croak("could not export: $export_cmd: $OS_ERROR");
+    _system($export_cmd) && $self->_croak("could not export: $export_cmd: $OS_ERROR");
+
+    my %meta_data = (
+        'Title' => $self->{meta_data}->{title}->{$language},
+        'Description' => join('', $self->_get_transcript($language)),
+        'CreationTime' => $self->{modified},
+        'URL' => $self->{url}{$language},
+        %global_meta_data,
+        ref($self->{meta_data}->{'png-meta-data'}) eq 'HASH' ? %{$self->{meta_data}->{'png-meta-data'}} : (),
+    );
 
     my $tool = Image::ExifTool->new();
-    $self->_set_png_meta($tool, 'Title', $self->{meta_data}->{title}->{$language});
-    $self->_set_png_meta($tool, 'Artist', 'Robert Wenner');
-    $self->_set_png_meta($tool, 'Author', 'Robert Wenner');
-    $self->_set_png_meta($tool, 'Description', join '', $self->_get_transcript($language));
-    $self->_set_png_meta($tool, 'CreationTime', $self->{modified});
-    $self->_set_png_meta($tool, 'Copyright', 'CC BY-NC-SA 4.0');
-    $self->_set_png_meta($tool, 'URL', $self->{url}{$language});
+    foreach my $m (keys %meta_data) {
+        $self->_set_png_meta($tool, $m, $meta_data{$m});
+    }
+
     my $rc = $tool->WriteInfo($png_file);
     if ($rc != 1) {
-        $self->_croak('cannot write info: ' . tool->GetValue('Error'));
+        $self->_croak('cannot write info: ' . $tool->GetValue('Error'));
     }
 
     my $shrink_cmd = "optipng --quiet $png_file";
-    system($shrink_cmd) && $self->_croak("Could not shrink: $shrink_cmd: $OS_ERROR");
+    _system($shrink_cmd) && $self->_croak("Could not shrink: $shrink_cmd: $OS_ERROR");
 
     return;
 }
@@ -1022,7 +1028,8 @@ sub _set_png_meta {
     my ($self, $tool, $name, $value) = @ARG;
 
     my ($count_set, $error) = $tool->SetNewValue($name, $value);
-    $self->_roak("Cannot set $name: $error") if ($error);
+    # @dontCommit
+    $self->_croak("Cannot set $name: $error") if ($error);
     return;
 }
 
