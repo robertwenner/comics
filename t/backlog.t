@@ -352,3 +352,21 @@ TEMPL
     MockComic::assert_wrote_file('generated/backlog.html', 
         qr{^\s*Buckimude\s\(Deutsch\)=2\s*Philosophie\s\(Deutsch\)=1\s*$}xsm);
 }
+
+
+sub empty_series_array : Tests {
+    MockComic::fake_file("templates/deutsch/archiv.templ", "...");
+    MockComic::fake_file("backlog.templ", <<'TEMPL');
+        [% FOREACH c IN comics %]
+            [% IF c.meta_data.defined('series') && c.meta_data.series.defined("English") %] ([% c.meta_data.series.Deutsch %])[% END %]
+        [% END %]
+TEMPL
+    my $comic = MockComic::make_comic(
+        $MockComic::JSON => '"series": {}',
+        $MockComic::PUBLISHED_WHEN => '3000-01-01',
+    );
+    eval {
+        Comic::_do_export_backlog('backlog.templ', 'generated/backlog.html', 'English');
+    };
+    is($@, '');
+}
