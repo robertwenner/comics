@@ -39,7 +39,6 @@ XML
 }
 
 
-
 sub first_text_must_be_from_meta_layer : Test {
     my $comic = MockComic::make_comic(
         $MockComic::FRAMES => [0, 0, 100, -100],
@@ -64,6 +63,21 @@ XML
         $comic->_check_meta('English');
     };
     like($@, qr{First text in transcript must be from MetaEnglish}i);
+}
+
+
+sub first_text_must_be_from_meta_layer_no_texts : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::FRAMES => [0, 0, 100, -100],
+        $MockComic::XML => <<'XML',
+    <g inkscape:groupmode="layer" inkscape:label="English"/>
+    <g inkscape:groupmode="layer" inkscape:label="MetaEnglish"/>
+XML
+    );
+    eval {
+        $comic->_check_meta('English');
+    };
+    like($@, qr{No texts in MetaEnglish layer});
 }
 
 

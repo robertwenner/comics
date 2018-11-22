@@ -747,9 +747,13 @@ sub _check_meta {
             $first_text_is_meta = 1;
         }
     }
-    $self->_warn("No texts in Meta$language layer") unless ($text_found);
-    $self->_warn("First text in transcript must be from Meta$language, but is $first_text")
-        unless ($first_text_is_meta);  # would be nice to show the layer here, too
+    if ($text_found) {
+        $self->_warn("First text in transcript must be from Meta$language, but is $first_text")
+            unless ($first_text_is_meta);  # would be nice to show the layer here, too
+    }
+    else {
+        $self->_warn("No texts in Meta$language layer");
+    }
     return;
 }
 
