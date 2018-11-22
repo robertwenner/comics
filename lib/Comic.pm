@@ -1019,6 +1019,11 @@ sub _svg_to_png {
 }
 
 
+sub _system {
+    return system @ARG;
+}
+
+
 sub _unhtml {
     # Inkscape is XML, so it uses &lt;, &gt;, &amp;, and &quot; in it's meta
     # data. This is convenient for the HTML export, but not for adding meta
