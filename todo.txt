@@ -79,3 +79,7 @@
 - use inkscape shell to export in bulk (could be faster than creating
   multiple inkscape processes), would be great to avoid writing temp svg
   files if inkscape accepts the svg on stdin;
+
+- publish on CPAN, add badge to README.md like this for Minilla:
+  [![MetaCPAN Release](https://badge.fury.io/pl/Minilla.svg)](https://metacpan.org/release/Minilla)
+  https://badge.fury.io/for/pl
