@@ -1,5 +1,7 @@
 Revision history for Comic
 
-0.0.1  Fri Nov 27 15:21:00 2015
-       Initial release.
+0.0.2   2015-11-27
+        Initial MakeMaker module.
 
+0.0.1   2015-08-01
+        Simple Perl script.
