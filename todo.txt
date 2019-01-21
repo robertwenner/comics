@@ -1,4 +1,4 @@
-- Perl; use feature qw(signatures); no warnings qw(experimental::signatures);
+- Perl: use feature qw(signatures); no warnings qw(experimental::signatures);
 
 - rework variables available for templates: standardize names, pick decent
   names, DRY up them up, generate them in one place, document them
@@ -11,7 +11,9 @@
 
 - define comic order by refering the previous or next comic, instead of
   having a date, so that inserting one for current events doesn't ripple
-  through the backlog
+  through the backlog (and still maintaining a regular / weekly schedule)
+
+- break code into different modules
 
 - plugable customizable checkers and actors (reddit poster, inkscape
   importer, spell checker, frame checker, ...)
@@ -22,7 +24,7 @@
 - allow adding (invisible) watermarks;
 
 - transcript needs to check all frames for ordering, not just rows; that
-  should get rid of space padding
+  should get rid of space padding in texts
 
 - comic by email: could use Sparkpost, but the list management (software)
   is probably the bigger concern, as are the privacy concerns and GDPR
@@ -31,9 +33,8 @@
 
 - add "previously published in ..." link to the bottom of the page
 
-- comics by series pages / links
-
-- can a comic be in more than one series? (why not?)
+- comics by series pages / links (can a comic be in more than one series?
+  (why not?))
 
 - prev next first last buttons per series
 
@@ -45,8 +46,9 @@
   or comics by tag pages
 
 - export svg instead of png (for a truly fluent / responsive web design),
-  but would also need to offer the font for download, I guess?
-  or chop the svgs or pngs up per frame (ugly)
+  but would also need to offer the font for download, I guess? or chop the
+  svgs or pngs up per frame (ugly, relies on either table-based HTML layout,
+  CSS magic beyond my skills, or chopping comics by rows only)
 
 - minimize svg file sizes with svgo
 
@@ -54,9 +56,9 @@
 
 - liner notes with comments in pdf, suck in other interesting documentation
 
-- liner notes can pull stats from comics: how long between creation and
-  publication, how long was the backlog each Fri, how big was the ideas file
-  each Fri, how often was the comic changed (after being published)
+- liner notes can pull stats per comics from git: how long between creation
+  and publication, how long was the backlog each Fri, how big was the ideas
+  file each Fri, how often was the comic changed (after being published)
 
 - sizemap should have colors depending on where the comic was published
 
@@ -68,8 +70,6 @@
 - check for date holes (why? are those bad? only in the future? but I could
   schedule a xmas or Fri 13 comic ahead of time and then have holes and
   that's ok)
-
-- break code into different modules
 
 - more social media: Mastodon, Openbook, Ello, Diaspora, inrupt.com
   (Zapier?)
@@ -83,3 +83,5 @@
 - publish on CPAN, add badge to README.md like this for Minilla:
   [![MetaCPAN Release](https://badge.fury.io/pl/Minilla.svg)](https://metacpan.org/release/Minilla)
   https://badge.fury.io/for/pl
+
+- check: published date ist be >= created date (typo?)
