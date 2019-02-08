@@ -25,15 +25,15 @@ sub set_up : Test(setup) {
     MockComic::set_up();
 
     $exif_tool = Test::MockModule->new('Image::ExifTool');
-    $exif_tool->redefine('SetNewValue', sub {
+    $exif_tool->redefine('SetNewValue', sub($;$$%) {
         my ($self, $name, $value) = @_;
         $png_meta{$name} = $value;
     });
-    $exif_tool->redefine('WriteInfo', sub {
+    $exif_tool->redefine('WriteInfo', sub($$;$$) {
         $wrote_png= $_[1];
         return $write_info_exit_code;
     });
-    $exif_tool->redefine('GetValue', sub { 
+    $exif_tool->redefine('GetValue', sub($$;$) {
         $asked_value = $_[1];
         return $get_value;
     });
@@ -99,7 +99,7 @@ sub png_meta_information : Tests {
 
 sub png_meta_information_global : Tests {
     my $comic = MockComic::make_comic();
-    $comic->_svg_to_png($MockComic::ENGLISH, 'some-comic.svg', 
+    $comic->_svg_to_png($MockComic::ENGLISH, 'some-comic.svg',
         'Author' => 'The writer', 'Artist' => 'The painter', 'foo' => 'bar');
     is($png_meta{'Author'}, 'The writer', 'author');
     is($png_meta{'Artist'}, 'The painter', 'artist');
@@ -139,7 +139,7 @@ sub png_meta_data_not_a_hash : Tests {
 
 sub reports_error_setting_meta_data : Tests {
     my $comic = MockComic::make_comic();
-    $exif_tool->redefine('SetNewValue', sub {
+    $exif_tool->redefine('SetNewValue', sub($;$$%) {
         return (1, "go away");
     });
     eval {
