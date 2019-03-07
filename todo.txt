@@ -85,3 +85,5 @@
   https://badge.fury.io/for/pl
 
 - check: published date ist be >= created date (typo?)
+
+- profile and fix slooooow handling of large svg files;
