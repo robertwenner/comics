@@ -1995,7 +1995,7 @@ sub _note {
     push @{$self->{warnings}}, $msg;
     # PerlCritic wants me to check that I/O to the console worked.
     ## no critic(InputOutput::RequireCheckedSyscalls)
-    print "$msg\n";
+    print {*STDOUT} "$self->{srcFile} : $msg\n";
     ## use critic
     return;
 }
