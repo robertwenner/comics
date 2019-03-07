@@ -35,7 +35,7 @@ export your comics to png.
 
 ## Copyright & License
 
-Copyright (C) 2015 - 2018, Robert Wenner
+Copyright (C) 2015 - 2019, Robert Wenner
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
