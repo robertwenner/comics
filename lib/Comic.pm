@@ -1709,10 +1709,24 @@ sub _do_export_backlog {
     # I need to sort by count first, then alphabetically by name, so I have to use
     # $b on the left side of the comparison operator. Perl Critic doesn't understand
     # my sorting needs...
-    $vars{'tagsOrder'} = [ sort { $tags{$b} <=> $tags{$a} or $a cmp $b} keys %tags ];
-    $vars{'whoOrder'} = [ sort { $who{$b} <=> $who{$a} or $a cmp $b} keys %who ];
+    $vars{'tagsOrder'} = [ sort {
+        # First, sort by count
+        $tags{$b} <=> $tags{$a} or
+        # then by name, case insensitive, so that e.g., m and M get sorted together
+        lc $a cmp lc $b or
+        # then by name, case sensitive, to avoid names "jumping" around (and breaking tests).
+        $a cmp $b
+    } keys %tags ];
+    $vars{'whoOrder'} = [ sort {
+        $who{$b} <=> $who{$a} or
+        lc $a cmp lc $b or
+        $a cmp $b
+    } keys %who ];
     # use critic
-    $vars{'seriesOrder'} = [ sort keys %series ];
+    $vars{'seriesOrder'} = [ sort {
+        lc $a cmp lc $b or
+        $a cmp $b
+    } keys %series ];
 
     _write_file($page, _templatize('backlog', $templ_file, '', %vars));
 

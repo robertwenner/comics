@@ -290,12 +290,13 @@ sub tags_case : Tests {
 TEMPL
     make_tagged_comic('Bym');
     make_tagged_comic('bym');
+    make_tagged_comic('ale');
     Comic::export_archive('backlog.templ', 'generated/backlog.html',
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
         {'Deutsch' => 'archiv.html'},
         {'Deutsch' => 'templates/deutsch/comic-page.templ'});
     MockComic::assert_wrote_file('generated/backlog.html',
-        qr{^\s*Bym\s\(Deutsch\)=1\s*bym\s\(Deutsch\)=1\s*$}xsm);
+        qr{^\s*ale\s*\(Deutsch\)=1\s*Bym\s\(Deutsch\)=1\s*bym\s\(Deutsch\)=1\s*$}xsm);
 }
 
 
@@ -327,12 +328,13 @@ sub who_case : Tests {
 TEMPL
     make_comic_with('Paul');
     make_comic_with('paul');
+    make_comic_with('max');
     Comic::export_archive('backlog.templ', 'generated/backlog.html',
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
         {'Deutsch' => 'archiv.html'},
         {'Deutsch' => 'templates/deutsch/comic-page.templ'});
     MockComic::assert_wrote_file('generated/backlog.html',
-        qr{^\s*Paul\s\(Deutsch\)=1\s*paul\s\(Deutsch\)=1\s*}xsm);
+        qr{^\s*max\s*\(Deutsch\)=1\s*Paul\s\(Deutsch\)=1\s*paul\s\(Deutsch\)=1\s*}xsm);
 }
 
 
@@ -369,4 +371,23 @@ TEMPL
         Comic::_do_export_backlog('backlog.templ', 'generated/backlog.html', 'English');
     };
     is($@, '');
+}
+
+
+sub series_sorts_case_insensitive : Tests {
+    MockComic::fake_file("backlog.templ", <<'TEMPL');
+       [% FOREACH s IN seriesOrder %]
+            [% s %]=[% series.$s %]
+       [% END %]
+TEMPL
+    make_comic_with_series('Aaa');
+    make_comic_with_series('bbb');
+    make_comic_with_series('CCC');
+    make_comic_with_series('ddd');
+    Comic::export_archive('backlog.templ', 'generated/backlog.html',
+        {'Deutsch' => 'templates/deutsch/archiv.templ'},
+        {'Deutsch' => 'archiv.html'},
+        {'Deutsch' => 'templates/deutsch/comic-page.templ'});
+    MockComic::assert_wrote_file('generated/backlog.html',
+        qr{^\s*Aaa\s*\(Deutsch\)=1\s*bbb\s*\(Deutsch\)=1\s*CCC\s*\(Deutsch\)=1\s*ddd\s*\(Deutsch\)=1\s*$}xsm);
 }
