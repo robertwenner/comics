@@ -160,3 +160,67 @@ XML
     };
     like($@, qr{duplicated text});
 }
+
+
+sub duplicated_multiline : Tests {
+    my $comic = MockComic::make_comic($MockComic::XML => <<XML);
+    <g inkscape:groupmode="layer" id="layer18" inkscape:label="Deutsch">
+        <text x="1" y="1">
+            <tspan>take</tspan>
+            <tspan>that</tspan>
+        </text>
+    </g>
+    <g inkscape:groupmode="layer" id="layer21" inkscape:label="English">
+        <text x="1" y="1">
+            <tspan>take</tspan>
+            <tspan>that</tspan>
+        </text>
+    </g>
+XML
+    eval {
+        $comic->_check_transcript("Deutsch");
+    };
+    like($@, qr{duplicated text});
+}
+
+
+sub duplicated_allowed_multiline_space_separated : Tests {
+    my $comic = MockComic::make_comic($MockComic::XML => <<XML,
+    <g inkscape:groupmode="layer" id="layer18" inkscape:label="Deutsch">
+        <text x="1" y="1">
+            <tspan>take</tspan>
+            <tspan>that</tspan>
+        </text>
+    </g>
+    <g inkscape:groupmode="layer" id="layer21" inkscape:label="English">
+        <text x="1" y="1">
+            <tspan>take</tspan>
+            <tspan>that</tspan>
+        </text>
+    </g>
+XML
+    $MockComic::JSON => '"allow-duplicated": ["take that"]');
+    $comic->_check_transcript("Deutsch");
+    is($@, '');
+}
+
+
+sub duplicated_allowed_multiline_newline_separated : Tests {
+    my $comic = MockComic::make_comic($MockComic::XML => <<XML,
+    <g inkscape:groupmode="layer" id="layer18" inkscape:label="Deutsch">
+        <text x="1" y="1">
+            <tspan>take</tspan>
+            <tspan>that</tspan>
+        </text>
+    </g>
+    <g inkscape:groupmode="layer" id="layer21" inkscape:label="English">
+        <text x="1" y="1">
+            <tspan>take</tspan>
+            <tspan>that</tspan>
+        </text>
+    </g>
+XML
+    $MockComic::JSON => '"allow-duplicated": ["take\nthat"]');
+    $comic->_check_transcript("Deutsch");
+    is($@, '');
+}

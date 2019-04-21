@@ -631,20 +631,20 @@ sub _check_transcript {
     my $trace = '';
     my $previous = '';
     my $allow_duplicated = $self->{meta_data}->{'allow-duplicated'} || [];
-    my %allow_duplicated = map { $_ => 1 } @{$allow_duplicated};
+    my %allow_duplicated = map { _normalize_text($_) => 1 } @{$allow_duplicated};
     foreach my $t ($self->_texts_for($language)) {
-        # Check for copy paste errors: copied texts and forgotten to adjust
+        $t = _normalize_text($t);
+        # Check for copy paste errors: copied texts forgotten to adjust / translate.
         foreach my $l ($self->_languages()) {
             next if ($l eq $language);
             foreach my $ot ($self->_texts_for($l)) {
-                my $trimmed = trim($t);
-                if ($trimmed eq trim($ot)) {
-                    if (defined $allow_duplicated{$trimmed}) {
+                $ot = _normalize_text($ot);
+                if ($t eq $ot) {
+                    if (defined $allow_duplicated{$t}) {
                         # Ok, explicitly allowed to be duplicated.
                     }
                     elsif ($t =~ m{^\w+:$}) {
                         # Ok, looks like a name / speaker introduction.
-                        # Should this also check that it's found in a meta layer?
                     }
                     else {
                         $self->_croak("duplicated text '$t' in $language and $l");
@@ -666,6 +666,22 @@ sub _check_transcript {
         $self->_croak("speaker's text missing after '$previous', trace is $trace");
     }
     return;
+}
+
+
+sub _normalize_text {
+    # Normalize texts for easier comparison. Change all spaces to a single
+    # space. That way we catch differences in white space, which is probably
+    # a bad attempt at duplicating texts, or even sloppy typing that has
+    # only been edited in one language. This also catches multi-line texts,
+    # where the whole multi line text can be added as a single element in
+    # allow-duplicated.
+    # Does not mess with case cause that shouln't be duplicated. For example,
+    # a character may say "pale ale" in English and "Pale Ale" in German.
+    my ($text) = @_;
+    $text = trim($text);
+    $text =~ s/\s+/ /mg;
+    return $text;
 }
 
 
