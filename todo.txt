@@ -87,3 +87,5 @@
 - check: published date ist be >= created date (typo?)
 
 - profile and fix slooooow handling of large svg files;
+
+- check that speaker names all show up in the "who" meta data;
