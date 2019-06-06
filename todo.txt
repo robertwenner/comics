@@ -7,7 +7,8 @@
 
 - backlog: list comics under series headings (hideable?)
 
-- don't post to reddit if the link is dead
+- don't post to reddit / don't tweet a link, if the link is dead (slow
+  web server?)
 
 - define comic order by refering the previous or next comic, instead of
   having a date, so that inserting one for current events doesn't ripple
@@ -21,13 +22,12 @@
 - internal archive with published dates and (source svg) file names and
   comic counts
 
-- allow adding (invisible) watermarks;
+- allow adding (invisible) watermarks
 
 - transcript needs to check all frames for ordering, not just rows; that
   should get rid of space padding in texts
 
-- comic by email: could use Sparkpost, but the list management (software)
-  is probably the bigger concern, as are the privacy concerns and GDPR
+- email current comic when publishing
 
 - handle more frame varieties, e.g., long frame over 2 rows on the side
 
@@ -58,7 +58,7 @@
 
 - liner notes can pull stats per comics from git: how long between creation
   and publication, how long was the backlog each Fri, how big was the ideas
-  file each Fri, how often was the comic changed (after being published)
+  file each week, how often was the comic changed (after being published)
 
 - sizemap should have colors depending on where the comic was published
 
@@ -84,8 +84,14 @@
   [![MetaCPAN Release](https://badge.fury.io/pl/Minilla.svg)](https://metacpan.org/release/Minilla)
   https://badge.fury.io/for/pl
 
-- check: published date ist be >= created date (typo?)
+- check: published date must be >= created date (typo?)
 
-- profile and fix slooooow handling of large svg files;
+- profile and fix slooooow handling of large svg files
 
-- check that speaker names all show up in the "who" meta data;
+- remove backlog files once the comic is published
+
+- check that speaker names all show up in the "who" meta data
+
+- write qr code file only when writing the pngs, i.e., when the source has
+  changed (only need this if the generated title / qr code file name has
+  changed, but this is harder to detect)
