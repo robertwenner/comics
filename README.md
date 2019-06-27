@@ -10,6 +10,8 @@ multiple languages from comics made in Inkscape.
 I use it for my [beercomics.com](https://beercomics.com) and
 [biercomics.de](https://biercomics.de) web comics.
 
+Please note that it's just suited to my current needs. It evoloved from a
+Perl script, and still has a bunch of hard-coded names and assumptions.
 
 ## Dependencies
 
