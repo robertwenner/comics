@@ -2,8 +2,7 @@ language: perl
 
 perl:
     - "5.26"
-    - "5.14"
-    - "5.10"
+    - "5.18"
 
 before_install:
     - cpanm --quiet --notest Devel::Cover
