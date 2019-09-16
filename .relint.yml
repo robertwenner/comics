@@ -1,0 +1,27 @@
+- name: "Don't commit"
+  pattern: "@?[ds]ont_?Comm?it"
+  filename:
+    - "*"
+  error: true
+
+#- name: My path
+#  pattern: "/home/robert"
+#  filename:
+#      - "*"
+
+- name: Perl printf debugger
+  pattern: "^print STDERR"
+  filename:
+     - "*.pl"
+     - "*.pm"
+     - "*.t"
+
+- name: Java printf debugger
+  pattern: "^System.(out|err).println\\("
+  filename:
+     - "*.java"
+
+- name: Java IDE comments
+  pattern: "// IDE generated stub"
+  filename:
+     - "*.java"
