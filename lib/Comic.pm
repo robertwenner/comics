@@ -343,13 +343,13 @@ sub _get_transcript {
 sub _up_to_date {
     # Takes file names as arguments rather than being a member method for
     # easier mocking.
-    my ($svg_file, $png_file) = @ARG;
+    my ($source, $target) = @ARG;
 
     my $up_to_date = 0;
-    if (_exists($png_file)) {
-        my $svg_mod = _mtime($svg_file);
-        my $png_mod = _mtime($png_file);
-        $up_to_date = $png_mod > $svg_mod;
+    if (_exists($target)) {
+        my $source_mod = _mtime($source);
+        my $target_mod = _mtime($target);
+        $up_to_date = $target_mod > $source_mod;
     }
     return $up_to_date;
 }
