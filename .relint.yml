@@ -1,11 +1,16 @@
 - name: "Don't commit"
-  pattern: "@?[ds]ont_?Comm?it"
+  pattern: "@?[dDsD][oO][nN][tT]_?[cC][oO][mM]{1,3}[iI][tT]"
   filename:
     - "*"
   error: true
 
 #- name: My path
 #  pattern: "/home/robert"
+#  filename:
+#      - "*"
+#
+#- name: My email
+#  pattern: "robert\.wenner@"
 #  filename:
 #      - "*"
 
