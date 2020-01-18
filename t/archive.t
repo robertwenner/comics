@@ -115,6 +115,7 @@ sub no_comics : Tests {
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
         {'Deutsch' => 'generated/web/deutsch/archiv.html'},
         {'Deutsch' => 'templates/deutsch/comic-page.templ'});
+    MockComic::assert_made_dirs('generated/web/deutsch');
     MockComic::assert_wrote_file('generated/web/deutsch/archiv.html', qr{No comics in archive}m);
 }
 

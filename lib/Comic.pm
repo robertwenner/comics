@@ -1053,7 +1053,6 @@ sub _set_png_meta {
     my ($self, $tool, $name, $value) = @ARG;
 
     my ($count_set, $error) = $tool->SetNewValue($name, $value);
-    # @dontCommit
     $self->_croak("Cannot set $name: $error") if ($error);
     return;
 }
@@ -1593,11 +1592,11 @@ sub export_archive {
 
     _check_all_comics();
     foreach my $language (keys %{$archive_templates}) {
+        my $page = _make_dir('web/' . lc $language);
         my @sorted = (sort _compare grep { _archive_filter($_, $language) } @comics);
         next if (@sorted == 0);
         my $last_pub = $sorted[-1];
         $last_pub->{isLatestPublished} = 1;
-        my $page = _make_dir('web/' . lc $language);
         $page.= '/index.html';
         _write_file($page, $last_pub->_do_export_html($language, ${$comic_template}{$language}));
     }
