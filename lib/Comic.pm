@@ -208,9 +208,12 @@ sub _load {
         $self->{urlUrlEncoded}{$language} = uri_encode($self->{url}{$language}, %uri_encoding_options);
         $self->{imageUrl}{$language} = "https://$domains{$language}/comics/$self->{baseName}{$language}.png";
         $self->{href}{$language} = "comics/$self->{htmlFile}{$language}";
+
+        $counts{'comics'}{$language}++;
     }
 
     push @comics, $self;
+    $self->_count_tags();
     return;
 }
 
@@ -280,8 +283,6 @@ sub export_png {
     my ($self, $dont_publish_marker, %meta_data) = @ARG;
 
     foreach my $language ($self->_languages()) {
-        $counts{'comics'}{$language}++;
-
         unless (_up_to_date($self->{srcFile}, "$self->{whereTo}{$language}/$self->{pngFile}{$language}")) {
             $self->_flip_language_layers($language);
             my $language_svg = $self->_write_temp_svg_file($language);
@@ -289,7 +290,6 @@ sub export_png {
         }
         $self->_get_png_info("$self->{whereTo}{$language}/$self->{pngFile}{$language}", $language);
     }
-    $self->_count_tags();
     return;
 }
 

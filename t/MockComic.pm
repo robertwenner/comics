@@ -182,7 +182,6 @@ sub make_comic {
     fake_file($args{$IN_FILE}, fake_comic(%args));
 
     my $comic = new Comic($args{$IN_FILE}, %{$args{$DOMAINS}});
-    $comic->export_png();
     $comic->{height} = $args{$HEIGHT};
     $comic->{width} = $args{$WIDTH};
     return $comic;
@@ -430,7 +429,7 @@ TEXT
 
 
 sub assert_made_dirs {
-    is_deeply([@made_dirs], [@_], 'Created wrong dirs'); 
+    is_deeply([@made_dirs], [@_], 'Created wrong dirs');
 }
 
 
