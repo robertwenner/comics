@@ -12,6 +12,8 @@
 .old$
 
 .travis-ci
+.relint.yml
+.pre-commit-config.yaml
 travis.yml
 todo
 
