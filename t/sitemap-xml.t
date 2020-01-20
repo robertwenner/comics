@@ -118,13 +118,13 @@ sub last_modified : Tests {
 
 
 sub image : Tests {
-    assert_wrote(make_comic('2016-01-01'), 
+    assert_wrote(make_comic('2016-01-01'),
         qr{<image:loc>https://beercomics.com/comics/drinking-beer.png</image:loc>}m);
 }
 
 
 sub image_title : Tests {
-    assert_wrote(make_comic('2016-01-01'), 
+    assert_wrote(make_comic('2016-01-01'),
         qr{<image:title>Drinking beer</image:title>}m);
 }
 
@@ -182,5 +182,6 @@ sub creates_directories : Tests {
         'English' => 'generated/web/english/sitemap.xml',
     });
     MockComic::assert_made_dirs(
-        'generated/backlog/english', 'generated/backlog/qr', 'generated/web/english');
+        'generated/tmp/meta/', 'generated/backlog/english', 'generated/backlog/qr',
+        'generated/tmp/transcript/English/', 'generated/web/english');
 }

@@ -6,8 +6,10 @@ no warnings qw/redefine/;
 use utf8;
 use Readonly;
 use Test::More;
+use Test::Deep;
 use Comic;
 use Carp;
+use JSON;
 
 # Constants to catch typos when defining meta data.
 our Readonly $ENGLISH = 'English';
@@ -109,7 +111,9 @@ sub mock_methods {
     };
 
     *Comic::_up_to_date = sub {
-        return 1;
+        my ($source, $target) = @_;
+        # Most tests use XML, so tell them to not use the cache.
+        return 0;
     };
 
     *Comic::_get_tz = sub {
@@ -184,6 +188,15 @@ sub make_comic {
     my $comic = new Comic($args{$IN_FILE}, %{$args{$DOMAINS}});
     $comic->{height} = $args{$HEIGHT};
     $comic->{width} = $args{$WIDTH};
+    return $comic;
+}
+
+
+sub make_comic_from_xml {
+    my ($filename, $xml) = @_;
+
+    fake_file($filename, $xml);
+    my $comic = new Comic($filename);
     return $comic;
 }
 
@@ -451,7 +464,6 @@ sub assert_wrote_file {
 }
 
 
-
 sub assert_didnt_write_in_file {
     my ($name, $contents) = @_;
 
@@ -461,6 +473,13 @@ sub assert_didnt_write_in_file {
     else {
         confess("Cannot match on $contents");
     }
+}
+
+
+sub assert_wrote_file_json {
+    my ($name, $contents) = @_;
+
+    cmp_deeply(from_json($file_written{$name}), $contents, "Content in $name should be same JSON");
 }
 
 

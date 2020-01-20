@@ -29,12 +29,12 @@ sub set_up : Test(setup) {
 
 sub includes_file_name() : Test {
     my $comic = MockComic::make_comic(
-        $MockComic::IN_FILE => 'filename',
+        $MockComic::IN_FILE => 'filename.svg',
         $MockComic::TEXTS => {'MetaDeutsch' => ['Paul:', 'Paul']});
     eval {
         $comic->_check_transcript('Deutsch');
     };
-    like($@, qr{\bfilename\b});
+    like($@, qr{\bfilename\.svg\b});
 }
 
 

@@ -220,6 +220,12 @@ sub png_size : Tests {
 [% c.pngSize.English %]
 [% END %]
 ATOM
+    no warnings qw/redefine/;
+    local *Comic::_up_to_date = sub {
+        my ($source, $target) = @_;
+        return $target =~ m/\.png$/;
+    };
+    use warnings;
 
     my $comic = MockComic::make_comic(
         $MockComic::PUBLISHED_WHEN => '2016-01-01',

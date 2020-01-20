@@ -123,6 +123,8 @@ Readonly our $FRAME_ROW_HEIGHT => 10;
 Readonly our $FRAME_SPACING => 10;
 # Maximum tolerance in pixels for distance between frames.
 Readonly our $FRAME_SPACING_TOLERANCE => 2.0;
+# Temp dir for caches, per-langugage svg exports, etc.
+Readonly our $TEMPDIR => 'tmp';
 
 
 my %counts;
@@ -161,14 +163,25 @@ sub _load {
 
     $self->{srcFile} = $file;
     $self->{warnings} = [];
-    $self->{dom} = _parse_xml(_slurp($file));
-    $self->{xpath} = XML::LibXML::XPathContext->new($self->{dom});
-    $self->{xpath}->registerNs($DEFAULT_NAMESPACE, 'http://www.w3.org/2000/svg');
-    my $meta_xpath = _build_xpath('metadata/rdf:RDF/cc:Work/dc:description/text()');
-    my $meta_data = join ' ', $self->{xpath}->findnodes($meta_xpath);
+    my $meta_data;
+    my $meta_cache = _meta_cache_for($self->{srcFile});
+    $self->{use_meta_data_cache} = _up_to_date($self->{srcFile}, $meta_cache);
+    if ($self->{use_meta_data_cache}) {
+        $meta_data = _slurp($meta_cache);
+    }
+    else {
+        $self->{dom} = _parse_xml(_slurp($file));
+        $self->{xpath} = XML::LibXML::XPathContext->new($self->{dom});
+        $self->{xpath}->registerNs($DEFAULT_NAMESPACE, 'http://www.w3.org/2000/svg');
+        my $meta_xpath = _build_xpath('metadata/rdf:RDF/cc:Work/dc:description/text()');
+        $meta_data = _unhtml(join ' ', $self->{xpath}->findnodes($meta_xpath));
+    }
     eval {
-        $self->{meta_data} = from_json(_unhtml($meta_data));
+        $self->{meta_data} = from_json($meta_data);
     } or $self->_croak("Error in JSON for: $EVAL_ERROR");
+    if (!$self->{use_meta_data_cache}) {
+        _write_file($meta_cache, $meta_data);
+    }
 
     my $modified = DateTime->from_epoch(epoch => _mtime($file));
     $modified->set_time_zone(_get_tz());
@@ -215,6 +228,30 @@ sub _load {
     push @comics, $self;
     $self->_count_tags();
     return;
+}
+
+
+sub _meta_cache_for {
+    my ($svg_file) = @ARG;
+    return _cache_file_for($svg_file, 'meta', 'json');
+}
+
+
+sub _transcript_cache_for {
+    my ($svg_file, $language) = @ARG;
+    return _cache_file_for("$language/$svg_file", 'transcript', 'txt');
+}
+
+
+sub _cache_file_for {
+    my ($svg_file, $dir, $ext) = @ARG;
+
+    my ($filename, $dirs, $suffix) = fileparse($svg_file);
+    if ($dirs eq q{./}) { # no path
+        $dirs = '';
+    }
+    $filename =~ s/\.svg$//;
+    return _make_dir($TEMPDIR . "/$dir/$dirs") . "$filename.$ext";
 }
 
 
@@ -312,6 +349,8 @@ Parameters:
 sub check {
     my ($self, $dont_publish_marker) = @_;
 
+    return if ($self->{use_meta_data_cache});
+
     foreach my $language ($self->_languages()) {
         $self->_get_transcript($language);
         $self->_check_title($language);
@@ -334,7 +373,15 @@ sub _get_transcript {
     my ($self, $language) = @ARG;
 
     if (!defined($self->{transcript}{$language})) {
-        @{$self->{transcript}{$language}} = _append_speech_to_speaker($self->_texts_for($language));
+        my $cache = _transcript_cache_for($self->{srcFile}, $language);
+        my $transcript_cached = _up_to_date($self->{srcFile}, $cache);
+        if ($transcript_cached) {
+            @{$self->{transcript}{$language}} = split /[\r\n]+/, _slurp($cache);
+        }
+        else {
+            @{$self->{transcript}{$language}} = _append_speech_to_speaker($self->_texts_for($language));
+            _write_file($cache, join "\n", @{$self->{transcript}{$language}});
+        }
     }
     return @{$self->{transcript}{$language}};
 }
@@ -843,7 +890,7 @@ sub _text {
 sub _write_temp_svg_file {
     my ($self, $language) = @ARG;
 
-    my $temp_file_name = _make_dir('tmp/' . lc $language . '/svg/') . "$self->{baseName}{$language}.svg";
+    my $temp_file_name = _make_dir("$TEMPDIR/" . lc $language . '/svg/') . "$self->{baseName}{$language}.svg";
     my $svg = $self->_copy_svg($language);
     _drop_layers($svg, 'Raw');
     $self->_insert_url($svg, $language);
@@ -1297,6 +1344,15 @@ sub _not_published_on_the_web {
 
 sub _do_export_html {
     my ($self, $language, $template) = @ARG;
+
+    # Provide empty tags and who data, if the comic doesn't have that.
+    # This avoids a crash in the template when it cannot access these.
+    # This should probably be configurable.
+    foreach my $what (qw(tags who)) {
+        if (!defined $self->{meta_data}->{who}->{$language}) {
+            @{$self->{meta_data}->{who}->{$language}} = ();
+        }
+    }
 
     my %vars;
     $vars{'comic'} = $self;

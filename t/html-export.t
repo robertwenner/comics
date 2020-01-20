@@ -55,9 +55,7 @@ sub languages_many : Test {
 
 
 sub languages_none : Tests {
-    no warnings 'redefine';
-    local *Comic::_slurp = sub {
-        return <<'XML';
+    my $comic = MockComic::make_comic_from_xml('some-comic.svg', <<'XML');
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
@@ -75,8 +73,6 @@ sub languages_none : Tests {
   </metadata>
 </svg>
 XML
-    };
-    my $comic = new Comic();
     is_deeply([sort $comic->_languages()], []);
     Comic::export_all_html({}, {}, {});
     ok(1); # Would have failed above
@@ -588,4 +584,13 @@ XML
 sub unhtml : Tests {
     is(Comic::_unhtml('&lt;&quot;&amp;&quot;&gt;'), '<"&">');
     is(Comic::_unhtml("isn't it?"), "isn't it?");
+}
+
+
+sub provides_defaults_if_not_given : Tests {
+    foreach my $what (qw(tags who)) {
+        my $comic = MockComic::make_comic();
+        $comic->_do_export_html('English', 'comic.templ');
+        is_deeply($comic->{meta_data}{who}{English}, [], "$what not added");
+    }
 }
