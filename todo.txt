@@ -14,7 +14,7 @@
   having a date, so that inserting one for current events doesn't ripple
   through the backlog (and still maintaining a regular / weekly schedule)
 
-- break code into different modules
+- break up code into different modules
 
 - plugable customizable checkers and actors (reddit poster, inkscape
   importer, spell checker, frame checker, ...)
@@ -86,12 +86,20 @@
 
 - check: published date must be >= created date (typo?)
 
-- profile and fix slooooow handling of large svg files
-
-- remove backlog files once the comic is published
+- profile and fix slooooow handling of some (large?) svg files; debug
+  hiccups when it seems to stall for minutes (when cache is stale, but looks
+  like frame collection could be the problem, not actually calling inkscape)
 
 - check that speaker names all show up in the "who" meta data
 
 - write qr code file only when writing the pngs, i.e., when the source has
   changed (only need this if the generated title / qr code file name has
   changed, but this is harder to detect)
+
+- don't bail out after the first check fails, report all problems
+
+- speed up with multiple threads for checking and converting svg files (1
+  thread per comic, then wait till all are done; reuse threads for writing
+  per-comic pages, when all next/prev links are known)
+
+- cache more data, like png sizes, transcript, and framepositions
