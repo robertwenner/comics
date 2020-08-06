@@ -180,3 +180,28 @@ sub shrink_png_ok : Tests {
     like($command_lines[1], qr{optipng}, 'opting not found');
     like($command_lines[1], qr{\boptimized-comicsvg\.png\b}, 'png file name');
 }
+
+
+sub moves_from_backlog : Tests {
+    my $from;
+    my $to;
+
+    no warnings qw/redefine/;
+    local *Comic::_up_to_date = sub {
+        my ($source, $target) = @_;
+        return 1 if ($target !~ m/\.json$/);
+    };
+    local *Comic::_move = sub {
+        ($from, $to) = @_;
+        return 1;   # success according to perldoc File::Copy
+    };
+    use warnings;
+
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+    );
+    $comic->export_png('DONT_PUBLISH', ());
+
+    is($from, "generated/backlog/english/latest-comic.png", 'wrong move source');
+    is($to, "generated/web/english/comics/latest-comic.png", 'wrong move target');
+}

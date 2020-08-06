@@ -223,6 +223,7 @@ ATOM
     no warnings qw/redefine/;
     local *Comic::_up_to_date = sub {
         my ($source, $target) = @_;
+        return 0 if ($target =~ m/backlog/); # don't try to move from backlog
         return $target =~ m/\.png$/;
     };
     use warnings;

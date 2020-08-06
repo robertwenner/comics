@@ -17,6 +17,7 @@ use DateTime::Format::ISO8601;
 use DateTime::Format::RFC3339;
 use File::Path qw(make_path);
 use File::Basename;
+use File::Copy;
 use open ':std', ':encoding(UTF-8)'; # to handle e.g., umlauts correctly
 use XML::LibXML;
 use XML::LibXML::XPathContext;
@@ -203,9 +204,10 @@ sub _load {
     foreach my $language ($self->_languages()) {
         $self->_croak("No domain for $language") unless (defined $domains{$language});
 
+        $self->{backlogPath}{$language} = 'generated/backlog/' . lc $language;
         my $base;
         if ($self->not_yet_published()) {
-            $base = 'backlog/' . lc $language;
+            $base = $self->{backlogPath}{$language};
         }
         else {
             $base = 'web/' . lc $language . '/comics';
@@ -320,14 +322,26 @@ sub export_png {
     my ($self, $dont_publish_marker, %meta_data) = @ARG;
 
     foreach my $language ($self->_languages()) {
-        unless (_up_to_date($self->{srcFile}, "$self->{whereTo}{$language}/$self->{pngFile}{$language}")) {
+        my $png_file = "$self->{whereTo}{$language}/$self->{pngFile}{$language}";
+        my $backlog_png = "$self->{backlogPath}{$language}/$self->{pngFile}{$language}" || '';
+
+        if (_up_to_date($self->{srcFile}, $backlog_png)) {
+            _move($backlog_png, $png_file) or $self->_croak("Cannot move $backlog_png to $png_file: $OS_ERROR");
+        }
+
+        unless (_up_to_date($self->{srcFile}, $png_file)) {
             $self->_flip_language_layers($language);
             my $language_svg = $self->_write_temp_svg_file($language);
             $self->_svg_to_png($language, $language_svg, %meta_data);
         }
-        $self->_get_png_info("$self->{whereTo}{$language}/$self->{pngFile}{$language}", $language);
+        $self->_get_png_info($png_file, $language);
     }
     return;
+}
+
+
+sub _move {
+    return File::Copy::move(@ARG);
 }
 
 
@@ -393,7 +407,7 @@ sub _up_to_date {
     my ($source, $target) = @ARG;
 
     my $up_to_date = 0;
-    if (_exists($target)) {
+    if (_exists($source) && _exists($target)) {
         my $source_mod = _mtime($source);
         my $target_mod = _mtime($target);
         $up_to_date = $target_mod > $source_mod;
