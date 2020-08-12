@@ -906,7 +906,7 @@ sub _write_temp_svg_file {
 
     my $temp_file_name = _make_dir("$TEMPDIR/" . lc $language . '/svg/') . "$self->{baseName}{$language}.svg";
     my $svg = $self->_copy_svg($language);
-    _drop_layers($svg, 'Raw');
+    _drop_top_level_layers($svg, 'Raw');
     $self->_insert_url($svg, $language);
     $svg->toFile($temp_file_name);
     return $temp_file_name;
@@ -919,31 +919,17 @@ sub _copy_svg {
 }
 
 
-sub _drop_layers {
+sub _drop_top_level_layers {
     my ($svg, @layers) = @ARG;
 
-    my $node = $svg->documentElement()->firstChild();
-    _drop_layers_recursively($node, @layers);
-    return;
-}
-
-
-sub _drop_layers_recursively {
-    my ($node, @layers) = @ARG;
-
-    while ($node) {
-        my $next = $node->nextSibling();
-        foreach my $child($node->childNodes()) {
-            _drop_layers_recursively($child, @layers);
+    my %wanted = map { $_ => 1 } @layers;
+    my $root = $svg->documentElement();
+    foreach my $node ($root->childNodes()) {
+        if ($node->nodeName() eq 'g'
+        && ($node->getAttribute('inkscape:groupmode') || '') eq 'layer'
+        && $wanted{$node->getAttribute('inkscape:label' || '')}) {
+            $root->removeChild($node);
         }
-        foreach my $drop (@layers) {
-            if ($node->nodeName() eq 'g'
-            && ($node->getAttribute('inkscape:groupmode') || '') eq 'layer'
-            && ($node->getAttribute('inkscape:label') || '') eq $drop) {
-                $node->unbindNode();
-            }
-        }
-        $node = $next;
     }
     return;
 }

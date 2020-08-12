@@ -39,17 +39,17 @@ sub count_children {
 sub no_such_layer_does_nothing : Tests {
     my $comic = MockComic::make_comic();
     is(count_layers($comic, 'Raw'), 0, 'should not have a raw layer');
-    Comic::_drop_layers($comic->{dom}, 'Raw');
+    Comic::_drop_top_level_layers($comic->{dom}, 'Raw');
     is(count_layers($comic, 'Raw'), 0, 'should still not have a raw layer');
 }
 
 
 sub drops_one_given_layer : Tests {
-    my $comic = MockComic::make_comic($MockComic::XML => 
+    my $comic = MockComic::make_comic($MockComic::XML =>
         '<g inkscape:groupmode="layer" inkscape:label="Raw"/>',
     );
     is(count_layers($comic, 'Raw'), 1, 'should initially have the raw layer');
-    Comic::_drop_layers($comic->{dom}, 'Raw');
+    Comic::_drop_top_level_layers($comic->{dom}, 'Raw');
     is(count_layers($comic, 'Raw'), 0, 'should have removed the raw layer');
 }
 
@@ -65,30 +65,18 @@ XML
     is(count_layers($comic, 'Uncooked'), 1, 'initial uncooked layers');
     is(count_layers($comic, 'Cooked'), 1, 'initial cooked layers');
 
-    Comic::_drop_layers($comic->{dom}, 'Raw', 'Uncooked');
+    Comic::_drop_top_level_layers($comic->{dom}, 'Raw', 'Uncooked');
     is(count_layers($comic, 'Raw'), 0, 'raw layers should be removed');
     is(count_layers($comic, 'Uncooked'), 0, 'uncooked layers should be removed');
     is(count_layers($comic, 'Cooked'), 1, 'cooked layer should still be there');
 }
 
 
-sub drops_nested_layer : Tests {
-    my $comic = MockComic::make_comic($MockComic::XML => 
-        '<g inkscape:groupmode="layer" inkscape:label="Container">' .
-            '<g inkscape:groupmode="layer" inkscape:label="DropMe"/>' .
-        '</g>',
-    );
-    is(count_layers($comic, 'DropMe'), 1, 'should initially have the nested layer');
-    Comic::_drop_layers($comic->{dom}, 'DropMe');
-    is(count_layers($comic, 'DropMe'), 0, 'should have removed the nested layer');
-}
-
-
-sub keeps_grouings_other_than_layers : Tests {
-    my $comic = MockComic::make_comic($MockComic::XML => 
+sub keeps_groupings_other_than_layers : Tests {
+    my $comic = MockComic::make_comic($MockComic::XML =>
         '<g inkscape:groupmode="NotALayer" inkscape:label="Raw"/>',
     );
     is(count_layers($comic, 'Raw'), 1, 'should initially have the layer');
-    Comic::_drop_layers($comic->{dom}, 'Raw');
+    Comic::_drop_top_level_layers($comic->{dom}, 'Raw');
     is(count_layers($comic, 'Raw'), 1, 'should still have the layer');
 }
