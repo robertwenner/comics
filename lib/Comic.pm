@@ -1051,13 +1051,19 @@ sub _frames_in_rows {
 
 
 sub _query_inkscape_version {
+    my ($self) = @ARG;
+
     # Inkscape seems to print its plugins information to stderr, e.g.:
     #    Pango version: 1.46.0
     # Hence redirect stderr to /dev/null.
 
     ## no critic(InputOutput::ProhibitBacktickOperators)
-    return `inkscape --version 2>/dev/null`;
+    my $version = `inkscape --version 2>/dev/null`;
     ## use critic
+    if ($OS_ERROR) {
+        $self->_croak('Could not run Inkscape');
+    }
+    return $version;
 }
 
 
@@ -1080,7 +1086,7 @@ sub _get_inkscape_version {
     my ($self) = @ARG;
 
     unless (defined $inkscape_version) {
-        $inkscape_version = $self->_parse_inkscape_version(_query_inkscape_version());
+        $inkscape_version = $self->_parse_inkscape_version($self->_query_inkscape_version());
     }
     return $inkscape_version;
 }

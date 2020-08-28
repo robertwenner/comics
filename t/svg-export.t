@@ -38,6 +38,9 @@ sub set_up : Test(setup) {
         return $get_value;
     });
     no warnings qw/redefine/;
+    *Comic::_query_inkscape_version = sub {
+        return 'Inkscape 0.9';
+    };
     *Comic::_system = sub {
         push @command_lines, @_;
         return $system_exit_code;
@@ -80,9 +83,9 @@ sub caches_inkscape_version : Tests {
     my $called = 0;
 
     no warnings qw/redefine/;
-    local *Comic::_parse_inkscape_version = sub {
+    local *Comic::_query_inkscape_version = sub {
         $called++;
-        return "1.0";
+        return "Inkscape 1.0";
     };
     use warnings;
 
