@@ -59,17 +59,80 @@ sub png_file_name_from_title_in_language : Tests {
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
     );
     $comic->_svg_to_png($MockComic::ENGLISH, 'some-comic.svg');
-    like($command_lines[0], qr{ --export-png=.+/latest-comic\.png\b}, 'png file name in inkscape export');
+    like($command_lines[0], qr{\blatest-comic\.png\b}, 'png file name in inkscape export');
     like($command_lines[1], qr{\blatest-comic\.png\b}, 'png file name in shrink');
 }
 
 
-sub export_commandline : Tests {
+sub parses_inkscape_version : Tests {
     my $comic = MockComic::make_comic();
+    is($comic->_parse_inkscape_version("Inkscape 0.92.5 (2060ec1f9f, 2020-04-08)\n"), "0.9");
+    is($comic->_parse_inkscape_version("Inkscape 1.0 (4035a4fb49, 2020-05-01)\n"), "1.0");
+    eval {
+        $comic->_parse_inkscape_version("Whatever 2020...");
+    };
+    like($@, qr{Cannot figure out}i);
+    like($@, qr{Whatever 2020}i);
+}
+
+
+sub caches_inkscape_version : Tests {
+    my $called = 0;
+
+    no warnings qw/redefine/;
+    local *Comic::_parse_inkscape_version = sub {
+        $called++;
+        return "1.0";
+    };
+    use warnings;
+
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+    );
+
+    $comic->_get_inkscape_version();
+    $comic->_get_inkscape_version();
+    is($called, 1, 'should have cached');
+}
+
+
+sub export_command_line_inkscape09 : Tests {
+    no warnings qw/redefine/;
+    local *Comic::_get_inkscape_version = sub {
+        return "0.9";
+    };
+    use warnings;
+
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+    );
+
     $comic->_svg_to_png($MockComic::ENGLISH, 'some-comic.svg');
     like($command_lines[0], qr{^inkscape }, 'inkscape call');
     like($command_lines[0], qr{ --without-gui }, 'suppresses GUI');
-    like($command_lines[0], qr{ --export-png=}, 'give png file name');
+    like($command_lines[0], qr{ --export-png=\S+\blatest-comic.png}, 'give png file name');
+    like($command_lines[0], qr{ --export-area-drawing }, 'export area');
+    like($command_lines[0], qr{ --export-background=#ffffff}, 'background color');
+}
+
+
+sub export_command_line_inkscape1 : Tests {
+    no warnings qw/redefine/;
+    local *Comic::_get_inkscape_version = sub {
+        return "1.0";
+    };
+    use warnings;
+
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+    );
+
+    $comic->_svg_to_png($MockComic::ENGLISH, 'some-comic.svg');
+    like($command_lines[0], qr{^inkscape }, 'inkscape call');
+    unlike($command_lines[0], qr{ --without-gui }, 'old suppresses GUI flag');
+    like($command_lines[0], qr{ --export-type=png\b}, 'png file type');
+    like($command_lines[0], qr{ --export-filename=\S+\blatest-comic.png\b}, 'png file name');
+    like($command_lines[0], qr{\bsome-comic.svg$}, 'input svg file');
     like($command_lines[0], qr{ --export-area-drawing }, 'export area');
     like($command_lines[0], qr{ --export-background=#ffffff}, 'background color');
 }

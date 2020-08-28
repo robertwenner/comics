@@ -132,6 +132,9 @@ my %counts;
 my %titles;
 my %language_code_cache;
 my @comics;
+## no critic(Variables::ProhibitPackageVars)
+our $inkscape_version;
+## use critic
 
 
 =head1 SUBROUTINES/METHODS
@@ -1027,8 +1030,8 @@ sub _where_to_place_the_text {
 
 sub _inkscape_query {
     my ($self, $what) = @ARG;
-    ## no critic( InputOutput::ProhibitBacktickOperators)
-    return `inkscape --without-gui -$what $self->{srcFile}`;
+    ## no critic(InputOutput::ProhibitBacktickOperators)
+    return `inkscape -$what $self->{srcFile}`;
     ## use critic
 }
 
@@ -1047,13 +1050,66 @@ sub _frames_in_rows {
 }
 
 
+sub _query_inkscape_version {
+    # Inkscape seems to print its plugins information to stderr, e.g.:
+    #    Pango version: 1.46.0
+    # Hence redirect stderr to /dev/null.
+
+    ## no critic(InputOutput::ProhibitBacktickOperators)
+    return `inkscape --version 2>/dev/null`;
+    ## use critic
+}
+
+
+sub _parse_inkscape_version {
+    my ($self, $inkscape_output) = @ARG;
+
+    # Inkscape 0.92.5 (2060ec1f9f, 2020-04-08)
+    # Inkscape 1.0 (4035a4fb49, 2020-05-01)
+    if ($inkscape_output =~ m/^Inkscape\s+(\d\.\d)/) {
+        return $1;
+    }
+    $self->_croak("Cannot figure out Inkscape version from this:\n$inkscape_output");
+    # PerlCritic doesn't know that _croak doesn't return and the return statement
+    # here is unreachable.
+    return 'unknown';
+}
+
+
+sub _get_inkscape_version {
+    my ($self) = @ARG;
+
+    unless (defined $inkscape_version) {
+        $inkscape_version = $self->_parse_inkscape_version(_query_inkscape_version());
+    }
+    return $inkscape_version;
+}
+
+
+sub _build_inkscape_command {
+    my ($self, $svg_file, $png_file, $version) = @ARG;
+
+    if ($version eq '0.9') {
+        return 'inkscape --g-fatal-warnings --without-gui ' .
+            "--file=$svg_file --export-png=$png_file " .
+            '--export-area-drawing --export-background=#ffffff';
+    }
+    if ($version ne '1.0') {
+        $self->_warn("Don't know Inkscape $version, hoping it's compatible to 1.0");
+    }
+
+    return 'inkscape --g-fatal-warnings ' .
+        "--export-type=png --export-filename=$png_file " .
+        "--export-area-drawing --export-background=#ffffff $svg_file";
+}
+
+
 sub _svg_to_png {
     my ($self, $language, $svg_file, %global_meta_data) = @ARG;
 
     my $png_file = "$self->{whereTo}{$language}/$self->{pngFile}{$language}";
-    my $export_cmd = "inkscape --without-gui --file=$svg_file" .
-        ' --g-fatal-warnings' .
-        " --export-png=$png_file --export-area-drawing --export-background=#ffffff";
+    my $version = $self->_get_inkscape_version();
+    my $export_cmd = $self->_build_inkscape_command($svg_file, $png_file, $version);
     _system($export_cmd) && $self->_croak("could not export: $export_cmd: $OS_ERROR");
 
     my %meta_data = (
@@ -1843,6 +1899,7 @@ Helper to allow tests to clear internal static state.
 sub reset_statics {
     %counts = ();
     @comics = ();
+    $inkscape_version = undef;
     return;
 }
 
