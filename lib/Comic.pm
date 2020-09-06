@@ -34,6 +34,8 @@ use Net::Twitter;
 use Reddit::Client;
 use Clone qw(clone);
 
+use Comic::Check::Title;
+
 
 use version; our $VERSION = qv('0.0.2');
 
@@ -129,7 +131,6 @@ Readonly our $TEMPDIR => 'tmp';
 
 
 my %counts;
-my %titles;
 my %language_code_cache;
 my @comics;
 ## no critic(Variables::ProhibitPackageVars)
@@ -348,6 +349,9 @@ sub _move {
 }
 
 
+my $title_check = Comic::Check::Title->new();
+
+
 =head2 check
 
 Runs some checks on this comic.
@@ -370,7 +374,6 @@ sub check {
 
     foreach my $language ($self->_languages()) {
         $self->_get_transcript($language);
-        $self->_check_title($language);
         $self->_check_tags('tags', $language);
         $self->_check_tags('who', $language);
         $self->_check_empty_texts($language);
@@ -379,6 +382,7 @@ sub check {
         $self->_check_persons($language);
         $self->_check_meta($language);
     }
+    $title_check->check($self);
     $self->_check_date();
     $self->_check_frames();
     $self->_check_dont_publish($dont_publish_marker);
@@ -421,22 +425,6 @@ sub _up_to_date {
 
 sub _exists {
     return -r shift;
-}
-
-
-sub _check_title {
-    my ($self, $language) = @ARG;
-
-    my $title = $self->{meta_data}->{title}->{$language};
-    my $key = trim(lc "$language\n$title");
-    $key =~ s/\s+/ /g;
-    if (defined $titles{$key}) {
-        if ($titles{$key} ne $self->{srcFile}) {
-            $self->_warn("Duplicated $language title '$title' in $titles{$key}");
-        }
-    }
-    $titles{$key} = $self->{srcFile};
-    return;
 }
 
 
@@ -1264,6 +1252,7 @@ sub export_all_html {
             _make_dir('web/' . lc $language);
         }
     }
+
 
     my %languages;
     foreach my $c (@comics) {

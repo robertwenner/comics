@@ -6,6 +6,8 @@ use Test::More;
 
 use lib 't';
 use MockComic;
+use Comic::Check::Title;
+
 
 __PACKAGE__->runtests() unless caller;
 
@@ -26,52 +28,49 @@ sub make_comic {
 
 
 sub duplicated_title : Test {
-    my $c1 = make_comic('duplicated title', 'file1.svg');
-    my $c2 = make_comic('duplicated title', 'file2.svg');
-    $c1->_check_title($MockComic::ENGLISH);
+    my $check = Comic::Check::Title->new();
+    $check->check(make_comic('duplicated title', 'file1.svg'));
     eval {
-        $c2->_check_title($MockComic::ENGLISH);
+        $check->check(make_comic('duplicated title', 'file2.svg'));
     };
     like($@, qr/Duplicated English title/i);
 }
 
 
 sub duplicated_title_case_insensitive : Test {
-    my $c1 = make_comic('clever title', 'file1.svg');
-    my $c2 = make_comic('Clever Title', 'file2.svg');
-    $c1->_check_title($MockComic::ENGLISH);
+    my $check = Comic::Check::Title->new();
+    $check->check(make_comic('clever title', 'file1.svg'));
     eval {
-        $c2->_check_title($MockComic::ENGLISH);
+        $check->check(make_comic('Clever Title', 'file2.svg'))
     };
     like($@, qr/Duplicated English title/i);
 }
 
 
 sub duplicated_title_whitespace : Test {
-    my $c1 = make_comic('white spaced', 'file1.svg');
-    $c1->_check_title($MockComic::ENGLISH);
-    my $c2 = make_comic(' white   spaced', 'file2.svg');
+    my $check = Comic::Check::Title->new();
+    $check->check(make_comic('white spaced', 'file1.svg'));
     eval {
-        $c2->_check_title($MockComic::ENGLISH);
+        $check->check(make_comic(' white   spaced', 'file2.svg'));
     };
     like($@, qr/Duplicated English title/i);
 }
 
 
 sub duplicate_title_allowed_in_different_languages : Test {
-    my $c1 = make_comic('Hahaha', 'file1.svg', $MockComic::ENGLISH);
-    $c1->_check_title($MockComic::ENGLISH);
-    my $c2 = make_comic('Hahaha', 'file2.svg', $MockComic::DEUTSCH);
+    my $check = Comic::Check::Title->new();
+    $check->check(make_comic('Hahaha', 'file1.svg', $MockComic::ENGLISH));
     # This would throw if it failed
-    $c2->_check_title($MockComic::DEUTSCH);
+    $check->check(make_comic('Hahaha', 'file2.svg', $MockComic::DEUTSCH));
     ok(1);
 }
 
 
 sub idempotent : Test {
-    my $c = make_comic("idempotent", 'file1.svg', $MockComic::ENGLISH);
-    $c->_check_title($MockComic::ENGLISH);
+    my $check = Comic::Check::Title->new();
+    my $comic = make_comic("idempotent", 'file1.svg', $MockComic::ENGLISH);
+    $check->check($comic);
     # This would throw if it failed
-    $c->_check_title($MockComic::ENGLISH);
+    $check->check($comic);
     ok(1);
 }
