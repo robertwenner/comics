@@ -48,7 +48,7 @@ WriteMakefile(
         %dependencies,
         %test_dependencies,
     },
-    MIN_PERL_VERSION => 5.22,
+    MIN_PERL_VERSION => 5.22.0,
     LICENSE => 'Perl',
     META_ADD => {
         "meta-spec" => { version => 2 },
