@@ -26,6 +26,9 @@ Test::Class and Test::Perl::Critic, if you want to run the tests.
 You'll need [Inkscape](https://inkscape.org) in the `$PATH` to actually
 export your comics to png.
 
+You also need Imager::File::PNG, which in turn depends on `libpng-dev`
+and `optipng`.
+
 
 ### Installation
 
@@ -37,7 +40,7 @@ export your comics to png.
 
 ## Copyright & License
 
-Copyright (C) 2015 - 2019, Robert Wenner
+Copyright (C) 2015 - 2020, Robert Wenner
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
