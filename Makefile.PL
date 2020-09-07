@@ -32,6 +32,9 @@ my %test_dependencies = (
     'Test::Class' => 0,
     'Test::MockModule' => 0,
     'Test::Output' => 0,
+    'Test::Perl::Critic' => 0,
+    'Test::Pod' => 0,
+    'Test::Pod::Coverage' => 0,
 );
 
 WriteMakefile(
@@ -44,7 +47,7 @@ WriteMakefile(
         %dependencies,
         %test_dependencies,
     },
-    MIN_PERL_VERSION => 5.10.0,
+    MIN_PERL_VERSION => 5.22,
     LICENSE => 'Perl',
     META_ADD => {
         "meta-spec" => { version => 2 },
