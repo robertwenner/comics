@@ -42,8 +42,11 @@ sub set_up : Test(setup) {
     *Comic::Check::Title::check = sub {
         $called{'_check_title'}++;
     };
-    *Comic::_check_date = sub {
-        $called{'_check_date'}++;
+    *Comic::Check::DateCollision::check = sub {
+        $called{'_check_date_collision'}++;
+    };
+    *Comic::Check::Weekday::check = sub {
+        $called{'_check_weekday'}++;
     };
     *Comic::_check_frames = sub {
         $called{'_check_frames'}++;
@@ -58,7 +61,8 @@ sub set_up : Test(setup) {
 sub per_file_checks: Tests {
     my $comic = MockComic::make_comic();
     $comic->check('DONT_PUBLISH');
-    is($called{'_check_date'}, 1, '_check_date called');
+    is($called{'_check_date_collision'}, 1, 'checked date colliion');
+    is($called{'_check_weekday'}, 1, 'checked weekday');
     is($called{'_check_frames'}, 1, '_check_frames called');
     is($called{'_check_dont_publish'}, 'DONT_PUBLISH', 'passed marker to _check_dont_publish');
     is($called{'_check_title'}, 1);

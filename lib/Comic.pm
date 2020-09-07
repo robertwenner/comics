@@ -35,6 +35,8 @@ use Reddit::Client;
 use Clone qw(clone);
 
 use Comic::Check::Title;
+use Comic::Check::Weekday;
+use Comic::Check::DateCollision;
 
 
 use version; our $VERSION = qv('0.0.2');
@@ -350,6 +352,9 @@ sub _move {
 
 
 my $title_check = Comic::Check::Title->new();
+Readonly my $FRIDAY => 5;
+my $weekday_check = Comic::Check::Weekday->new($FRIDAY);
+my $date_collision_check = Comic::Check::DateCollision->new();
 
 
 =head2 check
@@ -383,7 +388,8 @@ sub check {
         $self->_check_meta($language);
     }
     $title_check->check($self);
-    $self->_check_date();
+    $date_collision_check->check($self);
+	$weekday_check->check($self);
     $self->_check_frames();
     $self->_check_dont_publish($dont_publish_marker);
     return;
@@ -425,43 +431,6 @@ sub _up_to_date {
 
 sub _exists {
     return -r shift;
-}
-
-
-sub _check_date {
-    my ($self) = @_;
-
-    my $published_when = trim($self->{meta_data}->{published}->{when});
-    my $published_where = trim($self->{meta_data}->{published}->{where});
-    return unless($published_when);
-
-    my $published_date = DateTime::Format::ISO8601->parse_datetime($published_when);
-    $published_date->set_time_zone(_get_tz());
-    my $today = _now();
-    $today->set_time_zone(_get_tz());
-    # Allow older beer comics (initial set) to have non-Friday dates.
-    Readonly my $FRIDAYS_ONLY => DateTime->new(year => 2016, month => 8, day => 1);
-    if (DateTime->compare($published_date, $FRIDAYS_ONLY) > 0) {
-        Readonly my $FRIDAY => 5;
-        if ($published_date->day_of_week() != $FRIDAY) {
-            $self->_warn('scheduled for ' . $published_date->day_name());
-        }
-    }
-
-    foreach my $c (@comics) {
-        next if ($c == $self);
-        my $pub_when = trim($c->{meta_data}->{published}->{when});
-        my $pub_where = trim($c->{meta_data}->{published}->{where});
-
-        next unless(defined $pub_when);
-        foreach my $l ($self->_languages()) {
-            next if ($self->_is_for($l) != $c->_is_for($l));
-            if ($published_when eq $pub_when && $published_where eq $pub_where) {
-                $self->_warn("duplicated date with $c->{srcFile}");
-            }
-        }
-    }
-    return;
 }
 
 
