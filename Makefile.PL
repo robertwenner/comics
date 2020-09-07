@@ -30,6 +30,7 @@ my %dependencies = (
 my %test_dependencies = (
     'Test::More' => 0,
     'Test::Class' => 0,
+    'Test::Distribution' => 0,
     'Test::MockModule' => 0,
     'Test::Output' => 0,
     'Test::Perl::Critic' => 0,
