@@ -39,7 +39,7 @@ use Comic::Check::Weekday;
 use Comic::Check::DateCollision;
 
 
-use version; our $VERSION = qv('0.0.2');
+use version; our $VERSION = qv('0.0.3');
 
 =for stopwords inkscape html svg png Wenner merchantability perlartistic MetaEnglish rss sitemap sizemap xml dbus
 
@@ -51,7 +51,7 @@ Comic - Converts SVG comics to png by language and creates HTML pages.
 
 =head1 VERSION
 
-This document refers to version 0.0.2.
+This document refers to version 0.0.3.
 
 
 =head1 SYNOPSIS

@@ -5,7 +5,7 @@ use warnings;
 use English '-no_match_vars';
 use String::Util 'trim';
 
-use version; our $VERSION = qv('0.0.1');
+use version; our $VERSION = qv('0.0.3');
 
 
 =head1 NAME
@@ -98,7 +98,7 @@ sub check {
 
 =head1 VERSION
 
-0.0.1
+0.0.3
 
 
 =head1 DEPENDENCIES

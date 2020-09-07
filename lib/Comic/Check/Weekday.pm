@@ -7,7 +7,7 @@ use String::Util 'trim';
 use DateTime;
 use DateTime::Format::ISO8601;
 
-use version; our $VERSION = qv('0.0.1');
+use version; our $VERSION = qv('0.0.3');
 
 
 =head1 NAME
@@ -110,7 +110,7 @@ sub _now {
 
 =head1 VERSION
 
-0.0.1
+0.0.3
 
 
 =head1 DEPENDENCIES
