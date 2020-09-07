@@ -2,6 +2,8 @@ language: perl
 
 perl:
     - "5.22"
+    - "5.30"
+    - "latest"
 
 before_install:
     - cpanm --quiet --notest Devel::Cover
@@ -13,11 +15,11 @@ install:
     - cpanm --quiet --notest Locales
     - cpanm --quiet --notest String::Util
     - cpanm --quiet --notest Image::SVG::Transform
-    - cpanm --quiet --notest DateTime::Format::ISO8601 
+    - cpanm --quiet --notest DateTime::Format::ISO8601
     - cpanm --quiet --notest DateTime::Format::RFC3339
     - cpanm --quiet --notest XML::LibXML
     - cpanm --quiet --notest JSON
-    - cpanm --quiet --notest Image::ExifTool 
+    - cpanm --quiet --notest Image::ExifTool
     - cpanm --quiet --notest Imager::QRCode
     - cpanm --quiet --notest Template
     - cpanm --quiet --notest Template::Plugin::JSON
