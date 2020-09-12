@@ -1,0 +1,196 @@
+package Comic::Check::Tag;
+
+use strict;
+use warnings;
+use English '-no_match_vars';
+use String::Util 'trim';
+
+use version; our $VERSION = qv('0.0.3');
+
+
+=head1 NAME
+
+Comic::Check::Tag  - Checks a comic's tags for consistency.
+
+=head1 SYNOPSIS
+
+    my $check = Comic::Check::Tag->new('tags', 'who');
+    foreach my $comic (@all_comics) {
+        $check->check($comic);
+    }
+
+=head1 DESCRIPTION
+
+This flags comics that contain tags that differ from previously seen tags in
+case or white space only. This may help with case- and white space sensitive
+tag clouds.
+
+Comic::Check::Tag keeps track of the tags it has seen, so you need to
+use the same instance for checking all your comics.
+
+=cut
+
+
+=head1 SUBROUTINES/METHODS
+
+=head2 new
+
+Creates a new Comic::Check::Tag.
+
+Parameters:
+
+=over 4
+
+=item * Tags to check. These tags need to be in the comic metadata. You
+    could use tags for the people appearing in the comic, or general purpose
+    keywords associated with the comic.
+
+=back
+
+=cut
+
+
+sub new {
+    my ($class, @tags) = @ARG;
+    my $self = bless{}, $class;
+    @{$self->{tags}} = @tags;
+    @{$self->{comics}} = ();
+    return $self;
+}
+
+
+=head2 check
+
+Checks the given Comic's tags.
+
+Parameters:
+
+=over 4
+
+=item * Comic to check. Will check the tags given in the Comic::Check::Tag
+    constructor for all languages the comic has.
+
+=back
+
+=cut
+
+sub check {
+    my ($self, $comic) = @ARG;
+
+    foreach my $tag (@{$self->{tags}}) {
+        foreach my $language ($comic->_languages()) {
+            foreach my $tag (@{$comic->{meta_data}->{$tag}->{$language}}) {
+                $comic->_warn("No $language $tag") unless(defined $tag);
+                $comic->_warn("Empty $language $tag") if ($tag =~ m/^\s*$/);
+            }
+
+            $self->_check_against($comic, $tag, $language);
+        }
+    }
+
+    push @{$self->{comics}}, $comic;
+    return;
+}
+
+
+sub _check_against {
+    my ($self, $comic, $tag, $language) = @ARG;
+
+    foreach my $oldcomic (@{$self->{comics}}) {
+        foreach my $oldtag (@{$oldcomic->{meta_data}->{$tag}->{$language}}) {
+            foreach my $newtag (@{$comic->{meta_data}->{$tag}->{$language}}) {
+                next if $oldtag eq $newtag;
+
+                my $location = "$tag '$newtag' and '$oldtag' from $oldcomic->{srcFile}";
+
+                if (lc $oldtag eq lc $newtag) {
+                    $comic->_warn("$location only differ in case");
+                }
+
+                $oldtag =~ s/\s+//g;
+                $newtag =~ s/\s+//g;
+                if ($oldtag eq $newtag) {
+                    $comic->_warn("$location only differ in white space");
+                }
+            }
+        }
+    }
+
+    return;
+}
+
+
+=for stopwords html Wenner merchantability perlartistic
+
+
+=head1 VERSION
+
+0.0.3
+
+
+=head1 DEPENDENCIES
+
+The Comic module.
+
+
+=head1 DIAGNOSTICS
+
+None.
+
+
+=head1 CONFIGURATION AND ENVIRONMENT
+
+None.
+
+
+=head1 INCOMPATIBILITIES
+
+None known.
+
+
+=head1 BUGS AND LIMITATIONS
+
+None known.
+
+
+=head1 AUTHOR
+
+Robert Wenner  C<< <rwenner@cpan.org> >>
+
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright (c) 2015 - 2020, Robert Wenner C<< <rwenner@cpan.org> >>.
+All rights reserved.
+
+This module is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+See L<perlartistic|perlartistic>.
+
+
+=head1 DISCLAIMER OF WARRANTY
+
+BECAUSE THIS SOFTWARE IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY
+FOR THE SOFTWARE, TO THE EXTENT PERMITTED BY APPLICABLE LAW. EXCEPT WHEN
+OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES
+PROVIDE THE SOFTWARE "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER
+EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE
+ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE SOFTWARE IS WITH
+YOU. SHOULD THE SOFTWARE PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL
+NECESSARY SERVICING, REPAIR, OR CORRECTION.
+
+IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING
+WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+REDISTRIBUTE THE SOFTWARE AS PERMITTED BY THE ABOVE LICENSE, BE
+LIABLE TO YOU FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL,
+OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE
+THE SOFTWARE (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR DATA BEING
+RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES OR A
+FAILURE OF THE SOFTWARE TO OPERATE WITH ANY OTHER SOFTWARE), EVEN IF
+SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGES.
+
+=cut
+
+1;

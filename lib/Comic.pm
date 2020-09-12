@@ -37,6 +37,7 @@ use Clone qw(clone);
 use Comic::Check::Title;
 use Comic::Check::Weekday;
 use Comic::Check::DateCollision;
+use Comic::Check::Tag;
 
 
 use version; our $VERSION = qv('0.0.3');
@@ -355,7 +356,7 @@ my $title_check = Comic::Check::Title->new();
 Readonly my $FRIDAY => 5;
 my $weekday_check = Comic::Check::Weekday->new($FRIDAY);
 my $date_collision_check = Comic::Check::DateCollision->new();
-
+my $tag_check = Comic::Check::Tag->new('tags', 'who');
 
 =head2 check
 
@@ -379,14 +380,13 @@ sub check {
 
     foreach my $language ($self->_languages()) {
         $self->_get_transcript($language);
-        $self->_check_tags('tags', $language);
-        $self->_check_tags('who', $language);
         $self->_check_empty_texts($language);
         $self->_check_transcript($language);
         $self->_check_series($language);
         $self->_check_persons($language);
         $self->_check_meta($language);
     }
+    $tag_check->check($self);
     $title_check->check($self);
     $date_collision_check->check($self);
 	$weekday_check->check($self);
@@ -592,28 +592,6 @@ sub _check_frame_style {
 sub _more_off {
     my ($a, $b, $dist) = @ARG;
     return abs($a - $b) > $dist;
-}
-
-
-sub _check_tags {
-    my ($self, $what, $language) = @ARG;
-
-    foreach my $tag (@{$self->{meta_data}->{$what}->{$language}}) {
-        $self->_warn("No $language $what") unless(defined $tag);
-        $self->_warn("Empty $language $what") if ($tag =~ m/^\s*$/);
-    }
-
-    foreach my $comic (@comics) {
-        foreach my $oldtag (@{$comic->{meta_data}->{$what}->{$language}}) {
-            foreach my $newtag (@{$self->{meta_data}->{$what}->{$language}}) {
-                if ($oldtag ne $newtag && lc $oldtag eq lc $newtag) {
-                    $self->_warn("$what $newtag and $oldtag from $comic->{srcFile} only differ in case");
-                }
-            }
-        }
-    }
-
-    return;
 }
 
 
