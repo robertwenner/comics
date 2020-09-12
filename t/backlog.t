@@ -96,7 +96,7 @@ sub future_date : Tests {
     make_comic('eins', 'Deutsch', '3016-01-01');
     Comic::export_all_html(
         {'Deutsch' => 'templates/deutsch/comic-page.templ'},
-        {'Deutsch' => 'templates/sitemap.templ'}, 
+        {'Deutsch' => 'templates/sitemap.templ'},
         {'Deutsch' => 'generated/sitemap.html'});
     Comic::export_archive('backlog.templ', 'generated/backlog.html',
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
@@ -113,7 +113,7 @@ sub no_date : Tests {
     make_comic('eins', 'Deutsch', '');
     Comic::export_all_html(
         {'Deutsch' => 'templates/deutsch/comic-page.templ'},
-        {'Deutsch' => 'templates/sitemap.templ'}, 
+        {'Deutsch' => 'templates/sitemap.templ'},
         {'Deutsch' => 'generated/sitemap.html'});
     Comic::export_archive('backlog.templ', 'generated/backlog.html',
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
@@ -156,7 +156,7 @@ sub comic_not_published_on_my_page : Tests {
     my $comic = make_comic('Magazined!', 'Deutsch', '2016-01-01', 'some beer magazine');
     Comic::export_all_html(
         {'Deutsch' => 'templates/deutsch/comic-page.templ'},
-        {'Deutsch' => 'templates/sitemap.templ'}, 
+        {'Deutsch' => 'templates/sitemap.templ'},
         {'Deutsch' => 'generated/sitemap.html'});
     Comic::export_archive('backlog.templ', 'generated/backlog.html',
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
@@ -172,7 +172,7 @@ sub comic_not_published_on_my_page_goes_after_regular_backlog : Tests {
     make_comic('Elsewhere', 'English', '3016-09-01', 'magazine');
     Comic::export_all_html(
         {'English' => 'templates/english/comic-page.templ'},
-        {'English' => 'templates/sitemap.templ'}, 
+        {'English' => 'templates/sitemap.templ'},
         {'English' => 'generated/sitemap.html'});
     Comic::export_archive('backlog.templ', 'generated/backlog.html',
         {'English' => 'templates/english/archive.templ'},
@@ -242,19 +242,18 @@ sub includes_series : Tests {
 }
 
 
-sub includes_dont_publish_warning : Tests {
+sub includes_warnings : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::DEUTSCH => 'Bier trinken' },
-        $MockComic::TEXTS => { $MockComic::DEUTSCH => ['a', 'b', 'DONT_PUBLISH', 'c']},
         $MockComic::PUBLISHED_WHEN => '3016-01-01',
     );
-    $comic->_check_dont_publish('DONT_PUBLISH');
+    $comic->_warn("some warning!");
     Comic::export_archive('backlog.templ', 'generated/backlog.html',
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
         {'Deutsch' => 'archiv.html'},
         {'Deutsch' => 'templates/deutsch/comic-page.templ'});
-    MockComic::assert_wrote_file('generated/backlog.html', qr{
-        <li>some_comic\.svg\s+.+DONT_PUBLISH.+<ul>}xsm);
+    MockComic::assert_wrote_file('generated/backlog.html',
+        qr{<li>some_comic\.svg\s+.+some warning!}sm);
 }
 
 
@@ -276,7 +275,7 @@ TEMPL
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
         {'Deutsch' => 'archiv.html'},
         {'Deutsch' => 'templates/deutsch/comic-page.templ'});
-    MockComic::assert_wrote_file('generated/backlog.html', 
+    MockComic::assert_wrote_file('generated/backlog.html',
         qr{^\s*Bym\s\(Deutsch\)=3\s*Other\s\(Deutsch\)=2\s*
            YetOther\s\(Deutsch\)=2\s*AndThenSome\s\(Deutsch\)=1\s*$}xsm);
 }
@@ -314,7 +313,7 @@ TEMPL
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
         {'Deutsch' => 'archiv.html'},
         {'Deutsch' => 'templates/deutsch/comic-page.templ'});
-    MockComic::assert_wrote_file('generated/backlog.html', 
+    MockComic::assert_wrote_file('generated/backlog.html',
         qr{^\s*Paul\s\(Deutsch\)=3\s*Max\s\(Deutsch\)=2\s*
           Mike\s\(Deutsch\)=1\s*Robert\s\(Deutsch\)=1\s*$}xsm);
 }
@@ -351,7 +350,7 @@ TEMPL
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
         {'Deutsch' => 'archiv.html'},
         {'Deutsch' => 'templates/deutsch/comic-page.templ'});
-    MockComic::assert_wrote_file('generated/backlog.html', 
+    MockComic::assert_wrote_file('generated/backlog.html',
         qr{^\s*Buckimude\s\(Deutsch\)=2\s*Philosophie\s\(Deutsch\)=1\s*$}xsm);
 }
 

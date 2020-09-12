@@ -51,8 +51,8 @@ sub set_up : Test(setup) {
     *Comic::_check_frames = sub {
         $called{'_check_frames'}++;
     };
-    *Comic::_check_dont_publish = sub {
-        $called{'_check_dont_publish'} = $_[1];
+    *Comic::Check::DontPublish::check = sub {
+        $called{'_check_dont_publish'}++;
     };
     use warnings;
 }
@@ -64,7 +64,7 @@ sub per_file_checks: Tests {
     is($called{'_check_date_collision'}, 1, 'checked date colliion');
     is($called{'_check_weekday'}, 1, 'checked weekday');
     is($called{'_check_frames'}, 1, '_check_frames called');
-    is($called{'_check_dont_publish'}, 'DONT_PUBLISH', 'passed marker to _check_dont_publish');
+    is($called{'_check_dont_publish'}, 1);
     is($called{'_check_title'}, 1);
 }
 

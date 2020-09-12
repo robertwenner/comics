@@ -38,6 +38,7 @@ use Comic::Check::Title;
 use Comic::Check::Weekday;
 use Comic::Check::DateCollision;
 use Comic::Check::Tag;
+use Comic::Check::DontPublish;
 
 
 use version; our $VERSION = qv('0.0.3');
@@ -357,6 +358,8 @@ Readonly my $FRIDAY => 5;
 my $weekday_check = Comic::Check::Weekday->new($FRIDAY);
 my $date_collision_check = Comic::Check::DateCollision->new();
 my $tag_check = Comic::Check::Tag->new('tags', 'who');
+my $dont_publish_check;
+
 
 =head2 check
 
@@ -391,7 +394,12 @@ sub check {
     $date_collision_check->check($self);
 	$weekday_check->check($self);
     $self->_check_frames();
-    $self->_check_dont_publish($dont_publish_marker);
+
+    unless ($dont_publish_check) {
+        $dont_publish_check = Comic::Check::DontPublish->new($dont_publish_marker);
+    }
+    $dont_publish_check->check($self);
+
     return;
 }
 
@@ -431,41 +439,6 @@ sub _up_to_date {
 
 sub _exists {
     return -r shift;
-}
-
-
-sub _check_dont_publish {
-    my ($self, $marker) = @ARG;
-
-    $self->_check_json('', $self->{meta_data}, $marker);
-    foreach my $layer ($self->{xpath}->findnodes(_find_layers())) {
-        my $text = $layer->textContent();
-        my $label = $layer->{'inkscape:label'};
-        if ($text =~ m/(\b$marker\b[^\n\r]*)/m) {
-            $self->_warn("In layer $label: $1");
-        }
-    }
-    return;
-}
-
-
-sub _check_json {
-    my ($self, $where, $what, $marker) = @ARG;
-
-    if (ref($what) eq 'HASH') {
-        foreach my $key (keys %{$what}) {
-            $self->_check_json("$where > $key", $what->{$key}, $marker);
-        }
-    }
-    elsif (ref($what) eq 'ARRAY') {
-        for my $i (0 .. $#{$what}) {
-            $self->_check_json($where . '[' . ($i + 1) . ']', $what->[$i], $marker);
-        }
-    }
-    elsif ($what =~ m/$marker/m) {
-        $self->_warn("In JSON$where: $what");
-    }
-    return;
 }
 
 
@@ -770,6 +743,19 @@ sub _check_meta {
         $self->_warn("No texts in Meta$language layer");
     }
     return;
+}
+
+
+=head2 get_all_layers
+
+Gets all SVG layers defined in this Comic.
+
+=cut
+
+sub get_all_layers {
+    my ($self) = @ARG;
+
+    return $self->{xpath}->findnodes(_find_layers());
 }
 
 
