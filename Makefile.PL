@@ -69,4 +69,5 @@ WriteMakefile(
     dist => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean => { FILES => 'Comic-*' },
     BUILD_REQUIRES => { %dependencies },
+    test => { RECURSIVE_TEST_FILES => 1, },
 );

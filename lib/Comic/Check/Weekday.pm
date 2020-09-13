@@ -3,6 +3,7 @@ package Comic::Check::Weekday;
 use strict;
 use warnings;
 use English '-no_match_vars';
+use Carp;
 use String::Util 'trim';
 use DateTime;
 use DateTime::Format::ISO8601;
