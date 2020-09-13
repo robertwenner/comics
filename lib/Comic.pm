@@ -39,6 +39,7 @@ use Comic::Check::Weekday;
 use Comic::Check::DateCollision;
 use Comic::Check::Tag;
 use Comic::Check::DontPublish;
+use Comic::Check::Series;
 
 
 use version; our $VERSION = qv('0.0.3');
@@ -359,6 +360,7 @@ my $weekday_check = Comic::Check::Weekday->new($FRIDAY);
 my $date_collision_check = Comic::Check::DateCollision->new();
 my $tag_check = Comic::Check::Tag->new('tags', 'who');
 my $dont_publish_check;
+my $series_check = Comic::Check::Series->new();
 
 
 =head2 check
@@ -385,10 +387,9 @@ sub check {
         $self->_get_transcript($language);
         $self->_check_empty_texts($language);
         $self->_check_transcript($language);
-        $self->_check_series($language);
-        $self->_check_persons($language);
-        $self->_check_meta($language);
+        $self->_check_persons($language); $self->_check_meta($language);
     }
+    $series_check->check($self);
     $tag_check->check($self);
     $title_check->check($self);
     $date_collision_check->check($self);
@@ -668,32 +669,6 @@ sub _both_names {
         return 1;
     }
     return 0;
-}
-
-
-sub _check_series {
-    my ($self, $language) = @ARG;
-
-    my $need = $self->_series_for($language);
-    foreach my $l ($self->_languages()) {
-        next if ($language eq $l);
-        my $has = $self->_series_for($l);
-        if ($need && !$has) {
-            $self->_warn("No series tag for $l but for $language");
-        }
-        elsif ($need && $need eq $has) {
-            $self->_warn("Duplicated series tag '$need' for $l and $language");
-        }
-    }
-    return;
-}
-
-
-sub _series_for {
-    my ($self, $language) = @ARG;
-
-    return '' unless ($self->{meta_data}->{series});
-    return trim($self->{meta_data}->{series}{$language});
 }
 
 
@@ -1630,7 +1605,7 @@ template file to use for F<index.html>.
 sub export_archive {
     my ($backlog_template, $backlog_page, $archive_templates, $archive_pages, $comic_template) = @ARG;
 
-    _check_all_comics();
+    $series_check->final_check();
     foreach my $language (keys %{$archive_templates}) {
         my $page = _make_dir('web/' . lc $language);
         my @sorted = (sort _compare grep { _archive_filter($_, $language) } @comics);
@@ -1643,39 +1618,6 @@ sub export_archive {
 
     _do_export_archive($archive_templates, $archive_pages);
     _do_export_backlog($backlog_template, $backlog_page, sort keys %{$archive_pages});
-    return;
-}
-
-
-sub _check_all_comics {
-    _check_all_series();
-    return;
-}
-
-
-sub _check_all_series {
-    my %series_count;
-
-    foreach my $comic (@comics) {
-        next unless (defined($comic->{meta_data}->{series}));
-        foreach my $language (keys %{$comic->{meta_data}->{series}}) {
-            foreach my $series ($comic->{meta_data}->{series}->{$language}) {
-                $series_count{$language}{$series}++;
-            }
-        }
-    }
-
-    foreach my $comic (@comics) {
-        next unless (defined($comic->{meta_data}->{series}));
-        foreach my $language (keys %{$comic->{meta_data}->{series}}) {
-            foreach my $series ($comic->{meta_data}->{series}->{$language}) {
-                if ($series_count{$language}{$series} == 1) {
-                    $comic->_note("$language has only one comic in the '$series' series");
-                }
-            }
-        }
-    }
-
     return;
 }
 

@@ -29,8 +29,8 @@ sub set_up : Test(setup) {
     *Comic::_check_transcript = sub {
         $called{'_check_transcript'}{$_[1]}++;
     };
-    *Comic::_check_series = sub {
-        $called{'_check_series'}{$_[1]}++;
+    *Comic::Check::Series::check = sub {
+        $called{'_check_series'}++;
     };
     *Comic::_check_persons = sub {
         $called{'_check_persons'}{$_[1]}++;
@@ -66,6 +66,7 @@ sub per_file_checks: Tests {
     is($called{'_check_frames'}, 1, '_check_frames called');
     is($called{'_check_dont_publish'}, 1);
     is($called{'_check_title'}, 1);
+    is($called{'_check_series'}, 1);
 }
 
 
@@ -74,7 +75,7 @@ sub per_language_checks : Tests {
     $comic->check('DONT_PUBLISH');
     foreach my $l ($MockComic::ENGLISH, $MockComic::DEUTSCH) {
         foreach my $f ('_get_transcript', '_check_empty_texts',
-                '_check_transcript', '_check_series', '_check_persons', '_check_meta') {
+                '_check_transcript', '_check_persons', '_check_meta') {
             is($called{$f}{$l}, 1, "$f $l called");
         }
     }
