@@ -65,7 +65,7 @@ my %defaultArgs = (
     $DOMAINS => {
         $ENGLISH => 'beercomics.com',
         $DEUTSCH => 'biercomics.de',
-        $ESPAÑOL => 'cervezacomcs.es',
+        $ESPAÑOL => 'cervezacomics.es',
     },
     $IN_FILE => 'some_comic.svg',
     $MTIME => 0,

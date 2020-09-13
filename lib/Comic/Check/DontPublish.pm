@@ -13,7 +13,7 @@ Comic::Check::DontPublish - Checks a comic for a special marker.
 
 =head1 SYNOPSIS
 
-    my $check = Comic::Check::DontPublish->new('tags', 'who');
+    my $check = Comic::Check::DontPublish->new('DONTT_PUBLISH');
     foreach my $comic (@all_comics) {
         $check->check($comic);
     }
