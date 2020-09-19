@@ -103,3 +103,10 @@
   per-comic pages, when all next/prev links are known)
 
 - cache more data, like png sizes, transcript, and framepositions
+
+- mark cache as dirty if comic fails a check, so that you don't have to
+  manually touch the svg: cache files should get written only after all
+  checks have passed, and then a re-run doesn't try to use bad / incomplete
+  cache files
+
+- look into swallowed "no persons" warning in old revision
