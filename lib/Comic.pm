@@ -387,13 +387,14 @@ sub check {
         $self->_get_transcript($language);
         $self->_check_empty_texts($language);
         $self->_check_transcript($language);
-        $self->_check_persons($language); $self->_check_meta($language);
+        $self->_check_persons($language);
+        $self->_check_meta($language);
     }
     $series_check->check($self);
     $tag_check->check($self);
     $title_check->check($self);
     $date_collision_check->check($self);
-	$weekday_check->check($self);
+    $weekday_check->check($self);
     $self->_check_frames();
 
     unless ($dont_publish_check) {
