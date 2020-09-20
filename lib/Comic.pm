@@ -41,6 +41,7 @@ use Comic::Check::DateCollision;
 use Comic::Check::Tag;
 use Comic::Check::DontPublish;
 use Comic::Check::Series;
+use Comic::Check::Frames;
 
 
 use version; our $VERSION = qv('0.0.3');
@@ -352,6 +353,7 @@ my $date_collision_check = Comic::Check::DateCollision->new();
 my $tag_check = Comic::Check::Tag->new('tags', 'who');
 my $dont_publish_check;
 my $series_check = Comic::Check::Series->new();
+my $frame_check = Comic::Check::Frames->new();
 
 
 =head2 check
@@ -386,7 +388,7 @@ sub check {
     $title_check->check($self);
     $date_collision_check->check($self);
     $weekday_check->check($self);
-    $self->_check_frames();
+	$frame_check->check($self);
 
     unless ($dont_publish_check) {
         $dont_publish_check = Comic::Check::DontPublish->new($dont_publish_marker);
@@ -435,79 +437,6 @@ sub _exists {
 }
 
 
-sub _check_frames {
-    # frame coordinate is top left corner of a rectangle
-    # higher y means lower on the page, higher x means further to the right
-    my ($self) = @ARG;
-
-    my $prev_bottom;
-    my $prev_top;
-    my $prev_right;
-
-    my $left_most;
-    my $right_most;
-
-    my $first_row = 1;
-
-    foreach my $f ($self->_all_frames_sorted()) {
-        $self->_check_frame_style($f);
-
-        my $top = $f->getAttribute('y') * 1.0;
-        my $bottom = $top + $f->getAttribute('height') * 1.0;
-        my $left_side = $f->getAttribute('x') * 1.0;
-        $left_most = $left_side unless (defined $left_most);
-
-        my $right_side = $left_side + $f->getAttribute('width') * 1.0;
-        my $next_row = defined($prev_bottom) && _more_off($prev_bottom, $bottom, $Comic::Consts::FRAME_ROW_HEIGHT);
-        $first_row = 0 if ($next_row);
-        $right_most = $right_side if ($first_row);
-        if (defined $prev_bottom) {
-            if ($next_row) {
-                if ($prev_bottom > $top) {
-                    $self->_warn("frames overlap y at $prev_bottom and $top");
-                }
-                if ($prev_bottom + $Comic::Consts::FRAME_SPACING > $top) {
-                    $self->_warn('frames too close y (' . ($prev_bottom - $Comic::Consts::FRAME_SPACING - $top) . ") at $prev_bottom and $top");
-                }
-                if ($prev_bottom + $Comic::Consts::FRAME_SPACING + $Comic::Consts::FRAME_SPACING_TOLERANCE < $top) {
-                    $self->_warn("frames too far y at $prev_bottom and $top");
-                }
-
-                if (_more_off($left_most, $left_side, $Comic::Consts::FRAME_TOLERANCE)) {
-                    $self->_warn("frame left side not aligned: $left_most and $left_side");
-                }
-                if (_more_off($prev_right, $right_most, $Comic::Consts::FRAME_TOLERANCE)) {
-                    $self->_warn("frame right side not aligned: $right_side and $right_most");
-                }
-            }
-            else {
-                if (_more_off($prev_bottom, $bottom, $Comic::Consts::FRAME_TOLERANCE)) {
-                    $self->_warn("frame bottoms not aligned: $prev_bottom and $bottom");
-                }
-                if (_more_off($prev_top, $top, $Comic::Consts::FRAME_TOLERANCE)) {
-                    $self->_warn("frame tops not aligned: $prev_top and $top");
-                }
-
-                if ($prev_right > $left_side) {
-                    $self->_warn("frames overlap x at $prev_right and $left_side");
-                }
-                if ($prev_right + $Comic::Consts::FRAME_SPACING > $left_side) {
-                    $self->_warn("frames too close x at $prev_right and $left_side");
-                }
-                if ($prev_right + $Comic::Consts::FRAME_SPACING + $Comic::Consts::FRAME_SPACING_TOLERANCE < $left_side) {
-                    $self->_warn('frames too far x (' . ($left_side - ($prev_right + $Comic::Consts::FRAME_SPACING + $Comic::Consts::FRAME_SPACING_TOLERANCE)) . ") at $prev_right and $left_side");
-                }
-            }
-        }
-
-        $prev_bottom = $bottom;
-        $prev_top = $top;
-        $prev_right = $right_side;
-    }
-    return;
-}
-
-
 sub _all_frames_sorted {
     my ($self) = @ARG;
 
@@ -532,32 +461,6 @@ sub _framesort {
         return $xa <=> $xb;
     }
     return $ya <=> $yb;
-}
-
-
-sub _check_frame_style {
-    my ($self, $f) = @ARG;
-
-    my $style = $f->getAttribute('style');
-    if ($style =~ m{;stroke-width:([^;]+);}) {
-        my $width = $1;
-        if ($width < $Comic::Consts::FRAME_WIDTH - $Comic::Consts::FRAME_WIDTH_DEVIATION) {
-            $self->_warn("Frame too narrow ($width)");
-        }
-        if ($width > $Comic::Consts::FRAME_WIDTH + $Comic::Consts::FRAME_WIDTH_DEVIATION) {
-            $self->_warn("Frame too wide ($width)");
-        }
-    }
-    else {
-        $self->_warn("Cannot find width in '$style'");
-    }
-    return;
-}
-
-
-sub _more_off {
-    my ($a, $b, $dist) = @ARG;
-    return abs($a - $b) > $dist;
 }
 
 

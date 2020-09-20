@@ -48,7 +48,7 @@ sub set_up : Test(setup) {
     *Comic::Check::Weekday::check = sub {
         $called{'_check_weekday'}++;
     };
-    *Comic::_check_frames = sub {
+    *Comic::Check::Frames::check = sub {
         $called{'_check_frames'}++;
     };
     *Comic::Check::DontPublish::check = sub {
@@ -63,7 +63,7 @@ sub per_file_checks: Tests {
     $comic->check('DONT_PUBLISH');
     is($called{'_check_date_collision'}, 1, 'checked date colliion');
     is($called{'_check_weekday'}, 1, 'checked weekday');
-    is($called{'_check_frames'}, 1, '_check_frames called');
+    is($called{'_check_frames'}, 1, 'checked frames');
     is($called{'_check_dont_publish'}, 1);
     is($called{'_check_title'}, 1);
     is($called{'_check_series'}, 1);

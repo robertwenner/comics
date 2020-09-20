@@ -9,8 +9,11 @@ use MockComic;
 __PACKAGE__->runtests() unless caller;
 
 
+my $check;
+
 sub set_up : Test(setup) {
     MockComic::set_up();
+    $check = Comic::Check::Frames->new();
 }
 
 
@@ -31,16 +34,15 @@ sub try_comic {
     # params is a bunch of width height x y numbers
     my $comic = MockComic::make_comic($MockComic::FRAMES => [@_]);
     eval {
-        $comic->_check_frames();
+        $check->check($comic);
     };
     return $@;
 }
 
 
-
 sub width_ok : Test {
     my $comic = MockComic::make_comic($MockComic::FRAMEWIDTH => 1.25);
-    $comic->_check_frames();
+    $check->check($comic);
     ok(1);
 }
 
@@ -48,7 +50,7 @@ sub width_ok : Test {
 sub width_too_narrow : Test {
     my $comic = MockComic::make_comic($MockComic::FRAMEWIDTH => 0.99);
     eval {
-        $comic->_check_frames();
+        $check->check($comic);
     };
     like($@, qr{too narrow}i);
 }
@@ -57,7 +59,7 @@ sub width_too_narrow : Test {
 sub width_too_wide : Test {
     my $comic = MockComic::make_comic($MockComic::FRAMEWIDTH => 1.51);
     eval {
-        $comic->_check_frames();
+        $check->check($comic);
     };
     like($@, qr{too wide}i);
 }
@@ -65,7 +67,7 @@ sub width_too_wide : Test {
 
 sub aligned_no_frame : Test {
     my $comic = MockComic::make_comic();
-    $comic->_check_frames();
+    $check->check($comic);
     ok(1);
 }
 
@@ -123,7 +125,6 @@ sub misaligned_right_next_row : Tests {
         100, 100,   0,   0,
         102, 100, 110, 110);
 }
-
 
 
 sub misaligned_top_middle_row_too_close : Tests {
