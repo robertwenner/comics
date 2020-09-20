@@ -59,8 +59,8 @@ sub frames_almost_same_height : Test {
     is_deeply([0], make_frames(
         # height, width, x, y
         0, 0, 0, 0,
-        0, 0, 0, $Comic::FRAME_TOLERANCE - 1,
-        0, 0, 0, -1 * $Comic::FRAME_TOLERANCE + 1));
+        0, 0, 0, $Comic::Consts::FRAME_TOLERANCE - 1,
+        0, 0, 0, -1 * $Comic::Consts::FRAME_TOLERANCE + 1));
 }
 
 
