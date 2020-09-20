@@ -110,3 +110,9 @@
   cache files
 
 - look into swallowed "no persons" warning in old revision
+
+- bug: checks still need to work on meta data; when only one comic is not
+  cached, I get a "series has only one" warning
+
+- verbose and debug flags to print what's going on (helpful for configurable
+  checks and actions)
