@@ -80,7 +80,7 @@ name in C<Comic::Const>.
 
 sub new {
     my ($class, %args) = @ARG;
-    my $self = bless{}, $class;
+    my $self = $class->SUPER::new();
 
     $self->{'FRAME_ROW_HEIGHT'} = $args{'FRAME_ROW_HEIGHT'} || $Comic::Consts::FRAME_ROW_HEIGHT;
     $self->{'FRAME_SPACING'} = $args{'FRAME_SPACING'} || $Comic::Consts::FRAME_SPACING;

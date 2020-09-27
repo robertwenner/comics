@@ -45,7 +45,7 @@ Creates a new Comic::Check::Title.
 
 sub new {
     my ($class) = @ARG;
-    my $self = bless{}, $class;
+    my $self = $class->SUPER::new();
     $self->{titles} = ();
     return $self;
 }

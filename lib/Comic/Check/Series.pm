@@ -43,7 +43,7 @@ Creates a new Comic::Check::Series.
 
 sub new {
     my ($class) = @ARG;
-    my $self = bless{}, $class;
+    my $self = $class->SUPER::new();
     return $self;
 }
 

@@ -60,7 +60,7 @@ Parameters:
 
 sub new {
     my ($class, @markers) = @ARG;
-    my $self = bless{}, $class;
+    my $self = $class->SUPER::new();
     @{$self->{markers}} = @markers;
     return $self;
 }

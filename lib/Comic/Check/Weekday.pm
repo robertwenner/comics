@@ -57,7 +57,7 @@ Parameters:
 
 sub new {
     my ($class, $weekday) = @ARG;
-    my $self = bless{}, $class;
+    my $self = $class->SUPER::new();
 
     ## no critic(ValuesAndExpressions::ProhibitMagicNumbers)
     croak("Bad weekday $weekday, use 1 (Mon) - 7 (Sun)") if ($weekday < 1 || $weekday > 7);
