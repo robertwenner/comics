@@ -42,6 +42,7 @@ use Comic::Check::Tag;
 use Comic::Check::DontPublish;
 use Comic::Check::Series;
 use Comic::Check::Frames;
+use Comic::Check::Actors;
 
 
 use version; our $VERSION = qv('0.0.3');
@@ -354,6 +355,7 @@ my $tag_check = Comic::Check::Tag->new('tags', 'who');
 my $dont_publish_check;
 my $series_check = Comic::Check::Series->new();
 my $frame_check = Comic::Check::Frames->new();
+my $actors_check = Comic::Check::Actors->new();
 
 
 =head2 check
@@ -384,6 +386,7 @@ sub check {
     $weekday_check->notify($self);
     $frame_check->notify($self);
     $dont_publish_check->notify($self);
+    $actors_check->notify($self);
 
     return if ($self->{use_meta_data_cache});
 
@@ -391,7 +394,6 @@ sub check {
         $self->_get_transcript($language);
         $self->_check_empty_texts($language);
         $self->_check_transcript($language);
-        $self->_check_persons($language);
         $self->_check_meta($language);
     }
 
@@ -402,6 +404,7 @@ sub check {
     $weekday_check->check($self);
     $frame_check->check($self);
     $dont_publish_check->check($self);
+    $actors_check->check($self);
 
     return;
 }
@@ -572,27 +575,6 @@ sub _both_names {
         return 1;
     }
     return 0;
-}
-
-
-sub _check_persons {
-    my ($self, $language) = @ARG;
-
-    if (!$self->{meta_data}->{who}) {
-        $self->_warn('No persons metadata at all');
-        return;
-    }
-    foreach my $l (keys %{$self->{meta_data}->{who}}) {
-        my @one = @{$self->{meta_data}->{who}->{$l}};
-        my @two = @{$self->{meta_data}->{who}->{$language}};
-        if (scalar @one  ne scalar @two) {
-            $self->_warn("Different number of persons in $language and $l");
-        }
-    }
-    foreach my $who (@{$self->{meta_data}->{who}{$language}}) {
-        $self->_warn("Empty person name in $language") if ($who =~ m{^\s*$});
-    }
-    return;
 }
 
 

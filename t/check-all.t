@@ -38,30 +38,30 @@ sub set_up : Test(setup) {
     *Comic::_check_transcript = sub {
         $checked{'_check_transcript'}{$_[1]}++;
     };
-    *Comic::Check::Series::check = sub {
-        $checked{'_check_series'}++;
-    };
-    *Comic::_check_persons = sub {
-        $checked{'_check_persons'}{$_[1]}++;
-    };
     *Comic::_check_meta = sub {
         $checked{'_check_meta'}{$_[1]}++;
     };
 
+    *Comic::Check::Series::check = sub {
+        $checked{'check_series'}++;
+    };
+    *Comic::Check::Actors::check = sub {
+        $checked{'check_actors'}++;
+    };
     *Comic::Check::Title::check = sub {
-        $checked{'_check_title'}++;
+        $checked{'check_title'}++;
     };
     *Comic::Check::DateCollision::check = sub {
-        $checked{'_check_date_collision'}++;
+        $checked{'check_date_collision'}++;
     };
     *Comic::Check::Weekday::check = sub {
-        $checked{'_check_weekday'}++;
+        $checked{'check_weekday'}++;
     };
     *Comic::Check::Frames::check = sub {
-        $checked{'_check_frames'}++;
+        $checked{'check_frames'}++;
     };
     *Comic::Check::DontPublish::check = sub {
-        $checked{'_check_dont_publish'}++;
+        $checked{'check_dont_publish'}++;
     };
 
     use warnings;
@@ -71,12 +71,13 @@ sub set_up : Test(setup) {
 sub per_file_checks: Tests {
     my $comic = MockComic::make_comic();
     $comic->check('DONT_PUBLISH');
-    is($checked{'_check_date_collision'}, 1, 'checked date colliion');
-    is($checked{'_check_weekday'}, 1, 'checked weekday');
-    is($checked{'_check_frames'}, 1, 'checked frames');
-    is($checked{'_check_dont_publish'}, 1);
-    is($checked{'_check_title'}, 1);
-    is($checked{'_check_series'}, 1);
+    is($checked{'check_date_collision'}, 1, 'checked date colliion');
+    is($checked{'check_weekday'}, 1, 'checked weekday');
+    is($checked{'check_frames'}, 1, 'checked frames');
+    is($checked{'check_dont_publish'}, 1);
+    is($checked{'check_title'}, 1);
+    is($checked{'check_series'}, 1);
+    is($checked{'check_actors'}, 1);
 }
 
 
@@ -85,7 +86,7 @@ sub per_language_checks : Tests {
     $comic->check('DONT_PUBLISH');
     foreach my $l ($MockComic::ENGLISH, $MockComic::DEUTSCH) {
         foreach my $f ('_get_transcript', '_check_empty_texts',
-                '_check_transcript', '_check_persons', '_check_meta') {
+                '_check_transcript', '_check_meta') {
             is($checked{$f}{$l}, 1, "$f $l checked");
         }
     }
@@ -98,8 +99,8 @@ sub check_cycle_for_cached_comic : Tests {
     $comic->check('DONT_PUBLISH');
 
     ok($notified > 0, 'should have notified about comic');
-    is($checked{'_check_series'}, undef, 'should not have checked cached comic');
-#    is($final_checked{'_check_series'}, 1, 'should have done final check');
+    is($checked{'check_series'}, undef, 'should not have checked cached comic');
+#    is($final_checked{'check_series'}, 1, 'should have done final check');
 }
 
 
@@ -109,6 +110,6 @@ sub check_cycle_for_uncached_comic : Tests {
     $comic->check('DONT_PUBLISH');
 
     ok($notified > 0, 'should have notified about comic');
-    is($checked{'_check_series'}, 1, 'should have checked');
-#    is($final_checked{'_check_series'}, 1, 'should have done final check');
+    is($checked{'check_series'}, 1, 'should have checked comic');
+#    is($final_checked{'check_series'}, 1, 'should have done final check');
 }
