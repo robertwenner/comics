@@ -38,15 +38,23 @@ use the same instance for checking all your comics.
 
 =head2 new
 
-Creates a new Comic::Check::Tag.
+Creates a new Comic::Check::Tag that works on meta data in each Comic.
+
+For example, for a tag named "tags", the meta data would be expected as:
+
+    {
+        "tags": {
+            "English": ["beer", "ale", "lager"]
+        }
+    }
 
 Parameters:
 
 =over 4
 
-=item * Tags to check. These tags need to be in the comic metadata. You
-    could use tags for the people appearing in the comic, or general purpose
-    keywords associated with the comic.
+=item * Tags to check. These tags need to be in the per-language comic
+    metadata. You could use tags for the people appearing in the comic, or
+    general purpose keywords associated with the comic.
 
 =back
 

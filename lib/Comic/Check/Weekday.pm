@@ -71,7 +71,7 @@ sub new {
 =head2 check
 
 Checks that the given Comic's published date is the weekday passed in the
-Comic::Check::Weekday constructor.
+constructor.
 
 Parameters:
 

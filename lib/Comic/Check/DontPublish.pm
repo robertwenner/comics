@@ -16,16 +16,15 @@ Comic::Check::DontPublish - Checks a comic for a special marker.
 
 =head1 SYNOPSIS
 
-    my $check = Comic::Check::DontPublish->new('DONTT_PUBLISH');
+    my $check = Comic::Check::DontPublish->new('DONT_PUBLISH');
     foreach my $comic (@all_comics) {
         $check->check($comic);
     }
 
 =head1 DESCRIPTION
 
-If the special marker is found in any text in the comic, the comic is
-flagged with a warning if it's not due for publishing yet, and an error if
-it is.
+If any of the special markers is found in any text in the comic, the comic is
+flagged with a warning.
 
 The idea is that you can leave yourself reminders in the comic for things
 you want to get back to before it's published. The idea comes from software
@@ -33,7 +32,7 @@ development, where you may want to revisit areas of the code before committing
 to source control; see <L:Don't commit: Avoiding distractions while coding|
 https://www.sparkpost.com/blog/dont-commit-avoiding-distractions-while-coding/>.
 
-Comic::Check::DontPublish can be used for multiple comics.
+Comic::Check::DontPublish doesn't keep state and can be used for multiple comics.
 
 =cut
 
@@ -69,7 +68,7 @@ sub new {
 =head2 check
 
 Checks the given Comic for the don't publish marker(s) passed in the
-Comic::Check::DontPublish constructor.
+constructor.
 
 Parameters:
 

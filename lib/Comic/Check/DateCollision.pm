@@ -14,7 +14,7 @@ use version; our $VERSION = qv('0.0.3');
 =head1 NAME
 
 Comic::Check::DateCollision - Checks that comics are not published on the
-dame day in the same location.
+same day in the same location.
 
 =head1 SYNOPSIS
 
@@ -26,7 +26,7 @@ dame day in the same location.
 =head1 DESCRIPTION
 
 For regularly published comics you may want to avoid publishing multiple
-comics on the dame date. However, it's probably fine to publish a comic in
+comics on the same date. However, it's probably fine to publish a comic in
 different locations on the same day.
 
 Comic::Check::DateCollision does keeps track of all comics to detect whether

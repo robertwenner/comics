@@ -31,11 +31,12 @@ Comic::Check::Frames warns if frames (i.e., borders around the images) are
 inconsistent within a comic: too little or too much space between frames,
 frames not aligned with each other, some frames thicker than others.
 
-If you use a template for your comics that already has the frame, this
-check won't find anything. But while you work on that template, this check
-could be helpful.
+If you use a template for your comics that already has the frames, this
+check probably won't find anything. But while you work on that template,
+this check could be helpful.
 
-You can use one instance of Comic::Check::Frames for all comics.
+Comic::Check::Frames does not keep internal state; you can use one instance
+for all comics.
 
 =cut
 
@@ -59,8 +60,8 @@ name in C<Comic::Const>.
 =item * FRAME_ROW_HEIGHT: After how many pixels difference to the previous
     frame a frame is assumed to be on the next row.
 
-=item * FRME_SPACING: How many pixel space there should be between frames. The
-    same number is used for both vertical and horizontal space.
+=item * FRAME_SPACING: How many pixel space there should be between frames.
+    The same number is used for both vertical and horizontal space.
 
 =item * FRAME_SPACING_TOLERANCE: Maximum additional tolerance when looking
     whether frames are spaced as expected.
