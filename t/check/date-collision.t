@@ -33,9 +33,9 @@ sub no_collision : Test {
 
 
 sub collision : Test {
-    $check->check(MockComic::make_comic(
+    $check->notify(MockComic::make_comic(
         $MockComic::PUBLISHED_WHEN => '2016-01-01', $MockComic::IN_FILE => 'one.svg'));
-    $check->check(MockComic::make_comic(
+    $check->notify(MockComic::make_comic(
         $MockComic::PUBLISHED_WHEN => '2016-01-02', $MockComic::IN_FILE => 'two.svg'));
     eval {
         $check->check(MockComic::make_comic(
@@ -46,9 +46,9 @@ sub collision : Test {
 
 
 sub collision_ignores_whitespace : Test {
-    $check->check(MockComic::make_comic(
+    $check->notify(MockComic::make_comic(
         $MockComic::PUBLISHED_WHEN => '2016-01-01 ', $MockComic::IN_FILE => 'one.svg'));
-    $check->check(MockComic::make_comic(
+    $check->notify(MockComic::make_comic(
         $MockComic::PUBLISHED_WHEN => '2016-01-02', $MockComic::IN_FILE => 'two.svg'));
     eval {
         $check->check( MockComic::make_comic(
@@ -59,7 +59,7 @@ sub collision_ignores_whitespace : Test {
 
 
 sub no_collision_different_languages : Test {
-    $check->check(MockComic::make_comic(
+    $check->notify(MockComic::make_comic(
         $MockComic::TITLE => {
             $MockComic::ENGLISH => 'not funny in German',
         },
@@ -77,7 +77,7 @@ sub no_collision_different_languages : Test {
 
 
 sub no_collision_published_elsewhere : Tests {
-    $check->check(MockComic::make_comic(
+    $check->notify(MockComic::make_comic(
         $MockComic::PUBLISHED_WHEN => '2016-01-01',
         $MockComic::PUBLISHED_WHERE => 'web',
         $MockComic::IN_FILE => 'one.svg'));

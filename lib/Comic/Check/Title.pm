@@ -5,6 +5,9 @@ use warnings;
 use English '-no_match_vars';
 use String::Util 'trim';
 
+use Comic::Check::Check;
+use base('Comic::Check::Check');
+
 use version; our $VERSION = qv('0.0.3');
 
 

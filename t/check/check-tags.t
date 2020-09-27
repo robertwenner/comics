@@ -50,7 +50,7 @@ sub tag_case_differences : Tests {
         $MockComic::TAGS => {$MockComic::ENGLISH => ['tag1']});
     my $comic2 = MockComic::make_comic($MockComic::PUBLISHED_WHEN => '3016-01-02',
         $MockComic::TAGS => {$MockComic::ENGLISH => ['Tag1']});
-    $check->check($comic1);
+    $check->notify($comic1);
     $check->check($comic2);
     is_deeply($comic2->{warnings}, ["tags 'Tag1' and 'tag1' from some_comic.svg only differ in case"]);
 }
@@ -61,7 +61,7 @@ sub tag_whitespace_differences : Tests {
         $MockComic::TAGS => {$MockComic::ENGLISH => [' tag 1']});
     my $comic2 = MockComic::make_comic($MockComic::PUBLISHED_WHEN => '3016-01-02',
         $MockComic::TAGS => {$MockComic::ENGLISH => ['tag1\t']});
-    $check->check($comic1);
+    $check->notify($comic1);
     $check->check($comic2);
     is_deeply($comic2->{warnings}, ["tags 'tag1\t' and ' tag 1' from some_comic.svg only differ in white space"]);
 }
@@ -72,7 +72,7 @@ sub multiple_tags : Tests {
         $MockComic::WHO => {$MockComic::ENGLISH => ['tag 1']});
     my $comic2 = MockComic::make_comic($MockComic::PUBLISHED_WHEN => '3016-01-02',
         $MockComic::WHO => {$MockComic::ENGLISH => ['tag1']});
-    $check->check($comic1);
+    $check->notify($comic1);
     $check->check($comic2);
     is_deeply($comic2->{warnings}, ["who 'tag1' and 'tag 1' from some_comic.svg only differ in white space"]);
 }

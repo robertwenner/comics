@@ -1,37 +1,24 @@
-package Comic::Check::DateCollision;
+package Comic::Check::Check;
 
 use strict;
 use warnings;
 use English '-no_match_vars';
-use String::Util 'trim';
-
-use Comic::Check::Check;
-use base('Comic::Check::Check');
+use Carp;
 
 use version; our $VERSION = qv('0.0.3');
 
 
 =head1 NAME
 
-Comic::Check::DateCollision - Checks that comics are not published on the
-dame day in the same location.
+Comic::Check::Check  - base class for all comic checks.
 
 =head1 SYNOPSIS
 
-    my $check = Comic::Check::DateCollision->new();
-    foreach my $comic (@all_comics) {
-        $check->check($comic);
-    }
+Should not be used directly.
 
 =head1 DESCRIPTION
 
-For regularly published comics you may want to avoid publishing multiple
-comics on the dame date. However, it's probably fine to publish a comic in
-different locations on the same day.
-
-Comic::Check::DateCollision does keeps track of all comics to detect whether
-comics are published on the same date. Hence you need to use one
-Comic::ChecK::DateCollision for all your comics.
+All Comic::Checks should derive from this class.
 
 =cut
 
@@ -40,56 +27,84 @@ Comic::ChecK::DateCollision for all your comics.
 
 =head2 new
 
-Creates a new Comic::Check::DateCollision.
+Creates a new Comic::Check::Check.
 
 =cut
 
 
 sub new {
-    my ($class, $weekday) = @ARG;
+    my ($class) = @ARG;
     my $self = bless{}, $class;
-    $self->{weekday} = $weekday;
+    @{$self->{comics}} = ();
     return $self;
 }
 
 
-=head2 check
+=head2 notify
 
-Checks the given Comic's publishing date for collisions with other comics in
-the same publishing location.
+Notifies this Check of the given comic. This does not mean tio check the
+given comic, but keep it in mind ofr checks that compare comics to
+previously seen ones.
+
+The base class implementation just remembers the passed comic in its
+C<comics> array. Derived classes can access that comic array in e.g.,
+C<final_check>.
 
 Parameters:
 
 =over 4
 
-=item * Comic to check. Comics without a published date are ignored.
+=item * Comic to remember.
+
+=back
+
+=cut
+
+sub notify {
+    my ($self, $comic) = @ARG;
+
+    push @{$self->{comics}}, $comic;
+    return;
+}
+
+
+=head2 check
+
+Checks the given Comic.
+
+The base class implemenation dies. Derived classes need to implement this
+method and do whatever per-comic checks they need to do.
+
+Parameters:
+
+=over 4
+
+=item * Comic to check.
 
 =back
 
 =cut
 
 sub check {
-    my ($self, $comic) = @ARG;
+    croak('Comic::Check::Check should have been overridden');
+}
 
-    my $published_when = trim($comic->{meta_data}->{published}->{when});
-    return unless($published_when);
 
-    my $published_where = trim($comic->{meta_data}->{published}->{where});
+=head2 final_check
 
-    foreach my $c (@{$self->{comics}}) {
-        next if ($c == $comic);
-        my $pub_when = trim($c->{meta_data}->{published}->{when});
-        my $pub_where = trim($c->{meta_data}->{published}->{where});
+Checks all previously collected comics after all comics have been checked.
 
-        next unless(defined $pub_when);
-        foreach my $l ($comic->_languages()) {
-            next if ($comic->_is_for($l) != $c->_is_for($l));
-            if ($published_when eq $pub_when && $published_where eq $pub_where) {
-                $comic->_warn("duplicated date with $c->{srcFile}");
-            }
-        }
-    }
-    return;
+The base class implemenation does nothing. Derived classes can override this
+method to do checks once all comics have been seen, e.g., to check that a
+series name is not unique (may be a typo).
+
+=cut
+
+sub final_check {
+    # @dontCommit remove this and have Comic.pm use $check->can("final_check")?
+    # Having it here makes it more explicit, less duck-typy?
+    # But then again there's no compiler to check that anyway.
+    # Ignore.
 }
 
 
@@ -133,7 +148,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2015 - 2020, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2020, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or

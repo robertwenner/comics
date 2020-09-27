@@ -8,6 +8,9 @@ use String::Util 'trim';
 use DateTime;
 use DateTime::Format::ISO8601;
 
+use Comic::Check::Check;
+use base('Comic::Check::Check');
+
 use version; our $VERSION = qv('0.0.3');
 
 
@@ -61,7 +64,6 @@ sub new {
     ## use critic
 
     $self->{weekday} = $weekday;
-    $self->{comics} = ();
     return $self;
 }
 

@@ -374,6 +374,17 @@ Parameters:
 sub check {
     my ($self, $dont_publish_marker) = @_;
 
+    unless ($dont_publish_check) {
+        $dont_publish_check = Comic::Check::DontPublish->new($dont_publish_marker);
+    }
+    $series_check->notify($self);
+    $tag_check->notify($self);
+    $title_check->notify($self);
+    $date_collision_check->notify($self);
+    $weekday_check->notify($self);
+    $frame_check->notify($self);
+    $dont_publish_check->notify($self);
+
     return if ($self->{use_meta_data_cache});
 
     foreach my $language ($self->_languages()) {
@@ -383,16 +394,13 @@ sub check {
         $self->_check_persons($language);
         $self->_check_meta($language);
     }
+
     $series_check->check($self);
     $tag_check->check($self);
     $title_check->check($self);
     $date_collision_check->check($self);
     $weekday_check->check($self);
-	$frame_check->check($self);
-
-    unless ($dont_publish_check) {
-        $dont_publish_check = Comic::Check::DontPublish->new($dont_publish_marker);
-    }
+    $frame_check->check($self);
     $dont_publish_check->check($self);
 
     return;

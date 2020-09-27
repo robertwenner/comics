@@ -58,7 +58,7 @@ sub warns_if_unique_series : Tests {
             $MockComic::DEUTSCH => 'Buckimude',
         },
     );
-    $check->check($comic);
+    $check->notify($comic);
     $check->final_check();
     is_deeply([@{$comic->{warnings}}], [
         'Deutsch has only one comic in the \'Buckimude\' series',
@@ -75,7 +75,7 @@ sub complains_if_unique_series_per_language : Tests {
             $MockComic::DEUTSCH => 'oops'
         },
     );
-    $check->check($de);
+    $check->notify($de);
     my $en = MockComic::make_comic(
         $MockComic::TITLE => {
             $MockComic::ENGLISH => 'Comic',
@@ -84,7 +84,7 @@ sub complains_if_unique_series_per_language : Tests {
             $MockComic::ENGLISH => 'oops'
         },
     );
-    $check->check($en);
+    $check->notify($en);
     $check->final_check();
     is_deeply([@{$de->{warnings}}],
         ['Deutsch has only one comic in the \'oops\' series']);

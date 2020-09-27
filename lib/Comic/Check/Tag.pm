@@ -5,6 +5,9 @@ use warnings;
 use English '-no_match_vars';
 use String::Util 'trim';
 
+use Comic::Check::Check;
+use base('Comic::Check::Check');
+
 use version; our $VERSION = qv('0.0.3');
 
 
@@ -52,9 +55,8 @@ Parameters:
 
 sub new {
     my ($class, @tags) = @ARG;
-    my $self = bless{}, $class;
+    my $self = $class->SUPER::new();
     @{$self->{tags}} = @tags;
-    @{$self->{comics}} = ();
     return $self;
 }
 
@@ -87,8 +89,6 @@ sub check {
             $self->_check_against($comic, $tag, $language);
         }
     }
-
-    push @{$self->{comics}}, $comic;
     return;
 }
 

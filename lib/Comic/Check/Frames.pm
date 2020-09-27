@@ -6,6 +6,9 @@ use English '-no_match_vars';
 use Readonly;
 use Comic::Consts;
 
+use Comic::Check::Check;
+use base('Comic::Check::Check');
+
 use version; our $VERSION = qv('0.0.3');
 
 
