@@ -43,6 +43,7 @@ use Comic::Check::DontPublish;
 use Comic::Check::Series;
 use Comic::Check::Frames;
 use Comic::Check::Actors;
+use Comic::Check::MetaLayer;
 
 
 use version; our $VERSION = qv('0.0.3');
@@ -356,6 +357,7 @@ my $dont_publish_check;
 my $series_check = Comic::Check::Series->new();
 my $frame_check = Comic::Check::Frames->new();
 my $actors_check = Comic::Check::Actors->new();
+my $meta_check = Comic::Check::MetaLayer->new();
 
 
 =head2 check
@@ -387,6 +389,7 @@ sub check {
     $frame_check->notify($self);
     $dont_publish_check->notify($self);
     $actors_check->notify($self);
+    $meta_check->notify($self);
 
     return if ($self->{use_meta_data_cache});
 
@@ -394,7 +397,6 @@ sub check {
         $self->_get_transcript($language);
         $self->_check_empty_texts($language);
         $self->_check_transcript($language);
-        $self->_check_meta($language);
     }
 
     $series_check->check($self);
@@ -405,6 +407,7 @@ sub check {
     $frame_check->check($self);
     $dont_publish_check->check($self);
     $actors_check->check($self);
+    $meta_check->check($self);
 
     return;
 }
@@ -575,34 +578,6 @@ sub _both_names {
         return 1;
     }
     return 0;
-}
-
-
-sub _check_meta {
-    my ($self, $language) = @ARG;
-
-    unless ($self->{xpath}->findnodes(_find_layers("Meta$language"))) {
-        $self->_warn("No Meta$language layer");
-        return;
-    }
-
-    my $first_text = ($self->_texts_for($language))[0];
-    my $text_found = 0;
-    my $first_text_is_meta = 0;
-    foreach my $text ($self->{xpath}->findnodes(_text("Meta$language"))) {
-        $text_found = 1;
-        if ($first_text eq _text_content($text)) {
-            $first_text_is_meta = 1;
-        }
-    }
-    if ($text_found) {
-        $self->_warn("First text in transcript must be from Meta$language, but is $first_text")
-            unless ($first_text_is_meta);  # would be nice to show the layer here, too
-    }
-    else {
-        $self->_warn("No texts in Meta$language layer");
-    }
-    return;
 }
 
 

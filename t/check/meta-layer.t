@@ -6,19 +6,24 @@ use Test::More;
 
 use lib 't';
 use MockComic;
+use Comic::Check::MetaLayer;
 
 __PACKAGE__->runtests() unless caller;
 
 
+my $check;
+
 sub set_up : Test(setup) {
     MockComic::set_up();
+    $check = Comic::Check::MetaLayer->new();
 }
 
 
 sub no_meta_layer : Test {
-    my $comic = MockComic::make_comic();
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => "funny comic" });
     eval {
-        $comic->_check_meta('English');
+        $check->check($comic);
     };
     like($@, qr{No MetaEnglish layer}i);
 }
@@ -26,6 +31,7 @@ sub no_meta_layer : Test {
 
 sub no_text_in_meta_layer : Test {
     my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => "funny comic" },
         $MockComic::XML => <<'XML',
     <g
         inkscape:groupmode="layer"
@@ -33,7 +39,7 @@ sub no_text_in_meta_layer : Test {
 XML
     );
     eval {
-        $comic->_check_meta('English');
+        $check->check($comic);
     };
     like($@, qr{No texts in MetaEnglish layer}i);
 }
@@ -41,6 +47,7 @@ XML
 
 sub first_text_must_be_from_meta_layer : Test {
     my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => "funny comic" },
         $MockComic::FRAMES => [0, 0, 100, -100],
         $MockComic::XML => <<'XML',
     <g
@@ -60,14 +67,15 @@ sub first_text_must_be_from_meta_layer : Test {
 XML
     );
     eval {
-        $comic->_check_meta('English');
+        $check->check($comic);
     };
-    like($@, qr{First text in transcript must be from MetaEnglish}i);
+    like($@, qr{First text must be from MetaEnglish}i);
 }
 
 
 sub first_text_must_be_from_meta_layer_no_texts : Tests {
     my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => "funny comic" },
         $MockComic::FRAMES => [0, 0, 100, -100],
         $MockComic::XML => <<'XML',
     <g inkscape:groupmode="layer" inkscape:label="English"/>
@@ -75,7 +83,7 @@ sub first_text_must_be_from_meta_layer_no_texts : Tests {
 XML
     );
     eval {
-        $comic->_check_meta('English');
+        $check->check($comic);
     };
     like($@, qr{No texts in MetaEnglish layer});
 }
@@ -83,6 +91,7 @@ XML
 
 sub does_not_rely_on_order_in_xml : Test {
     my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => "funny comic" },
         $MockComic::FRAMES => [0, 0, 100, 100],
         $MockComic::XML => <<'XML',
     <g
@@ -102,14 +111,15 @@ sub does_not_rely_on_order_in_xml : Test {
 XML
     );
     eval {
-        $comic->_check_meta('English');
+        $check->check($comic);
     };
-    like($@, qr{First text in transcript must be from MetaEnglish}i);
+    like($@, qr{First text must be from MetaEnglish}i);
 }
 
 
 sub all_good : Test {
     my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => "funny comic" },
         $MockComic::FRAMES => [0, 0, 100, 100],
         $MockComic::XML => <<'XML',
     <g
@@ -122,7 +132,7 @@ sub all_good : Test {
 XML
     );
     eval {
-        $comic->_check_meta('English');
+        $check->check($comic);
     };
     is($@, '');
 }

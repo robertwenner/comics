@@ -38,10 +38,10 @@ sub set_up : Test(setup) {
     *Comic::_check_transcript = sub {
         $checked{'_check_transcript'}{$_[1]}++;
     };
-    *Comic::_check_meta = sub {
-        $checked{'_check_meta'}{$_[1]}++;
-    };
 
+    *Comic::Check::MetaLayer::check = sub {
+        $checked{'check_meta'}++;
+    };
     *Comic::Check::Series::check = sub {
         $checked{'check_series'}++;
     };
@@ -78,6 +78,7 @@ sub per_file_checks: Tests {
     is($checked{'check_title'}, 1);
     is($checked{'check_series'}, 1);
     is($checked{'check_actors'}, 1);
+    is($checked{'check_meta'}, 1);
 }
 
 
@@ -85,8 +86,7 @@ sub per_language_checks : Tests {
     my $comic = MockComic::make_comic();
     $comic->check('DONT_PUBLISH');
     foreach my $l ($MockComic::ENGLISH, $MockComic::DEUTSCH) {
-        foreach my $f ('_get_transcript', '_check_empty_texts',
-                '_check_transcript', '_check_meta') {
+        foreach my $f ('_get_transcript', '_check_empty_texts', '_check_transcript') {
             is($checked{$f}{$l}, 1, "$f $l checked");
         }
     }
