@@ -621,7 +621,36 @@ sub _flip_language_layers {
 }
 
 
+=head2 has_layer
+
+Checks whether this Comic has (all the Inkscape layer(s) by the given name(s).
+
+Parameters:
+
+=over 4
+
+=item B<layer> For which layer(s) to look.
+
+=back
+
+=cut
+
+sub has_layer {
+    my ($self, @layers) = @ARG;
+
+    foreach my $layer (@layers) {
+        if (!$self->{xpath}->findnodes($self->_find_layers($layer))) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+
 sub _find_layers {
+    # Builds an XPath expression to find the top-level Inkscape layers
+    # (i.e., below the svg element) with the given name(s) or all layers if
+    # no name is given.
     my (@labels) = @ARG;
 
     my $xpath = "/$DEFAULT_NAMESPACE:svg//$DEFAULT_NAMESPACE:g[\@inkscape:groupmode='layer'";
@@ -654,6 +683,7 @@ sub _build_xpath {
 
 
 sub _text {
+    # Gets text nodes in the given language's (main) layer, meta layer, and background layer.
     my ($language) = @ARG;
     return _find_layers($language, "Meta$language", "HintergrundText$language") .
         "//$DEFAULT_NAMESPACE:text";
@@ -1245,6 +1275,42 @@ sub _language_codes {
 }
 
 
+=head2 texts_in_layer
+
+Gets the normalized texts in the given layers.
+
+Normalized means line breaks are removed and multiple consecutive spaces are
+reduced to one.
+
+Parameters:
+
+=over 4
+
+=item B<layer> Inkscape layer name(s) from which to collect texts.
+
+=back
+
+=cut
+
+sub texts_in_layer {
+    my ($self, @layers) = @ARG;
+
+    my @texts;
+    foreach my $layer (@layers) {
+        # @dontCommit should this sort the texts somehow?
+        #   MetaLayer relies on them being sorted by order (left to right,
+        #   per frames)
+        # @dontCommit can this build on _get_transcript? get_transcript
+        # should gather all texts in the right order, but may lose layer
+        # information?
+        foreach my $text ($self->{xpath}->findnodes(_text($layer))) {
+            push @texts, _text_content($text);
+        }
+    }
+    return @texts;
+}
+
+
 sub _texts_for {
     my ($self, $language) = @ARG;
 
@@ -1258,6 +1324,10 @@ sub _texts_for {
 
 
 sub _text_content {
+    # Inkscape has a <text> for the whole text block, and within that a
+    # <tspan> for each line. This function returns all these tspans
+    # together. It also cleans up whitespace (replaces line breaks with
+    # spaces, replaces multiple spaces with one, and trims).
     my ($node) = @ARG;
 
     my XML::LibXML::Node $tspan = $node->firstChild();

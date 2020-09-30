@@ -68,28 +68,26 @@ sub check {
     my ($self, $comic) = @ARG;
 
     foreach my $language ($comic->_languages()) {
-        $comic->_get_transcript($language);
-
-        unless ($comic->{xpath}->findnodes($comic->_find_layers("Meta$language"))) {
+        unless ($comic->has_layer("Meta$language")) {
             $comic->_warn("No Meta$language layer");
             return;
         }
 
-        my $first_text = ($comic->_texts_for($language))[0];
-        my $text_found = 0;
+        my $first_text = ($comic->texts_in_layer($language))[0];
+        my $any_text_found = 0;
         my $first_text_is_meta = 0;
-        foreach my $text ($comic->{xpath}->findnodes(Comic::_text("Meta$language"))) {
-            $text_found = 1;
-            if ($first_text eq Comic::_text_content($text)) {
+        foreach my $text ($comic->texts_in_layer("Meta$language")) {
+            $any_text_found = 1;
+            if ($first_text eq $text) {
                 $first_text_is_meta = 1;
             }
         }
-        if ($text_found) {
-            $comic->_warn("First text must be from Meta$language, but is $first_text")
-                unless ($first_text_is_meta);  # would be nice to show the layer here, too
-        }
-        else {
+        if (!$any_text_found) {
             $comic->_warn("No texts in Meta$language layer");
+        }
+        elsif (!$first_text_is_meta) {
+            # would be nice to show the layer here, too
+            $comic->_warn("First text must be from Meta$language, but is $first_text");
         }
     }
     return;
