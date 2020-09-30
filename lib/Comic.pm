@@ -481,11 +481,9 @@ sub _framesort {
 sub _check_empty_texts {
     my ($self, $language) = @ARG;
 
-    foreach my $node (sort { $self->_text_pos_sort($a, $b) } $self->{xpath}->findnodes(_text($language))) {
-        my $text = _text_content($node);
+    foreach my $text ($self->texts_in_layer($language)) {
         if ($text eq '') {
-            my $layer = $node->parentNode->{'inkscape:label'};
-            $self->_warn("empty text in $layer with ID $node->{id}");
+            $self->_warn("empty text in $language");
         }
     }
     return;

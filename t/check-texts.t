@@ -21,7 +21,7 @@ sub empty_text_found : Test {
     eval {
         $comic->_check_empty_texts($MockComic::DEUTSCH);
     };
-    like($@, qr{Empty text in Deutsch with ID $MockComic::TEXT_ID}i);
+    like($@, qr{Empty text in Deutsch}i);
 }
 
 
@@ -31,7 +31,7 @@ sub whitespace_only_text_found : Test {
     eval {
         $comic->_check_empty_texts($MockComic::DEUTSCH);
     };
-    like($@, qr{Empty text in Deutsch with ID $MockComic::TEXT_ID}i);
+    like($@, qr{Empty text in Deutsch}i);
 }
 
 
