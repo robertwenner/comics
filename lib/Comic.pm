@@ -394,7 +394,6 @@ sub check {
     return if ($self->{use_meta_data_cache});
 
     foreach my $language ($self->_languages()) {
-        $self->_get_transcript($language);
         $self->_check_empty_texts($language);
         $self->_check_transcript($language);
     }
