@@ -15,36 +15,6 @@ sub set_up : Test(setup) {
 }
 
 
-sub empty_text_found : Test {
-    my $comic = MockComic::make_comic(
-        $MockComic::TEXTS => {$MockComic::DEUTSCH => ['']});
-    eval {
-        $comic->_check_empty_texts($MockComic::DEUTSCH);
-    };
-    like($@, qr{Empty text in Deutsch}i);
-}
-
-
-sub whitespace_only_text_found : Test {
-    my $comic = MockComic::make_comic(
-        $MockComic::TEXTS => {$MockComic::DEUTSCH => [' ']});
-    eval {
-        $comic->_check_empty_texts($MockComic::DEUTSCH);
-    };
-    like($@, qr{Empty text in Deutsch}i);
-}
-
-
-sub empty_text_other_language_ignored : Test {
-    my $comic = MockComic::make_comic(
-        $MockComic::TEXTS => {$MockComic::DEUTSCH => ['']});
-    eval {
-        $comic->_check_empty_texts("English");
-    };
-    is($@, '');
-}
-
-
 sub duplicated_text_in_other_language : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => {

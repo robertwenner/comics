@@ -44,6 +44,7 @@ use Comic::Check::Series;
 use Comic::Check::Frames;
 use Comic::Check::Actors;
 use Comic::Check::MetaLayer;
+use Comic::Check::EmptyTexts;
 
 
 use version; our $VERSION = qv('0.0.3');
@@ -358,6 +359,7 @@ my $series_check = Comic::Check::Series->new();
 my $frame_check = Comic::Check::Frames->new();
 my $actors_check = Comic::Check::Actors->new();
 my $meta_check = Comic::Check::MetaLayer->new();
+my $empty_texts_check = Comic::Check::EmptyTexts->new();
 
 
 =head2 check
@@ -390,14 +392,15 @@ sub check {
     $dont_publish_check->notify($self);
     $actors_check->notify($self);
     $meta_check->notify($self);
+    $empty_texts_check->notify($self);
 
     return if ($self->{use_meta_data_cache});
 
     foreach my $language ($self->_languages()) {
-        $self->_check_empty_texts($language);
         $self->_check_transcript($language);
     }
 
+    $empty_texts_check->check($self);
     $series_check->check($self);
     $tag_check->check($self);
     $title_check->check($self);
@@ -474,18 +477,6 @@ sub _framesort {
         return $xa <=> $xb;
     }
     return $ya <=> $yb;
-}
-
-
-sub _check_empty_texts {
-    my ($self, $language) = @ARG;
-
-    foreach my $text ($self->texts_in_layer($language)) {
-        if ($text eq '') {
-            $self->_warn("empty text in $language");
-        }
-    }
-    return;
 }
 
 
