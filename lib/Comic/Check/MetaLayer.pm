@@ -70,7 +70,7 @@ sub check {
     foreach my $language ($comic->_languages()) {
         unless ($comic->has_layer("Meta$language")) {
             $comic->_warn("No Meta$language layer");
-            return;
+            next;
         }
 
         my $first_text = ($comic->texts_in_layer($language))[0];
@@ -86,8 +86,8 @@ sub check {
             $comic->_warn("No texts in Meta$language layer");
         }
         elsif (!$first_text_is_meta) {
-            # would be nice to show the layer here, too
-            $comic->_warn("First text must be from Meta$language, but is $first_text");
+            $comic->_warn("First text must be from Meta$language, " .
+                "but is '$first_text' from layer $language");
         }
     }
     return;

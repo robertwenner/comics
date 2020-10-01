@@ -29,6 +29,18 @@ sub no_meta_layer : Test {
 }
 
 
+sub no_meta_layer_checks_other_languages : Test {
+    my $comic = MockComic::make_comic(
+        $MockComic::PUBLISHED_WHEN => '3000-01-01',
+    );
+    $check->check($comic);
+    is_deeply($comic->{warnings}, [
+        "No MetaDeutsch layer",
+        "No MetaEnglish layer",
+    ]);
+}
+
+
 sub no_text_in_meta_layer : Test {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => "funny comic" },
@@ -89,7 +101,7 @@ XML
 }
 
 
-sub does_not_rely_on_order_in_xml : Test {
+sub does_not_rely_on_order_in_xml : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => "funny comic" },
         $MockComic::FRAMES => [0, 0, 100, 100],
@@ -114,6 +126,7 @@ XML
         $check->check($comic);
     };
     like($@, qr{First text must be from MetaEnglish}i);
+    like($@, qr{'down' from layer English});
 }
 
 
