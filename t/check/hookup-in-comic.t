@@ -26,10 +26,9 @@ sub set_up : Test(setup) {
         $notified++;
     };
 
-    *Comic::_check_transcript = sub {
-        $checked{'_check_transcript'}{$_[1]}++;
+    *Comic::Check::Transcript::check = sub {
+        $checked{'check_transcript'}++;
     };
-
     *Comic::Check::Tag::check = sub {
         $checked{"check_tags"}++;
     };
@@ -78,17 +77,7 @@ sub per_file_checks: Tests {
     is($checked{'check_meta'}, 1);
     is($checked{'check_tags'}, 1);
     is($checked{'check_empty_texts'}, 1);
-}
-
-
-sub per_language_checks : Tests {
-    my $comic = MockComic::make_comic();
-    $comic->check('DONT_PUBLISH');
-    foreach my $l ($MockComic::ENGLISH, $MockComic::DEUTSCH) {
-        foreach my $f ('_check_transcript') {
-            is($checked{$f}{$l}, 1, "$f $l checked");
-        }
-    }
+    is($checked{'check_transcript'}, 1);
 }
 
 

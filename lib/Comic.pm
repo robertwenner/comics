@@ -45,6 +45,8 @@ use Comic::Check::Frames;
 use Comic::Check::Actors;
 use Comic::Check::MetaLayer;
 use Comic::Check::EmptyTexts;
+use Comic::Check::DuplicatedTexts;
+use Comic::Check::Transcript;
 
 
 use version; our $VERSION = qv('0.0.3');
@@ -360,6 +362,8 @@ my $frame_check = Comic::Check::Frames->new();
 my $actors_check = Comic::Check::Actors->new();
 my $meta_check = Comic::Check::MetaLayer->new();
 my $empty_texts_check = Comic::Check::EmptyTexts->new();
+my $duplicated_texts_check = Comic::Check::DuplicatedTexts->new();
+my $transcript_check = Comic::Check::Transcript->new();
 
 
 =head2 check
@@ -393,14 +397,14 @@ sub check {
     $actors_check->notify($self);
     $meta_check->notify($self);
     $empty_texts_check->notify($self);
+    $duplicated_texts_check->notify($self);
+    $transcript_check->notify($self);
 
     return if ($self->{use_meta_data_cache});
 
-    foreach my $language ($self->_languages()) {
-        $self->_check_transcript($language);
-    }
-
     $empty_texts_check->check($self);
+    $duplicated_texts_check->check($self);
+    $transcript_check->check($self);
     $series_check->check($self);
     $tag_check->check($self);
     $title_check->check($self);
@@ -492,80 +496,6 @@ sub _count_tags {
         }
     }
     return;
-}
-
-
-sub _check_transcript {
-    my ($self, $language) = @_;
-
-    my $trace = '';
-    my $previous = '';
-    my $allow_duplicated = $self->{meta_data}->{'allow-duplicated'} || [];
-    my %allow_duplicated = map { _normalize_text($_) => 1 } @{$allow_duplicated};
-    foreach my $t ($self->_texts_for($language)) {
-        $t = _normalize_text($t);
-        # Check for copy paste errors: copied texts forgotten to adjust / translate.
-        foreach my $l ($self->_languages()) {
-            next if ($l eq $language);
-            foreach my $ot ($self->_texts_for($l)) {
-                $ot = _normalize_text($ot);
-                if ($t eq $ot) {
-                    if (defined $allow_duplicated{$t}) {
-                        # Ok, explicitly allowed to be duplicated.
-                    }
-                    elsif ($t =~ m{^\w+:$}) {
-                        # Ok, looks like a name / speaker introduction.
-                    }
-                    else {
-                        $self->_croak("duplicated text '$t' in $language and $l");
-                    }
-                }
-            }
-        }
-
-        # Check for mixed up order (two speaker indicators after another).
-        $trace .= "[$t]";
-        if (_both_names($previous, $t)) {
-            $self->_croak("transcript mixed up in $language: $trace");
-        }
-        $previous = $t;
-    }
-
-    # Check that the comic does not end with a speaker indicator.
-    if (trim($previous) =~ m{:$}) {
-        $self->_croak("speaker's text missing after '$previous', trace is $trace");
-    }
-    return;
-}
-
-
-sub _normalize_text {
-    # Normalize texts for easier comparison. Change all spaces to a single
-    # space. That way we catch differences in white space, which is probably
-    # a bad attempt at duplicating texts, or even sloppy typing that has
-    # only been edited in one language. This also catches multi-line texts,
-    # where the whole multi line text can be added as a single element in
-    # allow-duplicated.
-    # Does not mess with case cause that shouln't be duplicated. For example,
-    # a character may say "pale ale" in English and "Pale Ale" in German.
-    my ($text) = @_;
-    $text = trim($text);
-    $text =~ s/\s+/ /mg;
-    return $text;
-}
-
-
-sub _both_names {
-    my ($a, $b) = @_;
-    if ($a =~ m/:$/ && $b =~ m/:$/) {
-        return 1;
-    }
-    $a =~ s/:$//;
-    $b =~ s/:$//;
-    if (lc $a eq lc $b && $a ne '') {
-        return 1;
-    }
-    return 0;
 }
 
 

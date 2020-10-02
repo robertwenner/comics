@@ -6,13 +6,18 @@ use Test::More;
 
 use lib 't';
 use MockComic;
+use Comic::Check::Transcript;
+
 
 __PACKAGE__->runtests() unless caller;
 
+my $check;
+
+
 sub set_up : Test(setup) {
     MockComic::set_up();
+    $check = Comic::Check::Transcript->new();
 }
-
 
 
 # Should this rather check that no two meta texts come after each other?
@@ -32,7 +37,7 @@ sub includes_file_name() : Test {
         $MockComic::IN_FILE => 'filename.svg',
         $MockComic::TEXTS => {'MetaDeutsch' => ['Paul:', 'Paul']});
     eval {
-        $comic->_check_transcript('Deutsch');
+        $check->check($comic);
     };
     like($@, qr{\bfilename\.svg\b});
 }
@@ -42,7 +47,7 @@ sub includes_language() : Test {
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => {'MetaDeutsch' => ['Max:', 'Max:']});
     eval {
-        $comic->_check_transcript('Deutsch');
+        $check->check($comic);
     };
     like($@, qr{Deutsch}i);
 }
@@ -52,7 +57,7 @@ sub same_name_no_content() : Test {
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => {'MetaDeutsch' => ['Max:', 'Max:']});
     eval {
-        $comic->_check_transcript('Deutsch');
+        $check->check($comic);
     };
     like($@, qr{\[Max:\]\[Max:\]}i);
 }
@@ -62,7 +67,7 @@ sub different_names_no_content() : Test {
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => {'MetaDeutsch' => ['Max:', 'Paul:']});
     eval {
-        $comic->_check_transcript('Deutsch');
+        $check->check($comic);
     };
     like($@, qr{\[Max:\]\[Paul:\]}i);
 }
@@ -71,7 +76,7 @@ sub different_names_no_content() : Test {
 sub description_with_colon_speaker() : Test {
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => {'MetaDeutsch' => ['Es war einmal ein Bier...', 'Paul:', '...']});
-    $comic->_check_transcript('Deutsch');
+    $check->check($comic);
     ok(1);
 }
 
@@ -80,9 +85,21 @@ sub same_name_colon_missing() : Test {
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => {'MetaDeutsch' => ['Paul:', 'Paul']});
     eval {
-        $comic->_check_transcript('Deutsch');
+        $check->check($comic);
     };
     like($@, qr{\[Paul:\]\[Paul\]}i);
+}
+
+
+sub last_text_is_speaker_indicator : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::TEXTS => {
+            $MockComic::DEUTSCH => ['Max:', 'blah', 'Paul:'],
+    });
+    eval {
+        $check->check($comic);
+    };
+    like($@, qr{speaker's text missing after 'Paul:'});
 }
 
 
@@ -91,7 +108,7 @@ sub full_context() : Test {
         $MockComic::TEXTS => {'MetaDeutsch' =>
             ['one', 'two', 'three', 'Paul:', 'Paul:', 'ignore']});
     eval {
-        $comic->_check_transcript('Deutsch');
+        $check->check($comic);
     };
     like($@, qr{\[one\]\[two\]\[three\]\[Paul:\]\[Paul:\]}i);
 }
@@ -107,7 +124,7 @@ sub container_layer() : Test {
     </g>
 XML
     eval {
-        $comic->_check_transcript('Deutsch');
+        $check->check($comic);
     };
     like($@, qr{\[Max:\]\[Paul:\]}i);
 }
@@ -123,7 +140,7 @@ sub layer_with_noise() : Test {
     </g>
 XML
     eval {
-        $comic->_check_transcript('Deutsch');
+        $check->check($comic);
     };
     like($@, qr{\[Max:\]\[Paul:\]}i);
 }
@@ -150,7 +167,7 @@ XML
     $comic->_find_frames();
     is_deeply($comic->{frame_tops}, [78, 338, 598], "frame tops");
     eval {
-        $comic->_check_transcript('Deutsch');
+        $check->check($comic);
     };
     is($@, '');
     is_deeply([$comic->_texts_for('Deutsch')], ["Jessica1:", "eins", "Jessica2:", "zwei"]);
@@ -176,7 +193,7 @@ sub wtfNegativeY : Tests {
   </g>
 XML
     eval {
-        $comic->_check_transcript('Deutsch');
+        $check->check($comic);
     };
     is($@, '');
     is_deeply([$comic->_texts_for('Deutsch')], ["Jessica1:", "eins", "Jessica2:", "zwei"]);

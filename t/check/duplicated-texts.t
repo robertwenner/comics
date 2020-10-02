@@ -6,12 +6,16 @@ use Test::More;
 
 use lib 't';
 use MockComic;
+use Comic::Check::DuplicatedTexts;
+
 
 __PACKAGE__->runtests() unless caller;
 
+my $check;
 
 sub set_up : Test(setup) {
     MockComic::set_up();
+    $check = Comic::Check::DuplicatedTexts->new();
 }
 
 
@@ -22,12 +26,12 @@ sub duplicated_text_in_other_language : Tests {
             $MockComic::ENGLISH => ['Paul shows Max his bym. '],
     });
     eval {
-        $comic->_check_transcript("English");
+        $check->check($comic);
     };
     like($@, qr{^some_comic.svg}, 'should include file name');
     like($@, qr{duplicated text}, 'wrong error message');
     like($@, qr{'Paul shows Max his bym\.'}, 'should mention duplicated text');
-    like($@, qr{English and Deutsch}, 'should mention offending languages');
+    like($@, qr{Deutsch and English}, 'should mention offending languages');
 }
 
 
@@ -38,7 +42,7 @@ sub duplicated_text_in_other_language_ignores_text_order : Test {
             $MockComic::ENGLISH => ['z', 'x', 'a'],
     });
     eval {
-        $comic->_check_transcript("English");
+        $check->check($comic);
     };
     like($@, qr{duplicated text});
 }
@@ -51,34 +55,9 @@ sub duplicated_text_in_other_language_ignores_names : Test {
             $MockComic::ENGLISH => ['Max:', 'look at this', 'Paul: ', 'what?'],
         });
     eval {
-        $comic->_check_transcript("English");
+        $check->check($comic);
     };
     is($@, '');
-}
-
-
-sub duplicated_text_in_other_language_trailing_colon_no_speaker : Test {
-    my $comic = MockComic::make_comic(
-        $MockComic::TEXTS => {
-            $MockComic::DEUTSCH => ['Paul:', 'bla', 'The microphone comes to live:'],
-            $MockComic::ENGLISH => ['Paul:', 'blah', 'The microphone comes to live:'],
-    });
-    eval {
-        $comic->_check_transcript("English");
-    };
-    like($@, qr{duplicated text});
-}
-
-
-sub last_text_is_speaker_indicator : Tests {
-    my $comic = MockComic::make_comic(
-        $MockComic::TEXTS => {
-            $MockComic::DEUTSCH => ['Max:', 'blah', 'Paul:'],
-    });
-    eval {
-        $comic->_check_transcript("Deutsch");
-    };
-    like($@, qr{speaker's text missing after 'Paul:'});
 }
 
 
@@ -91,7 +70,7 @@ sub allowed_duplicated_words : Tests {
         $MockComic::JSON => '"allow-duplicated": ["blah"]',
     );
     eval {
-        $comic->_check_transcript("English");
+        $check->check($comic);
     };
     is($@, '');
 }
@@ -106,7 +85,7 @@ sub duplicated_word_parts : Tests {
         $MockComic::JSON => '"allow-duplicated": ["blah"]',
     );
     eval {
-        $comic->_check_transcript("English");
+        $check->check($comic);
     };
     like($@, qr{duplicated text});
 }
@@ -126,7 +105,7 @@ sub duplicated_in_container_layers : Tests {
     </g>
 XML
     eval {
-        $comic->_check_transcript("Deutsch");
+        $check->check($comic);
     };
     like($@, qr{duplicated text});
 }
@@ -148,7 +127,7 @@ sub duplicated_multiline : Tests {
     </g>
 XML
     eval {
-        $comic->_check_transcript("Deutsch");
+        $check->check($comic);
     };
     like($@, qr{duplicated text});
 }
@@ -170,7 +149,7 @@ sub duplicated_allowed_multiline_space_separated : Tests {
     </g>
 XML
     $MockComic::JSON => '"allow-duplicated": ["take that"]');
-    $comic->_check_transcript("Deutsch");
+    $check->check($comic);
     is($@, '');
 }
 
@@ -191,6 +170,6 @@ sub duplicated_allowed_multiline_newline_separated : Tests {
     </g>
 XML
     $MockComic::JSON => '"allow-duplicated": ["take\nthat"]');
-    $comic->_check_transcript("Deutsch");
+    $check->check($comic);
     is($@, '');
 }
