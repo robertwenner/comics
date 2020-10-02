@@ -1215,10 +1215,10 @@ sub texts_in_layer {
 
     my @texts;
     foreach my $layer (@layers) {
-        # @dontCommit should this sort the texts somehow?
-        #   MetaLayer relies on them being sorted by order (left to right,
-        #   per frames)
-        # @dontCommit can this build on _get_transcript? get_transcript
+        # TODO should this sort the texts somehow? MetaLayer and Trasnscript
+        # checks rely on them being sorted by order (left to right, per
+        # frames)
+        # TODO should this build on _get_transcript? get_transcript
         # should gather all texts in the right order, but may lose layer
         # information?
         foreach my $text ($self->{xpath}->findnodes(_text($layer))) {

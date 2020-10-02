@@ -101,9 +101,6 @@ series name is not unique (may be a typo).
 =cut
 
 sub final_check {
-    # @dontCommit remove this and have Comic.pm use $check->can("final_check")?
-    # Having it here makes it more explicit, less duck-typy?
-    # But then again there's no compiler to check that anyway.
     # Ignore.
 }
 
