@@ -68,7 +68,7 @@ Parameters:
 sub check {
     my ($self, $comic) = @ARG;
 
-    foreach my $language ($comic->_languages()) {
+    foreach my $language ($comic->languages()) {
         my $title = $comic->{meta_data}->{title}->{$language};
         my $key = trim(lc "$language\n$title");
         $key =~ s/\s+/ /g;

@@ -88,7 +88,7 @@ sub check {
     my ($self, $comic) = @ARG;
 
     foreach my $tag (@{$self->{tags}}) {
-        foreach my $language ($comic->_languages()) {
+        foreach my $language ($comic->languages()) {
             foreach my $tag (@{$comic->{meta_data}->{$tag}->{$language}}) {
                 $comic->_warn("No $language $tag") unless(defined $tag);
                 $comic->_warn("Empty $language $tag") if ($tag =~ m/^\s*$/);

@@ -67,9 +67,9 @@ Parameters:
 sub check {
     my ($self, $comic) = @ARG;
 
-    foreach my $language ($comic->_languages()) {
+    foreach my $language ($comic->languages()) {
         my $need = _series_for($comic, $language);
-        foreach my $l ($comic->_languages()) {
+        foreach my $l ($comic->languages()) {
             next if ($language eq $l);
             my $has = _series_for($comic, $l);
             if ($need && !$has) {

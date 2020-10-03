@@ -207,7 +207,7 @@ sub _load {
     }
 
     my %uri_encoding_options = (encode_reserved => 1);
-    foreach my $language ($self->_languages()) {
+    foreach my $language ($self->languages()) {
         $self->_croak("No domain for $language") unless (defined $domains{$language});
 
         $self->{backlogPath}{$language} = 'generated/backlog/' . lc $language;
@@ -327,7 +327,7 @@ the meta data and an "English" layer and an "MetaEnglish" layer
 sub export_png {
     my ($self, $dont_publish_marker, %meta_data) = @ARG;
 
-    foreach my $language ($self->_languages()) {
+    foreach my $language ($self->languages()) {
         my $png_file = "$self->{whereTo}{$language}/$self->{pngFile}{$language}";
         my $backlog_png = "$self->{backlogPath}{$language}/$self->{pngFile}{$language}" || '';
 
@@ -520,7 +520,7 @@ sub _flip_language_layers {
     foreach my $layer ($self->{xpath}->findnodes(_find_layers())) {
         my $label = $layer->{'inkscape:label'};
         $layer->{'style'} = 'display:inline' unless (defined($layer->{'style'}));
-        foreach my $other_lang ($self->_languages()) {
+        foreach my $other_lang ($self->languages()) {
             # Turn off all meta layers and all other languages
             if ($label =~ m/$other_lang$/ || $label =~ m/^Meta/) {
                 $layer->{'style'} =~ s{\bdisplay:inline\b}{display:none};
@@ -950,7 +950,7 @@ sub export_all_html {
     my @sorted = sort _compare @comics;
     foreach my $i (0 .. @sorted - 1) {
         my $comic = $sorted[$i];
-        foreach my $language ($comic->_languages()) {
+        foreach my $language ($comic->languages()) {
             # Must export QR code before exporting HTML so that the HTML template can
             # already refer to the QR code URL.
             $comic->_export_qr_code($language);
@@ -972,7 +972,7 @@ sub export_all_html {
 
     my %languages;
     foreach my $c (@comics) {
-        foreach my $language ($c->_languages()) {
+        foreach my $language ($c->languages()) {
             $languages{$language} = 1;
         }
     }
@@ -989,7 +989,13 @@ sub export_all_html {
 }
 
 
-sub _languages {
+=head2 languages
+
+Gets an alphabetically sorted array of all languages used in this Comic.
+
+=cut
+
+sub languages {
     my ($self) = @ARG;
 
     my @languages;
@@ -1123,7 +1129,7 @@ sub _do_export_html {
 
     my %vars;
     $vars{'comic'} = $self;
-    $vars{'languages'} = [grep { $_ ne $language } $self->_languages()];
+    $vars{'languages'} = [grep { $_ ne $language } $self->languages()];
     $vars{'languagecodes'} = { $self->_language_codes() };
     # Need clone the URLs so that there is no reference stored here, cause
     # later code may change these vars when creating index.html, but if
@@ -1528,7 +1534,7 @@ sub _do_export_backlog {
     my %who;
     my %series;
     foreach my $comic (@comics) {
-        foreach my $language ($comic->_languages()) {
+        foreach my $language ($comic->languages()) {
             foreach my $tag (@{$comic->{meta_data}->{tags}->{$language}}) {
                 $tags{"$tag ($language)"}++;
             }

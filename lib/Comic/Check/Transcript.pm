@@ -73,7 +73,7 @@ Parameters:
 sub check {
     my ($self, $comic) = @ARG;
 
-    foreach my $language ($comic->_languages()) {
+    foreach my $language ($comic->languages()) {
         my $trace = '';
         my $previous = '';
         foreach my $t ($comic->_texts_for($language)) {

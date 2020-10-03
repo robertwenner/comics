@@ -79,12 +79,12 @@ sub check {
     my ($self, $comic) = @ARG;
 
     my $count_mismatch = 0;
-    LANG: foreach my $language ($comic->_languages()) {
+    LANG: foreach my $language ($comic->languages()) {
         if (!defined($comic->{meta_data}->{who})) {
             $comic->_warn("No $language actors metadata at all");
             next LANG;
         }
-        foreach my $l ($comic->_languages()) {
+        foreach my $l ($comic->languages()) {
             next if ($language eq $l);
             my $one = $comic->{meta_data}->{who}->{$l};
             my $two = $comic->{meta_data}->{who}->{$language};

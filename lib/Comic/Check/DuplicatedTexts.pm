@@ -95,7 +95,7 @@ sub check {
     my %allow_duplicated = map { _normalize_text($_) => 1 } @{$allow_duplicated};
 
     my %seen;
-    foreach my $language ($comic->_languages()) {
+    foreach my $language ($comic->languages()) {
         foreach my $text ($comic->_texts_for($language)) {
             $text = _normalize_text($text);
             next if (defined $allow_duplicated{$text});

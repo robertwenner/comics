@@ -65,7 +65,7 @@ Parameters:
 sub check {
     my ($self, $comic) = @ARG;
 
-    foreach my $language ($comic->_languages()) {
+    foreach my $language ($comic->languages()) {
         foreach my $text ($comic->texts_in_layer($language)) {
             if ($text eq '') {
                 $comic->_warn("empty text in $language");

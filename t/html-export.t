@@ -33,7 +33,7 @@ sub languages_one : Test {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { 'English' => 'Drinking beer' }
     );
-    is_deeply([$comic->_languages()], ['English']);
+    is_deeply([$comic->languages()], ['English']);
 }
 
 
@@ -50,7 +50,7 @@ sub languages_many : Test {
             'Español' => 'cervezacomics.es',
         },
     );
-    is_deeply([sort $comic->_languages()], ['Deutsch', 'English', 'Español']);
+    is_deeply([sort $comic->languages()], ['Deutsch', 'English', 'Español']);
 }
 
 
@@ -73,7 +73,7 @@ sub languages_none : Tests {
   </metadata>
 </svg>
 XML
-    is_deeply([sort $comic->_languages()], []);
+    is_deeply([sort $comic->languages()], []);
     Comic::export_all_html({}, {}, {});
     ok(1); # Would have failed above
 }

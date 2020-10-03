@@ -67,7 +67,7 @@ Parameters:
 sub check {
     my ($self, $comic) = @ARG;
 
-    foreach my $language ($comic->_languages()) {
+    foreach my $language ($comic->languages()) {
         unless ($comic->has_layer("Meta$language")) {
             $comic->_warn("No Meta$language layer");
             next;
