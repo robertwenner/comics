@@ -14,7 +14,7 @@ use version; our $VERSION = qv('0.0.3');
 
 =head1 NAME
 
-Comic::Check::MetaLayer - Checks the m,eta layer's texts.
+Comic::Check::MetaLayer - Checks the meta layer's texts.
 
 =head1 SYNOPSIS
 
@@ -37,12 +37,24 @@ but doesn't need to be shared.
 
 Creates a new Comic::Check::MetaLayer.
 
+Parameters:
+
+=over 4
+
+=item * Meta prefix; defaults to C<Meta>. Meta layers are found by looking
+    for this meta prefix followed by the language. For example, if meta
+    marker is C<Meta> and language is C<English>, the comic is expected to
+    have an Inkscape layer called C<MetaEnglish>.
+
+=back
+
 =cut
 
 
 sub new {
-    my ($class) = @ARG;
+    my ($class, $prefix) = @ARG;
     my $self = $class->SUPER::new();
+    $self->{prefix} = $prefix || 'Meta';
     return $self;
 }
 
@@ -50,9 +62,6 @@ sub new {
 =head2 check
 
 Checks the text in the given Comic's Inkscape meta layers.
-
-MetaLayer expectes meta layers be named as Meta + language, e.g.,
-MetaEnglish or MetaDeutsch.
 
 Parameters:
 
@@ -68,25 +77,25 @@ sub check {
     my ($self, $comic) = @ARG;
 
     foreach my $language ($comic->languages()) {
-        unless ($comic->has_layer("Meta$language")) {
-            $comic->_warn("No Meta$language layer");
+        unless ($comic->has_layer("$self->{prefix}$language")) {
+            $comic->_warn("No $self->{prefix}$language layer");
             next;
         }
 
         my $first_text = ($comic->texts_in_layer($language))[0];
         my $any_text_found = 0;
         my $first_text_is_meta = 0;
-        foreach my $text ($comic->texts_in_layer("Meta$language")) {
+        foreach my $text ($comic->texts_in_layer("$self->{prefix}$language")) {
             $any_text_found = 1;
             if ($first_text eq $text) {
                 $first_text_is_meta = 1;
             }
         }
         if (!$any_text_found) {
-            $comic->_warn("No texts in Meta$language layer");
+            $comic->_warn("No texts in $self->{prefix}$language layer");
         }
         elsif (!$first_text_is_meta) {
-            $comic->_warn("First text must be from Meta$language, " .
+            $comic->_warn("First text must be from $self->{prefix}$language, " .
                 "but is '$first_text' from layer $language");
         }
     }
