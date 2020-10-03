@@ -96,7 +96,7 @@ sub check {
 
     my %seen;
     foreach my $language ($comic->languages()) {
-        foreach my $text ($comic->_texts_for($language)) {
+        foreach my $text ($comic->texts_in_layer($language)) {
             $text = _normalize_text($text);
             next if (defined $allow_duplicated{$text});
             next if ($text =~ m/:$/);

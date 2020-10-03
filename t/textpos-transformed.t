@@ -20,7 +20,7 @@ sub assert_order {
     my $comic = MockComic::make_comic(
         $MockComic::NAMESPACE_DECLARATION => 'xmlns:xlink="http://www.w3.org/1999/xlink"',
         $MockComic::XML => $svg);
-    my $is = join "", $comic->_texts_for('English');
+    my $is = join "", $comic->texts_in_layer('English');
     is($is, $expected);
 }
 
@@ -162,7 +162,7 @@ apply transform on linked path
 ignore a transform on a g element enclosing the text
 
 
-textPath attributes: 
+textPath attributes:
 startOffest (default 0, can be % (0 start, 100 end), or user coordinate system
 
 can probably ignore font size, startOffset and such cause in my comics I won't

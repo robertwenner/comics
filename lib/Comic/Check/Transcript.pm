@@ -76,7 +76,7 @@ sub check {
     foreach my $language ($comic->languages()) {
         my $trace = '';
         my $previous = '';
-        foreach my $t ($comic->_texts_for($language)) {
+        foreach my $t ($comic->texts_in_layer($language)) {
             $trace .= "[$t]";
             if (_both_names($previous, $t)) {
                 $comic->_croak("transcript mixed up in $language: $trace");

@@ -429,7 +429,7 @@ sub _get_transcript {
             @{$self->{transcript}{$language}} = split /[\r\n]+/, _slurp($cache);
         }
         else {
-            @{$self->{transcript}{$language}} = _append_speech_to_speaker($self->_texts_for($language));
+            @{$self->{transcript}{$language}} = _append_speech_to_speaker($self->texts_in_layer($language));
             _write_file($cache, join "\n", @{$self->{transcript}{$language}});
         }
     }
@@ -1219,29 +1219,12 @@ Parameters:
 sub texts_in_layer {
     my ($self, @layers) = @ARG;
 
-    my @texts;
-    foreach my $layer (@layers) {
-        # TODO should this sort the texts somehow? MetaLayer and Trasnscript
-        # checks rely on them being sorted by order (left to right, per
-        # frames)
-        # TODO should this build on _get_transcript? get_transcript
-        # should gather all texts in the right order, but may lose layer
-        # information?
-        foreach my $text ($self->{xpath}->findnodes(_text($layer))) {
-            push @texts, _text_content($text);
-        }
-    }
-    return @texts;
-}
-
-
-sub _texts_for {
-    my ($self, $language) = @ARG;
-
     $self->_find_frames();
     my @texts;
-    foreach my $node (sort { $self->_text_pos_sort($a, $b) } $self->{xpath}->findnodes(_text($language))) {
-        push @texts, _text_content($node);
+    foreach my $layer (@layers) {
+        foreach my $node (sort { $self->_text_pos_sort($a, $b) } $self->{xpath}->findnodes(_text($layer))) {
+            push @texts, _text_content($node);
+        }
     }
     return @texts;
 }
