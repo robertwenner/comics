@@ -49,7 +49,7 @@ sub new {
 
 =head2 check
 
-Checks that the given Comic's doesn't have empty texts. Empry texts were
+Checks that the given Comic's doesn't have empty texts. Empty texts were
 probably added by accident. They can confuse other checks.
 
 Parameters:

@@ -10,6 +10,8 @@ use base('Comic::Check::Check');
 use version; our $VERSION = qv('0.0.3');
 
 
+=for stopwords Wenner merchantability perlartistic Inkscape
+
 =encoding utf8
 
 =head1 NAME
@@ -102,8 +104,6 @@ sub check {
     return;
 }
 
-
-=for stopwords html Wenner merchantability perlartistic Inkscape
 
 
 =head1 VERSION

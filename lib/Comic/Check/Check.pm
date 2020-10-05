@@ -42,8 +42,8 @@ sub new {
 
 =head2 notify
 
-Notifies this Check of the given comic. This does not mean tio check the
-given comic, but keep it in mind ofr checks that compare comics to
+Notifies this Check of the given comic. This does not mean to check the
+given comic, but keep it in mind for checks that compare comics to
 previously seen ones.
 
 The base class implementation just remembers the passed comic in its
@@ -72,7 +72,7 @@ sub notify {
 
 Checks the given Comic.
 
-The base class implemenation dies. Derived classes need to implement this
+The base class implementation dies. Derived classes need to implement this
 method and do whatever per-comic checks they need to do.
 
 Parameters:
@@ -94,7 +94,7 @@ sub check {
 
 Checks all previously collected comics after all comics have been checked.
 
-The base class implemenation does nothing. Derived classes can override this
+The base class implementation does nothing. Derived classes can override this
 method to do checks once all comics have been seen, e.g., to check that a
 series name is not unique (may be a typo).
 
