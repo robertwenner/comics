@@ -46,9 +46,8 @@ Creates a new Comic::Check::DateCollision.
 
 
 sub new {
-    my ($class, $weekday) = @ARG;
+    my ($class) = @ARG;
     my $self = $class->SUPER::new();
-    $self->{weekday} = $weekday;
     return $self;
 }
 
