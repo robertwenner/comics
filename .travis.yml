@@ -13,6 +13,8 @@ install:
     - cpanm --quiet --notest Readonly
     - cpanm --quiet --notest Locales
     - cpanm --quiet --notest String::Util
+    - cpanm --quiet --notest Clone::PP
+    - cpanm --quiet --notest Hash::Merge
     - cpanm --quiet --notest Image::SVG::Transform
     - cpanm --quiet --notest DateTime::Format::ISO8601
     - cpanm --quiet --notest DateTime::Format::RFC3339
