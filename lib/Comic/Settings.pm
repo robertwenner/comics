@@ -8,7 +8,7 @@ use Carp;
 use File::Slurp qw(slurp);
 use JSON;
 use Hash::Merge;
-use Clone::PP;
+use Clone;
 
 use version; our $VERSION = qv('0.0.3');
 
@@ -123,7 +123,7 @@ sub clone {
     my ($self) = @ARG;
 
     my $cloned = Comic::Settings->new();
-    $cloned->{settings} = Clone::PP::clone($self->{settings});
+    $cloned->{settings} = Clone::clone($self->{settings});
     $cloned->{parser} = $self->{parser};
     $cloned->{merger} = $self->{merger};
     return $cloned;
