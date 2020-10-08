@@ -81,6 +81,14 @@ sub per_file_checks: Tests {
 }
 
 
+sub find_checks : Tests {
+    my @modules = Comic::Check::Check::find_all();
+    my %modules = map {$_ => 1} @modules;
+    is($modules{'Comic::Check::Title'}, 1, 'should include a real check module');
+    is($modules{'Comic::Check::Check'}, undef, 'should not include abstract base class');
+}
+
+
 sub check_cycle_for_cached_comic : Tests {
     my $comic = MockComic::make_comic();
     $comic->{use_meta_data_cache} = 1;

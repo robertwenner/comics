@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use English '-no_match_vars';
 use Carp;
+use File::Find;
 
 use version; our $VERSION = qv('0.0.3');
 
@@ -102,6 +103,41 @@ series name is not unique (may be a typo).
 
 sub final_check {
     # Ignore.
+}
+
+
+=head2 find_all
+
+Finds all Check modules available. This is used to enable all modules.
+Installed modules should be found automatically. In case of multiple modules
+by the same name, adjust C<@INC> to configure what actually gets used.
+
+=cut
+
+sub find_all {
+    # Collect check modules in a hash; modules may be installed, and also
+    # exist in a user-defined location (e.g, during development). We only
+    # need the name once and leave it to the users to configure @INC
+    # according to their priorities.
+    my %checks;
+
+    find({
+        wanted => sub {
+            my $name = $File::Find::fullname;
+            if ($name =~ m{/(Comic/Check/[^.]+).pm$}) {
+                $name = $1;
+                $name =~ s{/}{::}g;
+                if ($name ne 'Comic::Check::Check') {
+                    # Exclude this abstract base class.
+                    $checks{$name}++;
+                }
+            }
+        },
+        follow => 1,
+        follow_skip => 2,
+    }, @INC);
+
+    return keys %checks;
 }
 
 
