@@ -71,3 +71,11 @@ WriteMakefile(
     BUILD_REQUIRES => { %dependencies },
     test => { RECURSIVE_TEST_FILES => 1, },
 );
+
+
+sub MY::postamble {
+    return <<HERE;
+cover :: pure_all
+	HARNESS_PERL_SWITCHES=-MDevel::Cover make test && cover
+HERE
+}
