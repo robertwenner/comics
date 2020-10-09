@@ -22,5 +22,6 @@ pm_to_blib
 ^xt$
 ^MYMETA.yml$
 .gz$
+cover_db
 
 Comic-0.0.3

@@ -19,6 +19,14 @@ sub set_up : Test(setup) {
 }
 
 
+sub non_empty_text_is_ok : Test {
+    my $comic = MockComic::make_comic(
+        $MockComic::TEXTS => {$MockComic::DEUTSCH => ['not empty']});
+    $check->check($comic);
+    ok(1);
+}
+
+
 sub empty_text_found : Test {
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => {$MockComic::DEUTSCH => ['']});

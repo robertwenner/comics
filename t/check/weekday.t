@@ -25,6 +25,10 @@ sub bad_weekday_in_ctor : Tests {
         Comic::Check::Weekday->new(0);
     };
     like($@, qr{bad weekday}i);
+    eval {
+        Comic::Check::Weekday->new(8);
+    };
+    like($@, qr{bad weekday}i);
 }
 
 
@@ -64,7 +68,7 @@ sub web_comic_scheduled_for_thursday : Tests {
 
 
 sub web_comic_scheduled_for_today_thursday : Tests {
-    MockComic::fake_now(DateTime->new(year => 3000, month => 1, day => 02));
+    MockComic::fake_now(DateTime->new(year => 3000, month => 1, day => 2));
     my $comic = MockComic::make_comic($MockComic::PUBLISHED_WHEN => '3000-01-02');
     eval {
         $check->check($comic);

@@ -453,6 +453,7 @@ sub _up_to_date {
 
 
 sub _exists {
+    # uncoverable subroutine
     return -r shift;
 }
 
@@ -1042,6 +1043,7 @@ sub not_yet_published {
 
 
 sub _now {
+    # uncoverable subroutine
     return DateTime->now;
 }
 

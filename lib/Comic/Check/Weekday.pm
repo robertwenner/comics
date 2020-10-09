@@ -104,6 +104,7 @@ sub check {
 
 
 sub _now {
+    # uncoverable subroutine
     return DateTime->now;
 }
 
