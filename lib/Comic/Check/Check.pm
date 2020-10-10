@@ -73,7 +73,7 @@ sub notify {
 
 Checks the given Comic.
 
-The base class implementation dies. Derived classes need to implement this
+The base class implementation croaks. Derived classes need to implement this
 method and do whatever per-comic checks they need to do.
 
 Parameters:
@@ -87,6 +87,7 @@ Parameters:
 =cut
 
 sub check {
+    # uncoverable subroutine
     croak('Comic::Check::Check should have been overridden');
 }
 
@@ -102,6 +103,7 @@ series name is not unique (may be a typo).
 =cut
 
 sub final_check {
+    # uncoverable subroutine
     # Ignore.
 }
 

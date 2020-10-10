@@ -50,7 +50,8 @@ Parameters:
 =item * Don't publish marker(s). If any of these texts is found, the comic
     is flagged. Pick something that doesn't appear normally in your comics,
     e.g., "DONT_PUBLISH". The check is case-sensitive (and an all-caps term
-    may be easier for humans to spot).
+    may be easier for humans to spot). If no marker is given, this check is
+    effectively disabled.
 
 =back
 

@@ -55,6 +55,7 @@ Parameters:
 =item * Tags to check. These tags need to be in the per-language comic
     metadata. You could use tags for the people appearing in the comic, or
     general purpose keywords associated with the comic.
+    Passing no tags effectively disables this Check.
 
 =back
 
