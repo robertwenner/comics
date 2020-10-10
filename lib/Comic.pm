@@ -35,6 +35,8 @@ use Reddit::Client;
 use Clone qw(clone);
 
 use Comic::Consts;
+use Comic::Settings;
+
 use Comic::Check::Title;
 use Comic::Check::Weekday;
 use Comic::Check::DateCollision;
@@ -131,11 +133,15 @@ Readonly my $UNPUBLISHED => '3000-01-01';
 # Temp dir for caches, per-langugage svg exports, etc.
 Readonly my $TEMPDIR => 'tmp';
 
+# Default main configuration file.
+Readonly our $MAIN_CONFIG_FILE => 'comic-perl-config.json';
+
 
 my %counts;
 my %language_code_cache;
 my @comics;
 ## no critic(Variables::ProhibitPackageVars)
+our $settings;
 our $inkscape_version;
 ## use critic
 
@@ -159,7 +165,14 @@ Parameters:
 sub new {
     my ($class, $file, %domains) = @ARG;
     my $self = bless{}, $class;
-    $self->{options} = {};
+
+    unless ($settings) {
+        $settings = Comic::Settings->new();
+        if (_exists($MAIN_CONFIG_FILE)) {
+            $settings->load_str(_slurp($MAIN_CONFIG_FILE));
+        }
+    }
+
     $self->_load($file, %domains);
     return $self;
 }
@@ -1610,6 +1623,7 @@ sub reset_statics {
     %counts = ();
     @comics = ();
     $inkscape_version = undef;
+    $settings = undef;
     return;
 }
 
