@@ -5,6 +5,7 @@ use base 'Test::Class';
 use Test::More;
 use lib 't';
 use MockComic;
+use Comic::Check::Frames;
 
 __PACKAGE__->runtests() unless caller;
 

@@ -3,9 +3,9 @@ use warnings;
 
 use base 'Test::Class';
 use Test::More;
-
 use lib 't';
 use MockComic;
+use Comic::Check::Tag;
 
 __PACKAGE__->runtests() unless caller;
 
