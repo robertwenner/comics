@@ -20,6 +20,14 @@ sub set_up : Test(setup) {
 }
 
 
+sub no_weekday_in_ctor : Tests {
+    $check = Comic::Check::Weekday->new();
+    my $comic = MockComic::make_comic($MockComic::PUBLISHED_WHEN => '3000-01-03');
+    $check->check($comic);
+    ok(1);
+}
+
+
 sub bad_weekday_in_ctor : Tests {
     eval {
         Comic::Check::Weekday->new(0);

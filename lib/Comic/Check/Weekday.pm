@@ -21,7 +21,7 @@ weekdays.
 
 =head1 SYNOPSIS
 
-    my $check = Comic::Check::Date->new();
+    my $check = Comic::Check::Weekday->new(5);
     foreach my $comic (@all_comics) {
         $check->check($comic);
     }
@@ -31,7 +31,7 @@ weekdays.
 For regularly published comics, it may make sense to check that a comic is
 scheduled for a certain weekday, e.g., every Friday.
 
-Comic::Check::Weekday does keeps track of comics. It's safe to be shared
+Comic::Check::Weekday does not keeps track of comics. It's safe to be shared
 but doesn't need to be shared.
 
 =cut
@@ -47,7 +47,8 @@ Parameters:
 
 =over 4
 
-=item * Weekday when comics are published. Pass 1 for Monday, 2 for Tuesday, and so on.
+=item * Weekday when comics are published. Pass 1 for Monday, 2 for Tuesday,
+    and so on. If no weekday is given, this check is effectively disabled.
 
 =back
 
@@ -59,9 +60,11 @@ sub new {
     my ($class, $weekday) = @ARG;
     my $self = $class->SUPER::new();
 
-    ## no critic(ValuesAndExpressions::ProhibitMagicNumbers)
-    croak("Bad weekday $weekday, use 1 (Mon) - 7 (Sun)") if ($weekday < 1 || $weekday > 7);
-    ## use critic
+    if (defined $weekday) {
+        ## no critic(ValuesAndExpressions::ProhibitMagicNumbers)
+        croak("Bad weekday $weekday, use 1 (Mon) - 7 (Sun)") if ($weekday < 1 || $weekday > 7);
+        ## use critic
+    }
 
     $self->{weekday} = $weekday;
     return $self;
@@ -85,6 +88,8 @@ Parameters:
 
 sub check {
     my ($self, $comic) = @ARG;
+
+    return unless ($self->{weekday});
 
     my $published_when = trim($comic->{meta_data}->{published}->{when});
     return unless($published_when);
