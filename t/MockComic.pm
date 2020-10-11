@@ -78,6 +78,8 @@ my %defaultArgs = (
 
 sub set_up {
     %file_written = ();
+    # Fake main config file to that not each Comic tries to collect all checks.
+    fake_file($Comic::MAIN_CONFIG_FILE, '{"Check": {}}');
     @made_dirs = ();
     Comic::reset_statics();
     mock_methods();

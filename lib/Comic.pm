@@ -36,24 +36,12 @@ use Clone qw(clone);
 
 use Comic::Consts;
 use Comic::Settings;
-
-use Comic::Check::Title;
-use Comic::Check::Weekday;
-use Comic::Check::DateCollision;
-use Comic::Check::Tag;
-use Comic::Check::DontPublish;
-use Comic::Check::Series;
-use Comic::Check::Frames;
-use Comic::Check::Actors;
-use Comic::Check::MetaLayer;
-use Comic::Check::EmptyTexts;
-use Comic::Check::DuplicatedTexts;
-use Comic::Check::Transcript;
+use Comic::Check::Check;
 
 
 use version; our $VERSION = qv('0.0.3');
 
-=for stopwords inkscape html svg png Wenner merchantability perlartistic MetaEnglish rss sitemap sizemap xml dbus
+=for stopwords inkscape html svg png Wenner merchantability perlartistic MetaEnglish rss sitemap sizemap xml dbus JSON
 
 
 =head1 NAME
@@ -143,6 +131,7 @@ my @comics;
 ## no critic(Variables::ProhibitPackageVars)
 our $settings;
 our $inkscape_version;
+our @checks;
 ## use critic
 
 
@@ -167,14 +156,78 @@ sub new {
     my $self = bless{}, $class;
 
     unless ($settings) {
-        $settings = Comic::Settings->new();
-        if (_exists($MAIN_CONFIG_FILE)) {
-            $settings->load_str(_slurp($MAIN_CONFIG_FILE));
-        }
+        _load_settings();
+        _load_checks();
     }
+    @{$self->{checks}} = @checks;
 
     $self->_load($file, %domains);
     return $self;
+}
+
+
+sub _load_settings {
+    $settings = Comic::Settings->new();
+
+    if (_exists($MAIN_CONFIG_FILE)) {
+        $settings->load_str(_slurp($MAIN_CONFIG_FILE));
+    }
+
+    return;
+}
+
+
+sub _load_checks() {
+    my $actual_settings = $settings->get();
+
+    my $check_settings;
+    if (exists $actual_settings->{'Check'}) {
+        $check_settings = $actual_settings->{'Check'};
+        if (ref $check_settings ne ref {}) {
+            croak('"Check" must be a JSON object');
+        }
+    }
+    else {
+        $check_settings = { map { $_ => [] } Comic::Check::Check::find_all() };
+    }
+
+    foreach my $name (keys %{$check_settings}) {
+        # Allow :: as in Perl use module syntax as well as slashes.
+        my $filename = $name;
+        $filename =~ s{::}{/}g;
+        $filename = "$filename.pm" unless $filename =~ m/\.pm$/;
+        eval {
+            require $filename;
+            $filename->import();
+            1;  # indicate success, or we may end up with an empty eval error
+        }
+        or croak("Error using check $filename: $EVAL_ERROR");
+
+        my $module = $filename;
+        $module =~ s{/}{::}g;
+        $module =~ s/\.pm$//g;
+
+        my $args = ${$check_settings}{$name} || [];
+        my @args;
+        if (ref $args eq ref {}) {
+            @args = %{$args};
+        }
+        elsif (ref $args eq ref []) {
+            @args = @{$args};
+        }
+        elsif (ref $args eq ref $name) {
+            push @args, $args;
+        }
+        else {
+            croak('Cannot handle ' . (ref $args) . " for $name arguments");
+        }
+
+        my $check = $module->new(@args);
+
+        push @checks, $check;
+    }
+
+    return;
 }
 
 
@@ -364,69 +417,73 @@ sub _move {
 }
 
 
-my $title_check = Comic::Check::Title->new();
-Readonly my $FRIDAY => 5;
-my $weekday_check = Comic::Check::Weekday->new($FRIDAY);
-my $date_collision_check = Comic::Check::DateCollision->new();
-my $tag_check = Comic::Check::Tag->new('tags', 'who');
-my $dont_publish_check;
-my $series_check = Comic::Check::Series->new();
-my $frame_check = Comic::Check::Frames->new();
-my $actors_check = Comic::Check::Actors->new();
-my $meta_check = Comic::Check::MetaLayer->new();
-my $empty_texts_check = Comic::Check::EmptyTexts->new();
-my $duplicated_texts_check = Comic::Check::DuplicatedTexts->new();
-my $transcript_check = Comic::Check::Transcript->new();
-
-
 =head2 check
 
-Runs some checks on this comic.
+Runs all configured checks on this comic. The order in which checks run is
+undefined. (Checks should not depend on each other anyway.)
 
-Parameters:
+Checks are configured in the main configuration file under the C<Check> key.
+This needs to be a JSON object where the key is the name of the Perl module
+to use. This name can either be in double colon notation (like a Perl
+module's name in a C<use> statement), or as a path relative to a folder in
+C<@INC>. The value is an array or hash of values to pass to the check module's
+constructor. See the respective check module's documentation for
+documentation on the constructor arguments.
 
-=over 4
+The following example configures five checks. The Weekday check gets passed
+5, which is Friday, according to the L<Comic::Check::Weekday> documentation.
 
-=item B<dont_publish_marker> marker that indicates a comic should not be
-    published. If this marker is found in the comic, the export fails.
+The L<Comic::Check::DontPublish> check gets passed the tags C<DONT_PUBLISH>
+and C<FIXME> to look for.
 
-=back
+Finally L<Comic::Check::Frames> uses named parameters in an object. The
+names need to match what the module expects or they may be silently ignored.
+
+    {
+        "Check": {
+            "Comic/Check/Transcript.pm": [],
+            "Comic/Check/Actors": [],
+            "Comic::Check::DontPublish": [ "DONT_PUBLISH", "FIXME" ],
+            "Comic::Check::Weekday.pm", [ 5 ],
+            "Comic::Check::Frames": {
+                "FRAME_ROW_HEIGHT": 1.25
+            }
+        }
+    }
+
+If no checks are configured, all available (installed) checks are used.
+A Perl module is considered a check if it's package name starts with
+C<Comic::Check::>.
+
+To disable all checks, configure an empty C<Check>:
+
+    {
+        "Check": {}
+    }
 
 =cut
 
 sub check {
-    my ($self, $dont_publish_marker) = @_;
+    my ($self) = @_;
 
-    unless ($dont_publish_check) {
-        $dont_publish_check = Comic::Check::DontPublish->new($dont_publish_marker);
+    foreach my $check (@{$self->{checks}}) {
+        $check->notify($self);
     }
-    $series_check->notify($self);
-    $tag_check->notify($self);
-    $title_check->notify($self);
-    $date_collision_check->notify($self);
-    $weekday_check->notify($self);
-    $frame_check->notify($self);
-    $dont_publish_check->notify($self);
-    $actors_check->notify($self);
-    $meta_check->notify($self);
-    $empty_texts_check->notify($self);
-    $duplicated_texts_check->notify($self);
-    $transcript_check->notify($self);
 
     return if ($self->{use_meta_data_cache});
 
-    $empty_texts_check->check($self);
-    $duplicated_texts_check->check($self);
-    $transcript_check->check($self);
-    $series_check->check($self);
-    $tag_check->check($self);
-    $title_check->check($self);
-    $date_collision_check->check($self);
-    $weekday_check->check($self);
-    $frame_check->check($self);
-    $dont_publish_check->check($self);
-    $actors_check->check($self);
-    $meta_check->check($self);
+    foreach my $check (@{$self->{checks}}) {
+        $check->check($self);
+    }
+
+    return;
+}
+
+
+sub _final_checks {
+    foreach my $check (@checks) {
+        $check->final_check();
+    }
 
     return;
 }
@@ -1458,7 +1515,7 @@ template file to use for F<index.html>.
 sub export_archive {
     my ($backlog_template, $backlog_page, $archive_templates, $archive_pages, $comic_template) = @ARG;
 
-    $series_check->final_check();
+    _final_checks();
     foreach my $language (keys %{$archive_templates}) {
         my $page = _make_dir('web/' . lc $language);
         my @sorted = (sort _compare grep { _archive_filter($_, $language) } @comics);
@@ -1624,6 +1681,7 @@ sub reset_statics {
     @comics = ();
     $inkscape_version = undef;
     $settings = undef;
+    @checks = ();
     return;
 }
 

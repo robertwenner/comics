@@ -126,10 +126,9 @@ sub find_all {
     find({
         wanted => sub {
             my $name = $File::Find::fullname;
-            if ($name =~ m{/(Comic/Check/[^.]+).pm$}) {
+            if ($name =~ m{/(Comic/Check/[^.]+\.pm)$}) {
                 $name = $1;
-                $name =~ s{/}{::}g;
-                if ($name ne 'Comic::Check::Check') {
+                if ($name ne 'Comic/Check/Check.pm') {
                     # Exclude this abstract base class.
                     $checks{$name}++;
                 }
