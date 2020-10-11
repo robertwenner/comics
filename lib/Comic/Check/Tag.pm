@@ -90,9 +90,13 @@ sub check {
 
     foreach my $tag (@{$self->{tags}}) {
         foreach my $language ($comic->languages()) {
-            foreach my $tag (@{$comic->{meta_data}->{$tag}->{$language}}) {
-                $comic->_warn("No $language $tag") unless(defined $tag);
-                $comic->_warn("Empty $language $tag") if ($tag =~ m/^\s*$/);
+            my $tag_values = $comic->{meta_data}->{$tag}->{$language};
+            if (!defined $tag_values || @{$tag_values} == 0) {
+                $comic->_warn("No $language $tag");
+            }
+
+            foreach my $tag_value (@{$tag_values}) {
+                $comic->_warn("Empty $language $tag") if ($tag_value =~ m/^\s*$/);
             }
 
             $self->_check_against($comic, $tag, $language);
