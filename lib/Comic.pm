@@ -259,6 +259,26 @@ sub _adjust_checks {
                 _load_check($self->{checks}, $name, ${$used}{$name} || []);
             }
         }
+
+        elsif ($keyword eq 'add') {
+            my $adding = $check_config->{'add'};
+
+            if (ref $adding eq ref []) {
+                # Convert array into a hash with empty args to easily add
+                # Checks with default arguments.
+                $adding = { map { $_ => [] } @{$adding} };
+            }
+
+            foreach my $name (keys %{$adding}) {
+                $name =~ s/\.pm$//;
+                $name =~ s{/}{::};
+
+                # Remove any old checks of that type.
+                @{$self->{checks}} = grep { ref $_ ne $name } @{$self->{checks}};
+
+                _load_check($self->{checks}, $name, ${$adding}{$name} || []);
+            }
+        }
     }
 
     return;

@@ -196,3 +196,48 @@ sub comic_overrides_main_config_checks_as_array : Tests {
     is(@{Comic::checks}, 1, 'should still have one check for all comics');
     ok(${Comic::checks}[0]->isa("Comic::Check::Actors"), 'messed up check for all comics');
 }
+
+
+sub comic_adds_main_config_checks_as_object : Tests {
+    MockComic::fake_file($Comic::MAIN_CONFIG_FILE, '{ "Check": { "Comic/Check/Actors.pm": [] } }');
+    my $comic = MockComic::make_comic(
+        $MockComic::JSON => '"Check": { "add": { "DummyCheck": ["from comic"] } }',
+    );
+    is(@{$comic->{checks}}, 2, 'should have two checks');
+    ok(${$comic->{checks}}[0]->isa("Comic::Check::Actors"), 'modified existing check');
+    ok(${$comic->{checks}}[1]->isa("DummyCheck"), 'created wrong check');
+    is_deeply(${$comic->{checks}}[1]->{args}, ["from comic"], 'passed wrong ctor args');
+
+    is(@{Comic::checks}, 1, 'should still have one check for all comics');
+    ok(${Comic::checks}[0]->isa("Comic::Check::Actors"), 'messed up check for all comics');
+}
+
+
+sub comic_adds_to_main_config_as_array : Tests {
+    MockComic::fake_file($Comic::MAIN_CONFIG_FILE, '{ "Check": { "Comic/Check/Actors.pm": [] } }');
+    my $comic = MockComic::make_comic(
+        $MockComic::JSON => '"Check": { "add": [ "DummyCheck" ] }',
+    );
+    is(@{$comic->{checks}}, 2, 'should have two checks');
+    ok(${$comic->{checks}}[0]->isa("Comic::Check::Actors"), 'modified existing check');
+    ok(${$comic->{checks}}[1]->isa("DummyCheck"), 'created wrong check');
+    is_deeply(${$comic->{checks}}[1]->{args}, [], 'passed wrong ctor args');
+
+    is(@{Comic::checks}, 1, 'should still have one check for all comics');
+    ok(${Comic::checks}[0]->isa("Comic::Check::Actors"), 'messed up check for all comics');
+}
+
+
+sub comic_add_same_type_check_replaces_original : Tests {
+    MockComic::fake_file($Comic::MAIN_CONFIG_FILE, '{ "Check": { "Comic/Check/Weekday.pm": [1] } }');
+    my $comic = MockComic::make_comic(
+        $MockComic::JSON => '"Check": { "add": { "Comic::Check::Weekday": [2] } }',
+    );
+    is(@{$comic->{checks}}, 1, 'should have one check');
+    ok(${$comic->{checks}}[0]->isa("Comic::Check::Weekday"), 'wrong kind of check');
+    is_deeply(${$comic->{checks}}[0]->{weekday}, 2, 'still has old check');
+
+    is(@{Comic::checks}, 1, 'should still have one check for all comics');
+    ok(${Comic::checks}[0]->isa("Comic::Check::Weekday"), 'messed up check for all comics');
+    is_deeply(${Comic::checks}[0]->{weekday}, 1, 'messed up weekday for all comics');
+}
