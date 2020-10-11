@@ -168,3 +168,31 @@ sub check_cycle_for_uncached_comic : Tests {
     $comic->_final_checks();
     is(${$check->{calls}}{'final_check'}, 1, 'should have done final check');
 }
+
+
+sub comic_overrides_main_config_checks_as_object : Tests {
+    MockComic::fake_file($Comic::MAIN_CONFIG_FILE, '{ "Check": { "Comic/Check/Actors.pm": [] } }');
+    my $comic = MockComic::make_comic(
+        $MockComic::JSON => '"Check": { "use": { "DummyCheck": ["from comic"] } }',
+    );
+    is(@{$comic->{checks}}, 1, 'should have one check');
+    ok(${$comic->{checks}}[0]->isa("DummyCheck"), 'created wrong check');
+    is_deeply(${$comic->{checks}}[0]->{args}, ["from comic"], 'passed wrong ctor args');
+
+    is(@{Comic::checks}, 1, 'should still have one check for all comics');
+    ok(${Comic::checks}[0]->isa("Comic::Check::Actors"), 'messed up check for all comics');
+}
+
+
+sub comic_overrides_main_config_checks_as_array : Tests {
+    MockComic::fake_file($Comic::MAIN_CONFIG_FILE, '{ "Check": { "Comic/Check/Actors.pm": [] } }');
+    my $comic = MockComic::make_comic(
+        $MockComic::JSON => '"Check": { "use": [ "DummyCheck" ] }',
+    );
+    is(@{$comic->{checks}}, 1, 'should have one check');
+    ok(${$comic->{checks}}[0]->isa("DummyCheck"), 'created wrong check');
+    is_deeply(${$comic->{checks}}[0]->{args}, [], 'passed wrong ctor args');
+
+    is(@{Comic::checks}, 1, 'should still have one check for all comics');
+    ok(${Comic::checks}[0]->isa("Comic::Check::Actors"), 'messed up check for all comics');
+}

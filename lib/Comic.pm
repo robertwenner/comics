@@ -162,6 +162,7 @@ sub new {
     @{$self->{checks}} = @checks;
 
     $self->_load($file, %domains);
+    $self->_adjust_checks($self->{meta_data}->{'Check'});
 
     return $self;
 }
@@ -193,14 +194,14 @@ sub _load_checks() {
     }
 
     foreach my $name (keys %{$check_settings}) {
-        _load_check($name, ${$check_settings}{$name} || []);
+        _load_check(\@checks, $name, ${$check_settings}{$name} || []);
     }
     return;
 }
 
 
 sub _load_check {
-    my ($name, $args) = @ARG;
+    my ($checks, $name, $args) = @ARG;
 
     # Allow :: as in Perl use module syntax as well as slashes.
     my $filename = $name;
@@ -232,7 +233,33 @@ sub _load_check {
     }
 
     my $check = $module->new(@args);
-    push @checks, $check;
+    push @{$checks}, $check;
+
+    return;
+}
+
+
+sub _adjust_checks {
+    my ($self, $check_config) = @ARG;
+
+    return if (!$check_config);
+
+    foreach my $keyword (keys %{$check_config}) {
+        if ($keyword eq 'use') {
+            @{$self->{checks}} = ();
+            my $used = $check_config->{'use'};
+
+            if (ref $used eq ref []) {
+                # Convert array into a hash with empty args to easily add
+                # Checks with default arguments.
+                $used = { map { $_ => [] } @{$used} };
+            }
+
+            foreach my $name (keys %{$used}) {
+                _load_check($self->{checks}, $name, ${$used}{$name} || []);
+            }
+        }
+    }
 
     return;
 }
