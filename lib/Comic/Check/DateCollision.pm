@@ -80,7 +80,7 @@ sub check {
         my $pub_when = trim($c->{meta_data}->{published}->{when});
         my $pub_where = trim($c->{meta_data}->{published}->{where});
 
-        next unless(defined $pub_when);
+        next unless($pub_when);
         foreach my $l ($comic->languages()) {
             next if ($comic->_is_for($l) != $c->_is_for($l));
             if ($published_when eq $pub_when && $published_where eq $pub_where) {

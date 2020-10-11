@@ -63,9 +63,30 @@ sub different_number_of_actors : Tests {
     my $comic = MockComic::make_comic($MockComic::PUBLISHED_WHEN => '3016-01-01',
         $MockComic::WHO => {
             $MockComic::ENGLISH => ['Max'],
-            $MockComic::DEUTSCH => ['Max', 'Paul']
+            $MockComic::DEUTSCH => ['Max', 'Paul'],
         });
     $check->check($comic);
     is_deeply($comic->{warnings},
         ["Different number of actors in $MockComic::DEUTSCH and $MockComic::ENGLISH"]);
+}
+
+
+sub ignores_comic_without_actors : Tests {
+    my $comic = MockComic::make_comic($MockComic::PUBLISHED_WHEN => '3016-01-01',
+        $MockComic::WHO => {
+            $MockComic::DEUTSCH => ['Max', 'Paul'],
+        });
+    $check->check($comic);
+    is_deeply($comic->{warnings}, []);
+}
+
+
+sub ignores_comic_with_empty_actors : Tests {
+    my $comic = MockComic::make_comic($MockComic::PUBLISHED_WHEN => '3016-01-01',
+        $MockComic::WHO => {
+            $MockComic::DEUTSCH => ['Max', 'Paul'],
+            $MockComic::DEUTSCH => []
+        });
+    $check->check($comic);
+    is_deeply($comic->{warnings}, []);
 }

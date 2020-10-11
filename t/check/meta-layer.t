@@ -19,6 +19,23 @@ sub set_up : Test(setup) {
 }
 
 
+sub accepts_meta_prefix : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => "funny comic" },
+        $MockComic::XML => <<'XML',
+    <g
+        inkscape:groupmode="layer"
+        inkscape:label="HyperMegaEnglish"/>
+XML
+    );
+    $check = Comic::Check::MetaLayer->new('HyperMega');
+    eval {
+        $check->check($comic);
+    };
+    like($@, qr{No texts in HyperMegaEnglish layer}i);
+}
+
+
 sub no_meta_layer : Test {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => "funny comic" });

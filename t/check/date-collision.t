@@ -25,14 +25,6 @@ sub no_dates : Test {
 }
 
 
-sub no_collision : Test {
-    $check->check(MockComic::make_comic($MockComic::PUBLISHED_WHEN => '2016-01-01'));
-    $check->check(MockComic::make_comic($MockComic::PUBLISHED_WHEN => '2016-01-02'));
-    $check->check(MockComic::make_comic($MockComic::PUBLISHED_WHEN => '2016-01-03'));
-    ok(1);
-}
-
-
 sub collision : Test {
     $check->notify(MockComic::make_comic(
         $MockComic::PUBLISHED_WHEN => '2016-01-01', $MockComic::IN_FILE => 'one.svg'));
@@ -90,4 +82,56 @@ sub no_collision_published_elsewhere : Tests {
         $check->check($comic);
     };
     is($@, '');
+}
+
+
+sub no_collision_different_date : Tests {
+    $check->notify(MockComic::make_comic(
+        $MockComic::PUBLISHED_WHEN => '2016-01-01',
+        $MockComic::PUBLISHED_WHERE => 'web',
+        $MockComic::IN_FILE => 'one.svg'));
+    my $comic = MockComic::make_comic(
+        $MockComic::PUBLISHED_WHEN => '2016-01-02',
+        $MockComic::PUBLISHED_WHERE => 'web',
+        $MockComic::IN_FILE => 'other.svg');
+    eval {
+        $check->check($comic);
+    };
+    is($@, '');
+}
+
+
+sub no_collision_not_yet_published_empty: Tests {
+    my $comic1 = (MockComic::make_comic(
+        $MockComic::PUBLISHED_WHEN => '',
+        $MockComic::PUBLISHED_WHERE => 'web',
+        $MockComic::IN_FILE => 'one.svg'));
+    $check->notify($comic1);
+    my $comic2 = MockComic::make_comic(
+        $MockComic::PUBLISHED_WHEN => '2016-01-02',
+        $MockComic::PUBLISHED_WHERE => 'web',
+        $MockComic::IN_FILE => 'other.svg');
+    $check->notify($comic2);
+
+    $check->check($comic1);
+    $check->check($comic2);
+    ok(1);
+}
+
+
+sub no_collision_not_yet_published_not_given: Tests {
+    my $comic1 = (MockComic::make_comic(
+        $MockComic::PUBLISHED_WHEN => undef,
+        $MockComic::PUBLISHED_WHERE => 'web',
+        $MockComic::IN_FILE => 'one.svg'));
+    $check->notify($comic1);
+    my $comic2 = MockComic::make_comic(
+        $MockComic::PUBLISHED_WHEN => '2016-01-02',
+        $MockComic::PUBLISHED_WHERE => 'web',
+        $MockComic::IN_FILE => 'other.svg');
+    $check->notify($comic2);
+
+    $check->check($comic1);
+    $check->check($comic2);
+    ok(1);
 }
