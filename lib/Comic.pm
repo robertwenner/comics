@@ -271,13 +271,32 @@ sub _adjust_checks {
 
             foreach my $name (keys %{$adding}) {
                 $name =~ s/\.pm$//;
-                $name =~ s{/}{::};
+                $name =~ s{/}{::}g;
 
                 # Remove any old checks of that type.
                 @{$self->{checks}} = grep { ref $_ ne $name } @{$self->{checks}};
 
                 _load_check($self->{checks}, $name, ${$adding}{$name} || []);
             }
+        }
+
+        elsif ($keyword eq 'remove') {
+            my $removing = $check_config->{'remove'};
+
+            if (ref $removing ne ref []) {
+                $self->_croak('Must pass an array to "remove"');
+            }
+
+            foreach my $name (@{$removing}) {
+                $name =~ s/\.pm$//;
+                $name =~ s{/}{::}g;
+
+                @{$self->{checks}} = grep { ref $_ ne $name } @{$self->{checks}};
+            }
+        }
+
+        else {
+            $self->_croak("Unknown Check option $keyword; use one of use, add, or remove");
         }
     }
 

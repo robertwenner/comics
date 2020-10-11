@@ -241,3 +241,42 @@ sub comic_add_same_type_check_replaces_original : Tests {
     ok(${Comic::checks}[0]->isa("Comic::Check::Weekday"), 'messed up check for all comics');
     is_deeply(${Comic::checks}[0]->{weekday}, 1, 'messed up weekday for all comics');
 }
+
+
+sub comic_remove_from_config : Tests {
+    MockComic::fake_file($Comic::MAIN_CONFIG_FILE, '{ "Check": { "Comic/Check/Weekday.pm": [1] } }');
+    my $comic = MockComic::make_comic(
+        $MockComic::JSON => '"Check": { "remove": [ "Comic/Check/Weekday.pm" ] }',
+    );
+    is(@{$comic->{checks}}, 0, 'should have no checks');
+
+    is(@{Comic::checks}, 1, 'should still have one check for all comics');
+    ok(${Comic::checks}[0]->isa("Comic::Check::Weekday"), 'messed up check for all comics');
+    is_deeply(${Comic::checks}[0]->{weekday}, 1, 'messed up weekday for all comics');
+}
+
+
+sub comic_remove_from_config_as_hash_gets_nice_error_message : Tests {
+    MockComic::fake_file($Comic::MAIN_CONFIG_FILE, '{ "Check": { "DummyCheck": [1] } }');
+    eval {
+        MockComic::make_comic(
+            $MockComic::JSON => '"Check": { "remove": { "DummyCheck": 1 } }',
+        );
+    };
+    like($@, qr{must pass an array to "remove"}i);
+}
+
+
+sub comic_check_unknown_command : Tests {
+    MockComic::fake_file($Comic::MAIN_CONFIG_FILE, '{ "Check": { "DummyCheck": [1] } }');
+    eval {
+        MockComic::make_comic(
+            $MockComic::JSON => '"Check": { "include": { "DummyCheck": 1 } }',
+        );
+    };
+    like($@, qr{unknown check}i);
+    like($@, qr{\binclude\b}i);
+    like($@, qr{\buse\b}i);
+    like($@, qr{\badd\b}i);
+    like($@, qr{\bremove\b}i);
+}
