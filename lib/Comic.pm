@@ -203,20 +203,13 @@ sub _load_checks() {
 sub _load_check {
     my ($checks, $name, $args) = @ARG;
 
-    # Allow :: as in Perl use module syntax as well as slashes.
-    my $filename = $name;
-    $filename =~ s{::}{/}g;
-    $filename = "$filename.pm" unless $filename =~ m/\.pm$/;
+    my $filename = _module_path($name);
     eval {
         require $filename;
         $filename->import();
         1;  # indicate success, or we may end up with an empty eval error
     }
     or croak("Error using check $filename: $EVAL_ERROR");
-
-    my $module = $filename;
-    $module =~ s{/}{::}g;
-    $module =~ s/\.pm$//g;
 
     my @args;
     if (ref $args eq ref {}) {
@@ -232,6 +225,7 @@ sub _load_check {
         croak('Cannot handle ' . (ref $args) . " for $name arguments");
     }
 
+    my $module = _module_name($filename);
     my $check = $module->new(@args);
     push @{$checks}, $check;
 
@@ -329,52 +323,21 @@ sub _adjust_checks {
     foreach my $keyword (keys %{$check_config}) {
         if ($keyword eq 'use') {
             @{$self->{checks}} = ();
-            my $used = $check_config->{'use'};
-
-            if (ref $used eq ref []) {
-                # Convert array into a hash with empty args to easily add
-                # Checks with default arguments.
-                $used = { map { $_ => [] } @{$used} };
-            }
-
-            foreach my $name (keys %{$used}) {
-                _load_check($self->{checks}, $name, ${$used}{$name} || []);
-            }
+            $self->_add_checks($check_config->{'use'});
         }
 
         elsif ($keyword eq 'add') {
             my $adding = $check_config->{'add'};
-
-            if (ref $adding eq ref []) {
-                # Convert array into a hash with empty args to easily add
-                # Checks with default arguments.
-                $adding = { map { $_ => [] } @{$adding} };
-            }
-
-            foreach my $name (keys %{$adding}) {
-                $name =~ s/\.pm$//;
-                $name =~ s{/}{::}g;
-
-                # Remove any old checks of that type.
-                @{$self->{checks}} = grep { ref $_ ne $name } @{$self->{checks}};
-
-                _load_check($self->{checks}, $name, ${$adding}{$name} || []);
-            }
+            $self->_remove_checks($adding);
+            $self->_add_checks($adding);
         }
 
         elsif ($keyword eq 'remove') {
             my $removing = $check_config->{'remove'};
-
             if (ref $removing ne ref []) {
                 $self->_croak('Must pass an array to "remove"');
             }
-
-            foreach my $name (@{$removing}) {
-                $name =~ s/\.pm$//;
-                $name =~ s{/}{::}g;
-
-                @{$self->{checks}} = grep { ref $_ ne $name } @{$self->{checks}};
-            }
+            $self->_remove_checks($removing);
         }
 
         else {
@@ -383,6 +346,70 @@ sub _adjust_checks {
     }
 
     return;
+}
+
+
+# Converts an array ref to a hash ref (with elements pointing to empty array
+# references) to easily add Checks without arguments (where the Check then
+# falls back on default arguments). If the passed reference is already a
+# hash reference, return it.
+sub _array_ref_to_hash_ref {
+    my ($array_or_hash_ref) = @ARG;
+
+    if (ref $array_or_hash_ref eq ref []) {
+        $array_or_hash_ref = { map { $_ => [] } @{$array_or_hash_ref} };
+    }
+
+    return $array_or_hash_ref;
+}
+
+
+# Creates and adds the Checks for the given module names to this comic.
+sub _add_checks {
+    my ($self, $checks) = @ARG;
+
+    $checks = _array_ref_to_hash_ref($checks);
+    foreach my $name (keys %{$checks}) {
+        _load_check($self->{checks}, $name, ${$checks}{$name} || []);
+    }
+
+    return;
+}
+
+
+# Removes the given check types from this Comic.
+sub _remove_checks {
+    my ($self, $checks) = @ARG;
+
+    $checks = _array_ref_to_hash_ref($checks);
+    foreach my $name (keys %{$checks}) {
+        @{$self->{checks}} = grep { ref $_ ne _module_name($name) } @{$self->{checks}};
+    }
+
+    return;
+}
+
+
+# Converts a path to a module with its name as it would be used in a "use"
+# or "require".
+sub _module_name {
+    my ($name) = @ARG;
+
+    $name =~ s/\.pm$//;
+    $name =~ s{/}{::}g;
+
+    return $name;
+}
+
+
+# Converts a Perl module name as used in a use or require to a relative path.
+sub _module_path {
+    my ($filename) = @ARG;
+
+    $filename =~ s{::}{/}g;
+    $filename = "$filename.pm" unless $filename =~ m/\.pm$/;
+
+    return $filename;
 }
 
 
