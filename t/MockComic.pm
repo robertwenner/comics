@@ -85,6 +85,11 @@ sub set_up {
 
 
 sub mock_methods {
+    *Comic::_exists = sub {
+        my ($name) = @_;
+        return exists $files_read{$name} && defined($files_read{$name});;
+    };
+
     *Comic::_slurp = sub {
         my ($name) = @_;
         confess("Tried to read unmocked file '$name'") unless (defined($files_read{$name}));
