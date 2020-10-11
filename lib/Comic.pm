@@ -162,6 +162,7 @@ sub new {
     @{$self->{checks}} = @checks;
 
     $self->_load($file, %domains);
+
     return $self;
 }
 
@@ -192,40 +193,46 @@ sub _load_checks() {
     }
 
     foreach my $name (keys %{$check_settings}) {
-        # Allow :: as in Perl use module syntax as well as slashes.
-        my $filename = $name;
-        $filename =~ s{::}{/}g;
-        $filename = "$filename.pm" unless $filename =~ m/\.pm$/;
-        eval {
-            require $filename;
-            $filename->import();
-            1;  # indicate success, or we may end up with an empty eval error
-        }
-        or croak("Error using check $filename: $EVAL_ERROR");
-
-        my $module = $filename;
-        $module =~ s{/}{::}g;
-        $module =~ s/\.pm$//g;
-
-        my $args = ${$check_settings}{$name} || [];
-        my @args;
-        if (ref $args eq ref {}) {
-            @args = %{$args};
-        }
-        elsif (ref $args eq ref []) {
-            @args = @{$args};
-        }
-        elsif (ref $args eq ref $name) {
-            push @args, $args;
-        }
-        else {
-            croak('Cannot handle ' . (ref $args) . " for $name arguments");
-        }
-
-        my $check = $module->new(@args);
-
-        push @checks, $check;
+        _load_check($name, ${$check_settings}{$name} || []);
     }
+    return;
+}
+
+
+sub _load_check {
+    my ($name, $args) = @ARG;
+
+    # Allow :: as in Perl use module syntax as well as slashes.
+    my $filename = $name;
+    $filename =~ s{::}{/}g;
+    $filename = "$filename.pm" unless $filename =~ m/\.pm$/;
+    eval {
+        require $filename;
+        $filename->import();
+        1;  # indicate success, or we may end up with an empty eval error
+    }
+    or croak("Error using check $filename: $EVAL_ERROR");
+
+    my $module = $filename;
+    $module =~ s{/}{::}g;
+    $module =~ s/\.pm$//g;
+
+    my @args;
+    if (ref $args eq ref {}) {
+        @args = %{$args};
+    }
+    elsif (ref $args eq ref []) {
+        @args = @{$args};
+    }
+    elsif (ref $args eq ref $name) {
+        push @args, $args;
+    }
+    else {
+        croak('Cannot handle ' . (ref $args) . " for $name arguments");
+    }
+
+    my $check = $module->new(@args);
+    push @checks, $check;
 
     return;
 }
