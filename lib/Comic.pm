@@ -239,6 +239,88 @@ sub _load_check {
 }
 
 
+=head2 _adjust_checks
+
+Adjusts the checks on a per-comic basis. Each comic will normally use the
+default checks. Comics can modify these defaults by defining a C<Check>
+entry in their metadata.
+
+That C<Check> needs to be a JSON array containing any of these keywords as
+objects (case-sensitive):
+
+=over 4
+
+=item B<use> Use only the given Checks for this Comic, ignore the main
+    configuration's checks completely. This can be used if the Comic has
+    completely different Check needs than all the other comics.
+
+=item B<add> Add the given Checks to the ones from the main configuration.
+    This is helpful if this Comic needs a Check that others don't need.
+    If there was already a Check by that type, it's replaced with the new
+    one.
+
+=item B<remove> Remove the given Checks from the configured Checks. This is
+    useful if a Check that's helpful for most other Comics doesn't make
+    sense for this one.
+
+=back
+
+These keywords are evaluated in the order they appear in the Comic metadata.
+You should probably only either use C<use> or a combination of C<add> and
+C<remove> anyway.
+
+For example, assuming the main configuration says to use the Checks
+F<Comic::Check::Weekday> and F<Comic::Check::Tags> (checking for "Tags" and
+"Who").
+
+The following per-comic configuration will replace these checks with only a
+C<Comic::Check::Actors> Check. No arguments are passed to
+C<Comic::Check::Actor> so it will use whatever defaults it has.
+
+    {
+        "Check": {
+            "use": [
+                "Comic::Check::Actors"
+            ]
+        }
+    }
+
+If the Check takes arguments, they can be passed as well, but the the new
+Checks need to be given as an object instead of an array, like in this
+example:
+
+    {
+        "Check": {
+            "use": {
+                "Comic::Check::Weekday": [1]
+            }
+        }
+    }
+
+With the same base configuration, this will remove the weekday check. This
+configuration could be used for a one-off comic:
+
+    {
+        "Check": {
+            "remove": [ "Comic::Check::Weekday" ]
+        }
+    }
+
+This example would go one step further and redefine the tags to check (to
+only check "Tag", but not "Who" as in the base configuration, for a comic
+without people), and add a Date collision check for this Comic:
+
+    {
+        "Check": {
+            "add": {
+                "Comic::Check::Tag": ["tags"]
+                "Comic::Check::DateCollision"
+            ]
+        }
+    }
+
+=cut
+
 sub _adjust_checks {
     my ($self, $check_config) = @ARG;
 
