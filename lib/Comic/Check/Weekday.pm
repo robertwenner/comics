@@ -93,24 +93,13 @@ sub check {
 
     my $published_when = trim($comic->{meta_data}->{published}->{when});
     return unless($published_when);
-
     my $published_date = DateTime::Format::ISO8601->parse_datetime($published_when);
-    my $today = _now();
 
-    # Allow older beer comics (initial set) to have non-Friday dates.
-    my $FRIDAYS_ONLY = DateTime->new(year => 2016, month => 8, day => 1);
-    if (DateTime->compare($published_date, $FRIDAYS_ONLY) > 0) {
-        if ($published_date->day_of_week() != $self->{weekday}) {
-            $comic->_warn('scheduled for ' . $published_date->day_name());
-        }
+    if ($published_date->day_of_week() != $self->{weekday}) {
+        $comic->_warn('scheduled for ' . $published_date->day_name());
     }
+
     return;
-}
-
-
-sub _now {
-    # uncoverable subroutine
-    return DateTime->now;
 }
 
 
