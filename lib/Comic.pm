@@ -113,7 +113,7 @@ published comics, and a sizemap to compare image sizes.
 
 
 # XPath default namespace name.
-Readonly our $DEFAULT_NAMESPACE => 'defNs';
+Readonly my $DEFAULT_NAMESPACE => 'defNs';
 
 # What date to use for sorting unpublished comics.
 Readonly my $UNPUBLISHED => '3000-01-01';

@@ -32,7 +32,7 @@ sub setup {
     }
 
     $comic = MockComic::make_comic(
-        $MockComic::TEXTS => \%layers, 
+        $MockComic::TEXTS => \%layers,
         $MockComic::FRAMES => [0, 0, 200, 200],
     );
 }
@@ -101,7 +101,7 @@ sub flipsUnknownLayerWithTrailingLanguageName : Tests {
 sub ignoresUnknownLayerWithEmbeddedLanguageName : Tests {
     setup('HintergrundDeutschUndSo', 'HintergrundEnglishUndSo');
     $comic->_flip_language_layers("Deutsch", ("Deutsch", "English"));
-    assert_visible(qw(Deutsch Rahmen Figuren Hintergrund 
+    assert_visible(qw(Deutsch Rahmen Figuren Hintergrund
         HintergrundDeutschUndSo HintergrundEnglishUndSo));
 }
 
@@ -112,7 +112,7 @@ sub keeps_background_opacity : Tests {
     assert_visible(qw(English));
 
     my $xpath = XML::LibXML::XPathContext->new($comic->{dom});
-    $xpath->registerNs($Comic::DEFAULT_NAMESPACE, 'http://www.w3.org/2000/svg');
+    $xpath->registerNs('myNs', 'http://www.w3.org/2000/svg');
     my $theLayer = Comic::_build_xpath('g[@inkscape:label="HintergrundDeutsch"]');
     my $style = ($comic->{xpath}->findnodes($theLayer))[0]->{style};
     is($style, 'display:none;opacity:0.35');
