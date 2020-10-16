@@ -125,7 +125,7 @@ sub find_all {
 
     find({
         wanted => sub {
-            my $name = $File::Find::fullname;
+            my $name = $File::Find::name;
             if ($name =~ m{/(Comic/Check/[^.]+\.pm)$}) {
                 $name = $1;
                 if ($name ne 'Comic/Check/Check.pm') {
