@@ -43,6 +43,8 @@ our Readonly $DOMAINS = 'domains';
 our Readonly $SEE = 'see';
 our Readonly $NAMESPACE_DECLARATION = 'namespace_declaration';
 our Readonly $TWITTER = 'twitter';
+our Readonly $SETTINGS = "settings";
+our Readonly $CHECK = "Check";
 
 
 my %files_read;
@@ -66,6 +68,9 @@ my %defaultArgs = (
         $DEUTSCH => 'biercomics.de',
         $ESPAÑOL => 'cervezacomics.es',
     },
+    $SETTINGS => {
+        $CHECK => [],
+    },
     $IN_FILE => 'some_comic.svg',
     $MTIME => 0,
     $HEIGHT => 200,
@@ -78,8 +83,6 @@ my %defaultArgs = (
 
 sub set_up {
     %file_written = ();
-    # Fake main config file to that not each Comic tries to collect all checks.
-    fake_file($Comic::MAIN_CONFIG_FILE, '{"Check": {}}');
     @made_dirs = ();
     Comic::reset_statics();
     mock_methods();

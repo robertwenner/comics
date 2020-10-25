@@ -80,7 +80,7 @@ Parameters:
 
 =over 4
 
-=item * Comic to check.
+=item B<comic> Comic to check.
 
 =back
 
@@ -105,6 +105,111 @@ series name is not unique (may be a typo).
 sub final_check {
     # uncoverable subroutine
     # Ignore.
+}
+
+
+=head2 load_check
+
+Loads a check dynamically.
+
+Parameters:
+
+=over 4
+
+=item B<checks> reference to an array to put an instance of the loaded Check
+    into.
+
+=item B<name> name of the check to load, this can either be a module name as
+    in C<use> (for example C<Comic::Check::SomeCheck>) or a path / file name
+    of the module (e.g., C<Comic/Check/SomeCheck.pm>). The module must be in
+    a path in C<@INC>.
+
+=item B<arguments> reference to an array or hash of the arguments to pass to
+    the new Check's constructor.
+
+=back
+
+=cut
+
+sub load_check {
+    my ($checks, $name, $args) = @ARG;
+
+    my $filename = module_path($name);
+    eval {
+        require $filename;
+        $filename->import();
+        1;  # indicate success, or we may end up with an empty eval error
+    }
+    or croak("Error using check $filename: $EVAL_ERROR");
+
+    my @args;
+    if (ref $args eq ref {}) {
+        @args = %{$args};
+    }
+    elsif (ref $args eq ref []) {
+        @args = @{$args};
+    }
+    elsif (ref $args eq ref $name) {
+        push @args, $args;
+    }
+    else {
+        croak('Cannot handle ' . (ref $args) . " for $name arguments");
+    }
+
+    my $module = module_name($filename);
+    my $check = $module->new(@args);
+    push @{$checks}, $check;
+
+    return;
+}
+
+
+=head2 module_name
+
+Converts a path to a module to its name as it would be used in a C<use> or
+C<require>.
+
+Parameters:
+
+=over 4
+
+=item B<name> path / file name of the module, e.g., C<Comic/Check/Check.pm>.
+
+=back
+
+=cut
+
+sub module_name {
+    my ($name) = @ARG;
+
+    $name =~ s/\.pm$//;
+    $name =~ s{/}{::}g;
+
+    return $name;
+}
+
+
+=head2 module_path
+
+Converts a Perl module name as used in a C<use> or C<require> to a relative path.
+
+Parameters:
+
+=over 4
+
+=item B<name> Module name, e.g., C<Comic::Check::Check>.
+
+=back
+
+=cut
+
+sub module_path {
+    my ($name) = @ARG;
+
+    $name =~ s{::}{/}g;
+    $name = "$name.pm" unless $name =~ m/\.pm$/;
+
+    return $name;
 }
 
 

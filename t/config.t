@@ -3,43 +3,175 @@ use warnings;
 
 use base 'Test::Class';
 use Test::More;
-use lib 't';
-use MockComic;
+use lib 't/check';
+
+use Comics;
 
 __PACKAGE__->runtests() unless caller;
 
+my %faked_files;
+my %asked_exists;
+my $comics;
+
 
 sub set_up : Test(setup) {
-    MockComic::set_up();
-}
+    %faked_files = ();
+    %asked_exists = ();
 
-
-sub no_main_config : Tests {
-    my @asked_for;
     no warnings qw/redefine/;
-    local *Comic::_exists = sub {
-        push @asked_for, @_;
-        return 0;
+    *Comics::_exists = sub {
+        my ($file) = @_;
+        $asked_exists{$file}++;
+        return defined $faked_files{$file};
+    };
+    *Comics::_slurp = sub {
+        my ($file) = @_;
+        return $faked_files{$file};
     };
     use warnings;
 
-    my $comic = MockComic::make_comic();
-
-    isnt($Comic::settings, undef, 'should have initialized settings');
-    is_deeply($Comic::settings->get(), {}, 'settings shoud be empty');
-    is_deeply(@asked_for, $Comic::MAIN_CONFIG_FILE, 'should have looked for config file');
+    $comics = Comics->new();
 }
 
 
-sub laods_main_config : Tests {
-    no warnings qw/redefine/;
-    local *Comic::_exists = sub {
-        return 1;
+sub config_file_does_not_exist : Tests {
+    $comics->load_settings("config.json");
+
+    isnt($comics->{settings}, undef, 'should have initialized settings');
+    is_deeply($comics->{settings}->get(), {}, 'settings shoud be empty');
+    is_deeply($asked_exists{"config.json"}, 1, 'should have looked for config file');
+}
+
+
+sub laods_config_file : Tests {
+    $faked_files{"config.json"} = '{"foo": "bar"}';
+
+    $comics->load_settings("config.json");
+    is_deeply({"foo" => "bar"}, $comics->{settings}->get(), 'should have loaded settings');
+}
+
+
+sub uses_all_checks_if_nothing_configured : Tests {
+    $comics->load_checks();
+    ok($comics->{checks} > 0, 'should have checks');
+}
+
+
+sub uses_all_checks_if_no_checks_config_section_exists : Tests {
+    $faked_files{"settings.json"} = '{}';
+    $comics->load_settings("settings.json");
+    $comics->load_checks();
+    ok($comics->{checks} > 0, 'should have checks');
+}
+
+
+sub uses_no_checks_if_checks_config_section_is_empty : Tests {
+    $faked_files{"settings.json"} = '{ "Check": {} }';
+    $comics->load_settings("settings.json");
+    $comics->load_checks();
+    is_deeply($comics->{checks}, [], 'should not have checks');
+}
+
+
+sub passes_args_to_configured_check_from_list : Tests {
+    $faked_files{"settings.json"} = '{ "Check": { "DummyCheck.pm": [1, 2, 3] } }';
+    $comics->load_settings("settings.json");
+    $comics->load_checks();
+
+    is(@{$comics->{checks}}, 1, 'should have one check');
+    ok($comics->{checks}[0]->isa("DummyCheck"), 'created wrong check');
+    is_deeply($comics->{checks}[0]->{args}, [1, 2, 3], 'passed wrong ctor args');
+}
+
+
+sub passes_args_to_configured_check_from_object : Tests {
+    $faked_files{"settings.json"} = '{ "Check": { "DummyCheck.pm": {"a": 1} } }';
+    $comics->load_settings("settings.json");
+    $comics->load_checks();
+
+    is(@{$comics->{checks}}, 1, 'should have one check');
+    ok($comics->{checks}[0]->isa("DummyCheck"), 'created wrong check');
+    is_deeply($comics->{checks}[0]->{args}, ["a", 1], 'passed wrong ctor args');
+}
+
+
+sub passes_args_to_configured_check_from_scalar_value : Tests {
+    $faked_files{"settings.json"} = '{ "Check": { "DummyCheck.pm": "a" } }';
+    $comics->load_settings("settings.json");
+    $comics->load_checks();
+
+    is(@{$comics->{checks}}, 1, 'should have one check');
+    ok($comics->{checks}[0]->isa("DummyCheck"), 'created wrong check');
+    is_deeply($comics->{checks}[0]->{args}, ["a"], 'passed wrong ctor args');
+}
+
+
+sub passes_args_to_configured_check_null : Tests {
+    $faked_files{"settings.json"} = '{ "Check": { "DummyCheck.pm": null } }';
+    $comics->load_settings("settings.json");
+    $comics->load_checks();
+
+    is(@{$comics->{checks}}, 1, 'should have one check');
+    ok($comics->{checks}[0]->isa("DummyCheck"), 'created wrong check');
+    is_deeply($comics->{checks}[0]->{args}, [], 'passed wrong ctor args');
+}
+
+
+sub passes_args_to_configured_check_boolean : Tests {
+    $faked_files{"settings.json"} = '{ "Check": { "DummyCheck.pm": true } }';
+    $comics->load_settings("settings.json");
+    eval {
+        $comics->load_checks();
     };
-    use warnings;
-    MockComic::fake_file($Comic::MAIN_CONFIG_FILE, '{"foo": "bar"}');
+    like($@, qr{cannot handle}i);
+}
 
-    my $comic = MockComic::make_comic();
 
-    is_deeply({"foo" => "bar"}, $Comic::settings->get(), 'should have loaded settings');
+sub uses_configured_check_path : Tests {
+    $faked_files{"settings.json"} = '{ "Check": { "Comic/Check/Actors.pm": [] } }';
+    $comics->load_settings("settings.json");
+    $comics->load_checks();
+
+    is(@{$comics->{checks}}, 1, 'should have one check');
+    ok($comics->{checks}[0]->isa("Comic::Check::Actors"), 'created wrong check');
+}
+
+
+sub uses_configured_check_module_name : Tests {
+    $faked_files{"settings.json"} = '{ "Check": { "Comic::Check::Actors": [] } }';
+    $comics->load_settings("settings.json");
+    $comics->load_checks();
+
+    is(@{$comics->{checks}}, 1, 'should have one check');
+    ok($comics->{checks}[0]->isa("Comic::Check::Actors"), 'created wrong check');
+}
+
+
+sub uses_configured_check_without_extension : Tests {
+    $faked_files{"settings.json"} = '{ "Check": { "Comic/Check/Actors": [] } }';
+    $comics->load_settings("settings.json");
+    $comics->load_checks();
+
+    is(@{$comics->{checks}}, 1, 'should have one check');
+    ok($comics->{checks}[0]->isa("Comic::Check::Actors"), 'created wrong check');
+}
+
+
+sub croaks_on_unknown_configured_check : Tests {
+    $faked_files{"settings.json"} = '{ "Check": { "NoSuchCheck": [] } }';
+    $comics->load_settings("settings.json");
+    eval {
+        $comics->load_checks();
+    };
+    like($@, qr{Can't locate NoSuchCheck});
+}
+
+
+sub croaks_on_wrong_config_syntax_checks_not_object : Tests {
+    $faked_files{"settings.json"} = '{ "Check": "DummyCheck" }';
+    $comics->load_settings("settings.json");
+    eval {
+        $comics->load_checks();
+    };
+    like($@, qr{must be a json object}i);
 }

@@ -121,17 +121,13 @@ Readonly my $UNPUBLISHED => '3000-01-01';
 # Temp dir for caches, per-langugage svg exports, etc.
 Readonly my $TEMPDIR => 'tmp';
 
-# Default main configuration file.
-Readonly our $MAIN_CONFIG_FILE => 'comic-perl-config.json';
-
 
 my %counts;
 my %language_code_cache;
 my @comics;
 ## no critic(Variables::ProhibitPackageVars)
-our $settings;
 our $inkscape_version;
-our @checks;
+our @checks;    # @donCommit our? not my? move to Comics?
 ## use critic
 
 
@@ -152,84 +148,16 @@ Parameters:
 =cut
 
 sub new {
-    my ($class, $file, %domains) = @ARG;
+    my ($class, $file, $settings, %domains) = @ARG;
     my $self = bless{}, $class;
 
-    unless ($settings) {
-        _load_settings();
-        _load_checks();
-    }
-    @{$self->{checks}} = @checks;
+    $self->{settings} = $settings;
+    @{$self->{checks}} = @{$settings->{'Check'}};
 
     $self->_load($file, %domains);
     $self->_adjust_checks($self->{meta_data}->{'Check'});
 
     return $self;
-}
-
-
-sub _load_settings {
-    $settings = Comic::Settings->new();
-
-    if (_exists($MAIN_CONFIG_FILE)) {
-        $settings->load_str(_slurp($MAIN_CONFIG_FILE));
-    }
-
-    return;
-}
-
-
-sub _load_checks() {
-    my $actual_settings = $settings->get();
-
-    my $check_settings;
-    if (exists $actual_settings->{'Check'}) {
-        $check_settings = $actual_settings->{'Check'};
-        if (ref $check_settings ne ref {}) {
-            croak('"Check" must be a JSON object');
-        }
-    }
-    else {
-        $check_settings = { map { $_ => [] } Comic::Check::Check::find_all() };
-    }
-
-    foreach my $name (keys %{$check_settings}) {
-        _load_check(\@checks, $name, ${$check_settings}{$name} || []);
-    }
-    return;
-}
-
-
-sub _load_check {
-    my ($checks, $name, $args) = @ARG;
-
-    my $filename = _module_path($name);
-    eval {
-        require $filename;
-        $filename->import();
-        1;  # indicate success, or we may end up with an empty eval error
-    }
-    or croak("Error using check $filename: $EVAL_ERROR");
-
-    my @args;
-    if (ref $args eq ref {}) {
-        @args = %{$args};
-    }
-    elsif (ref $args eq ref []) {
-        @args = @{$args};
-    }
-    elsif (ref $args eq ref $name) {
-        push @args, $args;
-    }
-    else {
-        croak('Cannot handle ' . (ref $args) . " for $name arguments");
-    }
-
-    my $module = _module_name($filename);
-    my $check = $module->new(@args);
-    push @{$checks}, $check;
-
-    return;
 }
 
 
@@ -370,7 +298,7 @@ sub _add_checks {
 
     $checks = _array_ref_to_hash_ref($checks);
     foreach my $name (keys %{$checks}) {
-        _load_check($self->{checks}, $name, ${$checks}{$name} || []);
+        Comic::Check::Check::load_check($self->{checks}, $name, ${$checks}{$name} || []);
     }
 
     return;
@@ -383,33 +311,10 @@ sub _remove_checks {
 
     $checks = _array_ref_to_hash_ref($checks);
     foreach my $name (keys %{$checks}) {
-        @{$self->{checks}} = grep { ref $_ ne _module_name($name) } @{$self->{checks}};
+        @{$self->{checks}} = grep { ref $_ ne Comic::Check::Check::module_name($name) } @{$self->{checks}};
     }
 
     return;
-}
-
-
-# Converts a path to a module with its name as it would be used in a "use"
-# or "require".
-sub _module_name {
-    my ($name) = @ARG;
-
-    $name =~ s/\.pm$//;
-    $name =~ s{/}{::}g;
-
-    return $name;
-}
-
-
-# Converts a Perl module name as used in a use or require to a relative path.
-sub _module_path {
-    my ($filename) = @ARG;
-
-    $filename =~ s{::}{/}g;
-    $filename = "$filename.pm" unless $filename =~ m/\.pm$/;
-
-    return $filename;
 }
 
 
@@ -1862,7 +1767,6 @@ sub reset_statics {
     %counts = ();
     @comics = ();
     $inkscape_version = undef;
-    $settings = undef;
     @checks = ();
     return;
 }
