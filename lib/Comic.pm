@@ -128,7 +128,6 @@ my %language_code_cache;
 my @comics;
 ## no critic(Variables::ProhibitPackageVars)
 our $inkscape_version;
-our @checks;    # @donCommit our? not my? move to Comics?
 ## use critic
 
 
@@ -551,15 +550,6 @@ sub check {
 
     foreach my $check (@{$self->{checks}}) {
         $check->check($self);
-    }
-
-    return;
-}
-
-
-sub _final_checks {
-    foreach my $check (@checks) {
-        $check->final_check();
     }
 
     return;
@@ -1609,6 +1599,17 @@ sub export_archive {
 }
 
 
+sub _final_checks {
+    my ($self) = @ARG;
+
+    foreach my $check (@{$self->{checks}}) {
+        $check->final_check();
+    }
+
+    return;
+}
+
+
 sub _archive_filter {
     my ($comic, $language) = @ARG;
     return !$comic->not_yet_published() && $comic->_is_for($language);
@@ -1757,7 +1758,6 @@ sub reset_statics {
     %counts = ();
     @comics = ();
     $inkscape_version = undef;
-    @checks = ();
     return;
 }
 

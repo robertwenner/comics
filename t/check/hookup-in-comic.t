@@ -34,7 +34,6 @@ sub check_cycle_for_cached_comic : Tests {
 
     my $check = DummyCheck->new();
     @{$comic->{checks}} = ($check);
-    @Comic::checks = ($check);
 
     $comic->check();
     is(${$check->{calls}}{'notify'}, 1, 'should have notified about comic');
@@ -52,7 +51,6 @@ sub check_cycle_for_uncached_comic : Tests {
 
     my $check = DummyCheck->new();
     @{$comic->{checks}} = ($check);
-    @Comic::checks = ($check);
 
     $comic->check();
     is(${$check->{calls}}{'notify'}, 1, 'should have notified about comic');
