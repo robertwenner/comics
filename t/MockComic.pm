@@ -191,18 +191,9 @@ sub make_comic {
     $mtime = $args{$MTIME};
     fake_file($args{$IN_FILE}, fake_comic(%args));
 
-    my $comic = new Comic($args{$IN_FILE}, %{$args{$DOMAINS}});
+    my $comic = new Comic($args{$IN_FILE}, $args{$SETTINGS}, %{$args{$DOMAINS}});
     $comic->{height} = $args{$HEIGHT};
     $comic->{width} = $args{$WIDTH};
-    return $comic;
-}
-
-
-sub make_comic_from_xml {
-    my ($filename, $xml) = @_;
-
-    fake_file($filename, $xml);
-    my $comic = new Comic($filename);
     return $comic;
 }
 

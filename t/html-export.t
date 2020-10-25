@@ -55,24 +55,7 @@ sub languages_many : Test {
 
 
 sub languages_none : Tests {
-    my $comic = MockComic::make_comic_from_xml('some-comic.svg', <<'XML');
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns="http://www.w3.org/2000/svg">
-  <metadata id="metadata7">
-    <rdf:RDF>
-      <cc:Work rdf:about="">
-        <dc:description>{
-            "title" : {}
-        }</dc:description>
-      </cc:Work>
-    </rdf:RDF>
-  </metadata>
-</svg>
-XML
+    my $comic = MockComic::make_comic($MockComic::TITLE => {});
     is_deeply([sort $comic->languages()], []);
     Comic::export_all_html({}, {}, {});
     ok(1); # Would have failed above
