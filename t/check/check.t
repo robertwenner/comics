@@ -10,7 +10,7 @@ use Comic::Check::Check;
 __PACKAGE__->runtests() unless caller;
 
 
-sub module_name : Test {
+sub module_name : Tests {
     is(Comic::Check::Check::module_name("baz.pm"), "baz");
     is(Comic::Check::Check::module_name("foo/bar/baz.pm"), "foo::bar::baz");
     is(Comic::Check::Check::module_name("foo::bar::baz"), "foo::bar::baz");
