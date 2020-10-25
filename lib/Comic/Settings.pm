@@ -5,7 +5,6 @@ use warnings;
 
 use English '-no_match_vars';
 use Carp;
-use File::Slurp qw(slurp);
 use JSON;
 use Hash::Merge;
 use Clone;
@@ -22,7 +21,7 @@ Comic::Settings - Compiles settings from different sources.
 =head1 SYNOPSIS
 
     my $settings = Comic::Settings->new();
-    $settings->load("File::Slurp::slurp(path/to/my/settings.json"));
+    $settings->load("path/to/my/settings.json");
     $settings->load("{...}");
     ...
     my $s = $settings->get();

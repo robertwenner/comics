@@ -5,6 +5,7 @@ use warnings;
 use English '-no_match_vars';
 use Readonly;
 use Carp;
+use File::Slurp;
 
 use Comic;
 use Comic::Settings;
@@ -126,7 +127,7 @@ sub load_settings {
 
     foreach my $file (@files) {
         if (_exists($file)) {
-            $self->{settings}->load_str(_slurp($file));
+            $self->{settings}->load_str(File::Slurp::slurp($file));
         }
     }
 
@@ -137,17 +138,6 @@ sub load_settings {
 sub _exists {
     # uncoverable subroutine
     return -r shift;
-}
-
-
-sub _slurp {
-    my ($file) = @ARG;
-
-    open my $F, '<', $file or croak "Cannot open $file: $OS_ERROR";
-    local $INPUT_RECORD_SEPARATOR = undef;
-    my $contents = <$F>;
-    close $F or croak "Cannot close $file: $OS_ERROR";
-    return $contents;
 }
 
 

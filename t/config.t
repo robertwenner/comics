@@ -24,7 +24,7 @@ sub set_up : Test(setup) {
         $asked_exists{$file}++;
         return defined $faked_files{$file};
     };
-    *Comics::_slurp = sub {
+    *File::Slurp::slurp = sub {
         my ($file) = @_;
         return $faked_files{$file};
     };
