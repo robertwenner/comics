@@ -39,7 +39,7 @@ our Readonly $COMMENTS = 'comments';
 our Readonly $SERIES = 'series';
 our Readonly $HEIGHT = 'height';
 our Readonly $WIDTH = 'width';
-our Readonly $DOMAINS = 'domains';
+our Readonly $DOMAINS = 'Domains';
 our Readonly $SEE = 'see';
 our Readonly $NAMESPACE_DECLARATION = 'namespace_declaration';
 our Readonly $TWITTER = 'twitter';
@@ -63,12 +63,12 @@ my %defaultArgs = (
         $ENGLISH => ['beer', 'craft'],
         $DEUTSCH => ['Bier', 'Craft'],
     },
-    $DOMAINS => {
-        $ENGLISH => 'beercomics.com',
-        $DEUTSCH => 'biercomics.de',
-        $ESPAÑOL => 'cervezacomics.es',
-    },
     $SETTINGS => {
+        $DOMAINS => {
+            $ENGLISH => 'beercomics.com',
+            $DEUTSCH => 'biercomics.de',
+            $ESPAÑOL => 'cervezacomics.es',
+        },
         $CHECK => [],
     },
     $IN_FILE => 'some_comic.svg',
@@ -194,7 +194,7 @@ sub make_comic {
     $mtime = $args{$MTIME};
     fake_file($args{$IN_FILE}, fake_comic(%args));
 
-    my $comic = new Comic($args{$IN_FILE}, $args{$SETTINGS}, %{$args{$DOMAINS}});
+    my $comic = new Comic($args{$IN_FILE}, $args{$SETTINGS});
     $comic->{height} = $args{$HEIGHT};
     $comic->{width} = $args{$WIDTH};
     return $comic;

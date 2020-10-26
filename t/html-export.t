@@ -44,11 +44,6 @@ sub languages_many : Test {
             'Deutsch' => 'Bier trinken',
             'Español' => 'Tomar cerveca',
         },
-        $MockComic::DOMAINS => {
-            'English' => 'beercomics.com',
-            'Deutsch' => 'biercomics.de',
-            'Español' => 'cervezacomics.es',
-        },
     );
     is_deeply([sort $comic->languages()], ['Deutsch', 'English', 'Español']);
 }

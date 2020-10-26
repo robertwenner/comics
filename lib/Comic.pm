@@ -58,11 +58,11 @@ This document refers to version 0.0.3.
 =head1 SYNOPSIS
 
     use Comic;
+    use Comic::Settings;
 
+    my $settings = Comic::Settings->new();
     foreach my $file (@ARGV) {
-        my $c = Comic->new($file, (
-            'Deutsch' => 'biercomics.de',
-            'English' => 'beercomics.com'));
+        my $c = Comic->new($file, $settings);
         $c->export_png();
     }
     Comic::export_all_html(
@@ -143,18 +143,20 @@ Parameters:
 
 =item B<$path/file> path and file name to the SVG input file.
 
+=item B<$settings> Comic::Settings object with settings for all comics.
+
 =back
 
 =cut
 
 sub new {
-    my ($class, $file, $settings, %domains) = @ARG;
+    my ($class, $file, $settings) = @ARG;
     my $self = bless{}, $class;
 
     $self->{settings} = $settings;
     @{$self->{checks}} = @{$settings->{'Check'}};
 
-    $self->_load($file, %domains);
+    $self->_load($file);
     $self->_adjust_checks($self->{meta_data}->{'Check'});
 
     return $self;
@@ -319,7 +321,7 @@ sub _remove_checks {
 
 
 sub _load {
-    my ($self, $file, %domains) = @ARG;
+    my ($self, $file) = @ARG;
 
     $self->{srcFile} = $file;
     $self->{warnings} = [];
@@ -361,7 +363,8 @@ sub _load {
 
     my %uri_encoding_options = (encode_reserved => 1);
     foreach my $language ($self->languages()) {
-        $self->_croak("No domain for $language") unless (defined $domains{$language});
+        my $domain = ${$self->{settings}->{Domains}}{$language};
+        $self->_croak("No domain for $language") unless ($domain);
 
         $self->{backlogPath}{$language} = 'generated/backlog/' . lc $language;
         my $base;
@@ -377,10 +380,9 @@ sub _load {
         $self->{baseName}{$language} = $self->_normalized_title($language);
         $self->{htmlFile}{$language} = "$self->{baseName}{$language}.html";
         $self->{pngFile}{$language} = "$self->{baseName}{$language}.png";
-        $self->{domain}{$language} = $domains{$language};
-        $self->{url}{$language} = "https://$domains{$language}/comics/$self->{baseName}{$language}.html";
+        $self->{url}{$language} = "https://$domain/comics/$self->{baseName}{$language}.html";
         $self->{urlUrlEncoded}{$language} = uri_encode($self->{url}{$language}, %uri_encoding_options);
-        $self->{imageUrl}{$language} = "https://$domains{$language}/comics/$self->{baseName}{$language}.png";
+        $self->{imageUrl}{$language} = "https://$domain/comics/$self->{baseName}{$language}.png";
         $self->{href}{$language} = "comics/$self->{htmlFile}{$language}";
 
         $counts{'comics'}{$language}++;
@@ -783,7 +785,8 @@ sub _drop_top_level_layers {
 sub _insert_url {
     my ($self, $svg, $language) = @ARG;
 
-    my $payload = XML::LibXML::Text->new("$self->{domain}{$language} — CC BY-NC-SA 4.0");
+    my $domain = ${$self->{settings}->{Domains}}{$language};
+    my $payload = XML::LibXML::Text->new("$domain — CC BY-NC-SA 4.0");
     my $tspan = XML::LibXML::Element->new('tspan');
     $tspan->setAttribute('sodipodi:role', 'line');
     $tspan->appendChild($payload);

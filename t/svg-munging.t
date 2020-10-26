@@ -29,7 +29,7 @@ sub make_comic {
     }
 
     my $comic = MockComic::make_comic(
-        $MockComic::TEXTS => \%layers, 
+        $MockComic::TEXTS => \%layers,
         $MockComic::FRAMES => [0, 0, 100, 200],
     );
     return $comic;
@@ -76,20 +76,11 @@ sub adds_url_and_license : Tests {
 
 
 sub adds_url_and_license_per_language : Tests {
-    my %domain = (
-        'Deutsch' => 'biercomics.de',
-        'English' => 'beercomics.com',
-    );
-    my $comic = MockComic::make_comic(
-        $MockComic::FRAMES => [0, 0, 100, 100],
-    );
-    foreach my $language (keys %domain) {
-        $comic->_insert_url($comic->{dom}, $language);
-    }
-    foreach my $language (keys %domain) {
-        is(get_layer($comic->{dom}, "License$language")->getFirstChild()->textContent(), 
-            "$domain{$language} — CC BY-NC-SA 4.0");
-    }
+    my $comic = MockComic::make_comic($MockComic::FRAMES => [0, 0, 100, 100]);
+    $comic->_insert_url($comic->{dom}, $MockComic::DEUTSCH);
+    $comic->_insert_url($comic->{dom}, $MockComic::ENGLISH);
+    is(get_layer($comic->{dom}, "LicenseDeutsch")->getFirstChild()->textContent(), "biercomics.de — CC BY-NC-SA 4.0");
+    is(get_layer($comic->{dom}, "LicenseEnglish")->getFirstChild()->textContent(), "beercomics.com — CC BY-NC-SA 4.0");
 }
 
 
