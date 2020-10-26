@@ -81,7 +81,9 @@ sub publish {
 #        my $comic = Comic->new($file, $comics->{settings}->clone());
 #        $comic->check();
 #        $comic->export_png();
+#        push @{$self->{comics}}, $comic;
 #    }
+#    $comics.final_checks();
 #    $comics.generate_comic_pages();
 #    $comics.generate_rss_feeds();
 #    $comics.generate_archive();
@@ -104,6 +106,7 @@ sub new {
     my $self = bless{}, $class;
     $self->{settings} = Comic::Settings->new();
     $self->{checks} = [];
+    $self->{comics} = [];
     return $self;
 }
 
@@ -165,6 +168,33 @@ sub load_checks() {
     foreach my $name (keys %{$check_settings}) {
         Comic::Check::Check::load_check($self->{checks}, $name, ${$check_settings}{$name} || []);
     }
+    return;
+}
+
+
+=head2 final_checks
+
+Runs the final checks method for all loaded Checks, giving them a chance to
+do their checks after having seen all Comics.
+
+=cut
+
+sub final_checks {
+    my ($self) = @ARG;
+
+    my %called;
+    foreach my $check (@{$self->{checks}}) {
+        $check->final_check() unless ($called{$check});
+        $called{$check} = 1;
+    }
+
+    foreach my $comic (@{$self->{comics}}) {
+        foreach my $check (@{$comic->{checks}}) {
+            $check->final_check() unless ($called{$check});
+            $called{$check} = 1;
+        }
+    }
+
     return;
 }
 
