@@ -155,10 +155,10 @@ sub load_checks() {
 
     my $actual_settings = $self->{settings}->get();
     my $check_settings;
-    if (exists $actual_settings->{'Check'}) {
-        $check_settings = $actual_settings->{'Check'};
+    if (exists $actual_settings->{$Comic::Settings::CHECKS}) {
+        $check_settings = $actual_settings->{$Comic::Settings::CHECKS};
         if (ref $check_settings ne ref {}) {
-            croak('"Check" must be a JSON object');
+            croak("'$Comic::Settings::CHECKS' must be a JSON object");
         }
     }
     else {

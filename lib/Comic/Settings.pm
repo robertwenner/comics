@@ -3,6 +3,7 @@ package Comic::Settings;
 use strict;
 use warnings;
 
+use Readonly;
 use English '-no_match_vars';
 use Carp;
 use JSON;
@@ -10,6 +11,9 @@ use Hash::Merge;
 use Clone;
 
 use version; our $VERSION = qv('0.0.3');
+
+
+Readonly our $CHECKS => 'Checks';
 
 
 =for stopwords JSON Wenner perlartistic MERCHANTABILITY

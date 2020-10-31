@@ -66,7 +66,7 @@ sub uses_all_checks_if_no_checks_config_section_exists : Tests {
 
 
 sub uses_no_checks_if_checks_config_section_is_empty : Tests {
-    $faked_files{"settings.json"} = '{ "Check": {} }';
+    $faked_files{"settings.json"} = '{ "Checks": {} }';
     $comics->load_settings("settings.json");
     $comics->load_checks();
     is_deeply($comics->{checks}, [], 'should not have checks');
@@ -74,7 +74,7 @@ sub uses_no_checks_if_checks_config_section_is_empty : Tests {
 
 
 sub passes_args_to_configured_check_from_list : Tests {
-    $faked_files{"settings.json"} = '{ "Check": { "DummyCheck.pm": [1, 2, 3] } }';
+    $faked_files{"settings.json"} = '{ "Checks": { "DummyCheck.pm": [1, 2, 3] } }';
     $comics->load_settings("settings.json");
     $comics->load_checks();
 
@@ -85,7 +85,7 @@ sub passes_args_to_configured_check_from_list : Tests {
 
 
 sub passes_args_to_configured_check_from_object : Tests {
-    $faked_files{"settings.json"} = '{ "Check": { "DummyCheck.pm": {"a": 1} } }';
+    $faked_files{"settings.json"} = '{ "Checks": { "DummyCheck.pm": {"a": 1} } }';
     $comics->load_settings("settings.json");
     $comics->load_checks();
 
@@ -96,7 +96,7 @@ sub passes_args_to_configured_check_from_object : Tests {
 
 
 sub passes_args_to_configured_check_from_scalar_value : Tests {
-    $faked_files{"settings.json"} = '{ "Check": { "DummyCheck.pm": "a" } }';
+    $faked_files{"settings.json"} = '{ "Checks": { "DummyCheck.pm": "a" } }';
     $comics->load_settings("settings.json");
     $comics->load_checks();
 
@@ -107,7 +107,7 @@ sub passes_args_to_configured_check_from_scalar_value : Tests {
 
 
 sub passes_args_to_configured_check_null : Tests {
-    $faked_files{"settings.json"} = '{ "Check": { "DummyCheck.pm": null } }';
+    $faked_files{"settings.json"} = '{ "Checks": { "DummyCheck.pm": null } }';
     $comics->load_settings("settings.json");
     $comics->load_checks();
 
@@ -118,7 +118,7 @@ sub passes_args_to_configured_check_null : Tests {
 
 
 sub passes_args_to_configured_check_boolean : Tests {
-    $faked_files{"settings.json"} = '{ "Check": { "DummyCheck.pm": true } }';
+    $faked_files{"settings.json"} = '{ "Checks": { "DummyCheck.pm": true } }';
     $comics->load_settings("settings.json");
     eval {
         $comics->load_checks();
@@ -128,7 +128,7 @@ sub passes_args_to_configured_check_boolean : Tests {
 
 
 sub uses_configured_check_path : Tests {
-    $faked_files{"settings.json"} = '{ "Check": { "Comic/Check/Actors.pm": [] } }';
+    $faked_files{"settings.json"} = '{ "Checks": { "Comic/Check/Actors.pm": [] } }';
     $comics->load_settings("settings.json");
     $comics->load_checks();
 
@@ -138,7 +138,7 @@ sub uses_configured_check_path : Tests {
 
 
 sub uses_configured_check_module_name : Tests {
-    $faked_files{"settings.json"} = '{ "Check": { "Comic::Check::Actors": [] } }';
+    $faked_files{"settings.json"} = '{ "Checks": { "Comic::Check::Actors": [] } }';
     $comics->load_settings("settings.json");
     $comics->load_checks();
 
@@ -148,7 +148,7 @@ sub uses_configured_check_module_name : Tests {
 
 
 sub uses_configured_check_without_extension : Tests {
-    $faked_files{"settings.json"} = '{ "Check": { "Comic/Check/Actors": [] } }';
+    $faked_files{"settings.json"} = '{ "Checks": { "Comic/Check/Actors": [] } }';
     $comics->load_settings("settings.json");
     $comics->load_checks();
 
@@ -158,7 +158,7 @@ sub uses_configured_check_without_extension : Tests {
 
 
 sub croaks_on_unknown_configured_check : Tests {
-    $faked_files{"settings.json"} = '{ "Check": { "NoSuchCheck": [] } }';
+    $faked_files{"settings.json"} = '{ "Checks": { "NoSuchCheck": [] } }';
     $comics->load_settings("settings.json");
     eval {
         $comics->load_checks();
@@ -168,7 +168,7 @@ sub croaks_on_unknown_configured_check : Tests {
 
 
 sub croaks_on_wrong_config_syntax_checks_not_object : Tests {
-    $faked_files{"settings.json"} = '{ "Check": "DummyCheck" }';
+    $faked_files{"settings.json"} = '{ "Checks": "DummyCheck" }';
     $comics->load_settings("settings.json");
     eval {
         $comics->load_checks();

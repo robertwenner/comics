@@ -5,6 +5,7 @@ use utf8;
 use base 'Test::Class';
 use Test::More;
 
+use Comic::Settings;
 use lib 't';
 use MockComic;
 
@@ -52,7 +53,7 @@ sub language_code_unknown : Test {
             $MockComic::DOMAINS => {
                 'Pimperanto' => 'wtf.com',
             },
-            $MockComic::CHECK => [],
+            $Comic::Settings::CHECKS => [],
         });
     eval {
         $comic->_language_codes();

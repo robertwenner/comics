@@ -154,10 +154,10 @@ sub new {
     my $self = bless{}, $class;
 
     $self->{settings} = $settings;
-    @{$self->{checks}} = @{$settings->{'Check'}};
+    @{$self->{checks}} = @{$settings->{$Comic::Settings::CHECKS}};
 
     $self->_load($file);
-    $self->_adjust_checks($self->{meta_data}->{'Check'});
+    $self->_adjust_checks($self->{meta_data}->{$Comic::Settings::CHECKS});
 
     return $self;
 }
@@ -166,10 +166,10 @@ sub new {
 =head2 _adjust_checks
 
 Adjusts the checks on a per-comic basis. Each comic will normally use the
-default checks. Comics can modify these defaults by defining a C<Check>
+default checks. Comics can modify these defaults by defining a C<Checks>
 entry in their metadata.
 
-That C<Check> needs to be a JSON array containing any of these keywords as
+That C<Checks> needs to be a JSON array containing any of these keywords as
 objects (case-sensitive):
 
 =over 4

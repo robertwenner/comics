@@ -8,6 +8,7 @@ use Readonly;
 use Test::More;
 use Test::Deep;
 use Comic;
+use Comic::Settings;
 use Carp;
 use JSON;
 
@@ -44,7 +45,6 @@ our Readonly $SEE = 'see';
 our Readonly $NAMESPACE_DECLARATION = 'namespace_declaration';
 our Readonly $TWITTER = 'twitter';
 our Readonly $SETTINGS = "settings";
-our Readonly $CHECK = "Check";
 
 
 my %files_read;
@@ -69,7 +69,7 @@ my %defaultArgs = (
             $DEUTSCH => 'biercomics.de',
             $ESPAÑOL => 'cervezacomics.es',
         },
-        $CHECK => [],
+        $Comic::Settings::CHECKS => [],
     },
     $IN_FILE => 'some_comic.svg',
     $MTIME => 0,
