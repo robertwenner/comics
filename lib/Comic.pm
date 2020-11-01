@@ -444,10 +444,11 @@ sub _append_speech_to_speaker {
 
 
 sub _mtime {
-    my ($file) = @ARG;
+    # uncoverable subroutine
+    my ($file) = @ARG; # uncoverable statement
 
-    Readonly my $MTIME => 9;
-    return (stat $file)[$MTIME];
+    Readonly my $MTIME => 9; # uncoverable statement
+    return (stat $file)[$MTIME]; # uncoverable statement
 }
 
 
@@ -491,7 +492,8 @@ sub export_png {
 
 
 sub _move {
-    return File::Copy::move(@ARG);
+    # uncoverable subroutine
+    return File::Copy::move(@ARG); # uncoverable statement
 }
 
 
@@ -593,7 +595,7 @@ sub _up_to_date {
 
 sub _exists {
     # uncoverable subroutine
-    return -r shift;
+    return -r shift; # uncoverable statement
 }
 
 
@@ -874,9 +876,10 @@ sub _where_to_place_the_text {
 
 
 sub _inkscape_query {
-    my ($self, $what) = @ARG;
+    # uncoverable subroutine
+    my ($self, $what) = @ARG; # uncoverable statement
     ## no critic(InputOutput::ProhibitBacktickOperators)
-    return `inkscape -$what $self->{srcFile}`;
+    return `inkscape -$what $self->{srcFile}`; # uncoverable statement
     ## use critic
 }
 
@@ -896,6 +899,7 @@ sub _frames_in_rows {
 
 
 sub _query_inkscape_version {
+    # uncoverable subroutine
     my ($self) = @ARG;
 
     # Inkscape seems to print its plugins information to stderr, e.g.:
@@ -903,12 +907,12 @@ sub _query_inkscape_version {
     # Hence redirect stderr to /dev/null.
 
     ## no critic(InputOutput::ProhibitBacktickOperators)
-    my $version = `inkscape --version 2>/dev/null`;
+    my $version = `inkscape --version 2>/dev/null`; # uncoverable statement
     ## use critic
-    if ($OS_ERROR) {
-        $self->_croak('Could not run Inkscape');
+    if ($OS_ERROR) { # uncoverable branch true
+        $self->_croak('Could not run Inkscape'); # uncoverable statement
     }
-    return $version;
+    return $version; # uncoverable statement
 }
 
 
@@ -990,7 +994,8 @@ sub _svg_to_png {
 
 
 sub _system {
-    return system @ARG;
+    # uncoverable subroutine
+    return system @ARG; # uncoverable statement
 }
 
 
@@ -1027,12 +1032,12 @@ sub _get_png_info {
 
 
 sub _file_size {
-    my ($name) = @_;
+    # uncoverable subroutine
+    my ($name) = @_; # uncoverable statement
 
-    Readonly my $SIZE => 7;
-    return (stat $name)[$SIZE];
+    Readonly my $SIZE => 7; # uncoverable statement
+    return (stat $name)[$SIZE]; # uncoverable statement
 }
-
 
 
 sub _make_dir {
@@ -1184,7 +1189,7 @@ sub not_yet_published {
 
 sub _now {
     # uncoverable subroutine
-    return DateTime->now;
+    return DateTime->now; # uncoverable statement
 }
 
 
@@ -2217,8 +2222,9 @@ sub _wait_for_reddit_limit {
 
 
 sub _sleep {
-    sleep @ARG;
-    return;
+    # uncoverable subroutine
+    sleep @ARG; # uncoverable statement
+    return; # uncoverable statement
 }
 
 
