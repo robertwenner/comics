@@ -64,15 +64,14 @@ regular space instead of a line break when configuring this.
 For example:
 
     {
-        "allow-dup
-        licated": [
-            "Pils' "multi line text"
+        "allow-duplicated": [
+            "Pils", "multi line text"
         ]
     }
 
 
 Any text that looks like a speaker introduction (i.e., ends in a colon) is
-allowed do be duplicated as well, so that characters cam have the same names
+allowed do be duplicated as well, so that characters can have the same names
 in different languages without having to define an C<allow-duplicated>
 exception each time.
 
