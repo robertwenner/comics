@@ -469,7 +469,7 @@ the meta data and an "English" layer and an "MetaEnglish" layer
 =cut
 
 sub export_png {
-    my ($self, $dont_publish_marker, %meta_data) = @ARG;
+    my ($self, %meta_data) = @ARG;
 
     foreach my $language ($self->languages()) {
         my $png_file = "$self->{whereTo}{$language}/$self->{pngFile}{$language}";

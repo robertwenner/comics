@@ -266,7 +266,7 @@ sub moves_from_backlog : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
     );
-    $comic->export_png('DONT_PUBLISH', ());
+    $comic->export_png();
 
     is($from, "generated/backlog/english/latest-comic.png", 'wrong move source');
     is($to, "generated/web/english/comics/latest-comic.png", 'wrong move target');
