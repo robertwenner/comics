@@ -88,7 +88,7 @@ Parameters:
 
 sub check {
     # uncoverable subroutine
-    croak('Comic::Check::Check should have been overridden');
+    croak('Comic::Check::Check should have been overridden'); # uncoverable statement
 }
 
 
