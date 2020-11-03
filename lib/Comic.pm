@@ -465,12 +465,12 @@ The png file will be the lower case title of the comic, limited to letters,
 numbers, and hyphens only. It will be placed in F<generated/web/$language/>.
 
 Inkscape files must have meta data matching layer names, e.g., "English" in
-the meta data and an "English" layer and an "MetaEnglish" layer
+the meta data and an "English" layer and an "MetaEnglish" layer.
 
 =cut
 
 sub export_png {
-    my ($self, %meta_data) = @ARG;
+    my ($self) = @ARG;
 
     foreach my $language ($self->languages()) {
         my $png_file = "$self->{whereTo}{$language}/$self->{pngFile}{$language}";
@@ -483,7 +483,7 @@ sub export_png {
         unless (_up_to_date($self->{srcFile}, $png_file)) {
             $self->_flip_language_layers($language);
             my $language_svg = $self->_write_temp_svg_file($language);
-            $self->_svg_to_png($language, $language_svg, %meta_data);
+            $self->_svg_to_png($language, $language_svg);
         }
         $self->_get_png_info($png_file, $language);
     }
@@ -960,32 +960,45 @@ sub _build_inkscape_command {
 
 
 sub _svg_to_png {
-    my ($self, $language, $svg_file, %global_meta_data) = @ARG;
+    my ($self, $language, $svg_file) = @ARG;
 
     my $png_file = "$self->{whereTo}{$language}/$self->{pngFile}{$language}";
     my $version = $self->_get_inkscape_version();
     my $export_cmd = $self->_build_inkscape_command($svg_file, $png_file, $version);
     _system($export_cmd) && $self->_croak("could not export: $export_cmd: $OS_ERROR");
 
+    my $tool = Image::ExifTool->new();
+    # Add data inferred from comic
     my %meta_data = (
         'Title' => $self->{meta_data}->{title}->{$language},
         'Description' => join('', $self->_get_transcript($language)),
         'CreationTime' => $self->{modified},
         'URL' => $self->{url}{$language},
-        %global_meta_data,
-        ref($self->{meta_data}->{'png-meta-data'}) eq 'HASH' ? %{$self->{meta_data}->{'png-meta-data'}} : (),
     );
-
-    my $tool = Image::ExifTool->new();
     foreach my $m (keys %meta_data) {
         $self->_set_png_meta($tool, $m, $meta_data{$m});
     }
-
+    # Add global settings
+    my %settings = %{$self->{settings}};
+    foreach my $key (qw/Author Artist Copyright/) {
+        if ($settings{$key}) {
+            $self->_set_png_meta($tool, $key, $settings{$key});
+        }
+    }
+    # Add data explicitly overriden in comic meta data
+    my $svg_meta = $self->{meta_data}->{'png-meta-data'};
+    if (ref($svg_meta) eq 'HASH') {
+        foreach my $key (keys %{$svg_meta}) {
+            $self->_set_png_meta($tool, $key, ${${svg_meta}}{$key});
+        }
+    }
+    # Finally write png meta data
     my $rc = $tool->WriteInfo($png_file);
     if ($rc != 1) {
-        $self->_croak('cannot write info: ' . $tool->GetValue('Error'));
+        $self->_croak('cannot write PNG meta data: ' . $tool->GetValue('Error'));
     }
 
+    # Shrink / optimize PNG
     my $shrink_cmd = "optipng --quiet $png_file";
     _system($shrink_cmd) && $self->_croak("Could not shrink: $shrink_cmd: $OS_ERROR");
 

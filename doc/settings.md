@@ -16,14 +16,28 @@ modules.
 The configuration has a top-level JSON object. Any settings are children of
 this top-level object.
 
+
+## Basic Settings
+
+You can configure these at the top level:
+
+* Artist: Your name, optionally with an email address. This is inserted into
+  the PNG's meta information.
+* Author: Like for Artist, in case these differ.
+* Copyright: The copyright or license for your comic. This is inserted into
+  the PNG's meta information.
+
+For example:
+
 ```json
 {
+    "Author": "Me",
+    "Copyright": "CC BY-NC-ND  4.0"
 }
 ```
 
 
 ## Checks
-
 
 The Checks settings configure which automatic Checks you want to run on each
 comic.
@@ -52,6 +66,9 @@ Checks, define an empty "Checks":
 
 Available checks are all Perl modules found on your system where the name
 starts with `Comic::Check`.
+
+Each comic can override the globally configured checks; see the
+[Comic](comic.md) documentation.
 
 
 ### Comic::Check::Actors

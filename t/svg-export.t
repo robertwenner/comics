@@ -163,18 +163,37 @@ sub png_meta_information : Tests {
 }
 
 
-sub png_meta_information_global : Tests {
-    my $comic = MockComic::make_comic();
-    $comic->_svg_to_png($MockComic::ENGLISH, 'some-comic.svg',
-        'Author' => 'The writer', 'Artist' => 'The painter', 'foo' => 'bar');
-    is($png_meta{'Author'}, 'The writer', 'author');
-    is($png_meta{'Artist'}, 'The painter', 'artist');
-    is($png_meta{'foo'}, 'bar', 'unknown element');
+sub png_meta_information_from_settings : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::SETTINGS => {
+            'Author' => 'Settings writer',
+            'Artist' => 'Settings artist',
+            'Copyright' => 'by me',
+            $Comic::Settings::CHECKS => [],
+            $MockComic::DOMAINS => {
+                $MockComic::ENGLISH => 'beercomics.com',
+                $MockComic::DEUTSCH => 'biercomics.de',
+            },
+        },
+    );
+    $comic->_svg_to_png($MockComic::ENGLISH, 'some-comic.svg');
+    is($png_meta{'Author'}, 'Settings writer', 'author');
+    is($png_meta{'Artist'}, 'Settings artist', 'artist');
+    is($png_meta{'Copyright'}, 'by me', 'copyright');
 }
 
 
 sub png_meta_information_from_comic_meta_data : Tests {
     my $comic = MockComic::make_comic(
+        $MockComic::SETTINGS => {
+            'Author' => 'Settings writer',
+            'Artist' => 'Settings painter',
+            $Comic::Settings::CHECKS => [],
+            $MockComic::DOMAINS => {
+                $MockComic::ENGLISH => 'beercomics.com',
+                $MockComic::DEUTSCH => 'biercomics.de',
+            },
+        },
         $MockComic::JSON => <<'JSON',
 "png-meta-data": {
     "Author": "The writer",
@@ -183,23 +202,10 @@ sub png_meta_information_from_comic_meta_data : Tests {
 }
 JSON
     );
-    $comic->_svg_to_png($MockComic::ENGLISH, 'some-comic.svg',
-        'Author' => 'Passed writer', 'Artist' => 'Passed painter');
+    $comic->_svg_to_png($MockComic::ENGLISH, 'some-comic.svg');
     is($png_meta{'Author'}, 'The writer', 'author');
     is($png_meta{'Artist'}, 'The painter', 'artist');
     is($png_meta{'Copyright'}, 'only by me', 'copyright');
-}
-
-
-sub png_meta_data_not_a_hash : Tests {
-    my $comic = MockComic::make_comic(
-        $MockComic::JSON => '"png-meta-data": "foo"',
-    );
-    $comic->_svg_to_png($MockComic::ENGLISH, 'some-comic.svg',
-        'Author' => 'Passed writer');
-    is($png_meta{'Author'}, 'Passed writer', 'author');
-    is($png_meta{'Artist'}, undef, 'artist');
-    is($png_meta{'Copyright'}, undef, 'copyright');
 }
 
 
