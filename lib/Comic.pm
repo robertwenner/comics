@@ -31,13 +31,13 @@ use Template;
 use Template::Plugin::JSON;
 use SVG;
 use URI::Encode qw(uri_encode uri_decode);
-use Net::Twitter;
 use Reddit::Client;
 use Clone qw(clone);
 
 use Comic::Consts;
 use Comic::Settings;
 use Comic::Check::Check;
+use Comic::Social::Twitter;
 
 
 use version; our $VERSION = qv('0.0.3');
@@ -2036,10 +2036,6 @@ Parameters:
 =item B<mode> png or html to decide whether to post the PNG file directly
 or rather the link to the comic's page.
 
-=item B<@languages> for which languages to promote the last comic. If not
-given, the comic is tweeted for all languages that have a meta data twitter
-entry.
-
 =back
 
 Returns log information (usually the URLs posted to and such) if successful,
@@ -2050,17 +2046,20 @@ or croaks if no current comic was found or the last comic isn't from today.
 sub post_to_social_media {
     my %settings = @ARG;
 
+    my $twitter = Comic::Social::Twitter->new(%{$settings{'twitter'}});
     my $posted = 0;
     my $log;
     my @published = reverse sort _compare grep { _no_language_archive_filter($_) } @comics;
     foreach my $comic (@published) {
         # Sorting is by date first, so it's safe to exit the loop at the first
-        # comic that's not up to date.
+        # comic that's not up to date. This allows to post multiple comics with
+        # the same date, when the comics for a day couldn't be translated and
+        # there are separate ones per language.
         last if ($comic->_is_not_current());
-        foreach my $language (sort keys %{$comic->{meta_data}->{title}}) {
-            # Twitter
-            $log .= _tweet($comic, $language, %{$settings{'twitter'}}) . "\n";
 
+        $log .= $twitter->tweet($comic) . "\n";
+
+        foreach my $language (sort keys %{$comic->{meta_data}->{title}}) {
             # Global default subredit
             my $use_default = $comic->{meta_data}->{reddit}->{'use-default'} // 1;
             if ($use_default) {
@@ -2114,54 +2113,6 @@ sub _is_not_current {
     $today->set_time_zone(_get_tz());
     my $published = $self->{meta_data}->{published}->{when} || $UNPUBLISHED;
     return ($published cmp $today->ymd) < 0;
-}
-
-
-sub _tweet {
-    my ($comic, $language, %twitter_settings) = @_;
-
-    my %settings = (
-        mode => 'png',
-        traits => [qw/API::RESTv1_1/],
-        ssl => 1,
-        %twitter_settings,
-    );
-
-    unless ($settings{'mode'} eq 'png' || $settings{'mode'} eq 'html') {
-        croak("Unknown twitter mode '$settings{'mode'}'");
-    }
-
-    my $description = $comic->{meta_data}->{description}->{$language};
-    my $tags = '';
-    if ($comic->{meta_data}->{twitter}->{$language}) {
-        $tags = join(' ', @{$comic->{meta_data}->{twitter}->{$language}}) . ' ';
-    }
-    my $text = _shorten_for_twitter("$tags$description");
-
-    my $twitter = Net::Twitter->new(%settings);
-    my $status;
-    if ($settings{'mode'} eq 'html') {
-        $status = $twitter->update($comic->{url}{$language});
-    }
-    else {
-        $status = $twitter->update_with_media($text, [
-            "$comic->{whereTo}{$language}/$comic->{pngFile}{$language}"
-        ]);
-    }
-
-    if (my $err = $EVAL_ERROR) {
-        croak $err unless blessed $status && $status->isa('Net::Twitter::Error');
-        croak $err->code, ': ', $err->message, "\n", $err->error, "\n";
-    }
-    return $status->{text};
-}
-
-
-sub _shorten_for_twitter {
-    my $text = shift;
-
-    Readonly my $MAX_LEN => 280;
-    return substr $text, 0, $MAX_LEN;
 }
 
 
