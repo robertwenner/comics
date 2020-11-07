@@ -16,8 +16,7 @@
 
 - break up code into different modules
 
-- plugable customizable checkers and actors (reddit poster, inkscape
-  importer, spell checker, frame checker, ...)
+- plugable customizable modules (reddit poster, inkscape importer)
 
 - internal archive with published dates and (source svg) file names and
   comic counts
@@ -78,7 +77,7 @@
 
 - use inkscape shell to export in bulk (could be faster than creating
   multiple inkscape processes), would be great to avoid writing temp svg
-  files if inkscape accepts the svg on stdin;
+  files if inkscape accepts the svg on stdin
 
 - publish on CPAN, add badge to README.md like this for Minilla:
   [![MetaCPAN Release](https://badge.fury.io/pl/Minilla.svg)](https://metacpan.org/release/Minilla)
@@ -90,7 +89,8 @@
   hiccups when it seems to stall for minutes (when cache is stale, but looks
   like frame collection could be the problem, not actually calling inkscape)
 
-- check that speaker names all show up in the "who" meta data
+- check that speaker names all show up in the "who" meta data (but be
+  careful about additional text, like "Paul, opening a beer:")
 
 - write qr code file only when writing the pngs, i.e., when the source has
   changed (only need this if the generated title / qr code file name has
@@ -102,7 +102,7 @@
   thread per comic, then wait till all are done; reuse threads for writing
   per-comic pages, when all next/prev links are known)
 
-- cache more data, like png sizes, transcript, and framepositions
+- cache more data, like png sizes, transcript, and frame positions?
 
 - mark cache as dirty if comic fails a check, so that you don't have to
   manually touch the svg: cache files should get written only after all
@@ -113,3 +113,7 @@
 
 - verbose and debug flags to print what's going on (helpful for configurable
   checks and actions)
+
+- switch Twitter module to Twitter::API
+
+- check 2FA for Reddit and Twitter
