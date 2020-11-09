@@ -31,13 +31,13 @@ use Template;
 use Template::Plugin::JSON;
 use SVG;
 use URI::Encode qw(uri_encode uri_decode);
-use Reddit::Client;
 use Clone qw(clone);
 
 use Comic::Consts;
 use Comic::Settings;
 use Comic::Check::Check;
 use Comic::Social::Twitter;
+use Comic::Social::Reddit;
 
 
 use version; our $VERSION = qv('0.0.3');
@@ -2047,6 +2047,8 @@ sub post_to_social_media {
     my %settings = @ARG;
 
     my $twitter = Comic::Social::Twitter->new(%{$settings{'twitter'}});
+    my $reddit = Comic::Social::Reddit->new(%{$settings{'reddit'}});
+
     my $posted = 0;
     my $log;
     my @published = reverse sort _compare grep { _no_language_archive_filter($_) } @comics;
@@ -2058,51 +2060,14 @@ sub post_to_social_media {
         last if ($comic->_is_not_current());
 
         $log .= $twitter->tweet($comic) . "\n";
-
-        foreach my $language (sort keys %{$comic->{meta_data}->{title}}) {
-            # Global default subredit
-            my $use_default = $comic->{meta_data}->{reddit}->{'use-default'} // 1;
-            if ($use_default) {
-                $log .= _reddit($comic, $language, %{$settings{'reddit'}}) . "\n";
-            }
-
-            # Subreddits specified in the comic
-            foreach my $s ($comic->_get_subreddits($language)) {
-                if ($s) {
-                    my %options = %{$settings{'reddit'}};
-                    if (defined($comic->{meta_data}->{reddit}->{$language})) {
-                        %options = (%options, %{$comic->{meta_data}->{reddit}->{$language}});
-                    }
-                    $options{'subreddit'} = $s;
-                    $log .= _reddit($comic, $language, %options) . "\n";
-                }
-            }
-
-            $posted = 1;
-        }
+        $log .= $reddit->post($comic) . "\n";
+        $posted = 1;
     }
     if (!$posted) {
         my $latest = $published[0];
         $latest->_croak("Not posting cause latest comic is not current ($latest->{meta_data}->{published}->{when})");
     }
     return $log;
-}
-
-
-sub _get_subreddits {
-    my ($self, $language) = @ARG;
-
-    my @subreddits;
-    my $json = $self->{meta_data}->{reddit}->{$language}->{subreddit};
-    if (defined $json) {
-        if (ref($json) eq 'ARRAY') {
-            push @subreddits, @{$json};
-        }
-        else {
-            push @subreddits, $json;
-        }
-    }
-    return @subreddits;
 }
 
 
@@ -2113,82 +2078,6 @@ sub _is_not_current {
     $today->set_time_zone(_get_tz());
     my $published = $self->{meta_data}->{published}->{when} || $UNPUBLISHED;
     return ($published cmp $today->ymd) < 0;
-}
-
-
-sub _reddit {
-    # Account must not have 2FA enabled!
-    my ($comic, $language, %reddit_settings) = @ARG;
-
-    my %settings = (
-        subreddit => 'comics',
-        user_agent => 'comicupload using Reddit::Client',
-        %reddit_settings,
-    );
-
-    my $title = "[OC] $comic->{meta_data}->{title}{$language}";
-    # https://redditclient.readthedocs.io/en/latest/oauth/
-    my $reddit = Reddit::Client->new(%settings);
-    my $subreddit = $settings{'subreddit'};
-    # Remove leading /r/ and trailing / to make specifiying the subreddit more
-    # lenient / user friendly.
-    $subreddit =~ s{^/r/}{};
-    $subreddit =~ s{/$}{};
-    my $message;
-    my $full_name = 0;
-    while (!$full_name) {
-        eval {
-            $full_name = $reddit->submit_link(
-                subreddit => $subreddit,
-                title => $title,
-                url => $comic->{url}{$language},
-            );
-        }
-        or do {
-            $message = $comic->_wait_for_reddit_limit($EVAL_ERROR);
-            last if (defined $message);
-        }
-    }
-
-    if ($message) {
-        return "$language: /r/$subreddit: $message";
-    }
-
-    $message = "Posted '$title' ($comic->{url}{$language}) to $subreddit";
-    if ($full_name) {
-        $message .= " ($full_name) at " . $reddit->get_link($full_name)->{permalink};
-    }
-    return $message;
-}
-
-
-sub _wait_for_reddit_limit {
-    my ($self, $error) = @ARG;
-
-    if ($error =~ m{\btry again in (\d+) (minutes?|seconds?)}i) {
-        my ($count, $unit) = ($1, $2);
-        if ($unit =~ m/minutes?/i) {
-            Readonly my $SECS_PER_MINUTE => 60;
-            $count *= $SECS_PER_MINUTE;
-        }
-        _sleep($count);
-    }
-    elsif ($error =~ m/ALREADY_SUB/) {
-        chomp $error;
-        return $error;
-    }
-    elsif ($error) {
-        $self->_croak("Don't know what reddit complains about: '$error'");
-    }
-
-    return '';
-}
-
-
-sub _sleep {
-    # uncoverable subroutine
-    sleep @ARG; # uncoverable statement
-    return; # uncoverable statement
 }
 
 

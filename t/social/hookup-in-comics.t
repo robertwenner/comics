@@ -7,13 +7,44 @@ use Test::More;
 use lib 't';
 use MockComic;
 
-
 __PACKAGE__->runtests() unless caller;
 
 
 sub set_up : Test(setup) {
     MockComic::set_up();
     MockComic::fake_now(DateTime->new(year => 2016, month => 8, day => 1));
+}
+
+
+sub passes_options : Tests {
+    my %twitter;
+    my %reddit;
+
+    no warnings qw/redefine/;
+    local *Comic::Social::Twitter::new = sub {
+        my ($self, %args) = @_;
+        %twitter = %args;
+    };
+    local *Comic::Social::Reddit::new = sub {
+        my ($self, %args) = @_;
+        %reddit = %args;
+    };
+    use warnings;
+
+    my $comic = MockComic::make_comic($MockComic::PUBLISHED_WHEN => "2000-01-01");
+    eval {
+        Comic::post_to_social_media(
+            twitter => {
+                mode => 'png'
+            },
+            reddit => {
+                secret => 'me',
+            }
+        );
+    };
+    # Ignore eval error about not posting cause the comic is not current
+    is_deeply(\%twitter, {mode => 'png'}, 'wrong twitter settings');
+    is_deeply(\%reddit, {secret => 'me'}, 'wrong reddit settings');
 }
 
 
@@ -28,7 +59,7 @@ sub no_new_comic : Tests {
 }
 
 
-sub for_languages : Tests {
+sub posts_comic : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
             $MockComic::ENGLISH => 'Latest comic',
@@ -37,97 +68,22 @@ sub for_languages : Tests {
     );
 
     my @tweeted;
-    my @reddit_languages;
+    my @posted;
 
     no warnings qw/redefine/;
     local *Comic::Social::Twitter::tweet = sub {
         my ($self, $comic) = @_;
         push @tweeted, $comic;
     };
-    local *Comic::_reddit = sub {
-        my ($comic, $language) = @_;
-        push @reddit_languages, $language;
+    local *Comic::Social::Reddit::post = sub {
+        my ($self, $comic, @subreddits) = @_;
+        push @posted, $comic;
     };
     use warnings;
 
     Comic::post_to_social_media();
     is_deeply(\@tweeted, [$comic], 'tweeted wrong comic');
-    is_deeply([@reddit_languages], ['Deutsch', 'English'], 'wrong reddit languages');
-}
-
-
-sub passes_twitter_options : Tests {
-    my %twitter;
-    my %reddit;
-
-    no warnings qw/redefine/;
-    local *Comic::Social::Twitter::new = sub {
-        my ($self, %args) = @_;
-        %twitter = %args;
-    };
-    use warnings;
-
-    my $comic = MockComic::make_comic($MockComic::PUBLISHED_WHEN => "2000-01-01");
-    eval {
-        Comic::post_to_social_media(
-            twitter => {
-                mode => 'png',
-            },
-        );
-    };
-    # Ignore eval error about not posting cause the comic is not current
-    is_deeply(\%twitter, {mode => 'png'}, 'wrong twitter settings');
-}
-
-
-sub passes_reddit_options : Tests {
-    my %reddit;
-
-    no warnings qw/redefine/;
-    local *Comic::Social::Twitter::tweet = sub {
-        return '';
-    };
-    local *Comic::_reddit = sub {
-        my ($comic, $language, %args) = @_;
-        %reddit = %args;
-    };
-    use warnings;
-
-    my $comic = MockComic::make_comic();
-    eval {
-        Comic::post_to_social_media(
-            reddit => {
-                blah => 'blubb',
-            },
-        );
-    };
-    # Ignore eval error about not posting cause the comic is not current
-    is_deeply(\%reddit, {blah => 'blubb'}, 'wrong reddit settings');
-}
-
-
-sub multiple_comics_different_languages : Tests {
-    my $de = MockComic::make_comic(
-        $MockComic::TITLE => { $MockComic::DEUTSCH => 'Neustes Comic' },
-    );
-    my $en = MockComic::make_comic(
-        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
-    );
-
-    my @tweeted;
-    no warnings qw/redefine/;
-    local *Comic::Social::Twitter::tweet = sub {
-        my ($self, $comic) = @_;
-        push @tweeted, $comic;
-        return '';
-    };
-    local *Comic::_reddit = sub {
-        return '';
-    };
-    use warnings;
-
-    Comic::post_to_social_media();
-    is_deeply(\@tweeted, [$en, $de], 'Tweeted wrong comics');
+    is_deeply(\@posted, [$comic], 'posted  wrong comic');
 }
 
 
@@ -148,12 +104,16 @@ sub only_latest_comics : Tests {
     );
 
     my @tweeted;
+    my @posted;
+
     no warnings qw/redefine/;
     local *Comic::Social::Twitter::tweet = sub {
         my ($self, $comic) = @_;
         push @tweeted, $comic;
     };
-    local *Comic::_reddit = sub {
+    local *Comic::Social::Reddit::post = sub {
+        my ($self, $comic);
+        push @posted, $comic;
         return '';
     };
     use warnings;
@@ -163,153 +123,31 @@ sub only_latest_comics : Tests {
 }
 
 
-sub subreddit_from_meta_data_override : Tests {
-    my $json = <<'JSON';
-            "reddit": {
-                "use-default": false,
-                "English": {
-                    "subreddit": "homebrewing"
-                },
-                "Deutsch": {
-                    "subreddit": "heimbrauen"
-                }
-            }
-JSON
-    MockComic::make_comic(
-        $MockComic::JSON => $json,
+sub multiple_comics_different_languages : Tests {
+    my $de = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::DEUTSCH => 'Neustes Comic' },
     );
-    my %subreddits;
+    my $en = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+    );
+
+    my @tweeted;
+    my @posted;
+
     no warnings qw/redefine/;
-    local *Comic::_reddit = sub {
-        my ($comic, $language, %settings) = @_;
-        push @{$subreddits{$language}}, $settings{subreddit};
-    };
     local *Comic::Social::Twitter::tweet = sub {
+        my ($self, $comic) = @_;
+        push @tweeted, $comic;
+        return '';
+    };
+    local *Comic::Social::Reddit::post = sub {
+        my ($self, $comic) = @_;
+        push @posted, $comic;
         return '';
     };
     use warnings;
 
-    Comic::post_to_social_media(reddit => { subreddit => 'comics'});
-    is_deeply(\%subreddits,
-        { 'Deutsch' => ['heimbrauen'], 'English' => ['homebrewing'] });
-}
-
-
-sub subreddit_from_meta_data_plus_default : Tests {
-    my $json = <<'JSON';
-            "reddit": {
-                "use-default": true,
-                "English": {
-                    "subreddit": "homebrewing"
-                },
-                "Deutsch": {
-                    "subreddit": "heimbrauen"
-                }
-            }
-JSON
-    MockComic::make_comic(
-        $MockComic::JSON => $json,
-    );
-    my %subreddits;
-    no warnings qw/redefine/;
-    local *Comic::_reddit = sub {
-        my ($comic, $language, %settings) = @_;
-        push @{$subreddits{$language}}, $settings{subreddit};
-    };
-    local *Comic::Social::Twitter::tweet = sub {
-        return '';
-    };
-    use warnings;
-
-    Comic::post_to_social_media(reddit => { subreddit => 'comics'});
-    is_deeply(\%subreddits,
-        { 'Deutsch' => ['comics', 'heimbrauen'], 'English' => ['comics', 'homebrewing'] });
-}
-
-
-sub subreddit_from_meta_data_array : Tests {
-    my $json = <<'JSON';
-            "reddit": {
-                "use-default": false,
-                "English": {
-                    "subreddit": [ "foo", "bar", "baz" ]
-                }
-            }
-JSON
-    MockComic::make_comic(
-        $MockComic::JSON => $json,
-    );
-    my %subreddits;
-    no warnings qw/redefine/;
-    local *Comic::_reddit = sub {
-        my ($comic, $language, %settings) = @_;
-        push @{$subreddits{$language}}, $settings{subreddit};
-    };
-    local *Comic::Social::Twitter::tweet = sub {
-        return '';
-    };
-    use warnings;
-
-    Comic::post_to_social_media(reddit => { subreddit => 'comics'});
-    is_deeply(\%subreddits, { 'English' => ['foo', 'bar', 'baz'] });
-}
-
-
-sub preserves_reddit_options_for_each_subreddit : Tests {
-    my $json = <<'JSON';
-            "reddit": {
-                "use-default": false,
-                "English": {
-                    "client": "me",
-                    "subreddit": "foo",
-                    "key": "value",
-                    "arr": [ 1, 2, 3]
-                }
-            }
-JSON
-    MockComic::make_comic(
-        $MockComic::JSON => $json,
-    );
-    my %options;
-    no warnings qw/redefine/;
-    local *Comic::_reddit = sub {
-        my ($comic, $language, %settings) = @_;
-        %options = %settings;
-    };
-    local *Comic::Social::Twitter::tweet = sub {
-        return '';
-    };
-    use warnings;
-
-    Comic::post_to_social_media(reddit => { subreddit => 'comics'});
-    is_deeply(\%options,
-        { "client" => "me", "subreddit" => "foo", "key" => "value", "arr" => [1, 2, 3]});
-}
-
-
-sub combines_global_reddit_options_with_per_comic_options : Tests {
-    my $json = <<'JSON';
-            "reddit": {
-                "use-default": false,
-                "English": {
-                    "subreddit": "foo"
-                }
-            }
-JSON
-    MockComic::make_comic(
-        $MockComic::JSON => $json,
-    );
-    my %options;
-    no warnings qw/redefine/;
-    local *Comic::_reddit = sub {
-        my ($comic, $language, %settings) = @_;
-        %options = %settings;
-    };
-    local *Comic::Social::Twitter::tweet = sub {
-        return '';
-    };
-    use warnings;
-
-    Comic::post_to_social_media(reddit => { subreddit => 'comics', username => 'me', password => 'secret'});
-    is_deeply(\%options, { username => 'me', password => 'secret', subreddit => 'foo' });
+    Comic::post_to_social_media();
+    is_deeply(\@tweeted, [$en, $de], 'Tweeted wrong comics');
+    is_deeply(\@posted, [$en, $de], 'Posted wrong comics');
 }
