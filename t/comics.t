@@ -40,6 +40,41 @@ sub load_settings : Tests {
 }
 
 
+sub collect_files_adds_files_right_away : Tests {
+    no warnings qw/redefine/;
+    local *Comics::_is_directory = sub {
+        return 0;
+    };
+    use warnings;
+
+    my $comics = Comics->new();
+    my @collection = $comics->collect_files('a.svg', 'foo', 'bar.txt');
+    is_deeply([@collection], ['a.svg', 'foo', 'bar.txt']);
+}
+
+
+sub collect_files_recurses_in_directories : Tests {
+    my @to_be_found = ('comic.svg', 'other file', 'file.svg~');
+
+    no warnings qw/redefine/;
+    local *Comics::_is_directory = sub {
+        return 1;
+    };
+    local *File::Find::find = sub {
+        my ($wanted, @dirs) = @_;
+        is_deeply([@dirs], ['dir'], 'passed wrong argument to find');
+        foreach my $found (@to_be_found) {
+			$File::Find::name = $found;
+            $wanted->();
+        }
+    };
+    use warnings;
+
+    my $comics = Comics->new();
+    is_deeply([$comics->collect_files('dir')], ['comic.svg']);
+}
+
+
 sub runs_global_final_checks : Tests {
     my $comics = Comics->new();
     my $check = DummyCheck->new();

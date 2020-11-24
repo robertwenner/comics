@@ -154,7 +154,12 @@ sub new {
     my $self = bless{}, $class;
 
     $self->{settings} = $settings;
-    @{$self->{checks}} = @{$settings->{$Comic::Settings::CHECKS}};
+    if ($settings->{$Comic::Settings::CHECKS}) {
+        @{$self->{checks}} = @{$settings->{$Comic::Settings::CHECKS}};
+    }
+    else {
+        @{$self->{checks}} = ();
+    }
 
     $self->_load($file);
     $self->_adjust_checks($self->{meta_data}->{$Comic::Settings::CHECKS});

@@ -3,9 +3,11 @@ package Comics;
 use strict;
 use warnings;
 use English '-no_match_vars';
+use open ':std', ':encoding(UTF-8)'; # to handle e.g., umlauts correctly
 use Readonly;
 use Carp;
 use File::Slurper;
+use File::Find;
 
 use Comic;
 use Comic::Settings;
@@ -71,26 +73,25 @@ Arguments:
 =cut
 
 sub publish {
-#    my @dirs = @ARG;
-#
-#    my $comics = Comics->new();
-#    $comics->load_settings($MAIN_CONFIG_FILE);
-#    $comics->load_checks();
-#    my @files = $comics.collect_files();
-#    foreach my $file (@files) {
-#        my $comic = Comic->new($file, $comics->{settings}->clone());
-#        $comic->check();
-#        $comic->export_png();
-#        push @{$self->{comics}}, $comic;
-#    }
-#    $comics.final_checks();
-#    $comics.generate_comic_pages();
-#    $comics.generate_rss_feeds();
-#    $comics.generate_archive();
-#    $comics.generate_backlog();
-#    $comics.generate_sizemap();
-#    $comics.copy_static_web_files();
-#    $comics.post_to_social_media();
+    my @dirs = @ARG;
+
+    my $comics = Comics->new();
+    $comics->load_settings($MAIN_CONFIG_FILE);
+    $comics->load_checks();
+    my @files = $comics->collect_files(@dirs);
+    foreach my $file (@files) {
+        my $comic = Comic->new($file, $comics->{settings}->clone()->{settings});
+        $comic->check();
+        $comic->export_png();
+    }
+    $comics->final_checks();
+#    $comics->generate_comic_pages();
+#    $comics->generate_rss_feeds();
+#    $comics->generate_archive();
+#    $comics->generate_backlog();
+#    $comics->generate_sizemap();
+#    $comics->copy_static_web_files();
+#    $comics->post_to_social_media();
     return;
 }
 
@@ -140,7 +141,7 @@ sub load_settings {
 
 sub _exists {
     # uncoverable subroutine
-    return -r shift;
+    return -r shift;    # uncoverable statement
 }
 
 
@@ -169,6 +170,51 @@ sub load_checks() {
         Comic::Check::Check::load_check($self->{checks}, $name, ${$check_settings}{$name} || []);
     }
     return;
+}
+
+
+=head2 collect_files
+
+Collects input comic files from given directories. Currently only C<.svg>
+files are supported.
+
+Arguments:
+
+=over 4
+
+=item B<files or directories> comic files to use or directories to search
+    for comics. If you give file names, these files will be collected
+    regardless of their extension, where any directories will only be
+    scanned for supported files.
+
+=back
+
+=cut
+
+sub collect_files {
+    my ($self, @files_or_dirs) = @ARG;
+
+    my @collection;
+    foreach my $fod (@files_or_dirs) {
+        if (_is_directory($fod)) {
+            File::Find::find(
+                sub {
+                    my $name = $File::Find::name;
+                    push @collection, $name if ($name =~ m/\.svg$/);
+                },
+                $fod);
+        }
+        else {
+            push @collection, $fod;
+        }
+    }
+    return @collection;
+}
+
+
+sub _is_directory {
+    # uncoverable subroutine
+    return -d shift;    # uncoverable statement
 }
 
 
