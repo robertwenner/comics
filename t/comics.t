@@ -27,7 +27,7 @@ sub load_settings : Tests {
     local *Comics::_exists = sub {
         return 1;
     };
-    local *File::Slurp::slurp = sub {
+    local *File::Slurper::read_text = sub {
         push @loaded, @_;
         return "{}";
     };

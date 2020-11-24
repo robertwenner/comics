@@ -47,7 +47,7 @@ TEMPL
 sub fake_template {
     my ($template, $comic) = @_;
     no warnings qw/redefine/;
-    local *File::Slurp::slurp = sub {
+    local *File::Slurper::read_text = sub {
         return $template;
     };
     return $comic->_do_export_html($MockComic::ENGLISH);

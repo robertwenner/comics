@@ -5,7 +5,7 @@ use warnings;
 use English '-no_match_vars';
 use Readonly;
 use Carp;
-use File::Slurp;
+use File::Slurper;
 
 use Comic;
 use Comic::Settings;
@@ -130,7 +130,7 @@ sub load_settings {
 
     foreach my $file (@files) {
         if (_exists($file)) {
-            $self->{settings}->load_str(File::Slurp::slurp($file));
+            $self->{settings}->load_str(File::Slurper::read_text($file));
         }
     }
 

@@ -5,6 +5,7 @@ use base 'Test::Class';
 use Test::More;
 use lib 't/check';
 
+use File::Slurper;
 use Comics;
 
 __PACKAGE__->runtests() unless caller;
@@ -24,7 +25,7 @@ sub set_up : Test(setup) {
         $asked_exists{$file}++;
         return defined $faked_files{$file};
     };
-    *File::Slurp::slurp = sub {
+    *File::Slurper::read_text = sub {
         my ($file) = @_;
         return $faked_files{$file};
     };

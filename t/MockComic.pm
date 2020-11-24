@@ -95,7 +95,7 @@ sub mock_methods {
         return exists $files_read{$name} && defined($files_read{$name});;
     };
 
-    *File::Slurp::slurp = sub {
+    *File::Slurper::read_text = sub {
         my ($name) = @_;
         confess("Tried to read unmocked file '$name'") unless (defined($files_read{$name}));
         return $files_read{$name};

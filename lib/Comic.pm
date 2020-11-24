@@ -18,7 +18,7 @@ use DateTime::Format::RFC3339;
 use File::Path qw(make_path);
 use File::Basename;
 use File::Copy;
-use File::Slurp;
+use File::Slurper;
 use open ':std', ':encoding(UTF-8)'; # to handle e.g., umlauts correctly
 use XML::LibXML;
 use XML::LibXML::XPathContext;
@@ -329,10 +329,10 @@ sub _load {
     my $meta_cache = _meta_cache_for($self->{srcFile});
     $self->{use_meta_data_cache} = _up_to_date($self->{srcFile}, $meta_cache);
     if ($self->{use_meta_data_cache}) {
-        $meta_data = File::Slurp::slurp($meta_cache);
+        $meta_data = File::Slurper::read_text($meta_cache);
     }
     else {
-        $self->{dom} = _parse_xml(File::Slurp::slurp($file));
+        $self->{dom} = _parse_xml(File::Slurper::read_text($file));
         $self->{xpath} = XML::LibXML::XPathContext->new($self->{dom});
         $self->{xpath}->registerNs($DEFAULT_NAMESPACE, 'http://www.w3.org/2000/svg');
         my $meta_xpath = _build_xpath('metadata/rdf:RDF/cc:Work/dc:description/text()');
@@ -567,7 +567,7 @@ sub _get_transcript {
         my $cache = _transcript_cache_for($self->{srcFile}, $language);
         my $transcript_cached = _up_to_date($self->{srcFile}, $cache);
         if ($transcript_cached) {
-            @{$self->{transcript}{$language}} = split /[\r\n]+/, File::Slurp::slurp($cache);
+            @{$self->{transcript}{$language}} = split /[\r\n]+/, File::Slurper::read_text($cache);
         }
         else {
             @{$self->{transcript}{$language}} = _append_speech_to_speaker($self->texts_in_layer($language));
@@ -1545,7 +1545,7 @@ sub _templatize {
     my $t = Template->new(%options) ||
         croak('Cannot construct template: ' . Template->error());
     my $output = '';
-    my $template = File::Slurp::slurp($template_file);
+    my $template = File::Slurper::read_text($template_file);
     $t->process(\$template, \%vars, \$output) ||
         croak "$template_file for $comic_file: " . $t->error() . "\n";
 
