@@ -66,18 +66,8 @@ This document refers to version 0.0.3.
         $c->export_png();
     }
     Comic::export_all_html(
-        { # comic templates
-            'English' => 'templates/english/comic-page.templ',
-            'Deutsch' => 'templates/deutsch/comic-page.templ',
-        },
-        { # sitemap templates
-            'English' => 'templates/english/sitemap-xml.templ',
-            'Deutsch' => 'templates/deutsch/sitemap-xml.templ',
-        },
-        { # sitemap output
-            'English' => 'generated/english/web/sitemap.xml',
-            'Deutsch' => 'generated/deutsch/web/sitemap.xml',
-        },
+        'English' => 'templates/english/comic-page.templ',
+        'Deutsch' => 'templates/deutsch/comic-page.templ',
     );
     Comic::export_archive('templates/backlog.templ', 'generated/backlog.html',
         { # archive page template
@@ -125,6 +115,7 @@ Readonly my $TEMPDIR => 'tmp';
 
 my %counts;
 my %language_code_cache;
+# @todo get rid of @comics
 my @comics;
 ## no critic(Variables::ProhibitPackageVars)
 our $inkscape_version;
@@ -1089,32 +1080,26 @@ Generates a HTML page for each Comic that has been loaded.
 The HTML page will be the same name as the generated PNG, with a .html
 extension, and it will be placed next to it.
 
-Also generates a sitemap xml file per language.
-
 Parameters:
 
 =over 4
 
-=item B<%comic_templates> hash of language to path / file name of the
-comic templates.
-
-=item B<%site_map_templates> hash of language to path / file name of the
-sitemap templates.
-
-=item B<%outputs> hash of language to path / file name of the generated
-sitemaps.
+=item B<%templates> hash of language to path / file name of the comic page
+    templates.
 
 =back
 
 =cut
 
 sub export_all_html {
-    my ($comic_templates, $site_map_templates, $outputs) = @_;
+    # @todo move template into config
+    my %templates = @ARG;
 
     my @sorted = sort _compare @comics;
     foreach my $i (0 .. @sorted - 1) {
         my $comic = $sorted[$i];
         foreach my $language ($comic->languages()) {
+            # @todo remove qrcode dependency -- undefined template var?
             # Must export QR code before exporting HTML so that the HTML template can
             # already refer to the QR code URL.
             $comic->_export_qr_code($language);
@@ -1127,23 +1112,56 @@ sub export_all_html {
             $comic->{'next'}{$language} = $next_comic ? $next_comic->{htmlFile}{$language} : 0;
             my $last_comic = _find_next($language, $i, \@sorted, [reverse $i + 1 .. @sorted - 1]);
             $comic->{'last'}{$language} = $last_comic ? $last_comic->{htmlFile}{$language} : 0;
-            $comic->_export_language_html($language, ${$comic_templates}{$language});
+            $comic->_export_language_html($language, $templates{$language});
 
             _make_dir('web/' . lc $language);
         }
     }
 
+    return;
+}
+
+
+sub _all_comic_languages {
+    my (@all_comics) = @ARG;
 
     my %languages;
-    foreach my $c (@comics) {
+    foreach my $c (@all_comics) {
         foreach my $language ($c->languages()) {
             $languages{$language} = 1;
         }
     }
+    return keys %languages;
+}
+
+
+=head2 export_sitemap
+
+Generates a sitemap per language seen in all comics.
+
+Parameters:
+
+=over 4
+
+=item B<%site_map_templates> hash of language to path / file name of the
+sitemap templates.
+
+=item B<%outputs> hash of language to path / file name of the generated
+sitemaps.
+
+=back
+
+=cut
+
+sub export_sitemap {
+    # @todo move templates and output paths into config
+    my ($site_map_templates, $outputs, @all_comics) = @_;
+
+    my @sorted = sort _compare @all_comics;
     my %vars;
     $vars{'comics'} = [ @sorted ];
     $vars{'notFor'} = \&_not_published_on_the_web;
-    foreach my $language (keys %languages) {
+    foreach my $language (_all_comic_languages(@all_comics)) {
         my $templ = ${$site_map_templates}{$language};
         my $xml =_templatize('(none)', $templ, $language, %vars);
         _write_file(${$outputs}{$language}, $xml);

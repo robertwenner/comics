@@ -40,8 +40,6 @@ SITEMAP
     </url>
     [% END %]
 SITEMAP
-    MockComic::fake_file('templates/deutsch/comic-page.templ', '...');
-    MockComic::fake_file('templates/english/comic-page.templ', '...');
 }
 
 
@@ -66,18 +64,15 @@ sub make_comic {
 sub assert_wrote {
     my ($comic, $contentsExpected) = @_;
 
-    Comic::export_all_html({
-        'English' => 'templates/english/comic-page.templ',
-        'Deutsch' => 'templates/deutsch/comic-page.templ',
-    },
-    {
+    Comic::export_sitemap({
         'English' => 'templates/english/sitemap-xml.templ',
         'Deutsch' => 'templates/deutsch/sitemap-xml.templ',
     },
     {
         'English' => 'generated/english/web/sitemap.xml',
         'Deutsch' => 'generated/deutsch/web/sitemap.xml',
-    });
+    },
+    ($comic));
     MockComic::assert_wrote_file(
         'generated/english/web/sitemap.xml',
         $contentsExpected);
@@ -87,11 +82,7 @@ sub assert_wrote {
 sub assert_wrote_no_comic {
     my ($comic) = @_;
 
-    Comic::export_all_html({
-        'English' => 'templates/english/comic-page.templ',
-        'Deutsch' => 'templates/deutsch/comic-page.templ',
-    },
-    {
+    Comic::export_sitemap({
         'English' => 'templates/english/sitemap-xml.templ',
         'Deutsch' => 'templates/deutsch/sitemap-xml.templ',
     },
@@ -167,21 +158,4 @@ sub encodes_xml_special_characters : Tests {
 
 sub no_relative_paths : Tests {
     assert_wrote(make_comic('2016-01-01', 'Beer', 'English'), qr{(?!generated)}m);
-}
-
-
-sub creates_directories : Tests {
-    my $comic = make_comic('3000-01-01', 'web', 'English');
-    Comic::export_all_html({
-        'English' => 'templates/english/comic-page.templ',
-    },
-    {
-        'English' => 'templates/english/sitemap-xml.templ',
-    },
-    {
-        'English' => 'generated/web/english/sitemap.xml',
-    });
-    MockComic::assert_made_dirs(
-        'generated/tmp/meta/', 'generated/backlog/english', 'generated/backlog/qr',
-        'generated/tmp/transcript/English/', 'generated/web/english');
 }

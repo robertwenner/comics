@@ -231,7 +231,7 @@ sub object_function_wrapped : Tests {
         ("notFor" => sub { return $comic->_not_for(@_);})),
         1);
     MockComic::fake_file('file.templ', "[%notFor('Deutsch')%]");
-    is(Comic::_templatize('comic.svg', 'file.templ', '', 
+    is(Comic::_templatize('comic.svg', 'file.templ', '',
         ("notFor" => sub { return $comic->_not_for(@_);})),
         0);
 }
@@ -287,15 +287,7 @@ Copyright year: [% year %]
 Keywords: [% comic.meta_data.tags.$Language.join(',') %]
 Transript: [% comic.transcript.$Language.join(' ') %]
 TEMPLATE
-    Comic::export_all_html({
-        'Deutsch' => 'templates/deutsch/comic-page.templ',
-    },
-    {
-        'Deutsch' => 'templates/deutsch/sitemap-xml.templ',
-    },
-    {
-        'Deutsch' => 'generated/deutsch/web/sitemap.xml',
-    });
+    Comic::export_all_html('Deutsch' => 'templates/deutsch/comic-page.templ');
 
     my $wrote = $comic->_do_export_html("Deutsch", 'templates/deutsch/comic-page.templ');
     like($wrote, qr/Bier trinken/m, "title");
