@@ -29,23 +29,23 @@ sub make_comic {
 
 sub sort_equals : Test {
     my $today = make_comic("2016-04-17");
-    ok(Comic::_compare($today, $today) == 0);
+    ok(Comic::_from_oldest_to_latest($today, $today) == 0);
 }
 
 
 sub sort_by_published_date : Tests {
     my $today = make_comic("2016-04-17");
     my $yesterday = make_comic("2016-04-16");
-    ok(Comic::_compare($today, $yesterday) > 0);
-    ok(Comic::_compare($yesterday, $today) < 0);
+    ok(Comic::_from_oldest_to_latest($today, $yesterday) > 0);
+    ok(Comic::_from_oldest_to_latest($yesterday, $today) < 0);
 }
 
 
 sub sort_by_undefined_published_date : Tests {
     my $today = make_comic("2016-04-17");
     my $oops = make_comic("");
-    ok(Comic::_compare($today, $oops) < 0);
-    ok(Comic::_compare($oops, $today) > 0);
+    ok(Comic::_from_oldest_to_latest($today, $oops) < 0);
+    ok(Comic::_from_oldest_to_latest($oops, $today) > 0);
 }
 
 
@@ -55,6 +55,6 @@ sub sort_array : Test {
     my $mar = make_comic("2016-03-01");
 
     is_deeply(
-        [sort Comic::_compare $feb, $mar, $jan],
+        [sort Comic::_from_oldest_to_latest $feb, $mar, $jan],
         [$jan, $feb, $mar]);
 }
