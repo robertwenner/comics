@@ -449,7 +449,8 @@ sub _mtime {
 
 
 sub _get_tz {
-    return strftime '%z', localtime;
+    # uncoverable subroutine
+    return strftime '%z', localtime; # uncoverable statement
 }
 
 
@@ -905,7 +906,7 @@ sub _frames_in_rows {
 
 sub _query_inkscape_version {
     # uncoverable subroutine
-    my ($self) = @ARG;
+    my ($self) = @ARG; # uncoverable statement
 
     # Inkscape seems to print its plugins information to stderr, e.g.:
     #    Pango version: 1.46.0
