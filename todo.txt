@@ -14,12 +14,11 @@
   having a date, so that inserting one for current events doesn't ripple
   through the backlog (and still maintaining a regular / weekly schedule)
 
-- break up code into different modules
-
-- plugable customizable modules (reddit poster, inkscape importer)
+- break up code into different (pluggable?) modules, e.g., reddit poster,
+  inkscape importer
 
 - internal archive with published dates and (source svg) file names and
-  comic counts
+  comic counts (maybe a matter of the template only)
 
 - allow adding (invisible) watermarks
 
@@ -37,7 +36,8 @@
 
 - prev next first last buttons per series
 
-- spellcheck (but that's already available in Inkscape anyway)
+- spellcheck (but that's already available in Inkscape anyway, but at the
+  Perl level we know the language to check with)
 
 - tags under each comics, as hyperlinks to the tag cloud
 
@@ -49,15 +49,14 @@
   svgs or pngs up per frame (ugly, relies on either table-based HTML layout,
   CSS magic beyond my skills, or chopping comics by rows only)
 
-- minimize svg file sizes with svgo
+- minimize svg file sizes (e.g., with svgo), if svg export is supported
 
-- generate latex code for pdf
+- generate latex code for pdf, or generarte pdf right away
 
-- liner notes with comments in pdf, suck in other interesting documentation
-
-- liner notes can pull stats per comics from git: how long between creation
-  and publication, how long was the backlog each Fri, how big was the ideas
-  file each week, how often was the comic changed (after being published)
+- liner notes with comments in pdf, suck in other interesting documentation.
+  This can pull stats per comics from git: how long between creation and
+  publication, how long was the backlog each Fri, how big was the ideas file
+  each week, how often was the comic changed (after being published).
 
 - sizemap should have colors depending on where the comic was published
 
@@ -68,10 +67,10 @@
 
 - check for date holes (why? are those bad? only in the future? but I could
   schedule a xmas or Fri 13 comic ahead of time and then have holes and
-  that's ok)
+  that's ok); warn in backlog if no comic for next Friday
 
 - more social media: Mastodon, Openbook, Ello, Diaspora, inrupt.com
-  (Zapier?)
+  (via Zapier?)
 
 - use a configuration file to avoid passing lots of parameters
 
@@ -109,11 +108,16 @@
   checks have passed, and then a re-run doesn't try to use bad / incomplete
   cache files
 
-- look into swallowed "no persons" warning in old revision
-
 - verbose and debug flags to print what's going on (helpful for configurable
   checks and actions)
 
 - switch Twitter module to Twitter::API
 
 - check 2FA for Reddit and Twitter
+
+- optimization: when modifying only the latest comic (or an unpublished
+  comic), don't recreate all html pages (only if the latest comic file name
+  (title) changes, links need to get updated). This should speed up final
+  touches on the comic.
+
+- defect: don't remove spaces in tags
