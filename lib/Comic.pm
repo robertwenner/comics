@@ -629,11 +629,20 @@ sub _count_tags {
         next unless ($self->{meta_data}->{$what});
         foreach my $language (keys %{$self->{meta_data}->{$what}}) {
             foreach my $val (@{$self->{meta_data}->{$what}->{$language}}) {
+                $val = _normalize_whitespace($val);
                 $counts{$what}{$language}{$val}++;
             }
         }
     }
     return;
+}
+
+
+sub _normalize_whitespace {
+    my ($val) = @ARG;
+    $val = trim($val);
+    $val =~ s/\s+/ /g;
+    return $val;
 }
 
 
@@ -1713,6 +1722,7 @@ sub _do_export_backlog {
     foreach my $comic (@comics) {
         foreach my $language ($comic->languages()) {
             foreach my $tag (@{$comic->{meta_data}->{tags}->{$language}}) {
+                $tag = _normalize_whitespace($tag);
                 $tags{"$tag ($language)"}++;
             }
             foreach my $who (@{$comic->{meta_data}->{who}->{$language}}) {

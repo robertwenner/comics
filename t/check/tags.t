@@ -90,7 +90,7 @@ sub tag_whitespace_differences : Tests {
         $MockComic::TAGS => {$MockComic::ENGLISH => ['tag1\t']});
     $check->notify($comic1);
     $check->check($comic2);
-    is_deeply($comic2->{warnings}, ["tags 'tag1\t' and ' tag 1' from some_comic.svg only differ in white space"]);
+    is_deeply($comic2->{warnings}, ["tags 'tag1' and 'tag 1' from some_comic.svg only differ in white space"]);
 }
 
 

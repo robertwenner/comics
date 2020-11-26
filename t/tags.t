@@ -12,11 +12,10 @@ __PACKAGE__->runtests() unless caller;
 
 sub setup : Test(setup) {
     MockComic::set_up();
-    makeComic();
 }
 
 
-sub makeComic {
+sub make_comic {
     return MockComic::make_comic(
         $MockComic::TAGS => {
             $MockComic::ENGLISH => ['en1', 'en2'],
@@ -32,13 +31,27 @@ sub tags_unknown_language : Test {
 
 
 sub tags_per_language : Tests {
-    is_deeply(Comic::counts_of_in("tags", "English"), { "en1" => 1, "en2", => 1 });
+    make_comic();
+    is_deeply(Comic::counts_of_in("tags", "English"), { "en1" => 1, "en2" => 1 });
     is_deeply(Comic::counts_of_in("tags", "Deutsch"), { "de1" => 1 });
 }
 
 
 sub tags_multiple_times : Test {
-    makeComic();
-    makeComic();
-    is_deeply(Comic::counts_of_in("tags", "English"), { "en1" => 3, "en2", => 3 });
+    make_comic();
+    make_comic();
+    make_comic();
+    is_deeply(Comic::counts_of_in("tags", "English"), { "en1" => 3, "en2" => 3 });
+}
+
+
+sub normalizes_whitespace : Tests {
+    MockComic::make_comic(
+        $MockComic::TAGS => {
+            $MockComic::ENGLISH => [' leading', 'trailing ', 'em  bedded', "  all of   it "],
+        }
+    );
+    is_deeply(
+        Comic::counts_of_in("tags", "English"),
+        { "leading" => 1, "trailing" => 1, "em bedded" => 1, "all of it" => 1});
 }
