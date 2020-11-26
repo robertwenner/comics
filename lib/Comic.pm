@@ -1615,10 +1615,6 @@ Parameters:
 
 =over 4
 
-=item B<$backlog_template> path / file name of the template file.
-
-=item B<$backlog_page> path / file name of the generated backlog html.
-
 =item B<%archive_templates> reference to a hash of language to the
 archive template file for that language.
 
@@ -1633,7 +1629,7 @@ template file to use for F<index.html>.
 =cut
 
 sub export_archive {
-    my ($backlog_template, $backlog_page, $archive_templates, $archive_pages, $comic_template) = @ARG;
+    my ($archive_templates, $archive_pages, $comic_template) = @ARG;
 
     _final_checks();
     foreach my $language (keys %{$archive_templates}) {
@@ -1642,12 +1638,11 @@ sub export_archive {
         next if (@sorted == 0);
         my $last_pub = $sorted[-1];
         $last_pub->{isLatestPublished} = 1;
-        $page.= '/index.html';
+        $page .= '/index.html';
         _write_file($page, $last_pub->_do_export_html($language, ${$comic_template}{$language}));
     }
 
     _do_export_archive($archive_templates, $archive_pages);
-    _do_export_backlog($backlog_template, $backlog_page, sort keys %{$archive_pages});
     return;
 }
 
@@ -1707,8 +1702,28 @@ sub _do_export_archive {
 }
 
 
-sub _do_export_backlog {
-    my ($templ_file, $page, @languages) = @ARG;
+=head2 export_backlog
+
+Generates a single html page with all unpublished comics plus information on
+used tags, series, and characters.
+
+The backlog is language-independent, i.e., all languages are included in the
+same backlog page.
+
+Parameters:
+
+=over 4
+
+=item B<$backlog_template> path / file name of the template file.
+
+=item B<$backlog_page> path / file name of the generated backlog html.
+
+=back
+
+=cut
+
+sub export_backlog {
+    my ($templ_file, $page) = @ARG;
 
     my @filtered = sort _from_oldest_to_latest grep { _backlog_filter($_) } @comics;
     if (!@filtered) {
@@ -1719,8 +1734,10 @@ sub _do_export_backlog {
     my %tags;
     my %who;
     my %series;
+    my %languages;
     foreach my $comic (@comics) {
         foreach my $language ($comic->languages()) {
+            $languages{$language} = 1;
             foreach my $tag (@{$comic->{meta_data}->{tags}->{$language}}) {
                 $tag = _normalize_whitespace($tag);
                 $tags{"$tag ($language)"}++;
@@ -1736,6 +1753,7 @@ sub _do_export_backlog {
         }
     }
 
+    my @languages = sort keys %languages;
     my %vars;
     $vars{'languages'} = \@languages;
     $vars{'comics'} = \@filtered;

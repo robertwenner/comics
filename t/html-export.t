@@ -375,7 +375,7 @@ sub index_html_with_canonical_link : Tests {
 
     $comic->{first}{'English'} = '';
     $comic->{prev}{'English'} = '';
-    Comic::export_archive('backlog.templ', 'backlog.html',
+    Comic::export_archive(
         {'English' => 'archive.templ'},
         {'English' => 'archive.html'},
         {'English' => 'comic.templ'});

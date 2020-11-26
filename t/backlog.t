@@ -84,20 +84,14 @@ sub make_comic_with_series {
 
 
 sub no_comics : Tests {
-    Comic::export_archive('backlog.templ', 'generated/backlog.html',
-        {'Deutsch' => 'templates/deutsch/archiv.templ'},
-        {'Deutsch' => 'archiv.html'},
-        {'Deutsch' => 'templates/deutsch/comic-page.templ'});
+    Comic::export_backlog('backlog.templ', 'generated/backlog.html');
     MockComic::assert_wrote_file('generated/backlog.html', qr{No comics in backlog}m);
 }
 
 
 sub future_date : Tests {
     make_comic('eins', 'Deutsch', '3016-01-01');
-    Comic::export_archive('backlog.templ', 'generated/backlog.html',
-        {'Deutsch' => 'templates/deutsch/archiv.templ'},
-        {'Deutsch' => 'archiv.html'},
-        {'Deutsch' => 'templates/deutsch/comic-page.templ'});
+    Comic::export_backlog('backlog.templ', 'generated/backlog.html');
     MockComic::assert_wrote_file('generated/backlog.html',
         qr{<li>some_comic.svg\s+3016-01-01\s*<ul>}mx);
     MockComic::assert_wrote_file('generated/backlog.html',
@@ -107,10 +101,7 @@ sub future_date : Tests {
 
 sub no_date : Tests {
     make_comic('eins', 'Deutsch', '');
-    Comic::export_archive('backlog.templ', 'generated/backlog.html',
-        {'Deutsch' => 'templates/deutsch/archiv.templ'},
-        {'Deutsch' => 'archiv.html'},
-        {'Deutsch' => 'templates/deutsch/comic-page.templ'});
+    Comic::export_backlog('backlog.templ', 'generated/backlog.html');
     MockComic::assert_wrote_file('generated/backlog.html',
         qr{<li>some_comic.svg\s*<ul>}mx);
     MockComic::assert_wrote_file('generated/backlog.html',
@@ -124,13 +115,7 @@ sub two_languages : Tests {
         $MockComic::TITLE => {
             $MockComic::ENGLISH => "Beer!",
             $MockComic::DEUTSCH => "Bier!"});
-    Comic::export_archive('backlog.templ', 'generated/backlog.html',
-        {'Deutsch' => 'templates/deutsch/archiv.templ',
-         'English' => 'templates/english/archive.templ'},
-        {'Deutsch' => 'archiv.html',
-         'English' => 'archive.html'},
-        {'Deutsch' => 'templates/deutsch/comic-page.templ',
-         'English' => 'templates/english/comic-page.templ'});
+    Comic::export_backlog('backlog.templ', 'generated/backlog.html');
     MockComic::assert_wrote_file('generated/backlog.html',
         qr{<li><a\shref="backlog/deutsch/bier.html">Bier!</a>\s*</li>\s*
            <li><a\shref="backlog/english/beer.html">Beer!</a>\s*</li>}mx);
@@ -139,10 +124,7 @@ sub two_languages : Tests {
 
 sub comic_not_published_on_my_page : Tests {
     my $comic = make_comic('Magazined!', 'Deutsch', '2016-01-01', 'some beer magazine');
-    Comic::export_archive('backlog.templ', 'generated/backlog.html',
-        {'Deutsch' => 'templates/deutsch/archiv.templ'},
-        {'Deutsch' => 'archiv.html'},
-        {'Deutsch' => 'templates/deutsch/comic-page.templ'});
+    Comic::export_backlog('backlog.templ', 'generated/backlog.html');
     MockComic::assert_wrote_file('generated/backlog.html',
         qr{<li><a\shref="backlog/deutsch/magazined\.html">Magazined!</a>\s*</li>});
 }
@@ -151,10 +133,7 @@ sub comic_not_published_on_my_page : Tests {
 sub comic_not_published_on_my_page_goes_after_regular_backlog : Tests {
     make_comic('Coming up', 'English', '3016-10-01', 'web');
     make_comic('Elsewhere', 'English', '3016-09-01', 'magazine');
-    Comic::export_archive('backlog.templ', 'generated/backlog.html',
-        {'English' => 'templates/english/archive.templ'},
-        {'English' => 'archive.html'},
-        {'English' => 'templates/english/comic-page.templ'});
+    Comic::export_backlog('backlog.templ', 'generated/backlog.html');
     MockComic::assert_wrote_file('generated/backlog.html', qr{
         .*Backlog.*
         .*web.*
@@ -169,13 +148,7 @@ sub comics_not_published_grouped_by_publisher : Tests {
     make_comic('Brau Okt', 'Deutsch', '2015-10-01', 'braumagazin.de');
     make_comic('Beer Guide', 'English', '2015-11-01', 'Austin Beer Guide');
     make_comic('Brau Dez', 'Deutsch', '2015-12-01', 'braumagazin.de');
-    Comic::export_archive('backlog.templ', 'generated/backlog.html',
-        {'Deutsch' => 'templates/deutsch/archiv.templ',
-         'English' => 'templates/english/archive.templ'},
-        {'Deutsch' => 'archiv.html',
-         'English' => 'archive.html'},
-        {'Deutsch' => 'templates/deutsch/comic-page.templ',
-         'English' => 'templates/english/comic-page.templ'});
+    Comic::export_backlog('backlog.templ', 'generated/backlog.html');
     MockComic::assert_wrote_file('generated/backlog.html', qr{
         <h2>Austin\sBeer\sGuide</h2>.*
         <li><a\shref="backlog/english/beer-guide\.html">Beer\sGuide</a>\s*</li>.*
@@ -202,10 +175,7 @@ sub includes_series : Tests {
         $MockComic::SERIES => { $MockComic::DEUTSCH => 'Bym' },
         $MockComic::PUBLISHED_WHEN => '3016-01-01',
     );
-    Comic::export_archive('backlog.templ', 'generated/backlog.html',
-        {'Deutsch' => 'templates/deutsch/archiv.templ'},
-        {'Deutsch' => 'archiv.html'},
-        {'Deutsch' => 'templates/deutsch/comic-page.templ'});
+    Comic::export_backlog('backlog.templ', 'generated/backlog.html');
     MockComic::assert_wrote_file('generated/backlog.html', qr{
         <li><a\shref="backlog/deutsch/bier-trinken\.html">Bier\strinken</a>\s+\(Bym\)\s+</li>
     }xsm);
@@ -218,10 +188,7 @@ sub includes_warnings : Tests {
         $MockComic::PUBLISHED_WHEN => '3016-01-01',
     );
     $comic->_warn("some warning!");
-    Comic::export_archive('backlog.templ', 'generated/backlog.html',
-        {'Deutsch' => 'templates/deutsch/archiv.templ'},
-        {'Deutsch' => 'archiv.html'},
-        {'Deutsch' => 'templates/deutsch/comic-page.templ'});
+    Comic::export_backlog('backlog.templ', 'generated/backlog.html');
     MockComic::assert_wrote_file('generated/backlog.html',
         qr{<li>some_comic\.svg\s+.+some warning!}sm);
 }
@@ -241,10 +208,7 @@ TEMPL
     make_tagged_comic('Other');
     make_tagged_comic('AndThenSome');
     make_tagged_comic('YetOther');
-    Comic::export_archive('backlog.templ', 'generated/backlog.html',
-        {'Deutsch' => 'templates/deutsch/archiv.templ'},
-        {'Deutsch' => 'archiv.html'},
-        {'Deutsch' => 'templates/deutsch/comic-page.templ'});
+    Comic::export_backlog('backlog.templ', 'generated/backlog.html');
     MockComic::assert_wrote_file('generated/backlog.html',
         qr{^\s*Bym\s\(Deutsch\)=3\s*Other\s\(Deutsch\)=2\s*
            YetOther\s\(Deutsch\)=2\s*AndThenSome\s\(Deutsch\)=1\s*$}xsm);
@@ -260,10 +224,7 @@ TEMPL
     make_tagged_comic('Bym');
     make_tagged_comic('bym');
     make_tagged_comic('ale');
-    Comic::export_archive('backlog.templ', 'generated/backlog.html',
-        {'Deutsch' => 'templates/deutsch/archiv.templ'},
-        {'Deutsch' => 'archiv.html'},
-        {'Deutsch' => 'templates/deutsch/comic-page.templ'});
+    Comic::export_backlog('backlog.templ', 'generated/backlog.html');
     MockComic::assert_wrote_file('generated/backlog.html',
         qr{^\s*ale\s*\(Deutsch\)=1\s*Bym\s\(Deutsch\)=1\s*bym\s\(Deutsch\)=1\s*$}xsm);
 }
@@ -279,10 +240,7 @@ TEMPL
     make_comic_with('Paul', 'Max');
     make_comic_with('Paul');
     make_comic_with('Mike', 'Robert');
-    Comic::export_archive('backlog.templ', 'generated/backlog.html',
-        {'Deutsch' => 'templates/deutsch/archiv.templ'},
-        {'Deutsch' => 'archiv.html'},
-        {'Deutsch' => 'templates/deutsch/comic-page.templ'});
+    Comic::export_backlog('backlog.templ', 'generated/backlog.html');
     MockComic::assert_wrote_file('generated/backlog.html',
         qr{^\s*Paul\s\(Deutsch\)=3\s*Max\s\(Deutsch\)=2\s*
           Mike\s\(Deutsch\)=1\s*Robert\s\(Deutsch\)=1\s*$}xsm);
@@ -298,10 +256,7 @@ TEMPL
     make_comic_with('Paul');
     make_comic_with('paul');
     make_comic_with('max');
-    Comic::export_archive('backlog.templ', 'generated/backlog.html',
-        {'Deutsch' => 'templates/deutsch/archiv.templ'},
-        {'Deutsch' => 'archiv.html'},
-        {'Deutsch' => 'templates/deutsch/comic-page.templ'});
+    Comic::export_backlog('backlog.templ', 'generated/backlog.html');
     MockComic::assert_wrote_file('generated/backlog.html',
         qr{^\s*max\s*\(Deutsch\)=1\s*Paul\s\(Deutsch\)=1\s*paul\s\(Deutsch\)=1\s*}xsm);
 }
@@ -316,10 +271,7 @@ TEMPL
     make_comic_with_series('Buckimude');
     make_comic_with_series('Buckimude');
     make_comic_with_series('Philosophie');
-    Comic::export_archive('backlog.templ', 'generated/backlog.html',
-        {'Deutsch' => 'templates/deutsch/archiv.templ'},
-        {'Deutsch' => 'archiv.html'},
-        {'Deutsch' => 'templates/deutsch/comic-page.templ'});
+    Comic::export_backlog('backlog.templ', 'generated/backlog.html');
     MockComic::assert_wrote_file('generated/backlog.html',
         qr{^\s*Buckimude\s\(Deutsch\)=2\s*Philosophie\s\(Deutsch\)=1\s*$}xsm);
 }
@@ -337,7 +289,7 @@ TEMPL
         $MockComic::PUBLISHED_WHEN => '3000-01-01',
     );
     eval {
-        Comic::_do_export_backlog('backlog.templ', 'generated/backlog.html', 'English');
+        Comic::export_backlog('backlog.templ', 'generated/backlog.html');
     };
     is($@, '');
 }
@@ -353,10 +305,7 @@ TEMPL
     make_comic_with_series('bbb');
     make_comic_with_series('CCC');
     make_comic_with_series('ddd');
-    Comic::export_archive('backlog.templ', 'generated/backlog.html',
-        {'Deutsch' => 'templates/deutsch/archiv.templ'},
-        {'Deutsch' => 'archiv.html'},
-        {'Deutsch' => 'templates/deutsch/comic-page.templ'});
+    Comic::export_backlog('backlog.templ', 'generated/backlog.html');
     MockComic::assert_wrote_file('generated/backlog.html',
         qr{^\s*Aaa\s*\(Deutsch\)=1\s*bbb\s*\(Deutsch\)=1\s*CCC\s*\(Deutsch\)=1\s*ddd\s*\(Deutsch\)=1\s*$}xsm);
 }
