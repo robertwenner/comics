@@ -29,7 +29,7 @@ sub find_checks : Tests {
 }
 
 
-sub check_cycle_for_cached_comic : Tests {
+sub check_cached_comic : Tests {
     my $comic = MockComic::make_comic();
     $comic->{use_meta_data_cache} = 1;
 
@@ -39,14 +39,10 @@ sub check_cycle_for_cached_comic : Tests {
     $comic->check();
     is(${$check->{calls}}{'notify'}, 1, 'should have notified about comic');
     is(${$check->{calls}}{'check'}, undef, 'should not have checked cached comic');
-    is(${$check->{calls}}{'final_check'}, undef, 'should not yet have done final check');
-
-    $comic->_final_checks();
-    is(${$check->{calls}}{'final_check'}, 1, 'should have done final check');
 }
 
 
-sub check_cycle_for_uncached_comic : Tests {
+sub check_uncached_comic : Tests {
     my $comic = MockComic::make_comic();
     $comic->{use_meta_data_cache} = 0;
 
@@ -56,10 +52,6 @@ sub check_cycle_for_uncached_comic : Tests {
     $comic->check();
     is(${$check->{calls}}{'notify'}, 1, 'should have notified about comic');
     is(${$check->{calls}}{'check'}, 1, 'should have checked cached comic');
-    is(${$check->{calls}}{'final_check'}, undef, 'should not yet have done final check');
-
-    $comic->_final_checks();
-    is(${$check->{calls}}{'final_check'}, 1, 'should have done final check');
 }
 
 

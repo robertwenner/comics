@@ -39,8 +39,7 @@ sub one_comic : Tests {
     my $comic = make_comic('Bier', 'Deutsch', '2016-01-01');
     Comic::export_archive(
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
-        {'Deutsch' => 'generated/web/deutsch/archiv.html'},
-        {'Deutsch' => 'templates/deutsch/comic-page.templ'});
+        {'Deutsch' => 'generated/web/deutsch/archiv.html'});
     MockComic::assert_wrote_file('generated/web/deutsch/archiv.html',
         qr{<li><a href="comics/bier.html">Bier</a></li>}m);
 }
@@ -114,7 +113,6 @@ sub no_comics : Tests {
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
         {'Deutsch' => 'generated/web/deutsch/archiv.html'},
         {'Deutsch' => 'templates/deutsch/comic-page.templ'});
-    MockComic::assert_made_dirs('generated/web/deutsch');
     MockComic::assert_wrote_file('generated/web/deutsch/archiv.html', qr{No comics in archive}m);
 }
 

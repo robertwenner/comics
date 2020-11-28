@@ -1341,7 +1341,9 @@ sub _do_export_html {
         # Adjust the path for backlog comics.
         $path = '../web/' . lc $language;
     }
+
     if ($self->{isLatestPublished}) {
+        # If this variable is set, we're called from export_index.
         # Adjust the path for top-level index.html: the comics are in their own
         # folder, but index.html is in that folder's parent folder.
         $path = '';
@@ -1355,6 +1357,7 @@ sub _do_export_html {
         # canonicalUrl is different for index.html (main url vs deep link)
         $vars{'canonicalUrl'} =~ s{^(https://[^/]+/).+}{$1};
     }
+
     if ($self->not_yet_published()) {
         $vars{'root'} = "../$path/";
     }
@@ -1608,53 +1611,38 @@ sub _write_file {
 }
 
 
-=head2 export_archive
+=head2 export_index
 
-Generates a single HTML page with all comics in chronological order.
+Generates an C<index.html> page for the latest comic in each language.
+
+The file will always be C<web/<language>/index.html>, for example, for
+English comics in C<web/english/index.html>.
 
 Parameters:
 
 =over 4
 
-=item B<%archive_templates> reference to a hash of language to the
-archive template file for that language.
-
-=item B<%archive_pages> reference to a hash of language to the archive
-page html file.
-
-=item B<$%comic_templates> reference to a hash of language to comic
-template file to use for F<index.html>.
+=item B<%templates> reference to a hash of language to  index page template
+    file. Depending on your setup, these template files could be just the
+    regular comic page template.
 
 =back
 
 =cut
 
-sub export_archive {
-    my ($archive_templates, $archive_pages, $comic_template) = @ARG;
+sub export_index {
+    my ($templates) = @ARG;
 
-    _final_checks();
-    foreach my $language (keys %{$archive_templates}) {
-        my $page = _make_dir('web/' . lc $language);
+    foreach my $language (sort keys %{$templates}) {
+        my $dir = _make_dir('generated/web/' . lc $language);
         my @sorted = (sort _from_oldest_to_latest grep { _archive_filter($_, $language) } @comics);
         next if (@sorted == 0);
+
         my $last_pub = $sorted[-1];
         $last_pub->{isLatestPublished} = 1;
-        $page .= '/index.html';
-        _write_file($page, $last_pub->_do_export_html($language, ${$comic_template}{$language}));
+        my $page = "$dir/index.html";
+        _write_file($page, $last_pub->_do_export_html($language, ${$templates}{$language}));
     }
-
-    _do_export_archive($archive_templates, $archive_pages);
-    return;
-}
-
-
-sub _final_checks {
-    my ($self) = @ARG;
-
-    foreach my $check (@{$self->{checks}}) {
-        $check->final_check();
-    }
-
     return;
 }
 
@@ -1677,7 +1665,29 @@ sub _backlog_filter {
 }
 
 
-sub _do_export_archive {
+=head2 export_archive
+
+Generates a single HTML page per language with all comics in chronological
+order.
+
+Parameters:
+
+=over 4
+
+=item B<%archive_templates> reference to a hash of language to the archive
+    template file for that language. If a language doesn't have an archive
+    template, it is silently skipped.
+
+=item B<%archive_pages> reference to a hash of language to the archive
+    page html file (including path). This allows for language-specific
+    names, e.g., "generated/web/english/archive.html" for English and
+    "generated/web/spanish/archivo.html" in Spanish.
+
+=back
+
+=cut
+
+sub export_archive {
     my ($archive_templates, $archive_pages) = @ARG;
 
     foreach my $language (sort keys %{$archive_templates}) {

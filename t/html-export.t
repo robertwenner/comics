@@ -71,7 +71,6 @@ sub navigation_links_first : Tests {
 }
 
 
-
 sub navigation_links_middle : Tests {
     my $jan = make_comic('English', 'Jan', '2016-01-01');
     my $feb = make_comic('English', 'Feb', '2016-02-01');
@@ -375,10 +374,7 @@ sub index_html_with_canonical_link : Tests {
 
     $comic->{first}{'English'} = '';
     $comic->{prev}{'English'} = '';
-    Comic::export_archive(
-        {'English' => 'archive.templ'},
-        {'English' => 'archive.html'},
-        {'English' => 'comic.templ'});
+    Comic::export_index({'English' => 'comic.templ'});
     MockComic::assert_wrote_file('generated/web/english/index.html',
         'https://beercomics.com/');
 }
@@ -400,7 +396,6 @@ sub index_html_does_not_break_perm_link : Tests {
         'Deutsch' => 'comic.templ',
     );
 
-    $comic->{isLatestPublished} = 1;
     $comic->_do_export_html('English', 'comic.templ');
     is_deeply(
         {'English' => 'https://beercomics.com/comics/beer.html',
