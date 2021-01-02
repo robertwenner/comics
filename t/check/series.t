@@ -66,6 +66,31 @@ sub warns_if_unique_series : Tests {
 }
 
 
+sub warns_if_unique_series_ignores_surrounding_whitespace : Tests {
+    my $c1 = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::DEUTSCH => 'Comic1',
+        },
+        $MockComic::SERIES => {
+            $MockComic::DEUTSCH => 'Buckimude',
+        },
+    );
+    $check->notify($c1);
+    my $c2 = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::DEUTSCH => 'Comic2',
+        },
+        $MockComic::SERIES => {
+            $MockComic::DEUTSCH => ' Buckimude ',
+        },
+    );
+    $check->notify($c1);
+    $check->final_check();
+    is_deeply([@{$c1->{warnings}}], []);
+    is_deeply([@{$c2->{warnings}}], []);
+}
+
+
 sub complains_if_unique_series_per_language : Tests {
     my $de = MockComic::make_comic(
         $MockComic::TITLE => {
@@ -116,7 +141,7 @@ sub series_not_in_all_languages_empty : Tests {
     );
     $check->check($comic);
     is_deeply([@{$comic->{warnings}}],
-        ['No series tag for English but for Deutsch']);
+        ['No series tag for English but for Deutsch', 'Empty series for English']);
 }
 
 

@@ -69,13 +69,19 @@ sub check {
 
     foreach my $language ($comic->languages()) {
         my $need = _series_for($comic, $language);
+        next if (!defined $need);
+        if ($need eq '') {
+            $comic->_warn("Empty series for $language");
+            next;
+        }
+
         foreach my $l ($comic->languages()) {
             next if ($language eq $l);
             my $has = _series_for($comic, $l);
-            if ($need && !$has) {
+            if (!$has) {
                 $comic->_warn("No series tag for $l but for $language");
             }
-            elsif ($need && $need eq $has) {
+            elsif ($need eq $has) {
                 $comic->_warn("Duplicated series tag '$need' for $l and $language");
                 # Do not exit the loop early here to avoid a duplicated warning
                 # when the check complains about the duplicated series for both
@@ -91,7 +97,7 @@ sub check {
 sub _series_for {
     my ($comic, $language) = @ARG;
 
-    return '' unless ($comic->{meta_data}->{series});
+    return unless ($comic->{meta_data}->{series});
     return trim($comic->{meta_data}->{series}{$language});
 }
 
@@ -114,16 +120,13 @@ sub final_check {
     my %series_count;
 
     foreach my $comic (@{$self->{comics}}) {
-        next unless (defined($comic->{meta_data}->{series}));
         foreach my $language (keys %{$comic->{meta_data}->{series}}) {
-            foreach my $series ($comic->{meta_data}->{series}->{$language}) {
-                $series_count{$language}{$series}++;
-            }
+            my $series = _series_for($comic, $language);
+            $series_count{$language}{$series}++;
         }
     }
 
     foreach my $comic (@{$self->{comics}}) {
-        next unless (defined($comic->{meta_data}->{series}));
         foreach my $language (keys %{$comic->{meta_data}->{series}}) {
             foreach my $series ($comic->{meta_data}->{series}->{$language}) {
                 if ($series_count{$language}{$series} == 1) {
