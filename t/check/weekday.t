@@ -55,6 +55,16 @@ sub no_date : Test {
 }
 
 
+sub web_comic_scheduled_for_friday_ok : Tests {
+    my $comic = MockComic::make_comic($MockComic::PUBLISHED_WHEN => '3000-01-03');
+    eval {
+        $check->check($comic);
+    };
+    is($@, '');
+    is_deeply($comic->{warnings}, []);
+}
+
+
 sub web_comic_scheduled_for_saturday : Tests {
     my $comic = MockComic::make_comic($MockComic::PUBLISHED_WHEN => '3000-01-04');
     eval {
