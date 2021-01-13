@@ -125,3 +125,6 @@
 - defect: frame detection for text outside of a single frame (comic title)
   does not seem to treat that text as after anything within the frame. The
   whole frame handling code needs a close look.
+
+- defect: does it treat text outside of a meta layer as speaker label just
+  because it ends in a colon (motivation.svg)? it probably should not.
