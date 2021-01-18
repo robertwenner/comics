@@ -567,7 +567,7 @@ sub _get_transcript {
             @{$self->{transcript}{$language}} = split /[\r\n]+/, File::Slurper::read_text($cache);
         }
         else {
-            @{$self->{transcript}{$language}} = _append_speech_to_speaker($self->texts_in_layer($language));
+            @{$self->{transcript}{$language}} = _append_speech_to_speaker($self->texts_in_language($language));
             _write_file($cache, join "\n", @{$self->{transcript}{$language}});
         }
     }
@@ -745,14 +745,6 @@ sub _build_xpath {
         $xpath .= "/$DEFAULT_NAMESPACE:$p";
     }
     return $xpath;
-}
-
-
-sub _text {
-    # Gets text nodes in the given language's (main) layer, meta layer, and background layer.
-    my ($language) = @ARG;
-    return _find_layers($language, "Meta$language", "HintergrundText$language") .
-        "//$DEFAULT_NAMESPACE:text";
 }
 
 
@@ -1395,6 +1387,39 @@ sub _language_codes {
 }
 
 
+=head2 texts_in_language
+
+Gets the normalized texts for the given language.
+
+Normalized means line breaks are removed and multiple consecutive spaces are
+reduced to one.
+
+Parameters:
+
+=over 4
+
+=item B<language> Language name(s).
+
+=back
+
+=cut
+
+sub texts_in_language {
+    my ($self, @languages) = @ARG;
+
+    $self->_find_frames();
+    my @texts;
+    foreach my $language (@languages) {
+        my @layers = _find_layers($language, "Meta$language", "HintergrundText$language") . "//$DEFAULT_NAMESPACE:text";
+        my @nodes = $self->{xpath}->findnodes(@layers);
+        foreach my $node (sort { $self->_text_pos_sort($a, $b) } @nodes) {
+            push @texts, _text_content($node);
+        }
+    }
+    return @texts;
+}
+
+
 =head2 texts_in_layer
 
 Gets the normalized texts in the given layers.
@@ -1418,7 +1443,9 @@ sub texts_in_layer {
     $self->_find_frames();
     my @texts;
     foreach my $layer (@layers) {
-        foreach my $node (sort { $self->_text_pos_sort($a, $b) } $self->{xpath}->findnodes(_text($layer))) {
+        my @layernames = _find_layers($layer) . "//$DEFAULT_NAMESPACE:text";
+        my @nodes = $self->{xpath}->findnodes(@layernames);
+        foreach my $node (sort { $self->_text_pos_sort($a, $b) } @nodes) {
             push @texts, _text_content($node);
         }
     }
@@ -2186,7 +2213,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2015 - 2019, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2015 - 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or

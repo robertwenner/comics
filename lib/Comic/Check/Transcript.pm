@@ -76,7 +76,7 @@ sub check {
     foreach my $language ($comic->languages()) {
         my $trace = '';
         my $previous = '';
-        foreach my $t ($comic->texts_in_layer($language)) {
+        foreach my $t ($comic->texts_in_language($language)) {
             $trace .= "[$t]";
             if (_both_names($previous, $t)) {
                 $comic->_croak("transcript mixed up in $language: $trace");
@@ -150,7 +150,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2015 - 2020, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2015 - 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or

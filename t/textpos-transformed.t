@@ -20,7 +20,7 @@ sub assert_order {
     my $comic = MockComic::make_comic(
         $MockComic::NAMESPACE_DECLARATION => 'xmlns:xlink="http://www.w3.org/1999/xlink"',
         $MockComic::XML => $svg);
-    my $is = join "", $comic->texts_in_layer('English');
+    my $is = join "", $comic->texts_in_language('English');
     is($is, $expected);
 }
 

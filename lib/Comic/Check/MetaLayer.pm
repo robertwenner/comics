@@ -84,7 +84,7 @@ sub check {
             next;
         }
 
-        my $first_text = ($comic->texts_in_layer($language))[0];
+        my $first_text = ($comic->texts_in_language($language))[0];
         my $any_text_found = 0;
         my $first_text_is_meta = 0;
         foreach my $text ($comic->texts_in_layer("$self->{prefix}$language")) {
@@ -143,7 +143,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2015 - 2020, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2015 - 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or

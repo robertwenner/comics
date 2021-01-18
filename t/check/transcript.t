@@ -170,7 +170,7 @@ XML
         $check->check($comic);
     };
     is($@, '');
-    is_deeply([$comic->texts_in_layer('Deutsch')], ["Jessica1:", "eins", "Jessica2:", "zwei"]);
+    is_deeply([$comic->texts_in_language('Deutsch')], ["Jessica1:", "eins", "Jessica2:", "zwei"]);
 }
 
 
@@ -196,5 +196,5 @@ XML
         $check->check($comic);
     };
     is($@, '');
-    is_deeply([$comic->texts_in_layer('Deutsch')], ["Jessica1:", "eins", "Jessica2:", "zwei"]);
+    is_deeply([$comic->texts_in_language('Deutsch')], ["Jessica1:", "eins", "Jessica2:", "zwei"]);
 }

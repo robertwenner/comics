@@ -96,7 +96,7 @@ sub check {
 
     my %seen;
     foreach my $language ($comic->languages()) {
-        foreach my $text ($comic->texts_in_layer($language)) {
+        foreach my $text ($comic->texts_in_language($language)) {
             $text = _normalize_text($text);
             next if (defined $allow_duplicated{$text});
             next if ($text =~ m/:$/);
@@ -166,7 +166,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2015 - 2020, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2015 - 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or
