@@ -279,6 +279,37 @@ You will also get a warning if there is only one comic in a series. This
 could be a typo, or it could be ok (first comic in a series).
 
 
+### Comic::Check::Spelling
+
+Spellchecks the given comic. Inkscape has built-in spell checking, but
+doesn't know which texts are in which language. Inkscape also doesn't check
+comic meta data. Hence this check.
+
+You can configure words to be ignored either in the main configuration file
+or in the comic:
+
+```json
+{
+    "Checks": {
+        "Comic::Check::Spelling": {
+            "ignore": {
+                "English": [ "word", "otherword" ]
+            }
+        }
+    }
+}
+```
+
+Spellchecking requires the GNU aspell program. You can install it on Ubuntu
+with
+
+```shell
+sudo apt-get install aspell libaspell-dev aspell-en aspell-de
+```
+
+Add additional languages (like `aspell-de` above for German) as needed.
+
+
 ### Comic::Check::Tag
 
 This flags comics that contain tags that differ from previously seen tags in
