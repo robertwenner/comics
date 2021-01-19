@@ -69,7 +69,7 @@ sub check {
 
     foreach my $language ($comic->languages()) {
         my $need = _series_for($comic, $language);
-        next if (!defined $need);
+        next unless (defined $need);
         if ($need eq '') {
             $comic->_warn("Empty series for $language");
             next;
