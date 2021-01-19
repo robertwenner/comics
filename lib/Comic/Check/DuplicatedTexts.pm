@@ -58,8 +58,8 @@ multiple spaces are reduced to one. However, checks are case-sensitive, so
 that you can still use "Pale Ale" in German and "pale ale" in English.
 
 If a comic defines a meta variable C<allow-duplicated>, these texts are not
-flagged as duplicated. This also works for multi-line texts; just use a
-regular space instead of a line break when configuring this.
+flagged as duplicated. This also works for texts spanning multiple; just use
+a regular space instead of a line break when configuring this.
 
 For example:
 

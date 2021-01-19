@@ -17,7 +17,7 @@ Readonly my $MAX_LEN => 280;
 
 =encoding utf8
 
-=for stopwords Wenner merchantability perlartistic html png Ich braue mein eigenes Weil ich kann
+=for stopwords Wenner merchantability perlartistic html png Ich braue mein eigenes Weil ich kann hashtags
 
 =head1 NAME
 

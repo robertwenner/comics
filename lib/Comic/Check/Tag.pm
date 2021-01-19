@@ -10,6 +10,8 @@ use base('Comic::Check::Check');
 
 use version; our $VERSION = qv('0.0.3');
 
+=for stopwords html Wenner merchantability perlartistic metadata
+
 
 =head1 NAME
 
@@ -131,9 +133,6 @@ sub _check_against {
 
     return;
 }
-
-
-=for stopwords html Wenner merchantability perlartistic
 
 
 =head1 VERSION

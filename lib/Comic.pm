@@ -42,7 +42,7 @@ use Comic::Social::Reddit;
 
 use version; our $VERSION = qv('0.0.3');
 
-=for stopwords inkscape html svg png Wenner merchantability perlartistic MetaEnglish rss sitemap sizemap xml dbus JSON
+=for stopwords inkscape html svg png Wenner merchantability perlartistic MetaEnglish rss sitemap sizemap xml dbus JSON metadata
 
 
 =head1 NAME

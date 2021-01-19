@@ -14,7 +14,7 @@ use version; our $VERSION = qv('0.0.3');
 
 =encoding utf8
 
-=for stopwords Wenner merchantability perlartistic boolean reddit reddits subreddits
+=for stopwords Wenner merchantability perlartistic boolean reddit reddits subreddits hashtags username
 
 =head1 NAME
 
@@ -50,7 +50,7 @@ Arguments:
 
 =over 4
 
-=item B<username> your reddit username.
+=item B<username> your reddit user name.
 
 =item B<password> your reddit password.
 
