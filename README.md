@@ -31,7 +31,8 @@ You'll need [Inkscape](https://inkscape.org) in the `$PATH` to actually
 export your comics to png.
 
 You also need Imager::File::PNG, which in turn depends on `libpng-dev`
-and `optipng`.
+and `optipng`. For spell checking, you need ASpell dev libraries
+(`libaspell-dev`) plus dictionaries for languages you want to use.
 
 
 ### Installation
