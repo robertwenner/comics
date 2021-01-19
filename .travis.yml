@@ -5,6 +5,7 @@ perl:
     - "5.30"
 
 before_install:
+    - sudo apt-get -y install aspell-en aspell-de libaspell-dev
     - cpanm --quiet --notest Devel::Cover
     - cpanm --quiet --notest Devel::Cover::Report::Coveralls
 

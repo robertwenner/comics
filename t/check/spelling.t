@@ -10,12 +10,6 @@ use Comic::Check::Spelling;
 
 __PACKAGE__->runtests() unless caller;
 
-# TravisCI didn't install Text::Aspell, probably because dependencies
-# (libaspell-dev) are not installed.
-eval "use Text::Aspell";
-plan skip_all => "Text::Aspell is required for the code under test" if $@;
-
-
 my $check;
 
 
