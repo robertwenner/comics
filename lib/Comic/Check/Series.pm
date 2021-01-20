@@ -97,7 +97,8 @@ sub check {
 sub _series_for {
     my ($comic, $language) = @ARG;
 
-    return unless ($comic->{meta_data}->{series});
+    return unless (defined $comic->{meta_data}->{series});
+    return unless (defined $comic->{meta_data}->{series}{$language});
     return trim($comic->{meta_data}->{series}{$language});
 }
 
@@ -180,7 +181,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2015 - 2020, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2015 - 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or
