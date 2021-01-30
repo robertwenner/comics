@@ -30,7 +30,7 @@ sub creates_dir : Tests {
     Comic::export_index({
         $MockComic::ENGLISH => 'comic-page.templ',
         $MockComic::DEUTSCH => 'comic-page.templ',
-        $MockComic::ESPAÑOL => 'comic-page.templ',
+        "$MockComic::ESPAÑOL" => 'comic-page.templ',
     });
     MockComic::assert_made_dirs('generated/web/deutsch', 'generated/web/english', 'generated/web/español');
 }

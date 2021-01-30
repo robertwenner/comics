@@ -165,7 +165,7 @@ sub duplicate_series_does_not_hide_later_error : Tests {
         $MockComic::TITLE => {
             $MockComic::DEUTSCH => 'Comic',
             $MockComic::ENGLISH => 'Comic',
-            $MockComic::ESPAÑOL => 'Comic',
+            "$MockComic::ESPAÑOL" => 'Comic',
         },
         $MockComic::SERIES => {
             $MockComic::DEUTSCH => 'Buckimude',
