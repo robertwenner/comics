@@ -128,3 +128,10 @@
 
 - defect: does it treat text outside of a meta layer as speaker label just
   because it ends in a colon (motivation.svg)? it probably should not.
+
+- check if meta text is not in a meta layer? by checking for colons? but
+  that should be ok.
+
+- transcript check needs to not just grab all texts in order but also
+  respect layers: don't treat regular text as speaker indicator just because
+  it ends in a colon (could be a before / after style comic).
