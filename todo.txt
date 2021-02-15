@@ -36,9 +36,6 @@
 
 - prev next first last buttons per series
 
-- spellcheck (but that's already available in Inkscape anyway, but at the
-  Perl level we know the language to check with)
-
 - tags under each comics, as hyperlinks to the tag cloud
 
 - tag cloud (see https://www.w3.org/TR/html5/common-idioms.html#tag-clouds)
@@ -135,3 +132,7 @@
 - transcript check needs to not just grab all texts in order but also
   respect layers: don't treat regular text as speaker indicator just because
   it ends in a colon (could be a before / after style comic).
+
+- make handling of paths uniform, relative paths need to be resolved
+  relative to a given base directory (e.g., the "see": "..." reference to
+  another comic).
