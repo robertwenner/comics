@@ -123,11 +123,14 @@
   does not seem to treat that text as after anything within the frame. The
   whole frame handling code needs a close look.
 
+- defect: frame detection lumps text under the last row of frames in that
+  last row, breaking captions under comics,
+
 - defect: does it treat text outside of a meta layer as speaker label just
   because it ends in a colon (motivation.svg)? it probably should not.
 
 - check if meta text is not in a meta layer? by checking for colons? but
-  that should be ok.
+  trailig colons should be ok.
 
 - transcript check needs to not just grab all texts in order but also
   respect layers: don't treat regular text as speaker indicator just because
@@ -136,3 +139,7 @@
 - make handling of paths uniform, relative paths need to be resolved
   relative to a given base directory (e.g., the "see": "..." reference to
   another comic).
+
+- feature: upload to e.g., imgur.com and then post a link to that on reddit.
+  This may be interesting for people not running their own website, and for
+  subreddits that only accept file hosting on certain sites (like imgur).
