@@ -6,6 +6,8 @@ use Test::More;
 
 use lib 't';
 use MockComic;
+use Comic::Out::Template;
+
 
 __PACKAGE__->runtests() unless caller;
 
@@ -32,99 +34,99 @@ sub make_comic {
 }
 
 
-sub simple_expression : Test {
+sub simple_expression : Tests {
     MockComic::fake_file("file.templ", "[% modified %]");
-    is(Comic::_templatize('comic.svg', 'file.templ', '', ("modified" => "today")), "today");
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', ("modified" => "today")), "today");
 }
 
 
-sub case_sensitive : Test {
+sub case_sensitive : Tests {
     MockComic::fake_file('file.templ', "[% modified %]");
     eval {
-        Comic::_templatize('comic.svg', 'file.templ', '', ("MODified" => "today"));
+        Comic::Out::Template::templatize('comic.svg', 'file.templ', '', ("MODified" => "today"));
     };
     like($@, qr/undefined variable/i);
 }
 
 
-sub white_space : Test {
+sub white_space : Tests {
     MockComic::fake_file("file.templ", "[%modified\t\t %]");
-    is(Comic::_templatize('comic.svg', 'file.templ', '', ("modified" => "today")), "today");
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', ("modified" => "today")), "today");
 }
 
 
-sub utf8 : Test {
+sub utf8 : Tests {
     MockComic::fake_file("file.templ", "[%modified\t\t %]");
-    is(Comic::_templatize('comic.svg', 'file.templ', '', ("modified" => "töday")), "töday");
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', ("modified" => "töday")), "töday");
 }
 
 
 sub filter_html_special_in_variable : Tests {
     MockComic::fake_file("file.templ", "[% FILTER html %][%var%][% END %]");
-    is(Comic::_templatize('comic.svg', 'file.templ', '', ("var" => "<>")), "&lt;&gt;");
-    is(Comic::_templatize('comic.svg', 'file.templ', '', ("var" => "ü")), "ü");
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', ("var" => "<>")), "&lt;&gt;");
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', ("var" => "ü")), "ü");
 }
 
 
 sub filter_html_special_in_markup : Tests {
     MockComic::fake_file("file.templ", "[% FILTER html %]<[%var%]>[% END %]");
-    is(Comic::_templatize('comic.svg', 'file.templ', '', ("var" => "&")), "&lt;&amp;&gt;");
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', ("var" => "&")), "&lt;&amp;&gt;");
 }
 
 
-sub template_syntax_error : Test {
+sub template_syntax_error : Tests {
     MockComic::fake_file("file.templ", "[% modified ");
     eval {
-        Comic::_templatize('comic.svg', 'file.templ', '', ("modified" => "today"));
+        Comic::Out::Template::templatize('comic.svg', 'file.templ', '', ("modified" => "today"));
     };
     like($@, qr/Unresolved template marker/i);
 }
 
 
-sub unknown_variable : Test {
+sub unknown_variable : Tests {
     MockComic::fake_file("file.templ", "[% modified %]");
     eval {
-        Comic::_templatize('comic.svg', 'file.templ', '', ("a" => "b"));
+        Comic::Out::Template::templatize('comic.svg', 'file.templ', '', ("a" => "b"));
     };
     like($@, qr/undefined variable/i);
 }
 
 
-sub stray_opening_tag : Test {
+sub stray_opening_tag : Tests {
     MockComic::fake_file("file.templ", "[% a");
     eval {
-        Comic::_templatize('comic.svg', 'file.templ', '', ("a" => "b"));
+        Comic::Out::Template::templatize('comic.svg', 'file.templ', '', ("a" => "b"));
     };
     like($@, qr/unresolved template marker/i);
 }
 
 
-sub stray_closing_tag : Test {
+sub stray_closing_tag : Tests {
     MockComic::fake_file("file.templ", "\nblah\na %]\nblah\n\n");
     eval {
-        Comic::_templatize('comic.svg', 'file.templ', '', ("a" => "b"));
+        Comic::Out::Template::templatize('comic.svg', 'file.templ', '', ("a" => "b"));
     };
     like($@, qr/unresolved template marker/i);
 }
 
 
-sub array : Test {
+sub array : Tests {
     MockComic::fake_file("file.templ", "[% FOREACH a IN array %][% a %][% END %]");
-    is(Comic::_templatize('comic.svg', 'file.templ', '', ("array" => ["a", "b", "c"])),
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', ("array" => ["a", "b", "c"])),
         "abc");
 }
 
 
 sub array_with_separators : Tests {
     MockComic::fake_file("file.templ", "[% FOREACH a IN array %][% a %][% IF !loop.last() %],[% END %][% END %]");
-    is(Comic::_templatize('comic.svg', 'file.templ', '', ("array" => ["a", "b", "c"])),
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', ("array" => ["a", "b", "c"])),
         "a,b,c");
 }
 
 
-sub hash_hard_coded_key : Test {
+sub hash_hard_coded_key : Tests {
     MockComic::fake_file('file.templ', "[% hash.key %]");
-    is(Comic::_templatize('comic.svg', 'file.templ', '', ("hash" => {"key" => "the key"})),
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', ("hash" => {"key" => "the key"})),
         "the key");
 }
 
@@ -134,7 +136,7 @@ sub simple_hash : Tests {
     my %hash = ("a" => "1");
     my %vars;
     $vars{'hash'} = \%hash;
-    is(Comic::_templatize('comic.svg', 'file.templ', '', %vars),
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', %vars),
         'a => 1');
 }
 
@@ -144,7 +146,7 @@ sub hash_all_elements_with_order : Tests {
     my %hash = ("a" => "1", "b" => "2", "c" => "3");
     my @order = sort keys %hash;
     my %vars = ("hash" => \%hash, "order" => \@order);
-    is(Comic::_templatize('comic.svg', 'file.templ', '', %vars),
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', %vars),
         '123');
 }
 
@@ -167,7 +169,7 @@ sub hash_of_hashes: Test {
 [% END %]
 TEMPL
 
-    like(Comic::_templatize('comic.svg', 'file.templ', '', (
+    like(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', (
             "languages" => \%languages,
             "langorder" => \@lang_order,
             "in_lang_order" => \@in_lang_order)),
@@ -175,9 +177,9 @@ TEMPL
 }
 
 
-sub function : Test {
+sub function: Tests {
     MockComic::fake_file('file.templ', '[% func %]');
-    is(Comic::_templatize('comic.svg', 'file.templ', '', ("func" => &{ return "works" })),
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', ("func" => &{ return "works" })),
         "works");
 }
 
@@ -186,10 +188,10 @@ sub object_member : Tests {
     my $comic = make_comic();
     is($comic->{srcFile}, "some_comic.svg");
     MockComic::fake_file('file.templ', "[%comic.srcFile%]");
-    is(Comic::_templatize('comic.svg', 'file.templ', '', ("comic" => $comic)),
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', ("comic" => $comic)),
         "some_comic.svg");
     MockComic::fake_file('file.templ', "[%comic.meta_data.title.Deutsch%]");
-    is(Comic::_templatize('comic.svg', 'file.templ', '', ("comic" => $comic)),
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', ("comic" => $comic)),
         "Bier trinken");
 }
 
@@ -197,13 +199,13 @@ sub object_member : Tests {
 sub object_function_code_ref : Tests {
     my $comic = make_comic();
     MockComic::fake_file('file.templ', "[%notFor(comic, 'Pimperanto')%]");
-    is(Comic::_templatize('comic.svg', 'file.templ', '', (
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', (
             "notFor" => \&Comic::_not_for,
             "comic" => $comic,
         )),
         1);
     MockComic::fake_file('file.templ', "[%notFor(comic, 'Deutsch')%]");
-    is(Comic::_templatize('comic.svg', 'file.templ', '', (
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', (
             "notFor" => \&Comic::_not_for,
             "comic" => $comic,
         )),
@@ -214,24 +216,24 @@ sub object_function_code_ref : Tests {
 sub object_function_wrapped : Tests {
     my $comic = make_comic();
     MockComic::fake_file('file.templ', "[%notFor(comic, 'Pimperanto')%]");
-    is(Comic::_templatize('comic.svg', 'file.templ', '', (
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', (
             "notFor" => sub { return Comic::_not_for(@_); },
             "comic" => $comic,
         )),
         1);
     MockComic::fake_file('file.templ', "[%notFor(comic, 'Deutsch')%]");
-    is(Comic::_templatize('comic.svg', 'file.templ', '', (
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', (
             "notFor" => sub { return Comic::_not_for(@_); },
             "comic" => $comic,
         )),
         0);
 
     MockComic::fake_file('file.templ', "[%notFor('Pimperanto')%]");
-    is(Comic::_templatize('comic.svg', 'file.templ', '',
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '',
         ("notFor" => sub { return $comic->_not_for(@_);})),
         1);
     MockComic::fake_file('file.templ', "[%notFor('Deutsch')%]");
-    is(Comic::_templatize('comic.svg', 'file.templ', '',
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '',
         ("notFor" => sub { return $comic->_not_for(@_);})),
         0);
 }
@@ -247,7 +249,7 @@ sub object_function_public : Tests {
     # Cannot call a private function (starting with an underscore), that always
     # gets a var.undef error.
     MockComic::fake_file('file.templ', "[%IF comic.not_yet_published()%]not yet[%END%]");
-    is(Comic::_templatize('comic.svg', 'file.templ', '', (
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', (
             "comic" => $comic,
         )),
         'not yet');
@@ -302,16 +304,16 @@ TEMPLATE
 }
 
 
-sub html_special_as_is : Test {
+sub html_special_as_is: Tests {
     MockComic::fake_file('file.templ', "[%modified\t\t %]");
-    is(Comic::_templatize('comic.svg', 'file.templ', '', ("modified" => "<b>")), "<b>");
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', ("modified" => "<b>")), "<b>");
 }
 
 
 sub error_includes_template_file_name : Tests {
     MockComic::fake_file('file.templ', "[% oops %]");
     eval {
-        Comic::_templatize('comic.svg', 'file.templ', '');
+        Comic::Out::Template::templatize('comic.svg', 'file.templ', '');
     };
     like($@, qr{\bfile.templ\b});
     like($@, qr{\bcomic.svg\b});
@@ -322,7 +324,7 @@ sub error_includes_template_file_name : Tests {
 sub catches_perl_array : Tests {
     MockComic::fake_file('file.templ', '[% x %]');
     eval {
-        Comic::_templatize('comic.svg', 'file.templ', '', ("x" => [1, 2, 3]));
+        Comic::Out::Template::templatize('comic.svg', 'file.templ', '', ("x" => [1, 2, 3]));
     };
     like($@, qr/ARRAY/i);
 }
@@ -331,7 +333,7 @@ sub catches_perl_array : Tests {
 sub catches_perl_hash : Tests {
     MockComic::fake_file('file.templ', '[% x %]');
     eval {
-        Comic::_templatize('comic.svg', 'file.templ', '', ("x" => {a =>1, b => 2}));
+        Comic::Out::Template::templatize('comic.svg', 'file.templ', '', ("x" => {a =>1, b => 2}));
     };
     like($@, qr/HASH/i);
 }
@@ -347,87 +349,79 @@ sub sparse_collection_top_n : Tests {
 [% a %]
 [% END %]
 TEMPL
-    like(Comic::_templatize('comic.svg', 'file.templ', '', ("array" => [1 .. 10], 'max' => 3)),
+    like(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', ("array" => [1 .. 10], 'max' => 3)),
         qr{^\s*1\s+3\s+5\s*$});
 }
 
 
 sub consts_in_templates : Tests {
     MockComic::fake_file('file.templ', '[% const.name = "foo" %][% const.name %]');
-    is(Comic::_templatize('comic.svg', 'file.templ', '', ()), "foo");
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', ()), "foo");
 }
 
 
 sub in_string : Tests {
     MockComic::fake_file('file.templ', '[% const.name = "foo" %][% "${const.name}" %]');
-    is(Comic::_templatize('comic.svg', 'file.templ', '', ()), "foo");
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', ()), "foo");
 }
 
 
 sub sets_language : Tests {
     MockComic::fake_file('file.templ', '[% "some/$language/path" %]');
-    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', ()), "some/deutsch/path");
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', 'Deutsch', ()), "some/deutsch/path");
 }
 
 
 sub variable_case : Tests {
     MockComic::fake_file('file.templ', '[% a %][% A %]');
-    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', ('a' => 'a', 'A' => 'A')), "aA");
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', 'Deutsch', ('a' => 'a', 'A' => 'A')), "aA");
 }
 
 
 sub replace_filter : Tests {
     MockComic::fake_file('file.templ', '[% FILTER replace("a", "A") %][% a %][% END %]');
-    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', ('a' => 'a')), "A");
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', 'Deutsch', ('a' => 'a')), "A");
 }
 
 
 sub dquote : Tests {
     MockComic::fake_file('file.templ', '[% a.dquote %]');
-    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', ('a' => 'so, "what"?')), 'so, \"what\"?');
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', 'Deutsch', ('a' => 'so, "what"?')), 'so, \"what\"?');
 }
 
 
 sub joined : Tests {
     MockComic::fake_file('file.templ', '[% a.join(",") %]');
-    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', ('a' => [1, 2, 3])), '1,2,3');
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', 'Deutsch', ('a' => [1, 2, 3])), '1,2,3');
 }
 
 
 sub json : Tests {
     MockComic::fake_file('file.templ', '[% USE JSON %][% a.json %]');
-    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', ('a' => '"x"')), '"\"x\""');
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', 'Deutsch', ('a' => '"x"')), '"\"x\""');
     MockComic::fake_file('file.templ', '[% USE JSON %][% a.json %]');
-    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', ('a' => [])), '[]');
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', 'Deutsch', ('a' => [])), '[]');
     MockComic::fake_file('file.templ', '[% USE JSON %][% a.json %]');
-    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', ('a' => ['x','"'])), '["x","\""]');
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', 'Deutsch', ('a' => ['x','"'])), '["x","\""]');
 }
 
 
 sub default : Tests {
     MockComic::fake_file('file.templ', '[% DEFAULT a = "default" %][% a %]');
-    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', ()), 'default');
-    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', (a => 'set')), 'set');
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', 'Deutsch', ()), 'default');
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', 'Deutsch', (a => 'set')), 'set');
 }
 
 
 sub check_defined_scalar : Tests {
     MockComic::fake_file('file.templ', '[% DEFAULT a = "" %][% IF a %][% a %][% END %]');
-    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', ()), '');
-    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', (a => 'set')), 'set');
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', 'Deutsch', ()), '');
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', 'Deutsch', (a => 'set')), 'set');
 }
 
 
 sub check_array_empty : Tests {
     MockComic::fake_file('file.templ', '[% IF a %][% a.join(",") %][% END %]');
-    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', (a => [])), '');
-    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', (a => ['set'])), 'set');
-}
-
-
-__END__
-sub check_defined_array : Tests {
-    MockComic::fake_file('file.templ', '[% IF a %][% a.join(",") %][% END %]');
-    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', ()), '');
-    is(Comic::_templatize('comic.svg', 'file.templ', 'Deutsch', (a => ['set'])), 'set');
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', 'Deutsch', (a => [])), '');
+    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', 'Deutsch', (a => ['set'])), 'set');
 }

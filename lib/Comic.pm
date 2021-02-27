@@ -27,8 +27,6 @@ use HTML::Entities;
 use Image::ExifTool qw(:Public);
 use Image::SVG::Transform;
 use Imager::QRCode;
-use Template;
-use Template::Plugin::JSON;
 use SVG;
 use URI::Encode qw(uri_encode uri_decode);
 use Clone qw(clone);
@@ -36,6 +34,7 @@ use Clone qw(clone);
 use Comic::Consts;
 use Comic::Settings;
 use Comic::Check::Check;
+use Comic::Out::Template;
 use Comic::Social::Twitter;
 use Comic::Social::Reddit;
 
@@ -1165,7 +1164,7 @@ sub export_sitemap {
     $vars{'notFor'} = \&_not_published_on_the_web;
     foreach my $language (_all_comic_languages(@all_comics)) {
         my $templ = ${$site_map_templates}{$language};
-        my $xml =_templatize('(none)', $templ, $language, %vars);
+        my $xml = Comic::Out::Template::templatize('(none)', $templ, $language, %vars);
         _write_file(${$outputs}{$language}, $xml);
     }
 
@@ -1358,7 +1357,7 @@ sub _do_export_html {
     }
 
     $vars{see} = $self->_references($language);
-    return _templatize($self->{srcFile}, $template, $language, %vars);
+    return Comic::Out::Template::templatize($self->{srcFile}, $template, $language, %vars);
 }
 
 
@@ -1591,43 +1590,6 @@ sub _bottom_right {
 }
 
 
-sub _templatize {
-    my ($comic_file, $template_file, $language, %vars) = @ARG;
-
-    my %options = (
-        STRICT => 1,
-        PRE_CHOMP => 0, # removes space in beginning of a directive
-        POST_CHOMP => 2, # removes spaces after a directive
-        # TRIM => 1,    # only used for BLOCKs
-        VARIABLES => {
-            'Language' => $language,
-            'language' => lcfirst($language),
-        },
-        ENCODING => 'utf8',
-    );
-    my $t = Template->new(%options) ||
-        croak('Cannot construct template: ' . Template->error());
-    my $output = '';
-    my $template = File::Slurper::read_text($template_file);
-    $t->process(\$template, \%vars, \$output) ||
-        croak "$template_file for $comic_file: " . $t->error() . "\n";
-
-    if ($output =~ m/\[%/mg || $output =~ m/%\]/mg) {
-        croak "$template_file for $comic_file: Unresolved template marker";
-    }
-    if ($output =~ m/ARRAY\(0x[[:xdigit:]]+\)/mg) {
-        croak "$template_file for $comic_file: ARRAY ref found:\n$output";
-    }
-    if ($output =~ m/HASH\(0x[[:xdigit:]]+\)/mg) {
-        croak "$template_file for $comic_file: HASH ref found:\n$output";
-    }
-    # Remove leading white space from lines. Template options don't work
-    # cause they also remove newlines.
-    $output =~ s/^ *//mg;
-    return $output;
-}
-
-
 sub _write_file {
     my ($file_name, $contents) = @ARG;
 
@@ -1733,7 +1695,7 @@ sub export_archive {
         $vars{'notFor'} = \&_not_for;
 
         my $templ_file = ${$archive_templates}{$language};
-        _write_file($page, _templatize('archive', $templ_file, $language, %vars));
+        _write_file($page, Comic::Out::Template::templatize('archive', $templ_file, $language, %vars));
     }
 
     return;
@@ -1823,7 +1785,7 @@ sub export_backlog {
         $a cmp $b
     } keys %series ];
 
-    _write_file($page, _templatize('backlog', $templ_file, '', %vars));
+    _write_file($page, Comic::Out::Template::templatize('backlog', $templ_file, '', %vars));
 
     return;
 }
@@ -1954,7 +1916,7 @@ sub size_map {
     $vars{'comics_by_height'} = [sort _by_height @comics];
     $vars{svg} = _sort_styles($svg->xmlify());
 
-    _write_file($output, _templatize('size map', $template, '', %vars));
+    _write_file($output, Comic::Out::Template::templatize('size map', $template, '', %vars));
 
     return;
 }
@@ -2071,7 +2033,7 @@ sub export_feed {
             'max' => $items,
             'updated' => $now,
         );
-        my $feed =_templatize('(none)', $templates{$language}, $language, %vars);
+        my $feed =Comic::Out::Template::templatize('(none)', $templates{$language}, $language, %vars);
         _write_file('generated/web/' . lc($language) . "/$to", $feed);
     }
     return;
