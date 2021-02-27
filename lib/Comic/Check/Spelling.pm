@@ -14,7 +14,7 @@ use base('Comic::Check::Check');
 use version; our $VERSION = qv('0.0.3');
 
 
-=for stopwords Inkscape Wenner merchantability perlartistic
+=for stopwords Inkscape Wenner merchantability perlartistic MetaEnglish EnglishBackground englishtest english
 
 =head1 NAME
 
@@ -22,9 +22,9 @@ Comic::Check::Spelling - Checks spelling in the given comic.
 
 =head1 SYNOPSIS
 
-    my %ignore = {
+    my %ignore = (
         "English" => ["typo"],
-    };
+    );
     my $check = Comic::Check::Spelling->new("ignore" => \%ignore);
     foreach my $comic (@all_comics) {
         $check->check($comic);
@@ -91,6 +91,12 @@ sub new {
 =head2 check
 
 Checks the given Comic's spelling.
+
+This Check considers all layers in the given comic, where the layer name
+includes the language name, with an upper case first character and the rest
+in lower case. For example, when checking english spelling, this Check will
+look at layers named "English", "MetaEnglish", and "EnglishBackground", but
+not "englishtest" or "ENGLISH".
 
 Parameters:
 
@@ -179,10 +185,13 @@ sub _check_layers {
     my ($self, $comic, $language) = @ARG;
 
     my $normalized_language = ucfirst lc $language;
-    my @layers = ($normalized_language, 'Meta' . $normalized_language);
+    my @layers = $comic->get_all_layers();
     foreach my $layer (@layers) {
-        foreach my $text ($comic->texts_in_layer($layer)) {
-            $self->_check_text($comic, $language, "layer $layer", $text);
+        my $label = $layer->{'inkscape:label'};
+        next unless ($label =~ $normalized_language);
+
+        foreach my $text ($comic->texts_in_layer($label)) {
+            $self->_check_text($comic, $language, "layer $label", $text);
         }
     }
     return;

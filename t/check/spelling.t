@@ -229,7 +229,7 @@ sub checks_text_layers_per_language : Tests {
     <g inkscape:groupmode="layer" inkscape:label="Deutsch">
         <text x="0" y="0"><tspan>Tüppfehler</tspan></text>
     </g>
-    <g inkscape:groupmode="layer" inkscape:label="MetaDeutsch">
+    <g inkscape:groupmode="layer" inkscape:label="HintergrundDeutsch">
         <text x="0" y="0"><tspan>meta tüppfehler</tspan></text>
     </g>
 XML
@@ -237,7 +237,7 @@ XML
     $check->check($comic);
     is_deeply($comic->{warnings}, [
         "Misspelled in layer Deutsch: 'Tüppfehler'?",
-        "Misspelled in layer MetaDeutsch: 'tüppfehler'?",
+        "Misspelled in layer HintergrundDeutsch: 'tüppfehler'?",
         "Misspelled in layer English: 'typpo'?",
         "Misspelled in layer MetaEnglish: 'typpo'?",
     ]);
