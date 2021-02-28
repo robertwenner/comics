@@ -1096,7 +1096,7 @@ sub export_all_html {
     # @todo move template into config
     my %templates = @ARG;
 
-    my @sorted = sort _from_oldest_to_latest @comics;
+    my @sorted = sort from_oldest_to_latest @comics;
     foreach my $i (0 .. @sorted - 1) {
         my $comic = $sorted[$i];
         foreach my $language ($comic->languages()) {
@@ -1158,7 +1158,7 @@ sub export_sitemap {
     # @todo move templates and output paths into config
     my ($site_map_templates, $outputs, @all_comics) = @_;
 
-    my @sorted = sort _from_oldest_to_latest @all_comics;
+    my @sorted = sort from_oldest_to_latest @all_comics;
     my %vars;
     $vars{'comics'} = [ @sorted ];
     $vars{'notFor'} = \&_not_published_on_the_web;
@@ -1624,7 +1624,7 @@ sub export_index {
 
     foreach my $language (sort keys %{$templates}) {
         my $dir = _make_dir('generated/web/' . lc $language);
-        my @sorted = (sort _from_oldest_to_latest grep { _archive_filter($_, $language) } @comics);
+        my @sorted = (sort from_oldest_to_latest grep { _archive_filter($_, $language) } @comics);
         next if (@sorted == 0);
 
         my $last_pub = $sorted[-1];
@@ -1682,7 +1682,7 @@ sub export_archive {
     foreach my $language (sort keys %{$archive_templates}) {
         my $page = ${$archive_pages}{$language};
 
-        my @filtered = sort _from_oldest_to_latest grep { _archive_filter($_, $language) } @comics;
+        my @filtered = sort from_oldest_to_latest grep { _archive_filter($_, $language) } @comics;
         if (!@filtered) {
             _write_file($page, '<p>No comics in archive.</p>');
             next;
@@ -1725,7 +1725,7 @@ Parameters:
 sub export_backlog {
     my ($templ_file, $page) = @ARG;
 
-    my @filtered = sort _from_oldest_to_latest grep { _backlog_filter($_) } @comics;
+    my @filtered = sort from_oldest_to_latest grep { _backlog_filter($_) } @comics;
     if (!@filtered) {
         _write_file($page, '<p>No comics in backlog.</p>');
         return;
@@ -1801,6 +1801,14 @@ sub _publishers {
 }
 
 
+=head2 from_oldest_to_latest
+
+Sorts the given comics chronologically from oldest to newest.
+
+For use with Perl's C<sort> function.
+
+=cut
+
 ## no critic(Subroutines::ProhibitSubroutinePrototypes, Subroutines::RequireArgUnpacking)
 # Perl::Critic complains about the use of prototypes, and I agree, but this
 # case is special, mentioned in perldoc -f sort:
@@ -1812,7 +1820,7 @@ sub _publishers {
 #   package main;
 #   @new = sort other::backwards @old;
 #
-sub _from_oldest_to_latest($$) {
+sub from_oldest_to_latest($$) {
 ## use critic
     my $pub_a = $_[0]->{meta_data}->{published}{when} || $UNPUBLISHED;
     my $pub_b = $_[1]->{meta_data}->{published}{when} || $UNPUBLISHED;
@@ -1890,7 +1898,7 @@ sub size_map {
         -printerror => 1,
         -raiseerror => 1);
 
-    foreach my $comic (sort _from_oldest_to_latest @comics) {
+    foreach my $comic (sort from_oldest_to_latest @comics) {
         my $color = 'green';
         $color = 'blue' if ($comic->not_yet_published());
         $svg->rectangle(x => 0, y => 0,
@@ -2028,7 +2036,7 @@ sub export_feed {
 
     foreach my $language (keys %templates) {
         my %vars = (
-            'comics' => [reverse sort _from_oldest_to_latest grep { _archive_filter($_, $language) } @comics],
+            'comics' => [reverse sort from_oldest_to_latest grep { _archive_filter($_, $language) } @comics],
             'notFor' => \&_not_for,
             'max' => $items,
             'updated' => $now,
@@ -2102,7 +2110,7 @@ sub post_to_social_media {
 
     my $posted = 0;
     my $log;
-    my @published = reverse sort _from_oldest_to_latest grep { _no_language_archive_filter($_) } @comics;
+    my @published = reverse sort from_oldest_to_latest grep { _no_language_archive_filter($_) } @comics;
     foreach my $comic (@published) {
         # Sorting is by date first, so it's safe to exit the loop at the first
         # comic that's not up to date. This allows to post multiple comics with
