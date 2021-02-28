@@ -1259,6 +1259,7 @@ sub _export_qr_code {
 
     my $dir;
     my $png;
+
     if ($self->_not_published_on_the_web($language)) {
         $dir = 'generated/backlog/qr';
         $png = "../qr/$self->{baseName}{$language}.png";
@@ -1294,6 +1295,7 @@ sub _is_for {
 
 
 sub _not_published_on_the_web {
+    # TODO passed to a template, should probably be documented.
     my ($self, $language) = @ARG;
     return !$self->_is_for($language) || $self->not_yet_published();
 }
@@ -1624,7 +1626,9 @@ sub export_index {
 
     foreach my $language (sort keys %{$templates}) {
         my $dir = _make_dir('generated/web/' . lc $language);
-        my @sorted = (sort from_oldest_to_latest grep { _archive_filter($_, $language) } @comics);
+        my @sorted = (sort from_oldest_to_latest grep {
+            !$_->not_yet_published($_) && $_->_is_for($language)
+        } @comics);
         next if (@sorted == 0);
 
         my $last_pub = $sorted[-1];
@@ -1633,24 +1637,6 @@ sub export_index {
         _write_file($page, $last_pub->_do_export_html($language, ${$templates}{$language}));
     }
     return;
-}
-
-
-sub _archive_filter {
-    my ($comic, $language) = @ARG;
-    return !$comic->not_yet_published() && $comic->_is_for($language);
-}
-
-
-sub _no_language_archive_filter {
-    my ($comic) = @ARG;
-    return !$comic->not_yet_published();
-}
-
-
-sub _backlog_filter {
-    my ($comic) = @ARG;
-    return $comic->not_yet_published();
 }
 
 
@@ -1682,16 +1668,18 @@ sub export_archive {
     foreach my $language (sort keys %{$archive_templates}) {
         my $page = ${$archive_pages}{$language};
 
-        my @filtered = sort from_oldest_to_latest grep { _archive_filter($_, $language) } @comics;
-        if (!@filtered) {
+        my @published = sort from_oldest_to_latest grep {
+            !$_->not_yet_published() && $_->_is_for($language)
+        } @comics;
+        if (!@published) {
             _write_file($page, '<p>No comics in archive.</p>');
             next;
         }
 
         my %vars;
         $vars{'root'} = '';
-        $vars{'comics'} = \@filtered;
-        $vars{'modified'} = $filtered[-1]->{modified};
+        $vars{'comics'} = \@published;
+        $vars{'modified'} = $published[-1]->{modified};
         $vars{'notFor'} = \&_not_for;
 
         my $templ_file = ${$archive_templates}{$language};
@@ -1725,8 +1713,10 @@ Parameters:
 sub export_backlog {
     my ($templ_file, $page) = @ARG;
 
-    my @filtered = sort from_oldest_to_latest grep { _backlog_filter($_) } @comics;
-    if (!@filtered) {
+    my @unpublished = sort from_oldest_to_latest grep {
+         $_->not_yet_published()
+    } @comics;
+    if (!@unpublished) {
         _write_file($page, '<p>No comics in backlog.</p>');
         return;
     }
@@ -1756,7 +1746,7 @@ sub export_backlog {
     my @languages = sort keys %languages;
     my %vars;
     $vars{'languages'} = \@languages;
-    $vars{'comics'} = \@filtered;
+    $vars{'comics'} = \@unpublished;
     $vars{'publishers'} = _publishers();
     $vars{'tags'} = \%tags;
     $vars{'who'} = \%who;
@@ -2036,7 +2026,9 @@ sub export_feed {
 
     foreach my $language (keys %templates) {
         my %vars = (
-            'comics' => [reverse sort from_oldest_to_latest grep { _archive_filter($_, $language) } @comics],
+            'comics' => [reverse sort from_oldest_to_latest grep {
+                !$_->not_yet_published() && $_->_is_for($language)
+            } @comics],
             'notFor' => \&_not_for,
             'max' => $items,
             'updated' => $now,
@@ -2110,7 +2102,9 @@ sub post_to_social_media {
 
     my $posted = 0;
     my $log;
-    my @published = reverse sort from_oldest_to_latest grep { _no_language_archive_filter($_) } @comics;
+    my @published = reverse sort from_oldest_to_latest grep {
+        !$_->not_yet_published($_)
+    } @comics;
     foreach my $comic (@published) {
         # Sorting is by date first, so it's safe to exit the loop at the first
         # comic that's not up to date. This allows to post multiple comics with
