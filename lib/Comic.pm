@@ -1225,7 +1225,7 @@ sub _find_next {
     my ($language, $pos, $comics, $nums) = @_;
 
     foreach my $i (@{$nums}) {
-        next if (@{$comics}[$i]->_not_for($language));
+        next if (@{$comics}[$i]->not_for($language));
         if (@{$comics}[$i]->not_yet_published() == @{$comics}[$pos]->not_yet_published()) {
             return @{$comics}[$i];
         }
@@ -1271,7 +1271,23 @@ sub _export_qr_code {
 }
 
 
-sub _not_for {
+=head2 not_for
+
+Checks whether this Comic is for the given language. A Comic is considered
+for a language if it has a tilte for that language in its  meta data.
+
+Parameters:
+
+=over 4
+
+=item B<$language> name of language to to check, as spelled in the Comic
+    meta data.
+
+=back
+
+=cut
+
+sub not_for {
     my ($self, @args) = @ARG;
     # Cannot just use !$self->_is_for cause Perl's weird truthiness can turn
     # the result into an empty text, and then tests trip over that.
@@ -1671,7 +1687,7 @@ sub export_archive {
         $vars{'root'} = '';
         $vars{'comics'} = \@published;
         $vars{'modified'} = $published[-1]->{modified};
-        $vars{'notFor'} = \&_not_for;
+        $vars{'notFor'} = \&not_for;
 
         my $templ_file = ${$archive_templates}{$language};
         _write_file($page, Comic::Out::Template::templatize('archive', $templ_file, $language, %vars));

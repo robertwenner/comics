@@ -200,13 +200,13 @@ sub object_function_code_ref : Tests {
     my $comic = make_comic();
     MockComic::fake_file('file.templ', "[%notFor(comic, 'Pimperanto')%]");
     is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', (
-            "notFor" => \&Comic::_not_for,
+            "notFor" => \&Comic::not_for,
             "comic" => $comic,
         )),
         1);
     MockComic::fake_file('file.templ', "[%notFor(comic, 'Deutsch')%]");
     is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', (
-            "notFor" => \&Comic::_not_for,
+            "notFor" => \&Comic::not_for,
             "comic" => $comic,
         )),
         0);
@@ -217,24 +217,24 @@ sub object_function_wrapped : Tests {
     my $comic = make_comic();
     MockComic::fake_file('file.templ', "[%notFor(comic, 'Pimperanto')%]");
     is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', (
-            "notFor" => sub { return Comic::_not_for(@_); },
+            "notFor" => sub { return Comic::not_for(@_); },
             "comic" => $comic,
         )),
         1);
     MockComic::fake_file('file.templ', "[%notFor(comic, 'Deutsch')%]");
     is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', (
-            "notFor" => sub { return Comic::_not_for(@_); },
+            "notFor" => sub { return Comic::not_for(@_); },
             "comic" => $comic,
         )),
         0);
 
     MockComic::fake_file('file.templ', "[%notFor('Pimperanto')%]");
     is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '',
-        ("notFor" => sub { return $comic->_not_for(@_);})),
+        ("notFor" => sub { return $comic->not_for(@_);})),
         1);
     MockComic::fake_file('file.templ', "[%notFor('Deutsch')%]");
     is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '',
-        ("notFor" => sub { return $comic->_not_for(@_);})),
+        ("notFor" => sub { return $comic->not_for(@_);})),
         0);
 }
 
