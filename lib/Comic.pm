@@ -8,7 +8,7 @@ use English '-no_match_vars';
 use utf8;
 use Locales unicode => 1;
 use base qw(Exporter);
-use POSIX;
+use POSIX qw(strftime floor);
 use Carp;
 use autodie;
 use String::Util 'trim';
@@ -81,22 +81,13 @@ This document refers to version 0.0.3.
             'English' => 'templates/english/comic-page.templ',
             'Deutsch' => 'templates/deutsch/comic-page.templ',
         });
-    Comic::export_feed(10, 'rss.xml', (
-        'Deutsch' => 'templates/deutsch/rss.templ',
-        'English' => 'templates/english/rss.templ',
-    ));
-    Comic::export_feed(10, 'atom.xml', (
-        'Deutsch' => 'templates/deutsch/atom.templ',
-        'English' => 'templates/english/atom.templ',
-    ));
     Comic::size_map('templates/sizemap.templ', 'generated/sizemap.html');
     print Comic::post_to_social_media('English');
 
 =head1 DESCRIPTION
 
 From on an Inkscape SVG file, exports language layers to create per language
-PNG files. Creates a RSS or Atom feed and a transcript per language for
-search engines. Creates an archive overview page, a backlog page of not yet
+PNG files. Creates an archive overview page, a backlog page of not yet
 published comics, and a sizemap to compare image sizes.
 
 =cut
@@ -444,6 +435,12 @@ sub _mtime {
 
     Readonly my $MTIME => 9; # uncoverable statement
     return (stat $file)[$MTIME]; # uncoverable statement
+}
+
+
+sub _now {
+    # uncoverable subroutine
+    return DateTime->now; # uncoverable statement
 }
 
 
@@ -1224,12 +1221,6 @@ sub not_yet_published {
 }
 
 
-sub _now {
-    # uncoverable subroutine
-    return DateTime->now; # uncoverable statement
-}
-
-
 sub _find_next {
     my ($language, $pos, $comics, $nums) = @_;
 
@@ -1993,48 +1984,6 @@ sub _sort_styles_traverse {
         if (ref($child) eq 'XML::LibXML::Element') {
             _sort_styles_traverse($child);
         }
-    }
-    return;
-}
-
-
-=head2 export_feed
-
-Writes an RSS or Atom feed XML for all comics and each language encountered.
-
-Parameters:
-
-=over 4
-
-=item B<$items> number of comics to include in the feed.
-
-=item B<$toFile> to which file to write the feed, e.g., F<rss.xml>. This
-will be within F<generated/web/<language>>.
-
-=item B<%templates> hash of language to RSS template file name.
-
-=back
-
-=cut
-
-sub export_feed {
-    my ($items, $to, %templates) = @ARG;
-
-    my $now = _now();
-    $now->set_time_zone(_get_tz());
-    $now = DateTime::Format::RFC3339->new()->format_datetime($now);
-
-    foreach my $language (keys %templates) {
-        my %vars = (
-            'comics' => [reverse sort from_oldest_to_latest grep {
-                !$_->not_yet_published() && $_->_is_for($language)
-            } @comics],
-            'notFor' => \&_not_for,
-            'max' => $items,
-            'updated' => $now,
-        );
-        my $feed =Comic::Out::Template::templatize('(none)', $templates{$language}, $language, %vars);
-        _write_file('generated/web/' . lc($language) . "/$to", $feed);
     }
     return;
 }
