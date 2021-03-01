@@ -12,7 +12,7 @@ use Template::Plugin::JSON;
 use version; our $VERSION = qv('0.0.3');
 
 
-=for stopwords Wenner merchantability perlartistic templatize
+=for stopwords Wenner merchantability perlartistic templatize templating
 
 =head1 NAME
 
