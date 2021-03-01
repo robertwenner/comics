@@ -143,3 +143,8 @@
 - feature: upload to e.g., imgur.com and then post a link to that on reddit.
   This may be interesting for people not running their own website, and for
   subreddits that only accept file hosting on certain sites (like imgur).
+
+- feature: a rss / atom feed module that doesn't require the user to provide
+  a template and hence know the feed format.
+
+- feature: allow comics to opt out of the feed.

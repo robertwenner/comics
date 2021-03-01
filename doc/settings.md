@@ -426,3 +426,70 @@ The following meta data fragment would make this check fail, cause Halloween
 ```
 
 Comics without a published date are silently ignored.
+
+
+## Outputs
+
+
+### Comic::Out::Feed
+
+Generates website feeds (e.g., in [RSS](https://en.wikipedia.org/wiki/RSS)
+or [Atom](https://en.wikipedia.org/wiki/Atom_(Web_standard) format) from
+provided Perl [Template Toolkit](http://template-toolkit.org/) templates.
+
+```json
+{
+    "Feed": {
+        "RSS": {
+            "template": "path/to/rss.template"
+        },
+        "Atom": {
+            "template": {
+                "English": "path/to/english/atom.template",
+                "Deutsch": "path/to/german/atom.template"
+            },
+            "max": 5,
+            "output": "atom.xml"
+        }
+    }
+}
+```
+
+The above example configures two feeds, one in RSS and one in Atom format.
+Each feed confuguration can take these arguments:
+
+* template (mandatory): either the template file, if all languages use the
+  same template, or an object of languages to template path for different
+  templates for each language. If all languages use the same template file,
+  that file needs to either be language independent or check the `language`
+  variable for language dependent output.
+
+* max: how many comics to include at most in the feed. This value is
+  passed to the template as `max`. Defaults to 10.
+
+* output: the path and file name of the output file. This will always be
+  within the output directory (passed in code), plus a language specific
+  directory (the language name in lower case), e.g.,
+  `generated/web/english/atom.xml` for the atom example above.
+  Defaults to the lower-case feed name plus an ".xml" extension.
+
+The Comic::Out::Feed module defines some variables for use in the template:
+
+* comics: all comics, sorted from latest to oldest. All comic meta
+  informaton is available. All comics are passed so that the template can
+  decide which comcis to include. This allows for language-independent
+  templates at the price of higher template complexity if there are comics
+  that don't exist in all languages.
+
+* language: Comic::Out::Feed will populate the template for each language
+  found; the currently processed language is in this variable.
+
+* max: maximum number of feed items, as per configuration.
+
+* notFor: a function that takes a comic and a language and returns a boolean
+  indicating whether the given comic is for the given language. This is used
+  for comics that don't exist in all languages and allow the template to
+  skip a comic that's not for the language being processed.
+
+* updated: current time stamp, in [RFC 3339](https://tools.ietf.org/html/rfc3339)
+  format (needed in Atom format).

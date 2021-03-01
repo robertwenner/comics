@@ -466,7 +466,10 @@ sub assert_wrote_file {
 sub assert_didnt_write_in_file {
     my ($name, $contents) = @_;
 
-    if (ref($contents) eq ref(qr{})) {
+    if (!$contents) {
+        ok(!defined $file_written{$name}, "Shouldn't have written to $name at all");
+    }
+    elsif (ref($contents) eq ref(qr{})) {
         unlike($file_written{$name}, $contents, "Shouldn't have written that to $name");
     }
     else {
