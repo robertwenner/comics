@@ -1274,7 +1274,7 @@ sub _export_qr_code {
 =head2 not_for
 
 Checks whether this Comic is for the given language. A Comic is considered
-for a language if it has a tilte for that language in its  meta data.
+for a language if it has a title for that language in its  meta data.
 
 Parameters:
 
