@@ -328,7 +328,7 @@ sub _load {
         $self->{meta_data} = from_json($meta_data);
     } or $self->_croak("Error in JSON for: $EVAL_ERROR");
     if (!$self->{use_meta_data_cache}) {
-        _write_file($meta_cache, $meta_data);
+        write_file($meta_cache, $meta_data);
     }
 
     my $modified = DateTime->from_epoch(epoch => _mtime($file));
@@ -564,7 +564,7 @@ sub _get_transcript {
         }
         else {
             @{$self->{transcript}{$language}} = _append_speech_to_speaker($self->texts_in_language($language));
-            _write_file($cache, join "\n", @{$self->{transcript}{$language}});
+            write_file($cache, join "\n", @{$self->{transcript}{$language}});
         }
     }
     return @{$self->{transcript}{$language}};
@@ -1162,7 +1162,7 @@ sub export_sitemap {
     foreach my $language (_all_comic_languages(@all_comics)) {
         my $templ = ${$site_map_templates}{$language};
         my $xml = Comic::Out::Template::templatize('(none)', $templ, $language, %vars);
-        _write_file(${$outputs}{$language}, $xml);
+        write_file(${$outputs}{$language}, $xml);
     }
 
     return;
@@ -1239,7 +1239,7 @@ sub _export_language_html {
     my ($self, $language, $template) = @ARG;
 
     $self->_get_transcript($language);
-    _write_file("$self->{whereTo}{$language}/$self->{htmlFile}{$language}",
+    write_file("$self->{whereTo}{$language}/$self->{htmlFile}{$language}",
         $self->_do_export_html($language, $template));
     return 0;
 }
@@ -1599,7 +1599,24 @@ sub _bottom_right {
 }
 
 
-sub _write_file {
+=head2 write_file
+
+Writes a file and croaks on errors. All in one place to easily mock file
+writing in tests.
+
+Parameters:
+
+=over 4
+
+=item B<$file_name> path and name of the file to write.
+
+=item B<contents> what to write.
+
+=back
+
+=cut
+
+sub write_file {
     my ($file_name, $contents) = @ARG;
 
     open my $F, '>', $file_name or croak "Cannot open $file_name: $OS_ERROR";
@@ -1641,7 +1658,7 @@ sub export_index {
         my $last_pub = $sorted[-1];
         $last_pub->{isLatestPublished} = 1;
         my $page = "$dir/index.html";
-        _write_file($page, $last_pub->_do_export_html($language, ${$templates}{$language}));
+        write_file($page, $last_pub->_do_export_html($language, ${$templates}{$language}));
     }
     return;
 }
@@ -1679,7 +1696,7 @@ sub export_archive {
             !$_->not_yet_published() && $_->_is_for($language)
         } @comics;
         if (!@published) {
-            _write_file($page, '<p>No comics in archive.</p>');
+            write_file($page, '<p>No comics in archive.</p>');
             next;
         }
 
@@ -1690,7 +1707,7 @@ sub export_archive {
         $vars{'notFor'} = \&not_for;
 
         my $templ_file = ${$archive_templates}{$language};
-        _write_file($page, Comic::Out::Template::templatize('archive', $templ_file, $language, %vars));
+        write_file($page, Comic::Out::Template::templatize('archive', $templ_file, $language, %vars));
     }
 
     return;
@@ -1724,7 +1741,7 @@ sub export_backlog {
          $_->not_yet_published()
     } @comics;
     if (!@unpublished) {
-        _write_file($page, '<p>No comics in backlog.</p>');
+        write_file($page, '<p>No comics in backlog.</p>');
         return;
     }
 
@@ -1782,7 +1799,7 @@ sub export_backlog {
         $a cmp $b
     } keys %series ];
 
-    _write_file($page, Comic::Out::Template::templatize('backlog', $templ_file, '', %vars));
+    write_file($page, Comic::Out::Template::templatize('backlog', $templ_file, '', %vars));
 
     return;
 }
@@ -1921,7 +1938,7 @@ sub size_map {
     $vars{'comics_by_height'} = [sort _by_height @comics];
     $vars{svg} = _sort_styles($svg->xmlify());
 
-    _write_file($output, Comic::Out::Template::templatize('size map', $template, '', %vars));
+    write_file($output, Comic::Out::Template::templatize('size map', $template, '', %vars));
 
     return;
 }

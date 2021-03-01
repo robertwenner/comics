@@ -110,7 +110,7 @@ sub mock_methods {
         return 1;
     };
 
-    *Comic::_write_file = sub {
+    *Comic::write_file = sub {
         my ($name, $contents) = @_;
         $file_written{$name} = $contents;
     };
