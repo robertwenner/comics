@@ -1664,56 +1664,6 @@ sub export_index {
 }
 
 
-=head2 export_archive
-
-Generates a single HTML page per language with all comics in chronological
-order.
-
-Parameters:
-
-=over 4
-
-=item B<%archive_templates> reference to a hash of language to the archive
-    template file for that language. If a language doesn't have an archive
-    template, it is silently skipped.
-
-=item B<%archive_pages> reference to a hash of language to the archive
-    page html file (including path). This allows for language-specific
-    names, e.g., "generated/web/english/archive.html" for English and
-    "generated/web/spanish/archivo.html" in Spanish.
-
-=back
-
-=cut
-
-sub export_archive {
-    my ($archive_templates, $archive_pages) = @ARG;
-
-    foreach my $language (sort keys %{$archive_templates}) {
-        my $page = ${$archive_pages}{$language};
-
-        my @published = sort from_oldest_to_latest grep {
-            !$_->not_yet_published() && $_->_is_for($language)
-        } @comics;
-        if (!@published) {
-            write_file($page, '<p>No comics in archive.</p>');
-            next;
-        }
-
-        my %vars;
-        $vars{'root'} = '';
-        $vars{'comics'} = \@published;
-        $vars{'modified'} = $published[-1]->{modified};
-        $vars{'notFor'} = \&not_for;
-
-        my $templ_file = ${$archive_templates}{$language};
-        write_file($page, Comic::Out::Template::templatize('archive', $templ_file, $language, %vars));
-    }
-
-    return;
-}
-
-
 =head2 export_backlog
 
 Generates a single html page with all unpublished comics plus information on

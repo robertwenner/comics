@@ -21,11 +21,12 @@ sub set_up : Test(setup) {
 
 
 sub make_comic {
-    my ($language, $title, $published) = @_;
+    my ($language, $title, $published_when, $published_where) = @_;
 
     return MockComic::make_comic(
         $MockComic::TITLE => { $language => $title },
-        $MockComic::PUBLISHED_WHEN => $published);
+        $MockComic::PUBLISHED_WHEN => $published_when,
+        $MockComic::PUBLISHED_WHERE => $published_where || "web");
 }
 
 
@@ -96,6 +97,14 @@ sub navigation_links_last : Tests {
     is($mar->{'prev'}{'English'}, "feb.html", "Mar prev");
     is($mar->{'next'}{'English'}, 0, "Mar next");
     is($mar->{'last'}{'English'}, 0, "Mar last");
+}
+
+
+sub skips_comic_not_published_on_my_page : Tests {
+    my $comic = make_comic('English', 'Magazined!', '2016-01-01', 'some beer magazine');
+    is('Magazined!', $comic->_do_export_html('English', 'en-comic.templ'));
+    Comic::export_all_html('English' => 'en-comic.templ');
+    MockComic::assert_didnt_write_in_file('generated/web/english/comics/magazined.html');
 }
 
 
