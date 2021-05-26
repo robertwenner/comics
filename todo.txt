@@ -1,4 +1,5 @@
 - Perl: use feature qw(signatures); no warnings qw(experimental::signatures);
+  or Function::Parameters, Method::Signatures
 
 - rework variables available for templates: standardize names, pick decent
   names, DRY up them up, generate them in one place, document them
@@ -124,7 +125,11 @@
   whole frame handling code needs a close look.
 
 - defect: frame detection lumps text under the last row of frames in that
-  last row, breaking captions under comics,
+  last row, breaking captions under comics
+
+- feature: should frame detection at the top of the comic use frames of the
+  next (first) row? that would allow having a title above the frame, like
+  "yesterday" and "today".
 
 - defect: does it treat text outside of a meta layer as speaker label just
   because it ends in a colon (motivation.svg)? it probably should not.
@@ -147,4 +152,6 @@
 - feature: a rss / atom feed module that doesn't require the user to provide
   a template and hence know the feed format.
 
-- feature: allow comics to opt out of the feed.
+- feature: allow comics to opt out of the feed. (use case?)
+
+- feature: post "classics" to social media if there is no new comic
