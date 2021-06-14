@@ -26,7 +26,6 @@ use JSON;
 use HTML::Entities;
 use Image::ExifTool qw(:Public);
 use Image::SVG::Transform;
-use Imager::QRCode;
 use SVG;
 use URI::Encode qw(uri_encode uri_decode);
 use Clone qw(clone);
@@ -41,7 +40,7 @@ use Comic::Social::Reddit;
 
 use version; our $VERSION = qv('0.0.3');
 
-=for stopwords inkscape html svg png Wenner merchantability perlartistic MetaEnglish rss sitemap sizemap xml dbus JSON metadata
+=for stopwords inkscape html svg png Wenner merchantability perlartistic MetaEnglish rss sitemap sizemap xml dbus JSON metadata outdir
 
 
 =head1 NAME
@@ -140,6 +139,13 @@ sub new {
     }
     else {
         @{$self->{checks}} = ();
+    }
+
+    if ($settings->{$Comic::Settings::OUT}) {
+        @{$self->{out}} = @{$settings->{$Comic::Settings::OUT}};
+    }
+    else {
+        @{$self->{out}} = ();
     }
 
     $self->_load($file);
@@ -362,7 +368,7 @@ sub _load {
         }
 
         $self->{titleUrlEncoded}{$language} = uri_encode($self->{meta_data}->{title}->{$language}, %uri_encoding_options);
-        $self->{whereTo}{$language} = _make_dir($base);
+        $self->{whereTo}{$language} = make_dir($base);
         $self->{baseName}{$language} = $self->_normalized_title($language);
         $self->{htmlFile}{$language} = "$self->{baseName}{$language}.html";
         $self->{pngFile}{$language} = "$self->{baseName}{$language}.png";
@@ -400,7 +406,7 @@ sub _cache_file_for {
         $dirs = '';
     }
     $filename =~ s/\.svg$//;
-    return _make_dir($TEMPDIR . "/$dir/$dirs") . "$filename.$ext";
+    return make_dir($TEMPDIR . "/$dir/$dirs") . "$filename.$ext";
 }
 
 
@@ -447,6 +453,39 @@ sub _now {
 sub _get_tz {
     # uncoverable subroutine
     return strftime '%z', localtime; # uncoverable statement
+}
+
+
+=head2 outdir
+
+Returns the output directory where this Comic's output should go. This may
+depend on whether the comic is already published and where;
+
+The directory will be created by this method if it doesn't yet exist.
+
+Parameters:
+
+=over 4
+
+=item * B<$comic> for which comic to get the output directory.
+
+=item * B<language> the Comic's language.
+
+=back
+
+=cut
+
+sub outdir {
+    my ($self, $language) = @ARG;
+
+    my $outdir;
+    if ($self->_not_published_on_the_web($language)) {
+        $outdir = 'generated/backlog/';
+    }
+    else {
+        $outdir = 'generated/web/' . lc($language) . q{/};
+    }
+    return make_dir($outdir);
 }
 
 
@@ -747,7 +786,7 @@ sub _build_xpath {
 sub _write_temp_svg_file {
     my ($self, $language) = @ARG;
 
-    my $temp_file_name = _make_dir("$TEMPDIR/" . lc $language . '/svg/') . "$self->{baseName}{$language}.svg";
+    my $temp_file_name = make_dir("$TEMPDIR/" . lc $language . '/svg/') . "$self->{baseName}{$language}.svg";
     my $svg = $self->_copy_svg($language);
     _drop_top_level_layers($svg, 'Raw');
     $self->_insert_url($svg, $language);
@@ -1047,7 +1086,21 @@ sub _file_size {
 }
 
 
-sub _make_dir {
+=head2 make_dir
+
+Create given directory if it doesn't exist yet.
+
+Parameters:
+
+=over 4
+
+=item B<$dir> directory to create.
+
+=back
+
+=cut
+
+sub make_dir {
     my $dir = shift;
 
     $dir = "generated/$dir" if ($dir !~ m{^generated/});
@@ -1096,12 +1149,8 @@ sub export_all_html {
     my @sorted = sort from_oldest_to_latest @comics;
     foreach my $i (0 .. @sorted - 1) {
         my $comic = $sorted[$i];
-        foreach my $language ($comic->languages()) {
-            # @todo remove qrcode dependency -- undefined template var?
-            # Must export QR code before exporting HTML so that the HTML template can
-            # already refer to the QR code URL.
-            $comic->_export_qr_code($language);
 
+        foreach my $language ($comic->languages()) {
             my $first_comic = _find_next($language, $i, \@sorted, [0 .. $i - 1]);
             $comic->{'first'}{$language} = $first_comic ? $first_comic->{htmlFile}{$language} : 0;
             my $prev_comic = _find_next($language, $i, \@sorted, [reverse 0 .. $i - 1]);
@@ -1112,7 +1161,7 @@ sub export_all_html {
             $comic->{'last'}{$language} = $last_comic ? $last_comic->{htmlFile}{$language} : 0;
             $comic->_export_language_html($language, $templates{$language});
 
-            _make_dir('web/' . lc $language);
+            make_dir('web/' . lc $language);
         }
     }
 
@@ -1241,32 +1290,6 @@ sub _export_language_html {
     $self->_get_transcript($language);
     write_file("$self->{whereTo}{$language}/$self->{htmlFile}{$language}",
         $self->_do_export_html($language, $template));
-    return 0;
-}
-
-
-sub _export_qr_code {
-    my ($self, $language) = @ARG;
-
-    my $dir;
-    my $png;
-
-    if ($self->_not_published_on_the_web($language)) {
-        $dir = 'generated/backlog/qr';
-        $png = "../qr/$self->{baseName}{$language}.png";
-    }
-    else {
-        $dir = 'generated/web/' . lc($language) . '/qr';
-        $png = "$self->{baseName}{$language}.png";
-    }
-    $self->{qrcode}{$language} = $png;
-    _make_dir($dir);
-
-    my $qrcode = Imager::QRCode::plot_qrcode($self->{url}{$language}, {
-        casesensitive => 1,
-        mode => '8-bit'
-    });
-    $qrcode->write(file => "$dir/$png") or $self->keel_over($qrcode->errstr);
     return 0;
 }
 
@@ -1649,7 +1672,7 @@ sub export_index {
     my ($templates) = @ARG;
 
     foreach my $language (sort keys %{$templates}) {
-        my $dir = _make_dir('generated/web/' . lc $language);
+        my $dir = make_dir('generated/web/' . lc $language);
         my @sorted = (sort from_oldest_to_latest grep {
             !$_->not_yet_published($_) && $_->_is_for($language)
         } @comics);

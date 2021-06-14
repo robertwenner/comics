@@ -14,6 +14,7 @@ use version; our $VERSION = qv('0.0.3');
 
 
 Readonly our $CHECKS => 'Checks';
+Readonly our $OUT => 'Out';
 
 
 =for stopwords JSON Wenner perlartistic MERCHANTABILITY

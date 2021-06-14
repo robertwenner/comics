@@ -428,7 +428,39 @@ The following meta data fragment would make this check fail, cause Halloween
 Comics without a published date are silently ignored.
 
 
-## Outputs
+## Output
+
+Under the Output section go any modules configuration that you want to use
+to generate some output files.
+
+### Dependencies
+
+Order matters in the configuration file; if you rely on the output from a
+previous module, it needs to go before the module that requires the output.
+
+For example, the Comic::Out::QrCode module will create QR codes for comic
+pages and put the file name in the Comic. If the Comic::Out::Html module
+wants to include the QR code in the page, it must run after the
+Comic::Out::QrCode module.
+
+
+### Output Organization
+
+All generated files are placed under the directory configured as the main
+output directory.
+
+```json
+{
+    "Out": {
+        "dir": "generated/"
+    }
+}
+```
+
+Comics may have different ideas on where exatly they need to go, for example
+a German comic published on the web may go in `web/deutsch/comics/` while an
+English comic not yet published may go in `backlog/` (both directories being
+with in the specified `out` directory, here `generated/`.
 
 
 ### Comic::Out::Feed

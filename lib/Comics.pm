@@ -12,6 +12,7 @@ use File::Find;
 use Comic;
 use Comic::Settings;
 use Comic::Out::Feed;
+use Comic::Out::QrCode;
 
 
 use version; our $VERSION = qv('0.0.3');
@@ -59,9 +60,9 @@ Generate all files for all comics.
 This is meant for to be a single method call to produce web pages from
 comics, usable during development.
 
-    perl -MComics -e 'Comics::export("comics/");'
+    perl -MComics -e 'Comics::generate("settings.json", "comics/");'
 
-It will load the configuration from the main configuration file, collect the
+It will load the configuration from the given configuration file, collect the
 comics in the passed directories, check them, export them as png, and generate
 the web pages. It will not upload comics or post to social media.
 
@@ -69,17 +70,19 @@ Arguments:
 
 =over 4
 
-=item B<dir(s)> directories from which to collect comics.
+=item * B<$config> configuration file to use.
+
+=item * B<@dir(s)> directories from which to collect comics.
 
 =back
 
 =cut
 
 sub generate {
-    my @dirs = @ARG;
+    my ($config, @dirs) = @ARG;
 
     my $comics = Comics->new();
-    $comics->load_settings($MAIN_CONFIG_FILE);
+    $comics->load_settings($config);
     $comics->load_checks();
 
     my @files = $comics->collect_files(@dirs);
@@ -90,10 +93,13 @@ sub generate {
     }
     $comics->final_checks();
 
-    my @outputters = $comics->{settings}->{Outputs};
+    my @outputters = $comics->{settings}->{Out} || ();
     foreach my $out (@outputters) {
-        my $outputter = eval
+        # ...
     }
+
+    my $qr_code = Comic::Out::QrCode->new();
+    $qr_code->generate(@{$comics->{comics}});
 
     $comics->generate_comic_pages();
     $comics->generate_feeds();
@@ -109,7 +115,7 @@ sub generate {
 
 =head2 publish
 
-Publishes latest and all previous comics.
+Publishes latest comic and any updates to previous comics.
 
 This is meant as a single method to call to do everything needed to publish
 a web comic, e.g. in a cronjob.
@@ -304,7 +310,7 @@ like this:
     {
         "Html": {
             "Templates": {
-                "English": "templates/comic-page.teml"
+                "English": "templates/comic-page.templ"
             },
             "OutDir": "generated/web/comics"
         }
