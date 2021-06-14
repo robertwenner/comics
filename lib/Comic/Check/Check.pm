@@ -103,8 +103,8 @@ series name is not unique (may be a typo).
 =cut
 
 sub final_check {
-    # uncoverable subroutine
     # Ignore.
+    return;
 }
 
 

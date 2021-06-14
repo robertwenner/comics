@@ -10,6 +10,12 @@ use Comic::Check::Check;
 __PACKAGE__->runtests() unless caller;
 
 
+sub base_final_check_does_nothing : Tests {
+    my $check = Comic::Check::Check->new();
+    is($check->final_check(), undef);
+}
+
+
 sub module_name : Tests {
     is(Comic::Check::Check::module_name("baz.pm"), "baz");
     is(Comic::Check::Check::module_name("foo/bar/baz.pm"), "foo::bar::baz");
