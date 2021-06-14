@@ -57,20 +57,20 @@ name in C<Comic::Const>.
 
 =over 4
 
-=item * FRAME_ROW_HEIGHT: After how many pixels difference to the previous
+=item * B<FRAME_ROW_HEIGHT>: After how many pixels difference to the previous
     frame a frame is assumed to be on the next row.
 
-=item * FRAME_SPACING: How many pixel space there should be between frames.
+=item * B<FRAME_SPACING>: How many pixel space there should be between frames.
     The same number is used for both vertical and horizontal space.
 
-=item * FRAME_SPACING_TOLERANCE: Maximum additional tolerance when looking
+=item * B<FRAME_SPACING_TOLERANCE>: Maximum additional tolerance when looking
     whether frames are spaced as expected.
 
-=item * FRAME_TOLERANCE: Tolerance in pixels when looking for frames.
+=item * B<FRAME_TOLERANCE>: Tolerance in pixels when looking for frames.
 
-=item * FRAME_WIDTH: Expected frame thickness in pixels.
+=item * B<FRAME_WIDTH>: Expected frame thickness in pixels.
 
-=item * FRAME_WIDTH_DEVIATION: Allowed deviation from expected frame width in
+=item * B<FRAME_WIDTH_DEVIATION>: Allowed deviation from expected frame width in
     pixels. This is used to avoid finicky complaints about frame width that
     are technically different but look the same for human eyes.
 
@@ -102,7 +102,7 @@ Parameters:
 
 =over 4
 
-=item * Comic to check.
+=item * B<$comic> Comic to check.
 
 =back
 
@@ -247,7 +247,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2015 - 2020, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2015 - 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or

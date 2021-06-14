@@ -72,9 +72,9 @@ Parameters:
 
 =over 4
 
-=item * JSON string to load. It must contain a top level object. Other
-    checks are relaxed, i.e., comments from a hash mark to the end of the
-    line are allowed, as are trailing commas (e.g., after the last list
+=item * B<$json> JSON string to load. It must contain a top level object.
+    Other checks are relaxed, i.e., comments from a hash mark to the end of
+    the line are allowed, as are trailing commas (e.g., after the last list
     item).
 
 =back
@@ -171,7 +171,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2020, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2020 - 2011, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or

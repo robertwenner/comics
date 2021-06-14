@@ -130,7 +130,7 @@ Arguments:
 
 =over 4
 
-=item B<dir(s)> directories from which to collect comics.
+=item * B<dir(s)> directories from which to collect comics.
 
 =back
 
@@ -170,7 +170,7 @@ Arguments:
 
 =over 4
 
-=item B<file(s)> configuration files.
+=item * B<file(s)> configuration files.
 
 =back
 
@@ -232,7 +232,7 @@ Arguments:
 
 =over 4
 
-=item B<files or directories> comic files to use or directories to search
+=item * B<files or directories> comic files to use or directories to search
     for comics. If you give file names, these files will be collected
     regardless of their extension, where any directories will only be
     scanned for supported files.
@@ -371,14 +371,14 @@ settings:
 
 =over 4
 
-=item B<Archive -E<gt> Templates> object of language to archive template file for
-    that language. If a language doesn't have an archive template, it is
-    silently skipped.
+=item * B<Archive -E<gt> Templates> object of language to archive template
+    file for that language. If a language doesn't have an archive template,
+    it is silently skipped.
 
-=item B<Archive_-E<gt> OutFile> reference to a hash of language to the archive
-    page html file (including path). This allows for language-specific
-    names, e.g., "generated/web/english/archive.html" for English and
-    "generated/web/spanish/archivo.html" in Spanish.
+=item * B<Archive_-E<gt> OutFile> reference to a hash of language to the
+    archive page html file (including path). This allows for
+    language-specific names, e.g., "generated/web/english/archive.html" for
+    English and "generated/web/spanish/archivo.html" in Spanish.
 
 =back
 
@@ -386,14 +386,14 @@ Makes these variables available during template processing:
 
 =over 4
 
-=item B<comics> array of published comics, sorted from oldest to latest.
+=item * B<@comics> array of published comics, sorted from oldest to latest.
 
-=item B<modified> last modification date of the latest comic, to be used in
-time stamps in e.g., HTML headers.
+=item * B<$modified> last modification date of the latest comic, to be used in
+    time stamps in e.g., HTML headers.
 
-=item B<notFor> function that takes a comic and a language and returns
-whether the given comic is for the given language. This is useful if you
-want just one template for all languages.
+=item * B<&notFor> function that takes a comic and a language and returns
+    whether the given comic is for the given language. This is useful if you
+    want just one template for all languages.
 
 =back
 

@@ -47,11 +47,11 @@ Parameters:
 
 =over 4
 
-=item * Don't publish marker(s). If any of these texts is found, the comic
-    is flagged. Pick something that doesn't appear normally in your comics,
-    e.g., "DONT_PUBLISH". The check is case-sensitive (and an all-caps term
-    may be easier for humans to spot). If no marker is given, this check is
-    effectively disabled.
+=item * B<@markers> Don't publish marker(s). If any of these texts is found,
+    the comic is flagged. Pick something that doesn't appear normally in
+    your comics, e.g., "DONT_PUBLISH". The check is case-sensitive (and an
+    all-caps term may be easier for humans to spot). If no marker is given,
+    this check is effectively disabled.
 
 =back
 
@@ -75,7 +75,7 @@ Parameters:
 
 =over 4
 
-=item * Comic to check.
+=item * B<$comic> Comic to check.
 
 =back
 
@@ -170,7 +170,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2015 - 2020, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2015 - 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or

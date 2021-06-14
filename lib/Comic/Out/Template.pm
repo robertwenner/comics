@@ -41,19 +41,19 @@ Parameters:
 
 =over 4
 
-=item * $description For what a template is processed. This can be the input file
-    name, or a descriptive text. Used in error messages.
+=item * B<$description> For what a template is processed. This can be the
+    input file name, or a descriptive text. Used in error messages.
 
-=item * $template_file Path and name of the template file.
+=item * B<$template_file> Path and name of the template file.
 
-=item * $language For which language the template is used. This should be a
-    language name starting with an upper case letter, e.g., "English". This
-    function makes the language available during template processing as
+=item * B<$language> For which language the template is used. This should be
+    a language name starting with an upper case letter, e.g., "English".
+    This function makes the language available during template processing as
     "Language" for the language as passed, and as "language" with a
     lowercase first letter. This can be used for including other templates
     based on the language.
 
-=item * %vars Any variables to be defined for use in the template.
+=item * B<%vars> Any variables to be defined for use in the template.
 
 =back
 

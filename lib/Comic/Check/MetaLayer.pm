@@ -43,10 +43,10 @@ Parameters:
 
 =over 4
 
-=item * Meta prefix; defaults to C<Meta>. Meta layers are found by looking
-    for this meta prefix followed by the language. For example, if meta
-    marker is C<Meta> and language is C<English>, the comic is expected to
-    have an Inkscape layer called C<MetaEnglish>.
+=item * B<$prefix> Meta prefix; defaults to C<Meta>. Meta layers are found
+    by looking for this meta prefix followed by the language. For example,
+    if meta marker is C<Meta> and language is C<English>, the comic is
+    expected to have an Inkscape layer called C<MetaEnglish>.
 
 =back
 
@@ -69,7 +69,7 @@ Parameters:
 
 =over 4
 
-=item * Comic to check.
+=item * B<$comic> Comic to check.
 
 =back
 

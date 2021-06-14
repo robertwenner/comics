@@ -55,18 +55,18 @@ Arguments:
 
 =over 4
 
-=item B<mode> either 'html' or 'png' to tweet either a link to the comic or
+=item * B<$mode> either 'html' or 'png' to tweet either a link to the comic or
     the actual comic png. Defaults to 'png'.
 
-=item B<consumer_key> passed to C<Net::Twitter>.
+=item * B<$consumer_key> passed to C<Net::Twitter>.
 
-=item B<consumer_secret> passed to C<Net::Twitter>.
+=item * B<$consumer_secret> passed to C<Net::Twitter>.
 
-=item B<access_tokeny> passed to C<Net::Twitter>.
+=item * B<$access_tokeny> passed to C<Net::Twitter>.
 
-=item B<access_token_secret> passed to C<Net::Twitter>.
+=item * B<$access_token_secret> passed to C<Net::Twitter>.
 
-=item B<...> any other arguments to pass to the C<Net::Twitter> constructor.
+=item * B<...> any other arguments to pass to the C<Net::Twitter> constructor.
    (For experts only.)
 
 =back
@@ -135,7 +135,7 @@ Parameters:
 
 =over 4
 
-=item * Comic to tweet.
+=item * B<$comic> Comic to tweet.
 
 =back
 
@@ -222,7 +222,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2015 - 2020, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2015 - 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or

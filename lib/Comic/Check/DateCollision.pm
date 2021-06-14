@@ -61,7 +61,7 @@ Parameters:
 
 =over 4
 
-=item * Comic to check. Comics without a published date are ignored.
+=item * B<$comic> Comic to check. Comics without a published date are ignored.
 
 =back
 
@@ -132,7 +132,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2015 - 2020, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2015 - 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or

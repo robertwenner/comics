@@ -50,15 +50,15 @@ Arguments:
 
 =over 4
 
-=item B<username> your reddit user name.
+=item * B<$username> your reddit user name.
 
-=item B<password> your reddit password.
+=item * B<$password> your reddit password.
 
-=item B<client_id> from your account's apps details page.
+=item * B<$client_id> from your account's apps details page.
 
-=item B<secret> from your account's apps details page.
+=item * B<$secret> from your account's apps details page.
 
-=item B<...> any other arguments to pass to the C<Net::Reddit> constructor.
+=item * B<...> any other arguments to pass to the C<Net::Reddit> constructor.
    (For experts only.)
 
 =back
@@ -124,9 +124,9 @@ Parameters:
 
 =over 4
 
-=item * Comic to post.
+=item * B<$comic> Comic to post.
 
-=item * Default subreddit(s), e.g., "/r/comics" or "funny".
+=item * B<$default_subreddit> Default subreddit(s), e.g., "/r/comics" or "funny".
 
 =back
 
@@ -295,7 +295,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2015 - 2020, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2015 - 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or

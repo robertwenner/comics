@@ -55,7 +55,7 @@ Parameters:
 
 =over 4
 
-=item * Comic to remember.
+=item * B<$comic> Comic to remember.
 
 =back
 
@@ -80,7 +80,7 @@ Parameters:
 
 =over 4
 
-=item B<comic> Comic to check.
+=item * B<comic> Comic to check.
 
 =back
 
@@ -116,16 +116,16 @@ Parameters:
 
 =over 4
 
-=item B<checks> reference to an array to put an instance of the loaded Check
-    into.
+=item * B<$checks> reference to an array to put an instance of the loaded
+    Check into.
 
-=item B<name> name of the check to load, this can either be a module name as
+=item * B<$name> name of the check to load, this can either be a module name as
     in C<use> (for example C<Comic::Check::SomeCheck>) or a path / file name
     of the module (e.g., C<Comic/Check/SomeCheck.pm>). The module must be in
     a path in C<@INC>.
 
-=item B<arguments> reference to an array or hash of the arguments to pass to
-    the new Check's constructor.
+=item * B<$arguments> reference to an array or hash of the arguments to pass
+    to the new Check's constructor.
 
 =back
 
@@ -173,7 +173,7 @@ Parameters:
 
 =over 4
 
-=item B<name> path / file name of the module, e.g., C<Comic/Check/Check.pm>.
+=item * B<$name> path / file name of the module, e.g., C<Comic/Check/Check.pm>.
 
 =back
 
@@ -197,7 +197,7 @@ Parameters:
 
 =over 4
 
-=item B<name> Module name, e.g., C<Comic::Check::Check>.
+=item * B<$name> Module name, e.g., C<Comic::Check::Check>.
 
 =back
 
@@ -287,7 +287,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2020, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2020 - 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or

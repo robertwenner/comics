@@ -54,10 +54,10 @@ Parameters:
 
 =over 4
 
-=item * Tags to check. These tags need to be in the per-language comic
-    metadata. You could use tags for the people appearing in the comic, or
-    general purpose keywords associated with the comic.
-    Passing no tags effectively disables this Check.
+=item * B<@tags> Tags to check. These tags need to be in the per-language
+    comic metadata. You could use tags for the people appearing in the
+    comic, or general purpose keywords associated with the comic. Passing no
+    tags effectively disables this Check.
 
 =back
 
@@ -80,8 +80,8 @@ Parameters:
 
 =over 4
 
-=item * Comic to check. Will check the tags given in the Comic::Check::Tag
-    constructor for all languages the comic has.
+=item * B<$comic> Comic to check. Will check the tags given in the
+    Comic::Check::Tag constructor for all languages the comic has.
 
 =back
 
@@ -172,7 +172,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2015 - 2020, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2015 - 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or

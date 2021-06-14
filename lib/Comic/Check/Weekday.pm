@@ -47,8 +47,9 @@ Parameters:
 
 =over 4
 
-=item * Weekday when comics are published. Pass 1 for Monday, 2 for Tuesday,
-    and so on. If no weekday is given, this check is effectively disabled.
+=item * B<weekday> Weekday when comics are published. Pass 1 for Monday, 2
+    for Tuesday, and so on. If no weekday is given, this check is
+    effectively disabled.
 
 =back
 
@@ -80,7 +81,8 @@ Parameters:
 
 =over 4
 
-=item * Comic to check. Comics without a published date are silently ignored.
+=item * B<$comic> Comic to check. Comics without a published date are
+    silently ignored.
 
 =back
 
@@ -143,7 +145,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2015 - 2020, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2015 - 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or

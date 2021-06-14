@@ -121,9 +121,9 @@ Parameters:
 
 =over 4
 
-=item B<$path/file> path and file name to the SVG input file.
+=item * B<$path/file> path and file name to the SVG input file.
 
-=item B<$settings> Comic::Settings object with settings for all comics.
+=item * B<$settings> Comic::Settings object with settings for all comics.
 
 =back
 
@@ -166,16 +166,16 @@ objects (case-sensitive):
 
 =over 4
 
-=item B<use> Use only the given Checks for this Comic, ignore the main
+=item * B<use> Use only the given Checks for this Comic, ignore the main
     configuration's checks completely. This can be used if the Comic has
     completely different Check needs than all the other comics.
 
-=item B<add> Add the given Checks to the ones from the main configuration.
+=item * B<add> Add the given Checks to the ones from the main configuration.
     This is helpful if this Comic needs a Check that others don't need.
     If there was already a Check by that type, it's replaced with the new
     one.
 
-=item B<remove> Remove the given Checks from the configured Checks. This is
+=item * B<remove> Remove the given Checks from the configured Checks. This is
     useful if a Check that's helpful for most other Comics doesn't make
     sense for this one.
 
@@ -730,7 +730,7 @@ Parameters:
 
 =over 4
 
-=item B<layer> For which layer(s) to look.
+=item * B<layer> For which layer(s) to look.
 
 =back
 
@@ -1094,7 +1094,7 @@ Parameters:
 
 =over 4
 
-=item B<$dir> directory to create.
+=item * B<$dir> directory to create.
 
 =back
 
@@ -1135,7 +1135,7 @@ Parameters:
 
 =over 4
 
-=item B<%templates> hash of language to path / file name of the comic page
+=item * B<%templates> hash of language to path / file name of the comic page
     templates.
 
 =back
@@ -1190,10 +1190,10 @@ Parameters:
 
 =over 4
 
-=item B<%site_map_templates> hash of language to path / file name of the
+=item * B<%site_map_templates> hash of language to path / file name of the
 sitemap templates.
 
-=item B<%outputs> hash of language to path / file name of the generated
+=item * B<%outputs> hash of language to path / file name of the generated
 sitemaps.
 
 =back
@@ -1303,7 +1303,7 @@ Parameters:
 
 =over 4
 
-=item B<$language> name of language to to check, as spelled in the Comic
+=item * B<$language> name of language to to check, as spelled in the Comic
     meta data.
 
 =back
@@ -1429,7 +1429,7 @@ Parameters:
 
 =over 4
 
-=item B<language> Language name(s).
+=item * B<language> Language name(s).
 
 =back
 
@@ -1462,7 +1462,7 @@ Parameters:
 
 =over 4
 
-=item B<layer> Inkscape layer name(s) from which to collect texts.
+=item * B<layer> Inkscape layer name(s) from which to collect texts.
 
 =back
 
@@ -1631,9 +1631,9 @@ Parameters:
 
 =over 4
 
-=item B<$file_name> path and name of the file to write.
+=item * B<$file_name> path and name of the file to write.
 
-=item B<contents> what to write.
+=item * B<contents> what to write.
 
 =back
 
@@ -1660,7 +1660,7 @@ Parameters:
 
 =over 4
 
-=item B<%templates> reference to a hash of language to  index page template
+=item * B<%templates> reference to a hash of language to index page template
     file. Depending on your setup, these template files could be just the
     regular comic page template.
 
@@ -1699,9 +1699,9 @@ Parameters:
 
 =over 4
 
-=item B<$backlog_template> path / file name of the template file.
+=item * B<$backlog_template> path / file name of the template file.
 
-=item B<$backlog_page> path / file name of the generated backlog html.
+=item * B<$backlog_page> path / file name of the generated backlog html.
 
 =back
 
@@ -1838,9 +1838,9 @@ Parameters:
 
 =over 4
 
-=item B<$what> what counts to get, e.g., "tags" or "who".
+=item * B<$what> what counts to get, e.g., "tags" or "who".
 
-=item B<$language> for what language, e.g., "English".
+=item * B<$language> for what language, e.g., "English".
 
 =back
 
@@ -1865,9 +1865,9 @@ Parameters:
 
 =over 4
 
-=item B<$template> path / file name of the template file.
+=item * B<$template> path / file name of the template file.
 
-=item B<$language> path / file name of the generated sizemap.
+=item * B<$language> path / file name of the generated sizemap.
 
 =back
 
@@ -2053,8 +2053,8 @@ Parameters:
 
 =over 4
 
-=item B<mode> png or html to decide whether to post the PNG file directly
-or rather the link to the comic's page.
+=item * B<mode> png or html to decide whether to post the PNG file directly
+    or rather the link to the comic's page.
 
 =back
 

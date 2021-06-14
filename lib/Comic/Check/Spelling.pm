@@ -53,8 +53,8 @@ Parameters:
 
 =over 4
 
-=item * Hash of language to ignored words list. Languages need to be
-    lowercase and start with a capital letter. Ignored words are not
+=item * B<%ignore> Hash of language to ignored words list. Languages need to
+    be lowercase and start with a capital letter. Ignored words are not
     case-sensitive.
 
 =back
@@ -102,7 +102,7 @@ Parameters:
 
 =over 4
 
-=item * Comic to check.
+=item * B<$comic> Comic to check.
 
 =back
 

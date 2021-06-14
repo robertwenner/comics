@@ -64,7 +64,7 @@ Parameters:
 
 =over 4
 
-=item * Comic to check.
+=item * B<$comic> Comic to check.
 
 =back
 
