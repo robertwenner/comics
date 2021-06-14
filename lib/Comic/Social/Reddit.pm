@@ -244,7 +244,7 @@ sub _wait_for_reddit_limit {
         return $error;
     }
     elsif ($error) {
-        $comic->_croak("Don't know what reddit complains about: '$error'");
+        $comic->keel_over("Don't know what reddit complains about: '$error'");
     }
 
     return '';

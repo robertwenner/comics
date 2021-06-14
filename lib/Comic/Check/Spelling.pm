@@ -170,7 +170,7 @@ sub _check_metadata {
         }
         else {
             # Something in the metadata is really messed up.
-            $comic->_croak('Cannot spell check a ' . ref $value);
+            $comic->keel_over('Cannot spell check a ' . ref $value);
         }
 
         foreach my $text (@texts) {

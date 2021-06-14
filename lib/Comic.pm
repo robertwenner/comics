@@ -251,13 +251,13 @@ sub _adjust_checks {
         elsif ($keyword eq 'remove') {
             my $removing = $check_config->{'remove'};
             if (ref $removing ne ref []) {
-                $self->_croak('Must pass an array to "remove"');
+                $self->keel_over('Must pass an array to "remove"');
             }
             $self->_remove_checks($removing);
         }
 
         else {
-            $self->_croak("Unknown Check option $keyword; use one of use, add, or remove");
+            $self->keel_over("Unknown Check option $keyword; use one of use, add, or remove");
         }
     }
 
@@ -326,7 +326,7 @@ sub _load {
     }
     eval {
         $self->{meta_data} = from_json($meta_data);
-    } or $self->_croak("Error in JSON for: $EVAL_ERROR");
+    } or $self->keel_over("Error in JSON for: $EVAL_ERROR");
     if (!$self->{use_meta_data_cache}) {
         write_file($meta_cache, $meta_data);
     }
@@ -350,7 +350,7 @@ sub _load {
     my %uri_encoding_options = (encode_reserved => 1);
     foreach my $language ($self->languages()) {
         my $domain = ${$self->{settings}->{Domains}}{$language};
-        $self->_croak("No domain for $language") unless ($domain);
+        $self->keel_over("No domain for $language") unless ($domain);
 
         $self->{backlogPath}{$language} = 'generated/backlog/' . lc $language;
         my $base;
@@ -470,7 +470,7 @@ sub export_png {
         my $backlog_png = "$self->{backlogPath}{$language}/$self->{pngFile}{$language}" || '';
 
         if (_up_to_date($self->{srcFile}, $backlog_png)) {
-            _move($backlog_png, $png_file) or $self->_croak("Cannot move $backlog_png to $png_file: $OS_ERROR");
+            _move($backlog_png, $png_file) or $self->keel_over("Cannot move $backlog_png to $png_file: $OS_ERROR");
         }
 
         unless (_up_to_date($self->{srcFile}, $png_file)) {
@@ -677,7 +677,7 @@ sub _flip_language_layers {
         }
     }
     unless ($had_lang) {
-        $self->_croak("no $language layer");
+        $self->keel_over("no $language layer");
     }
     return;
 }
@@ -904,7 +904,7 @@ sub _query_inkscape_version {
     my $version = `inkscape --version 2>/dev/null`; # uncoverable statement
     ## use critic
     if ($OS_ERROR) { # uncoverable branch true
-        $self->_croak('Could not run Inkscape'); # uncoverable statement
+        $self->keel_over('Could not run Inkscape'); # uncoverable statement
     }
     return $version; # uncoverable statement
 }
@@ -918,8 +918,8 @@ sub _parse_inkscape_version {
     if ($inkscape_output =~ m/^Inkscape\s+(\d\.\d)/) {
         return $1;
     }
-    $self->_croak("Cannot figure out Inkscape version from this:\n$inkscape_output");
-    # PerlCritic doesn't know that _croak doesn't return and the return statement
+    $self->keel_over("Cannot figure out Inkscape version from this:\n$inkscape_output");
+    # PerlCritic doesn't know that keel_over doesn't return and the return statement
     # here is unreachable.
     return 'unknown';
 }
@@ -959,7 +959,7 @@ sub _svg_to_png {
     my $png_file = "$self->{whereTo}{$language}/$self->{pngFile}{$language}";
     my $version = $self->_get_inkscape_version();
     my $export_cmd = $self->_build_inkscape_command($svg_file, $png_file, $version);
-    _system($export_cmd) && $self->_croak("could not export: $export_cmd: $OS_ERROR");
+    _system($export_cmd) && $self->keel_over("could not export: $export_cmd: $OS_ERROR");
 
     my $tool = Image::ExifTool->new();
     # Add data inferred from comic
@@ -989,12 +989,12 @@ sub _svg_to_png {
     # Finally write png meta data
     my $rc = $tool->WriteInfo($png_file);
     if ($rc != 1) {
-        $self->_croak('cannot write PNG meta data: ' . $tool->GetValue('Error'));
+        $self->keel_over('cannot write PNG meta data: ' . $tool->GetValue('Error'));
     }
 
     # Shrink / optimize PNG
     my $shrink_cmd = "optipng --quiet $png_file";
-    _system($shrink_cmd) && $self->_croak("Could not shrink: $shrink_cmd: $OS_ERROR");
+    _system($shrink_cmd) && $self->keel_over("Could not shrink: $shrink_cmd: $OS_ERROR");
 
     return;
 }
@@ -1019,7 +1019,7 @@ sub _set_png_meta {
     my ($self, $tool, $name, $value) = @ARG;
 
     my ($count_set, $error) = $tool->SetNewValue($name, $value);
-    $self->_croak("Cannot set $name: $error") if ($error);
+    $self->keel_over("Cannot set $name: $error") if ($error);
     return;
 }
 
@@ -1062,7 +1062,7 @@ sub _normalized_title {
     my ($self, $language) = @ARG;
 
     my $title = $self->{meta_data}->{title}->{$language};
-    $self->_croak("No $language title in $self->{srcFile}") unless($title);
+    $self->keel_over("No $language title in $self->{srcFile}") unless($title);
     $title =~ s/[&<>*?]//g;
     $title =~ s/\s{2}/ /g;
     $title =~ s/\s/-/g;
@@ -1266,7 +1266,7 @@ sub _export_qr_code {
         casesensitive => 1,
         mode => '8-bit'
     });
-    $qrcode->write(file => "$dir/$png") or $self->_croak($qrcode->errstr);
+    $qrcode->write(file => "$dir/$png") or $self->keel_over($qrcode->errstr);
     return 0;
 }
 
@@ -1389,7 +1389,7 @@ sub _language_codes {
                 next LANG;
             }
         }
-        $self->croak("cannot find language code for '$lang'");
+        $self->keel_over("cannot find language code for '$lang'");
     }
     return %codes;
 }
@@ -1521,8 +1521,8 @@ sub _transformed {
     if (!defined $x || !defined $y) {
         ($x, $y) = _text_from_path($self, $node);
     }
-    $self->_croak('no x') unless(defined $x);
-    $self->_croak('no y') unless(defined $y);
+    $self->keel_over('no x') unless(defined $x);
+    $self->keel_over('no y') unless(defined $y);
 
     my $transform = $node->getAttribute('transform');
     if ($transform) {
@@ -1539,16 +1539,16 @@ sub _text_from_path {
     my ($self, $node) = @ARG;
 
     my @text_path = $node->getChildrenByTagName('textPath');
-    $self->_croak('No X/Y and no textPath child element') if (@text_path == 0);
-    $self->_croak('No X/Y and multiple textPath child elements') if (@text_path > 1);
+    $self->keel_over('No X/Y and no textPath child element') if (@text_path == 0);
+    $self->keel_over('No X/Y and multiple textPath child elements') if (@text_path > 1);
     my $path_id = $text_path[0]->getAttribute('xlink:href');
     $path_id =~ s{^#}{};
     my $xpath = "//$DEFAULT_NAMESPACE:ellipse[\@id='$path_id']";
     my @path_nodes = $self->{xpath}->findnodes($xpath);
-    $self->_croak("$xpath not found") if (@path_nodes == 0);
-    $self->_croak("More than one node with ID $path_id") if (@path_nodes > 1);
+    $self->keel_over("$xpath not found") if (@path_nodes == 0);
+    $self->keel_over("More than one node with ID $path_id") if (@path_nodes > 1);
     my $type = $path_nodes[0]->nodeName;
-    $self->_croak("Cannot handle $type nodes") unless ($type eq 'ellipse');
+    $self->keel_over("Cannot handle $type nodes") unless ($type eq 'ellipse');
     return ($path_nodes[0]->getAttribute('cx'), $path_nodes[0]->getAttribute('cy'));
 }
 
@@ -1972,16 +1972,30 @@ sub _sort_styles_traverse {
 }
 
 
-sub _croak {
-    my ($self, $msg) = @ARG;
-    croak "$self->{srcFile} : $msg";
+=head2 keel_over
+
+Croak with current comic source file name and given error message.
+
+Parameters:
+
+=over 4
+
+=item * B<message> error message.
+
+=back
+
+=cut
+
+sub keel_over {
+    my ($self, $message) = @ARG;
+    croak "$self->{srcFile} : $message";
 }
 
 
 sub _warn {
     my ($self, $msg) = @ARG;
 
-    $self->_croak($msg) unless ($self->not_yet_published());
+    $self->keel_over($msg) unless ($self->not_yet_published());
     $self->_note($msg);
     return;
 }
@@ -2022,7 +2036,7 @@ or rather the link to the comic's page.
 =back
 
 Returns log information (usually the URLs posted to and such) if successful,
-or croaks if no current comic was found or the last comic isn't from today.
+or keel over if no current comic was found or the last comic isn't from today.
 
 =cut
 
@@ -2050,7 +2064,7 @@ sub post_to_social_media {
     }
     if (!$posted) {
         my $latest = $published[0];
-        $latest->_croak("Not posting cause latest comic is not current ($latest->{meta_data}->{published}->{when})");
+        $latest->keel_over("Not posting cause latest comic is not current ($latest->{meta_data}->{published}->{when})");
     }
     return $log;
 }
