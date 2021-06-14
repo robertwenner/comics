@@ -17,7 +17,7 @@ use Comic::Out::QrCode;
 
 use version; our $VERSION = qv('0.0.3');
 
-=for stopwords html Inkscape JSON merchantability perlartistic png submodules Wenner favicons cronjob RSS pngs notFor OutFile
+=for stopwords html Inkscape JSON merchantability perlartistic png submodules Wenner favicons cronjob RSS pngs notFor OutFile CSS
 
 
 =head1 NAME
