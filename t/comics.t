@@ -5,12 +5,12 @@ use base 'Test::Class';
 use Test::More;
 
 use Comics;
-use Comic;
 
 use lib 't';
 use MockComic;
 use lib 't/check';
 use DummyCheck;
+
 
 __PACKAGE__->runtests() unless caller;
 
