@@ -35,9 +35,9 @@ TEMPL
     MockComic::fake_file('simple.templ', $SIMPLE_TEMPLATE);
 
     $feed = Comic::Out::Feed->new(
-        "generated/web/",
         {
             "Feed" => {
+                "outdir" => "generated/web/",
                 "Test" => {
                     "template" => "simple.templ"
                 }
@@ -60,21 +60,26 @@ sub make_comic {
 
 
 sub no_feeds_configured : Tests {
-    my $feed = Comic::Out::Feed->new("generated/web");
-    $feed->generate();
-    ok(1);
+    eval {
+        Comic::Out::Feed->new({});
+    };
+    like($@, qr{no feed\b}i);
+}
 
-    $feed = Comic::Out::Feed->new("generated/web", {});
-    $feed->generate();
-    ok(1);
+
+sub no_outdir_configured : Tests {
+    eval {
+        Comic::Out::Feed->new({"Feed" => {}});
+    };
+    like($@, qr{output directory}i);
 }
 
 
 sub no_template_configured_at_all : Tests {
     my $feed = Comic::Out::Feed->new(
-        "generated/web",
         {
             "Feed" => {
+                "outdir" => "generated/web",
                 "Whatever" => {
                     "output" => "rss.xml"
                 }
@@ -85,15 +90,15 @@ sub no_template_configured_at_all : Tests {
     eval {
         $feed->generate(@comics);
     };
-    like($@, qr{No Whatever template});
+    like($@, qr{no Whatever template}i);
 }
 
 
 sub no_template_configured_for_language : Tests {
     my $feed = Comic::Out::Feed->new(
-        "generated/web",
         {
             "Feed" => {
+                "outdir" => "generated/web",
                 "Whatever" => {
                     "template" => {}
                 }
@@ -111,9 +116,9 @@ sub no_template_configured_for_language : Tests {
 sub bad_template_for_all_languages : Tests {
     my $comic = make_comic('one', '2016-01-01');
     my $feed = Comic::Out::Feed->new(
-        "generated/web",
         {
             "Feed" => {
+                "outdir" => "generated/web",
                 "Whatever" => {
                     "template" => $comic
                 }
@@ -130,9 +135,9 @@ sub bad_template_for_all_languages : Tests {
 sub bad_template_for_one_language : Tests {
     my $comic = make_comic('one', '2016-01-01');
     my $feed = Comic::Out::Feed->new(
-        "generated/web",
         {
             "Feed" => {
+                "outdir" => "generated/web",
                 "Whatever" => {
                     "template" => {
                         "English" => $comic
@@ -211,9 +216,9 @@ $lang: [% c.meta_data.title.\$Language %]
 TEMPL
     }
     $feed = Comic::Out::Feed->new(
-        "generated/web/",
         {
             "Feed" => {
+                "outdir" => "generated/web/",
                 "RSS" => {
                     "template" => {
                         "English" => "EN.templ",
@@ -241,9 +246,9 @@ sub provides_not_for_function : Test {
 TEMPL
     MockComic::fake_file("notFor.templ", $templ);
     $feed = Comic::Out::Feed->new(
-        "generated/web/",
         {
             "Feed" => {
+                "outdir" => "generated/web/",
                 "Test" => {
                     "template" => "notFor.templ",
                 },
@@ -263,9 +268,9 @@ sub proviedes_max_item_count : Tests {
         $MockComic::PUBLISHED_WHEN => '2016-01-01',
         $MockComic::DESCRIPTION => {'English' => 'Drinking beer'});
     $feed = Comic::Out::Feed->new(
-        "generated/web/",
         {
             "Feed" => {
+                "outdir" => "generated/web/",
                 "Test" => {
                     "template" => "test.templ",
                     "max" => 1234,
@@ -285,9 +290,9 @@ sub provides_updated_timestamp : Tests {
         $MockComic::PUBLISHED_WHEN => '2016-01-01',
         $MockComic::DESCRIPTION => {'English' => 'Drinking beer'});
     $feed = Comic::Out::Feed->new(
-        "generated/web/",
         {
             "Feed" => {
+                "outdir" => "generated/web/",
                 "Test" => {
                     "template" => "test.templ"
                 }
@@ -311,9 +316,9 @@ ATOM
         $MockComic::DESCRIPTION => {'English' => 'Drinking beer'});
     $comic->{pngSize}->{English} = 1024;
     $feed = Comic::Out::Feed->new(
-        "generated/web/",
         {
             "Feed" => {
+                "outdir" => "generated/web/",
                 "Test" => {
                     "template" => "test.templ"
                 }
@@ -340,9 +345,9 @@ sub real_world_rss : Tests {
 [% END %]
 RSS
     my $feed = Comic::Out::Feed->new(
-        "generated/web",
         {
             "Feed" => {
+                "outdir" => "generated/web/",
                 "RSS"=> {
                     "template" => "rss.templ"
                 }
@@ -375,9 +380,9 @@ sub real_world_atom : Tests {
 [% END %]
 ATOM
     my $feed = Comic::Out::Feed->new(
-        "generated/web",
         {
             "Feed" => {
+                "outdir" => "generated/web/",
                 "Atom" => {
                     "template" => "atom.templ"
                 }

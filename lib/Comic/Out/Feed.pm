@@ -16,7 +16,7 @@ use Readonly;
 Readonly my $FEED_ITEM_COUNT => 10;
 
 
-=for stopwords Wenner merchantability perlartistic RSS notFor
+=for stopwords Wenner merchantability perlartistic RSS notFor outdir
 
 =head1 NAME
 
@@ -47,29 +47,32 @@ L<Atom|https://en.wikipedia.org/wiki/Atom_(Web_standard)> on Wikipedia.
 
 Creates a new Comic::Out::Feed.
 
-Parameters:
+Parameters are taken from the C<Out.Feed> configuration:
 
 =over 4
-
-=item * B<$outdir> where to place generated feeds files.
 
 =item * B<$settings> Hash reference to settings.
 
 =back
 
-The passed settings need to have the feed type (e.g., RSS or Atom) as top
-level keys. Under these keys, define the max (how many comics should be
-included in the feed), the template file, and the output file name. For
-example:
+The passed settings need to have output directory (outdir) and the feed type
+(e.g., RSS or Atom) as top level keys. Under these keys, define the max (how
+many comics should be included in the feed), the template file, and the
+output file name.
 
-    "Feed": {
-        "RSS": {
-            "max": 10,
-            "template": "templates/rss.templ",
-            "output": "rss.xml"
-        },
-        "Atom": {
-            "template": "templates/atom.xml",
+For example:
+
+    "Out": {
+        "Feed": {
+            "outdir": "generated",
+            "RSS": {
+                "max": 10,
+                "template": "templates/rss.templ",
+                "output": "rss.xml"
+            },
+            "Atom": {
+                "template": "templates/atom.xml",
+            }
         }
     }
 
@@ -91,16 +94,15 @@ F<generated/web/english/rss.xml> and F<generated/web/deutsch/rss.xml>.
 
 
 sub new {
-    my ($class, $outdir, $settings) = @ARG;
+    my ($class, $settings) = @ARG;
     my $self = bless{}, $class;
-    $self->{outdir} = $outdir;
-    $self->{outdir} .= q{/} unless ($outdir =~ m{/$});
-    if ($settings && $settings->{Feed}) {
-        %{$self->{settings}} = %{$settings->{Feed}};
-    }
-    else {
-        $self->{settings} = {};
-    }
+
+    croak('No Feed configuration') unless ($settings->{Feed});
+    %{$self->{settings}} = %{$settings->{Feed}};
+
+    croak('Must specify Feed.outdir output directory') unless ($self->{settings}->{outdir});
+    $self->{settings}->{outdir} .= q{/} unless ($self->{settings}->{outdir} =~ m{/$});
+
     return $self;
 }
 
@@ -136,6 +138,8 @@ sub generate {
     }
 
     foreach my $type (keys %{$self->{settings}}) {
+        next if ($type eq 'outdir');
+
         my $templates = $self->{settings}->{$type}->{'template'};
         my $max = $self->{settings}->{$type}->{'max'};
         $max = $FEED_ITEM_COUNT unless($max);
@@ -157,7 +161,7 @@ sub generate {
             );
 
             my $feed = Comic::Out::Template::templatize("$type feed", $template, $language, %vars);
-            Comic::write_file($self->{outdir} . lc($language) . "/$output", $feed);
+            Comic::write_file($self->{settings}->{outdir} . lc($language) . "/$output", $feed);
         }
     }
     return;

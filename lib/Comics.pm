@@ -367,36 +367,6 @@ sub generate_comic_pages {
 }
 
 
-=head2 generate_feeds
-
-Generate RSS feeds for the web page.
-
-All comics must have been loaded before calling this function.
-
-=cut
-
-sub generate_feeds {
-    my ($self) = @ARG;
-
-    # TODO test:
-    #   does nothig if no Feed settings? warn? die?
-    #   does nothing if no keys under Feeds
-    #   fails noisily if no outdir given
-    #   collects all Feed keys
-    #   filters comics (by published when, published where)
-    #   hookup in Comics.pm
-    # do not test:
-    #   no comics (template loop covers this)
-    my $outdir = $self->{settings}->{settings}->{'Webdir'};
-    my $settings = $self->{settings}->{settings}->{'Feeds'};
-    if ($settings) {
-        my $feed = Comics::Feed->new($outdir, $settings);
-        $feed->generate(@{$self->{comics}});
-    }
-    return;
-}
-
-
 =head2 generate_archive
 
 Generates a single HTML page per language with all published comics in
