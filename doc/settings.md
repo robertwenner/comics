@@ -439,9 +439,9 @@ Order matters in the configuration file; if you rely on the output from a
 previous module, it needs to go before the module that requires the output.
 
 For example, the Comic::Out::QrCode module will create QR codes for comic
-pages and put the file name in the Comic. If the Comic::Out::Html module
-wants to include the QR code in the page, it must run after the
-Comic::Out::QrCode module.
+pages and put the URL in the Comic. If the Comic::Out::Html module wants to
+include the QR code in the page, it must run after the Comic::Out::QrCode
+module.
 
 
 ### Output Organization
@@ -460,7 +460,7 @@ output directory.
 Comics may have different ideas on where exatly they need to go, for example
 a German comic published on the web may go in `web/deutsch/comics/` while an
 English comic not yet published may go in `backlog/` (both directories being
-with in the specified `out` directory, here `generated/`.
+within the specified `out` directory, here `generated/`.
 
 
 ### Comic::Out::Feed
@@ -471,17 +471,19 @@ provided Perl [Template Toolkit](http://template-toolkit.org/) templates.
 
 ```json
 {
-    "Feed": {
-        "RSS": {
-            "template": "path/to/rss.template"
-        },
-        "Atom": {
-            "template": {
-                "English": "path/to/english/atom.template",
-                "Deutsch": "path/to/german/atom.template"
+    "Out": {
+        "Feed": {
+            "RSS": {
+                "template": "path/to/rss.template"
             },
-            "max": 5,
-            "output": "atom.xml"
+            "Atom": {
+                "template": {
+                    "English": "path/to/english/atom.template",
+                    "Deutsch": "path/to/german/atom.template"
+                },
+                "max": 5,
+                "output": "atom.xml"
+            }
         }
     }
 }

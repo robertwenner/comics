@@ -142,11 +142,11 @@ sub new {
         @{$self->{checks}} = ();
     }
 
-    if ($settings->{$Comic::Settings::OUT}) {
-        @{$self->{out}} = @{$settings->{$Comic::Settings::OUT}};
+    if ($settings->{$Comic::Settings::GENERATORS}) {
+        @{$self->{generators}} = @{$settings->{$Comic::Settings::GENERATORS}};
     }
     else {
-        @{$self->{out}} = ();
+        @{$self->{generators}} = ();
     }
 
     $self->_load($file);
