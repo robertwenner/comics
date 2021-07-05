@@ -32,6 +32,7 @@ use Clone qw(clone);
 
 use Comic::Consts;
 use Comic::Settings;
+use Comic::Modules;
 use Comic::Check::Check;
 use Comic::Out::Template;
 use Comic::Social::Twitter;
@@ -292,7 +293,7 @@ sub _add_checks {
 
     $checks = _array_ref_to_hash_ref($checks);
     foreach my $name (keys %{$checks}) {
-        Comic::Check::Check::load_check($self->{checks}, $name, ${$checks}{$name} || []);
+        Comic::Modules::load_module($self->{checks}, $name, ${$checks}{$name} || []);
     }
 
     return;
@@ -305,7 +306,7 @@ sub _remove_checks {
 
     $checks = _array_ref_to_hash_ref($checks);
     foreach my $name (keys %{$checks}) {
-        @{$self->{checks}} = grep { ref $_ ne Comic::Check::Check::module_name($name) } @{$self->{checks}};
+        @{$self->{checks}} = grep { ref $_ ne Comic::Modules::module_name($name) } @{$self->{checks}};
     }
 
     return;

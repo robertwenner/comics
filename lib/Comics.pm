@@ -197,28 +197,35 @@ sub _exists {
 
 =head2 load_checks
 
-Loads Check modules to check comics for certain problems.
+Loads the Checks modules defined in this Comics' configuration.
 
 =cut
 
-sub load_checks() {
+sub load_checks {
     my ($self) = @ARG;
+    return $self->_load_modules($Comic::Settings::CHECKS);
+}
+
+
+sub _load_modules {
+    my ($self, $type) = @ARG;
 
     my $actual_settings = $self->{settings}->get();
-    my $check_settings;
-    if (exists $actual_settings->{$Comic::Settings::CHECKS}) {
-        $check_settings = $actual_settings->{$Comic::Settings::CHECKS};
-        if (ref $check_settings ne ref {}) {
-            croak("'$Comic::Settings::CHECKS' must be a JSON object");
+    my $wants_to_load;
+    if (exists $actual_settings->{$type}) {
+        $wants_to_load = $actual_settings->{$type};
+        if (ref $wants_to_load ne ref {}) {
+            croak("'$type' must be a JSON object");
         }
     }
     else {
-        $check_settings = { map { $_ => [] } Comic::Check::Check::find_all() };
+        $wants_to_load = { map { $_ => [] } Comic::Check::Check::find_all() };
     }
 
-    foreach my $name (keys %{$check_settings}) {
-        Comic::Check::Check::load_check($self->{checks}, $name, ${$check_settings}{$name} || []);
+    foreach my $name (keys %{$wants_to_load}) {
+        Comic::Modules::load_module($self->{checks}, $name, ${$wants_to_load}{$name} || []);
     }
+
     return;
 }
 
