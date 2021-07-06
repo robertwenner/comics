@@ -15,6 +15,9 @@ use version; our $VERSION = qv('0.0.3');
 use Readonly;
 Readonly my $FEED_ITEM_COUNT => 10;
 
+use Comic::Out::Generator;
+use base('Comic::Out::Generator');
+
 
 =for stopwords Wenner merchantability perlartistic RSS notFor outdir
 
@@ -24,8 +27,8 @@ Comic::Out::Feed - Generates feeds. Meant for RSS or Atom feeds.
 
 =head1 SYNOPSIS
 
-    my $feed = Comic::Out::Feed->new('generated/web', \%settings);
-    $feed->generate(@comics);
+    my $feed = Comic::Out::Feed->new(\%settings);
+    $feed->generate_all(@comics);
 
 =head1 DESCRIPTION
 
@@ -107,7 +110,7 @@ sub new {
 }
 
 
-=head2 generate
+=head2 generate_all
 
 Generates the configured Feeds.
 
@@ -115,15 +118,15 @@ Parameters:
 
 =over 4
 
-=item * B<@comics> All Comic objects to consider. Only published comics will
-    be passed to the tem[late. If there are no (published) comics, the
+=item * B<@comics> All Comics to consider. Only published comics will
+    be passed to the template. If there are no (published) comics, the
     template will receive an empty list.
 
 =back
 
 =cut
 
-sub generate {
+sub generate_all {
     my ($self, @comics) = @ARG;
 
     my $now = _now();

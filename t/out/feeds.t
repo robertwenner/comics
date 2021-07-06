@@ -88,7 +88,7 @@ sub no_template_configured_at_all : Tests {
     );
     my @comics = (make_comic('one', '2016-01-01'));
     eval {
-        $feed->generate(@comics);
+        $feed->generate_all(@comics);
     };
     like($@, qr{no Whatever template}i);
 }
@@ -107,7 +107,7 @@ sub no_template_configured_for_language : Tests {
     );
     my @comics = (make_comic('one', '2016-01-01'));
     eval {
-        $feed->generate(@comics);
+        $feed->generate_all(@comics);
     };
     like($@, qr{No Whatever template for English});
 }
@@ -126,7 +126,7 @@ sub bad_template_for_all_languages : Tests {
         }
     );
     eval {
-        $feed->generate(($comic));
+        $feed->generate_all(($comic));
     };
     like($@, qr{^Bad Whatever template});
 }
@@ -147,21 +147,21 @@ sub bad_template_for_one_language : Tests {
         }
     );
     eval {
-        $feed->generate(($comic));
+        $feed->generate_all(($comic));
     };
     like($@, qr{^Bad Whatever template for English});
 }
 
 
 sub no_comics : Tests {
-    $feed->generate();
+    $feed->generate_all();
     MockComic::assert_didnt_write_in_file('generated/web/english/test.xml');
 }
 
 
 sub all_comics_filtered : Tests {
     my @comics = (make_comic('one', '3000-01-01'));
-    $feed->generate(@comics);
+    $feed->generate_all(@comics);
     MockComic::assert_wrote_file('generated/web/english/test.xml', '');
 }
 
@@ -169,7 +169,7 @@ sub all_comics_filtered : Tests {
 sub one_comic : Tests {
     my @comics = (make_comic('one', '2016-01-01'));
 
-    $feed->generate(@comics);
+    $feed->generate_all(@comics);
     MockComic::assert_wrote_file('generated/web/english/test.xml', qr{^\s*one\s*$}m);
 }
 
@@ -181,7 +181,7 @@ sub published_only : Test {
         make_comic('three', '3016-01-03'),
     );
 
-    $feed->generate(@comics);
+    $feed->generate_all(@comics);
     MockComic::assert_wrote_file('generated/web/english/test.xml', qr{^\s*two\s*$}m);
 }
 
@@ -193,7 +193,7 @@ sub orders_from_latest_to_oldest : Test {
         make_comic('three', '2016-01-03'),
     );
 
-    $feed->generate(@comics);
+    $feed->generate_all(@comics);
     MockComic::assert_wrote_file('generated/web/english/test.xml', qr{^\s*three\s*two\s*one\s*$}m);
 }
 
@@ -230,7 +230,7 @@ TEMPL
         }
     );
 
-    $feed->generate(@comics);
+    $feed->generate_all(@comics);
     MockComic::assert_wrote_file("generated/web/deutsch/myfeed.xml", qr{^DE: Bier\s*$"}m);
     MockComic::assert_wrote_file("generated/web/english/myfeed.xml", qr{^EN: Beer\s*$"}m);
 }
@@ -257,7 +257,7 @@ TEMPL
     );
     my @comics = (make_comic('one', '2016-01-01'));
 
-    $feed->generate(@comics);
+    $feed->generate_all(@comics);
     MockComic::assert_wrote_file('generated/web/english/test.xml', qr{^\s*blah\s*$}m);
 }
 
@@ -279,7 +279,7 @@ sub proviedes_max_item_count : Tests {
         }
     );
 
-    $feed->generate(($comic));
+    $feed->generate_all(($comic));
     MockComic::assert_wrote_file('generated/web/english/test.xml', "1234");
 }
 
@@ -300,7 +300,7 @@ sub provides_updated_timestamp : Tests {
         }
     );
 
-    $feed->generate(($comic));
+    $feed->generate_all(($comic));
     MockComic::assert_wrote_file('generated/web/english/test.xml', qr{^\s*2021-02-28T18:03:10-04:00\s*}m);
 }
 
@@ -325,7 +325,7 @@ ATOM
             }
         }
     );
-    $feed->generate(($comic));
+    $feed->generate_all(($comic));
     MockComic::assert_wrote_file('generated/web/english/test.xml', qr{^\s*1024\s*}m);
 }
 
@@ -356,7 +356,7 @@ RSS
     );
 
     my @comics = (make_comic('one', '2016-01-01'));
-    $feed->generate(@comics);
+    $feed->generate_all(@comics);
 
     my $item = qr{
         <item>\s*
@@ -390,7 +390,7 @@ ATOM
         }
     );
     my @comics = (make_comic('one', '2016-01-01'));
-    $feed->generate(@comics);
+    $feed->generate_all(@comics);
 
     my $item = qr{
         <entry>\s*
