@@ -11,7 +11,7 @@ use Comic::Out::Generator;
 use base('Comic::Out::Generator');
 
 
-=for stopwords Wenner merchantability perlartistic svg html
+=for stopwords Wenner merchantability perlartistic svg html metadata
 
 =head1 NAME
 
