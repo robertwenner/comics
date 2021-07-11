@@ -1364,7 +1364,7 @@ sub _do_export_html {
     my %vars;
     $vars{'comic'} = $self;
     $vars{'languages'} = [grep { $_ ne $language } $self->languages()];
-    $vars{'languagecodes'} = { $self->_language_codes() };
+    $vars{'languagecodes'} = { $self->language_codes() };
     # Need clone the URLs so that there is no reference stored here, cause
     # later code may change these vars when creating index.html, but if
     # it's a reference, the actual URL values get changed, too, and that
@@ -1410,7 +1410,14 @@ sub _do_export_html {
 }
 
 
-sub _language_codes {
+=head2 language_codes
+
+Gets a hash of language to the international language code for all languages
+used in this Comic.
+
+=cut
+
+sub language_codes {
     my ($self) = @_;
 
     my %codes;

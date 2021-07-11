@@ -111,7 +111,7 @@ Parameters:
 sub check {
     my ($self, $comic) = @ARG;
 
-    my %codes = $comic->_language_codes();
+    my %codes = $comic->language_codes();
     foreach my $language ($comic->languages()) {
         my $code = $codes{$language};
         if ($self->_has_dictionary($code)) {
@@ -201,7 +201,7 @@ sub _check_layers {
 sub _check_text {
     my ($self, $comic, $language, $where, $text) = @ARG;
 
-    my %codes = $comic->_language_codes();
+    my %codes = $comic->language_codes();
     my $code = $codes{$language};
     my $dictionary = ${$self->{dictionaries}}{$code};
 

@@ -22,7 +22,7 @@ sub language_code_de : Test {
         $MockComic::TITLE => {
             $MockComic::DEUTSCH => 'Bier trinken'
         });
-    is_deeply({'Deutsch' => 'de'}, {$comic->_language_codes()});
+    is_deeply({'Deutsch' => 'de'}, {$comic->language_codes()});
 }
 
 
@@ -31,7 +31,7 @@ sub language_code_en : Test {
         $MockComic::TITLE => {
             $MockComic::ENGLISH => 'Drinking beer',
         });
-    is_deeply({'English' => 'en'}, {$comic->_language_codes()});
+    is_deeply({'English' => 'en'}, {$comic->language_codes()});
 }
 
 
@@ -40,7 +40,7 @@ sub language_code_es : Test {
         $MockComic::TITLE => {
             'Español' => 'Tomando cerveza',
         });
-    is_deeply({'Español' => 'es'}, {$comic->_language_codes()});
+    is_deeply({'Español' => 'es'}, {$comic->language_codes()});
 }
 
 
@@ -56,7 +56,7 @@ sub language_code_unknown : Test {
             $Comic::Settings::CHECKS => [],
         });
     eval {
-        $comic->_language_codes();
+        $comic->language_codes();
     };
     like($@, qr{cannot find language code for 'Pimperanto'}i);
 }
@@ -75,7 +75,7 @@ sub language_code_for_all_languages_in_comic : Test {
             'Español' => 'es',
         },
         {
-            $comic->_language_codes()
+            $comic->language_codes()
         });
 }
 
