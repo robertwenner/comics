@@ -140,7 +140,7 @@ here
 TXT
 
     my $comic = MockComic::make_comic();
-    is_deeply([$comic->_get_transcript('English')], ["transcript", "goes", "here"]);
+    is_deeply([$comic->get_transcript('English')], ["transcript", "goes", "here"]);
 }
 
 
@@ -157,7 +157,7 @@ sub caches_transcript : Tests {
             ],
         }
     );
-    $comic->_get_transcript('Deutsch');
+    $comic->get_transcript('Deutsch');
     MockComic::assert_wrote_file('generated/tmp/transcript/Deutsch/some_comic.txt',
         "Max: Bier?\nPaul: Nöö...");
 }

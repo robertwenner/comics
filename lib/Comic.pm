@@ -593,7 +593,24 @@ sub check {
 }
 
 
-sub _get_transcript {
+=head2 get_transcript
+
+Gets this Comic's transcript. The transcript is ordered text from this
+Comic's meta and real text layers, ordered from top left to bottom right by
+frames. Usually it consists of speaker indicators and actual speech texts,
+plus maybe some background texts.
+
+Parameters:
+
+=over 4
+
+=item * B<language> for which language to get the transcript.
+
+=back
+
+=cut
+
+sub get_transcript {
     my ($self, $language) = @ARG;
 
     if (!defined($self->{transcript}{$language})) {
@@ -1005,7 +1022,7 @@ sub _svg_to_png {
     # Add data inferred from comic
     my %meta_data = (
         'Title' => $self->{meta_data}->{title}->{$language},
-        'Description' => join('', $self->_get_transcript($language)),
+        'Description' => join('', $self->get_transcript($language)),
         'CreationTime' => $self->{modified},
         'URL' => $self->{url}{$language},
     );
@@ -1288,7 +1305,7 @@ sub _find_next {
 sub _export_language_html {
     my ($self, $language, $template) = @ARG;
 
-    $self->_get_transcript($language);
+    $self->get_transcript($language);
     write_file("$self->{whereTo}{$language}/$self->{htmlFile}{$language}",
         $self->_do_export_html($language, $template));
     return 0;
