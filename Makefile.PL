@@ -77,5 +77,8 @@ sub MY::postamble {
     return <<HERE;
 cover :: pure_all
 	HARNESS_PERL_SWITCHES=-MDevel::Cover make test && cover
+
+atest :: pure_all
+	TEST_AUTHOR=1 make test
 HERE
 }
