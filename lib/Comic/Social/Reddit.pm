@@ -18,7 +18,7 @@ use version; our $VERSION = qv('0.0.3');
 
 =head1 NAME
 
-Comic::Social::Reddit - post a Comic on L<reddit.com>.
+Comic::Social::Reddit - post a Comic on L<https://reddit.com>.
 
 =head1 SYNOPSIS
 
@@ -93,13 +93,13 @@ For example, if the given Comic has this meta data:
     "reddit": {
         "subreddit": {
             "english": [ "beer", "homebrewing" ],
-            "deutsch": [ "brauen" ]
+            "deutsch": [ "bier" ]
         }
     }
 
 then this module will post the English version of the given comic to
 L<https://reddit.com/r/beer> and L<https://reddit.com/r/homebrewing> and the
-German version to L<https://reddit.com/r/brauen>.
+German version to L<https://reddit.com/r/bier>.
 
 If a language has no C<subreddit> setting (in neither the global settings
 nor the comic's settings), that comic language won't be posted. For example,
