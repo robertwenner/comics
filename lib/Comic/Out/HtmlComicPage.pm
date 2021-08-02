@@ -102,8 +102,6 @@ sub new {
 
     croak('Must specify HtmlComicPage.Templates') unless ($self->{settings}->{Templates});
 
-    %{$self->{language_code_cache}} = ();
-
     return $self;
 }
 
@@ -203,7 +201,7 @@ sub _do_export_html {
     my %vars;
     $vars{'comic'} = $comic;
     $vars{'languages'} = [grep { $_ ne $language } $comic->languages()];
-    $vars{'languagecodes'} = { $self->_language_codes($comic) };
+    $vars{'languagecodes'} = { $comic->language_codes() };
     # Need clone the URLs so that there is no reference stored here, cause
     # later code may change these vars when creating index.html, but if
     # it's a reference, the actual URL values get changed, too, and that
@@ -246,31 +244,6 @@ sub _do_export_html {
     }
 
     return Comic::Out::Template::templatize($comic->{srcFile}, $template, $language, %vars);
-}
-
-
-sub _language_codes {
-    my ($self, $comic) = @ARG;
-
-    my %codes;
-    LANG: foreach my $lang ($comic->languages()) {
-        if ($self->{language_code_cache}{$lang}) {
-            $codes{$lang} = $self->{language_code_cache}{$lang};
-            next LANG;
-        }
-        foreach my $lcode (Locales::->new()->get_language_codes()) {
-            my $loc = Locales->new($lcode);
-            next unless($loc);
-            my $code = $loc->get_code_from_language($lang);
-            if ($code) {
-                $codes{$lang} = $code;
-                $self->{language_code_cache}{$lang} = $code;
-                next LANG;
-            }
-        }
-        $comic->keel_over("cannot find language code for '$lang'");
-    }
-    return %codes;
 }
 
 
