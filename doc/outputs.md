@@ -19,7 +19,7 @@ output directory.
 ```json
 {
     "Out": {
-        "outdir": "generated/"
+        "outdir": "generated"
     }
 }
 ```
@@ -41,7 +41,7 @@ The configuration needs to be like this:
 {
     "Out": {
         "HtmlComicPage": {
-            "outdir": "generated/web/",
+            "outdir": "generated/web",
             "Templates": {
                 "English": "templ/comic-page.templ"
             }
