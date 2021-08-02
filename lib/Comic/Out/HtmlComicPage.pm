@@ -174,11 +174,11 @@ sub _find_next {
 
 
 sub _export_language_html {
-    # This could be linlined once tests don't call it directly anymore.
+    # This could be inlined once tests don't call it directly anymore.
     my ($self, $comic, $language, $template) = @ARG;
 
     $comic->get_transcript($language);
-    Comic::write_file("$comic->{whereTo}{$language}/$comic->{htmlFile}{$language}",
+    Comic::write_file("$comic->{dirName}{$language}/$comic->{htmlFile}{$language}",
         $self->_do_export_html($comic, $language, $template));
     return 0;
 

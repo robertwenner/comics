@@ -295,6 +295,7 @@ sub _load {
 
     $self->{srcFile} = $file;
     $self->{warnings} = [];
+
     my $meta_data;
     my $meta_cache = _meta_cache_for($self->{srcFile});
     $self->{use_meta_data_cache} = _up_to_date($self->{srcFile}, $meta_cache);
@@ -346,7 +347,7 @@ sub _load {
         }
 
         $self->{titleUrlEncoded}{$language} = uri_encode($self->{meta_data}->{title}->{$language}, %uri_encoding_options);
-        $self->{whereTo}{$language} = make_dir($base);
+        $self->{dirName}{$language} = make_dir($base);
         $self->{baseName}{$language} = $self->_normalized_title($language);
         $self->{htmlFile}{$language} = "$self->{baseName}{$language}.html";
         $self->{pngFile}{$language} = "$self->{baseName}{$language}.png";
@@ -483,7 +484,7 @@ sub export_png {
     my ($self) = @ARG;
 
     foreach my $language ($self->languages()) {
-        my $png_file = "$self->{whereTo}{$language}/$self->{pngFile}{$language}";
+        my $png_file = "$self->{dirName}{$language}/$self->{pngFile}{$language}";
         my $backlog_png = "$self->{backlogPath}{$language}/$self->{pngFile}{$language}" || '';
 
         if (_up_to_date($self->{srcFile}, $backlog_png)) {
@@ -990,7 +991,7 @@ sub _build_inkscape_command {
 sub _svg_to_png {
     my ($self, $language, $svg_file) = @ARG;
 
-    my $png_file = "$self->{whereTo}{$language}/$self->{pngFile}{$language}";
+    my $png_file = "$self->{dirName}{$language}/$self->{pngFile}{$language}";
     my $version = $self->_get_inkscape_version();
     my $export_cmd = $self->_build_inkscape_command($svg_file, $png_file, $version);
     _system($export_cmd) && $self->keel_over("could not export: $export_cmd: $OS_ERROR");
