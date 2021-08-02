@@ -155,3 +155,9 @@
 - feature: allow comics to opt out of the feed. (use case?)
 
 - feature: post "classics" to social media if there is no new comic
+
+- should the names in the JSON configuration file be case-insensitive? Could
+  be confusing when case actually matters, e.g., for Perl modules.
+  If case matters, make sure it's used consistently.
+
+- feature: complain about unknown settings to catch typos
