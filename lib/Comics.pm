@@ -17,7 +17,7 @@ use Comic::Out::QrCode;
 
 use version; our $VERSION = qv('0.0.3');
 
-=for stopwords html Inkscape JSON merchantability perlartistic png submodules Wenner favicons cronjob RSS pngs notFor OutFile CSS
+=for stopwords html Inkscape JSON merchantability perlartistic png submodules Wenner favicons cronjob pngs notFor OutFile
 
 
 =head1 NAME
@@ -333,37 +333,6 @@ sub final_checks {
     }
 
     return;
-}
-
-
-=head2 generate_comic_pages
-
-Generate a HTML page for each comic from a template.
-
-The template file name must be given in the configuration for each language
-like this:
-
-    {
-        "Html": {
-            "Templates": {
-                "English": "templates/comic-page.templ"
-            },
-            "OutDir": "generated/web/comics"
-        }
-    }
-
-The HTML page will be the same name as the generated PNG, with a .html
-extension, and it will be placed next to it.
-
-=cut
-
-sub generate_comic_pages {
-    my ($self) = @ARG;
-
-    foreach my $comic (@{$self->{comics}}) {
-        $comic->export_png();
-    }
-    return Comic::export_all_html(%{$self->{settings}->{settings}->{'Templates'}});
 }
 
 

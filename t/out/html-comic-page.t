@@ -8,6 +8,8 @@ use Test::More;
 use lib 't';
 use MockComic;
 
+use Comic::Out::HtmlComicPage;
+
 __PACKAGE__->runtests() unless caller;
 
 
@@ -15,8 +17,6 @@ sub set_up : Test(setup) {
     MockComic::set_up();
     MockComic::fake_file("de-comic.templ", "...");
     MockComic::fake_file("en-comic.templ", '[% FILTER html %][% comic.meta_data.title.$Language %][% END %]');
-    MockComic::fake_file("de-sitemap.templ", "...");
-    MockComic::fake_file("en-sitemap.templ", "...");
 }
 
 
@@ -30,31 +30,69 @@ sub make_comic {
 }
 
 
-sub languages_one : Test {
-    my $comic = MockComic::make_comic(
-        $MockComic::TITLE => { 'English' => 'Drinking beer' }
-    );
-    is_deeply([$comic->languages()], ['English']);
-}
-
-
-sub languages_many : Test {
-    my $comic = MockComic::make_comic(
-        $MockComic::TITLE => {
-            'English' => 'Drinking beer',
-            'Deutsch' => 'Bier trinken',
-            'Español' => 'Tomar cerveca',
+sub make_generator {
+    my %templates = @_;
+    my %options = (
+        'HtmlComicPage' => {
+            'outdir' => 'generated/web/',
+            'Templates' => {
+                'English' => 'en-comic.templ',
+            },
         },
     );
-    is_deeply([sort $comic->languages()], ['Deutsch', 'English', 'Español']);
+    foreach my $key (keys %templates) {
+        $options{'HtmlComicPage'}{'Templates'}{$key} = $templates{$key};
+    }
+    return Comic::Out::HtmlComicPage->new(\%options);
 }
 
 
-sub languages_none : Tests {
-    my $comic = MockComic::make_comic($MockComic::TITLE => {});
-    is_deeply([sort $comic->languages()], []);
-    Comic::export_all_html();
-    ok(1); # Would have failed above
+sub fails_if_no_config : Tests {
+    eval {
+        Comic::Out::HtmlComicPage->new({});
+    };
+    like($@, qr{\bconfiguration\b});
+}
+
+
+sub fails_if_no_outdir : Tests {
+    eval {
+        Comic::Out::HtmlComicPage->new({
+            'HtmlComicPage' => {
+                'Templates' => {},
+            },
+        });
+    };
+    like($@, qr{\boutdir\b});
+    like($@, qr{\boutput directory\b});
+}
+
+
+sub fails_if_no_templates : Tests {
+    eval {
+        Comic::Out::HtmlComicPage->new({
+            'HtmlComicPage' => {
+                'outdir' => '/tmp',
+            },
+        });
+    };
+    like($@, qr{\bTemplates\b});
+}
+
+
+sub fails_if_no_template_for_language : Tests {
+    my $comic = make_comic('English', 'Beer brewing', '2016-01-01');
+    my $hcp = Comic::Out::HtmlComicPage->new({
+        'HtmlComicPage' => {
+            'outdir' => 'generated/web',
+            'Templates' => {},
+        },
+    });
+    eval {
+        $hcp->generate_all($comic);
+    };
+    like($@, qr{\btemplate\b});
+    like($@, qr{\bEnglish\b});
 }
 
 
@@ -63,7 +101,8 @@ sub navigation_links_first : Tests {
     my $feb = make_comic('English', 'Feb', '2016-02-01');
     my $mar = make_comic('English', 'Mar', '2016-03-01');
 
-    Comic::export_all_html('English' => 'en-comic.templ');
+    my $hcp = make_generator();
+    $hcp->generate_all($jan, $feb, $mar);
 
     is($jan->{'first'}{'English'}, 0, "Jan first");
     is($jan->{'prev'}{'English'}, 0, "Jan prev");
@@ -77,7 +116,8 @@ sub navigation_links_middle : Tests {
     my $feb = make_comic('English', 'Feb', '2016-02-01');
     my $mar = make_comic('English', 'Mar', '2016-03-01');
 
-    Comic::export_all_html('English' => 'en-comic.templ');
+    my $hcp = make_generator();
+    $hcp->generate_all($jan, $feb, $mar);
 
     is($feb->{'first'}{'English'}, "jan.html", "Feb first");
     is($feb->{'prev'}{'English'}, "jan.html", "Feb prev");
@@ -91,7 +131,8 @@ sub navigation_links_last : Tests {
     my $feb = make_comic('English', 'Feb', '2016-02-01');
     my $mar = make_comic('English', 'Mar', '2016-03-01');
 
-    Comic::export_all_html('English' => 'en-comic.templ');
+    my $hcp = make_generator();
+    $hcp->generate_all($jan, $feb, $mar);
 
     is($mar->{'first'}{'English'}, "jan.html", "Mar first");
     is($mar->{'prev'}{'English'}, "feb.html", "Mar prev");
@@ -102,8 +143,9 @@ sub navigation_links_last : Tests {
 
 sub skips_comic_not_published_on_my_page : Tests {
     my $comic = make_comic('English', 'Magazined!', '2016-01-01', 'some beer magazine');
-    is('Magazined!', $comic->_do_export_html('English', 'en-comic.templ'));
-    Comic::export_all_html('English' => 'en-comic.templ');
+    my $hcp = make_generator();
+    is('Magazined!', $hcp->_do_export_html($comic, 'English', 'en-comic.templ'));
+    $hcp->generate_all($comic);
     MockComic::assert_didnt_write_in_file('generated/web/english/comics/magazined.html');
 }
 
@@ -113,10 +155,8 @@ sub skips_comic_without_that_language : Tests {
     my $feb = make_comic('Deutsch', 'feb', '2016-02-01');
     my $mar = make_comic('English', 'mar', '2016-03-01');
 
-    Comic::export_all_html(
-        'English' => 'en-comic.templ',
-        'Deutsch' => 'de-comic.templ',
-    );
+    my $hcp = make_generator('Deutsch' => 'de-comic.templ');
+    $hcp->generate_all($jan, $feb, $mar);
 
     is($jan->{'first'}{'English'}, 0, "Jan first");
     is($jan->{'prev'}{'English'}, 0, "Jan first");
@@ -136,15 +176,17 @@ sub skips_comic_without_that_language : Tests {
 
 
 sub skips_comic_without_published_date : Test {
-    make_comic('English', 'not yet', '');
-    Comic::export_all_html('English' => 'en-comic.templ');
+    my $comic = make_comic('English', 'not yet', '');
+    my $hcp = make_generator();
+    $hcp->generate_all($comic);
     MockComic::assert_wrote_file('generated/web/english/comics/not-yet.html', undef);
 }
 
 
 sub skips_comic_in_far_future : Tests {
     my $not_yet = make_comic('English', 'not yet', '2200-01-01');
-    Comic::export_all_html('English' => 'en-comic.templ');
+    my $hcp = make_generator();
+    $hcp->generate_all($not_yet);
     MockComic::assert_wrote_file('generated/web/english/comics/not-yet.html', undef);
 }
 
@@ -158,8 +200,9 @@ sub includes_comic_for_next_friday : Tests {
     #  22 23 24 25 26 27 28
     #  29 30 31
     MockComic::fake_now(DateTime->new(year => 2016, month => 5, day => 1));
-    make_comic('English', 'next Friday', '2016-05-01');
-    Comic::export_all_html('English' => 'en-comic.templ');
+    my $comic = make_comic('English', 'next Friday', '2016-05-01');
+    my $hcp = make_generator();
+    $hcp->generate_all($comic);
     MockComic::assert_wrote_file('generated/web/english/comics/next-friday.html',
         qr{next Friday});
 }
@@ -170,7 +213,9 @@ sub separate_navs_for_archive_and_backlog : Tests {
     my $a2 = make_comic('Deutsch', 'arch2', '2016-01-02');
     my $b1 = make_comic('Deutsch', 'back1', '2222-01-01');
     my $b2 = make_comic('Deutsch', 'back2', '2222-01-02');
-    Comic::export_all_html('Deutsch' => 'de-comic.templ');
+
+    my $hcp = make_generator('Deutsch' => 'de-comic.templ');
+    $hcp->generate_all($a1, $a2, $b1, $b2);
 
     is($a1->{'prev'}{'Deutsch'}, 0, "arch1 should have no prev");
     is($a1->{'next'}{'Deutsch'}, "arch2.html", "arch1 next should be arch2");
@@ -195,7 +240,7 @@ sub separate_navs_for_archive_and_backlog : Tests {
 
 
 sub nav_template : Tests {
-    MockComic::make_comic(
+    my $one = MockComic::make_comic(
         $MockComic::TITLE => { 'English' => 'One' },
         $MockComic::PUBLISHED_WHEN => '2015-12-01',
     );
@@ -208,9 +253,10 @@ sub nav_template : Tests {
         <a href="[% indexAdjust %][% comic.first.English %]">First</a>
     [% END %]
 XML
-    Comic::export_all_html('English' => 'en-comic.templ');
-    my $exported = $two->_do_export_html('English', 'en-comic.templ');
-    like($exported, qr{<a\s+href="one\.html">First</a>});
+    my $hcp = make_generator();
+    $hcp->generate_all($one, $two);
+    my $exported = $hcp->_do_export_html($two, 'English', 'en-comic.templ');
+    like($exported, qr{<a\s+href="comics/one\.html">First</a>});
 }
 
 
@@ -225,7 +271,8 @@ sub language_links_none : Tests {
     <a hreflang="[% languagecodes.$l %]" href="[% languageurls.$l %]" title="[% comic.meta_data.title.$l %]">[% l %]</a>
 [% END %]
 XML
-    Comic::export_all_html('Deutsch' => 'de-comic.templ');
+    my $hcp = make_generator('Deutsch' => 'de-comic.templ');
+    $hcp->generate_all($comic);
     MockComic::assert_wrote_file('generated/web/deutsch/comics/bier-trinken.html', qr{^\s*$});
 }
 
@@ -242,17 +289,15 @@ sub language_links : Tests {
     <a hreflang="[% languagecodes.$l %]" href="[% languageurls.$l %]" title="[% comic.meta_data.title.$l %]">[% l %]</a>
 [% END %]
 XML
-    Comic::export_all_html(
-        'Deutsch' => 'de-comic.templ',
-        'English' => 'en-comic.templ',
-    );
-    my $exported = $comic->_do_export_html('Deutsch', 'de-comic.templ');
+    my $hcp = make_generator('Deutsch' => 'de-comic.templ');
+    $hcp->generate_all($comic);
+    my $exported = $hcp->_do_export_html($comic, 'Deutsch', 'de-comic.templ');
     like($exported, qr{href="https://beercomics\.com/comics/drinking-beer\.html"},
         'URL not found');
     like($exported, qr{>English</a>}, 'Language code not found');
     like($exported, qr{hreflang="en"}, 'hreflang not found');
     like($exported, qr{title="Drinking beer"}, 'title not found');
-    unlike($comic->_do_export_html('Deutsch', 'de-comic.templ'),
+    unlike($hcp->_do_export_html($comic, 'Deutsch', 'de-comic.templ'),
         qr{https://biercomics\.de"}, 'Should not link to self');
 }
 
@@ -269,15 +314,13 @@ sub language_links_alternate : Tests {
 <link rel="alternate" hreflang="[% languagecodes.$l %]" href="[% languageurls.$l %]"/>
 [% END %]
 XML
-    Comic::export_all_html(
-        'Deutsch' => 'de-comic.templ',
-        'English' => 'en-comic.templ',
-    );
-    my $exported = $comic->_do_export_html('Deutsch', 'de-comic.templ');
+    my $hcp = make_generator('Deutsch' => 'de-comic.templ');
+    $hcp->generate_all($comic);
+    my $exported = $hcp->_do_export_html($comic, 'Deutsch', 'de-comic.templ');
     like($exported, qr{href="https://beercomics\.com/comics/drinking-beer\.html"},
         'URL not found');
     like($exported, qr{hreflang="en"}, 'hreflang not found');
-    unlike($comic->_do_export_html('Deutsch', 'de-comic.templ'),
+    unlike($hcp->_do_export_html($comic, 'Deutsch', 'de-comic.templ'),
         qr{https://biercomics\.de"}, 'Should not link to self');
 }
 
@@ -295,11 +338,9 @@ sub language_link_index_html : Tests {
 [% END %]
 XML
     $comic->{isLatestPublished} = 1;
-    Comic::export_all_html(
-        'Deutsch' => 'de-comic.templ',
-        'English' => 'en-comic.templ',
-    );
-    my $exported = $comic->_do_export_html('Deutsch', 'de-comic.templ');
+    my $hcp = make_generator('Deutsch' => 'de-comic.templ');
+    $hcp->generate_all($comic);
+    my $exported = $hcp->_do_export_html($comic, 'Deutsch', 'de-comic.templ');
     like($exported, qr{\s+hreflang="en"\s+href="https://beercomics.com/"}, 'wrong hreflang');
 }
 
@@ -340,8 +381,9 @@ https://developers.facebook.com/docs/opengraph/guides/internationalization/?_fb_
 <meta property="og:locale:alternate" content="[% languagecodes.$l %]"/>
 [% END %]
 XML
-    Comic::export_all_html('Deutsch' => 'de-comic.templ');
-    my $exported = $comic->_do_export_html('Deutsch', 'de-comic.templ');
+    my $hcp = make_generator('Deutsch' => 'de-comic.templ');
+    $hcp->generate_all($comic);
+    my $exported = $hcp->_do_export_html($comic, 'Deutsch', 'de-comic.templ');
     like($exported, qr{<meta property="og:url" content="https://biercomics\.de/comics/bier-trinken\.html"/>},
         'URL not found');
     like($exported, qr{<meta property="og:title" content="Bier trinken"/>},
@@ -353,20 +395,6 @@ XML
 }
 
 
-sub html_special_characters : Tests {
-    MockComic::fake_file('en-comic.templ', '[% FILTER html %][% comic.meta_data.title.$Language %][% END %]');
-    my $comic = MockComic::make_comic(
-        $MockComic::TITLE => { 'English' => "&lt;Ale &amp; Lager&gt;" },
-    );
-    is($comic->_do_export_html('English', 'en-comic.templ'),
-        '&lt;Ale &amp; Lager&gt;');
-
-    $comic->_export_language_html('English', 'en-comic.templ');
-    MockComic::assert_wrote_file('generated/web/english/comics/ale-lager.html',
-        '&lt;Ale &amp; Lager&gt;');
-}
-
-
 sub index_html_with_canonical_link : Tests {
     MockComic::fake_file('backlog.templ', '');
     MockComic::fake_file('archive.templ', '');
@@ -375,15 +403,14 @@ sub index_html_with_canonical_link : Tests {
         $MockComic::TITLE => { 'English' => "Beer" },
         $MockComic::PUBLISHED_WHEN => '2016-01-01',
     );
-    is($comic->_do_export_html('English', 'comic.templ'),
+    my $hcp = make_generator('English' => 'comic.templ');
+    is($hcp->_do_export_html($comic, 'English', 'comic.templ'),
         'https://beercomics.com/comics/beer.html');
 
-    $comic->_export_language_html('English', 'comic.templ');
+    $hcp->_export_language_html($comic, 'English', 'comic.templ');
     MockComic::assert_wrote_file('english/web/comics/ale-lager.html', qr{^\s*$}m);
 
-    $comic->{first}{'English'} = '';
-    $comic->{prev}{'English'} = '';
-    Comic::export_index({'English' => 'comic.templ'});
+    $hcp->export_index(($comic));
     MockComic::assert_wrote_file('generated/web/english/index.html',
         'https://beercomics.com/');
 }
@@ -391,7 +418,6 @@ sub index_html_with_canonical_link : Tests {
 
 sub index_html_does_not_break_perm_link : Tests {
     MockComic::fake_file('comic.templ', '[% comic.url.$Language %]');
-    MockComic::fake_file('sitemap.templ', '...');
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
             'English' => "Beer",
@@ -400,44 +426,20 @@ sub index_html_does_not_break_perm_link : Tests {
         $MockComic::PUBLISHED_WHEN => '2016-01-01',
     );
 
-    Comic::export_all_html(
-        'English' => 'comic.templ',
-        'Deutsch' => 'comic.templ',
-    );
-
-    $comic->_do_export_html('English', 'comic.templ');
-    is_deeply(
-        {'English' => 'https://beercomics.com/comics/beer.html',
-         'Deutsch' => 'https://biercomics.de/comics/bier.html'},
+    my $hcp = make_generator('Deutsch' => 'de-comic.templ');
+    $hcp->generate_all($comic);
+    $hcp->_do_export_html($comic, 'English', 'comic.templ');
+    is_deeply({
+            'English' => 'https://beercomics.com/comics/beer.html',
+            'Deutsch' => 'https://biercomics.de/comics/bier.html',
+        },
         $comic->{url});
 }
 
 
-sub url_encoded_values : Tests {
-    MockComic::fake_file('comic.templ', <<'XML');
-URL: [% comic.urlUrlEncoded.English %]
-Title: [% comic.titleUrlEncoded.English %]
-XML
-    my $comic = MockComic::make_comic(
-        $MockComic::TITLE => { $MockComic::ENGLISH => 'Drinking Beer' },
-        $MockComic::DESCRIPTION => { $MockComic::ENGLISH => 'Paul and Max drink beer' },
-    );
-    my $exported = $comic->_do_export_html('English', 'comic.templ');
-    like($exported, qr{URL: https%3A%2F%2Fbeercomics.com%2Fcomics%2Fdrinking-beer.html}m, 'URL');
-    like($exported, qr{Title: Drinking%20Beer}m, 'title');
-}
-
-
-sub unhtml : Tests {
-    is(Comic::_unhtml('&lt;&quot;&amp;&quot;&gt;'), '<"&">');
-    is(Comic::_unhtml("isn't it?"), "isn't it?");
-}
-
-
-sub provides_defaults_if_not_given : Tests {
-    foreach my $what (qw(tags who)) {
-        my $comic = MockComic::make_comic();
-        $comic->_do_export_html('English', 'comic.templ');
-        is_deeply($comic->{meta_data}{who}{English}, [], "$what not added");
-    }
+sub index_html_hookup : Tests {
+    my $comic = make_comic('English', 'Beer', '2016-01-01');
+    my $hcp = make_generator();
+    $hcp->generate_all($comic);
+    ok($comic->{isLatestPublished}, 'Should have exported index.html');
 }

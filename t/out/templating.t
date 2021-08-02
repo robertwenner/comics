@@ -7,6 +7,7 @@ use Test::More;
 use lib 't';
 use MockComic;
 use Comic::Out::Template;
+use Comic::Out::HtmlComicPage;
 
 
 __PACKAGE__->runtests() unless caller;
@@ -289,9 +290,16 @@ Copyright year: [% year %]
 Keywords: [% comic.meta_data.tags.$Language.join(',') %]
 Transript: [% comic.transcript.$Language.join(' ') %]
 TEMPLATE
-    Comic::export_all_html('Deutsch' => 'templates/deutsch/comic-page.templ');
-
-    my $wrote = $comic->_do_export_html("Deutsch", 'templates/deutsch/comic-page.templ');
+    my $hcp = Comic::Out::HtmlComicPage->new({
+        'HtmlComicPage' => {
+            'outdir' => 'generated/',
+            'Templates' => {
+                'Deutsch' => 'templates/deutsch/comic-page.templ',
+            },
+        },
+    });
+    $hcp->generate_all(($comic));
+    my $wrote = $hcp->_do_export_html($comic, "Deutsch", 'templates/deutsch/comic-page.templ');
     like($wrote, qr/Bier trinken/m, "title");
     like($wrote, qr/2016-01-01/m, "last modified");
     like($wrote, qr/bier-trinken\.png/m, "png file name");

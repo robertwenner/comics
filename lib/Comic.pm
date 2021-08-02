@@ -28,7 +28,6 @@ use Image::ExifTool qw(:Public);
 use Image::SVG::Transform;
 use SVG;
 use URI::Encode qw(uri_encode uri_decode);
-use Clone qw(clone);
 
 use Comic::Consts;
 use Comic::Settings;
@@ -46,7 +45,7 @@ use version; our $VERSION = qv('0.0.3');
 
 =head1 NAME
 
-Comic - Converts SVG comics to png by language and creates HTML pages.
+Comic - A web comic / cartoon in multiple languages.
 
 
 =head1 VERSION
@@ -62,33 +61,11 @@ This document refers to version 0.0.3.
     my $settings = Comic::Settings->new();
     foreach my $file (@ARGV) {
         my $c = Comic->new($file, $settings);
-        $c->export_png();
     }
-    Comic::export_all_html(
-        'English' => 'templates/english/comic-page.templ',
-        'Deutsch' => 'templates/deutsch/comic-page.templ',
-    );
-    Comic::export_archive('templates/backlog.templ', 'generated/backlog.html',
-        { # archive page template
-            "Deutsch" => "templates/deutsch/archiv.templ",
-            "English" => "templates/english/archive.templ",
-        },
-        { # path and file name of the generated archive
-            'Deutsch' => 'generated/web/deutsch/archiv.html',
-            'English' => 'generated/web/english/archive.html',
-        },
-        { # index.html template is the same as regular comic templates
-            'English' => 'templates/english/comic-page.templ',
-            'Deutsch' => 'templates/deutsch/comic-page.templ',
-        });
-    Comic::size_map('templates/sizemap.templ', 'generated/sizemap.html');
-    print Comic::post_to_social_media('English');
 
 =head1 DESCRIPTION
 
-From on an Inkscape SVG file, exports language layers to create per language
-PNG files. Creates an archive overview page, a backlog page of not yet
-published comics, and a sizemap to compare image sizes.
+Reads a comic as an Inkscape SVG file and serves as a value object for the comic.
 
 =cut
 
@@ -1142,51 +1119,6 @@ sub _normalized_title {
 }
 
 
-=head2 export_all_html
-
-Generates a HTML page for each Comic that has been loaded.
-
-The HTML page will be the same name as the generated PNG, with a .html
-extension, and it will be placed next to it.
-
-Parameters:
-
-=over 4
-
-=item * B<%templates> hash of language to path / file name of the comic page
-    templates.
-
-=back
-
-=cut
-
-sub export_all_html {
-    # @todo move template into config
-    my %templates = @ARG;
-
-    my @sorted = sort from_oldest_to_latest @comics;
-    foreach my $i (0 .. @sorted - 1) {
-        my $comic = $sorted[$i];
-
-        foreach my $language ($comic->languages()) {
-            my $first_comic = _find_next($language, $i, \@sorted, [0 .. $i - 1]);
-            $comic->{'first'}{$language} = $first_comic ? $first_comic->{htmlFile}{$language} : 0;
-            my $prev_comic = _find_next($language, $i, \@sorted, [reverse 0 .. $i - 1]);
-            $comic->{'prev'}{$language} = $prev_comic ? $prev_comic->{htmlFile}{$language} : 0;
-            my $next_comic = _find_next($language, $i, \@sorted, [$i + 1 .. @sorted - 1]);
-            $comic->{'next'}{$language} = $next_comic ? $next_comic->{htmlFile}{$language} : 0;
-            my $last_comic = _find_next($language, $i, \@sorted, [reverse $i + 1 .. @sorted - 1]);
-            $comic->{'last'}{$language} = $last_comic ? $last_comic->{htmlFile}{$language} : 0;
-            $comic->_export_language_html($language, $templates{$language});
-
-            make_dir('web/' . lc $language);
-        }
-    }
-
-    return;
-}
-
-
 sub _all_comic_languages {
     my (@all_comics) = @ARG;
 
@@ -1288,30 +1220,6 @@ sub not_yet_published {
 }
 
 
-sub _find_next {
-    my ($language, $pos, $comics, $nums) = @_;
-
-    foreach my $i (@{$nums}) {
-        next if (@{$comics}[$i]->not_for($language));
-        if (@{$comics}[$i]->not_yet_published() == @{$comics}[$pos]->not_yet_published()) {
-            return @{$comics}[$i];
-        }
-
-    }
-    return 0;
-}
-
-
-sub _export_language_html {
-    my ($self, $language, $template) = @ARG;
-
-    $self->get_transcript($language);
-    write_file("$self->{whereTo}{$language}/$self->{htmlFile}{$language}",
-        $self->_do_export_html($language, $template));
-    return 0;
-}
-
-
 =head2 not_for
 
 Checks whether this Comic is for the given language. A Comic is considered
@@ -1346,67 +1254,6 @@ sub _not_published_on_the_web {
     # TODO passed to a template, should probably be documented.
     my ($self, $language) = @ARG;
     return !$self->_is_for($language) || $self->not_yet_published();
-}
-
-
-sub _do_export_html {
-    my ($self, $language, $template) = @ARG;
-
-    # Provide empty tags and who data, if the comic doesn't have that.
-    # This avoids a crash in the template when it cannot access these.
-    # This should probably be configurable.
-    foreach my $what (qw(tags who)) {
-        if (!defined $self->{meta_data}->{who}->{$language}) {
-            @{$self->{meta_data}->{who}->{$language}} = ();
-        }
-    }
-
-    my %vars;
-    $vars{'comic'} = $self;
-    $vars{'languages'} = [grep { $_ ne $language } $self->languages()];
-    $vars{'languagecodes'} = { $self->language_codes() };
-    # Need clone the URLs so that there is no reference stored here, cause
-    # later code may change these vars when creating index.html, but if
-    # it's a reference, the actual URL values get changed, too, and that
-    # leads to wrong links.
-    $vars{'languageurls'} = clone($self->{url});
-    Readonly my $DIGITS_YEAR => 4;
-    $vars{'year'} = substr $self->{meta_data}->{published}->{when}, 0, $DIGITS_YEAR;
-    $vars{'canonicalUrl'} = $self->{url}{$language};
-
-    # By default, use normal path with comics in comics/
-    $vars{'comicsPath'} = 'comics/';
-    $vars{'indexAdjust'} = '';
-    my $path = '../';
-    if ($self->not_yet_published()) {
-        # Adjust the path for backlog comics.
-        $path = '../web/' . lc $language;
-    }
-
-    if ($self->{isLatestPublished}) {
-        # If this variable is set, we're called from export_index.
-        # Adjust the path for top-level index.html: the comics are in their own
-        # folder, but index.html is in that folder's parent folder.
-        $path = '';
-        $vars{'indexAdjust'} = $vars{'comicsPath'};
-        foreach my $l (keys %{$vars{'languageurls'}}) {
-            # On index.html, link to the other language's index.html, not to
-            # the canonical URL of the comic. Google trips over that and thinks
-            # there is no backlink.
-            ${$vars{'languageurls'}}{$l} =~ s{^(https://[^/]+/).+}{$1};
-        }
-        # canonicalUrl is different for index.html (main url vs deep link)
-        $vars{'canonicalUrl'} =~ s{^(https://[^/]+/).+}{$1};
-    }
-
-    if ($self->not_yet_published()) {
-        $vars{'root'} = "../$path/";
-    }
-    else {
-        $vars{'root'} = $path;
-    }
-
-    return Comic::Out::Template::templatize($self->{srcFile}, $template, $language, %vars);
 }
 
 
@@ -1644,44 +1491,6 @@ sub write_file {
     open my $F, '>', $file_name or croak "Cannot open $file_name: $OS_ERROR";
     print {$F} $contents or croak "Cannot write to $file_name: $OS_ERROR";
     close $F or croak "Cannot close $file_name: $OS_ERROR";
-    return;
-}
-
-
-=head2 export_index
-
-Generates an C<index.html> page for the latest comic in each language.
-
-The file will always be C<web/<language>/index.html>, for example, for
-English comics in C<web/english/index.html>.
-
-Parameters:
-
-=over 4
-
-=item * B<%templates> reference to a hash of language to index page template
-    file. Depending on your setup, these template files could be just the
-    regular comic page template.
-
-=back
-
-=cut
-
-sub export_index {
-    my ($templates) = @ARG;
-
-    foreach my $language (sort keys %{$templates}) {
-        my $dir = make_dir('generated/web/' . lc $language);
-        my @sorted = (sort from_oldest_to_latest grep {
-            !$_->not_yet_published($_) && $_->_is_for($language)
-        } @comics);
-        next if (@sorted == 0);
-
-        my $last_pub = $sorted[-1];
-        $last_pub->{isLatestPublished} = 1;
-        my $page = "$dir/index.html";
-        write_file($page, $last_pub->_do_export_html($language, ${$templates}{$language}));
-    }
     return;
 }
 
