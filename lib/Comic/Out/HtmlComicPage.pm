@@ -32,7 +32,8 @@ index page for the last.
 =head1 DESCRIPTION
 
 Generates an html page for a comic, using a Perl L<Template> Toolkit template.
-Generates an F<index.html> page for the latest comic, using the same template.
+Generates an F<index.html> page for the latest comic, using the same template,
+at the parent of C<outdir>.
 
 The template file name must be given in the configuration for each language
 like this:

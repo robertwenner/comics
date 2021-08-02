@@ -442,4 +442,6 @@ sub index_html_hookup : Tests {
     my $hcp = make_generator();
     $hcp->generate_all($comic);
     ok($comic->{isLatestPublished}, 'Should have exported index.html');
+    MockComic::assert_wrote_file('generated/web/english/comics/beer.html', 'Beer');
+    MockComic::assert_wrote_file('generated/web/english/index.html', 'Beer');
 }
