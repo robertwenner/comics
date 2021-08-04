@@ -1,7 +1,6 @@
 [![License: Artistic-2.0](https://img.shields.io/badge/License-Perl-0298c3.svg)](https://opensource.org/licenses/Artistic-2.0)
 [![Build Status](https://travis-ci.org/robertwenner/comics.svg?branch=master)](https://travis-ci.org/robertwenner/comics)
 [![Coverage Status](https://coveralls.io/repos/github/robertwenner/comics/badge.svg?branch=master)](https://coveralls.io/github/robertwenner/comics?branch=master)
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Frobertwenner%2Fcomics.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Frobertwenner%2Fcomics?ref=badge_shield)
 
 ## What is this?
 
@@ -46,10 +45,7 @@ and `optipng`. For spell checking, you need ASpell dev libraries
 
 ## Copyright & License
 
-Copyright (C) 2015 - 2020, Robert Wenner
+Copyright (C) 2015 - 2021, Robert Wenner
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
-
-
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Frobertwenner%2Fcomics.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Frobertwenner%2Fcomics?ref=badge_large)
