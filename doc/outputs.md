@@ -30,37 +30,6 @@ English comic not yet published may go in `backlog/` (both directories being
 within the specified `out` directory, here `generated/`.
 
 
-## Comic::Out::HtmlComicPage
-
-This is the main output generator for web comics. It generates a HTML page
-for each comic, plus an `index.html` overview page.
-
-The configuration needs to be like this:
-
-```json
-{
-    "Out": {
-        "HtmlComicPage": {
-            "outdir": "generated/web",
-            "Templates": {
-                "English": "templ/comic-page.templ"
-            }
-        }
-    }
-}
-```
-
-The `outdir` specifies the main output directory; the actual files will be
-generated underneath, in a directory for each language, with the HTML file
-name derived from the comic's title.
-
-The `index.html` file uses the same template as the regular comic pages.
-
-When writing the `index.html`, the code sets a variable in the last published
-comic in each language, `isLatestPublished`. The template can query to flag
-and change the layout for the last published comic.
-
-
 ## Comic::Out::Feed
 
 Generates website feeds (e.g., in [RSS](https://en.wikipedia.org/wiki/RSS)
@@ -125,3 +94,34 @@ The Comic::Out::Feed module defines some variables for use in the template:
 
 * `updated`: current time stamp, in [RFC 3339](https://tools.ietf.org/html/rfc3339)
   format (needed in Atom format).
+
+
+## Comic::Out::HtmlComicPage
+
+This is the main output generator for web comics. It generates a HTML page
+for each comic, plus an `index.html` overview page.
+
+The configuration needs to be like this:
+
+```json
+{
+    "Out": {
+        "HtmlComicPage": {
+            "outdir": "generated/web",
+            "Templates": {
+                "English": "templ/comic-page.templ"
+            }
+        }
+    }
+}
+```
+
+The `outdir` specifies the main output directory; the actual files will be
+generated underneath, in a directory for each language, with the HTML file
+name derived from the comic's title.
+
+The `index.html` file uses the same template as the regular comic pages.
+
+When writing the `index.html`, the code sets a variable in the last published
+comic in each language, `isLatestPublished`. The template can query to flag
+and change the layout for the last published comic.
