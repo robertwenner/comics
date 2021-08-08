@@ -75,7 +75,7 @@ sub check {
         $key =~ s/\s+/ /g;
         if (defined $self->{titles}{$key}) {
             if ($self->{titles}{$key} ne $comic->{srcFile}) {
-                $comic->_warn("Duplicated $language title '$title' in $self->{titles}{$key}");
+                $comic->warning("Duplicated $language title '$title' in $self->{titles}{$key}");
             }
         }
         $self->{titles}{$key} = $comic->{srcFile};

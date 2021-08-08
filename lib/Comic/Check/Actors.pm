@@ -81,7 +81,7 @@ sub check {
     my $count_mismatch = 0;
     LANG: foreach my $language ($comic->languages()) {
         if (!defined($comic->{meta_data}->{who})) {
-            $comic->_warn("No $language actors metadata at all");
+            $comic->warning("No $language actors metadata at all");
             next LANG;
         }
         foreach my $l ($comic->languages()) {
@@ -89,12 +89,12 @@ sub check {
             my $one = $comic->{meta_data}->{who}->{$l};
             my $two = $comic->{meta_data}->{who}->{$language};
             if ($one && $two && scalar @{$one} ne scalar @{$two} && !$count_mismatch) {
-                $comic->_warn("Different number of actors in $language and $l");
+                $comic->warning("Different number of actors in $language and $l");
                 $count_mismatch = 1;
             }
         }
         foreach my $who (@{$comic->{meta_data}->{who}{$language}}) {
-            $comic->_warn("Empty actor name in $language") if ($who =~ m{^\s*$});
+            $comic->warning("Empty actor name in $language") if ($who =~ m{^\s*$});
         }
     }
     return;

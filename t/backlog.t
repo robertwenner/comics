@@ -187,7 +187,7 @@ sub includes_warnings : Tests {
         $MockComic::TITLE => { $MockComic::DEUTSCH => 'Bier trinken' },
         $MockComic::PUBLISHED_WHEN => '3016-01-01',
     );
-    $comic->_warn("some warning!");
+    $comic->warning("some warning!");
     Comic::export_backlog('backlog.templ', 'generated/backlog.html');
     MockComic::assert_wrote_file('generated/backlog.html',
         qr{<li>some_comic\.svg\s+.+some warning!}sm);

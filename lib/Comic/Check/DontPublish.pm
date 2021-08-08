@@ -107,7 +107,7 @@ sub _check_json {
         }
     }
     elsif ($what =~ m/$marker/m) {
-        $comic->_warn("In JSON$where: $what");
+        $comic->warning("In JSON$where: $what");
     }
 
     return;
@@ -121,7 +121,7 @@ sub _check_texts {
         my $text = $layer->textContent();
         if ($text =~ m/($marker\s*[^\r\n]*)/m) {
             my $label = $layer->{'inkscape:label'};
-            $comic->_warn("In $label layer: $1");
+            $comic->warning("In $label layer: $1");
         }
     }
 

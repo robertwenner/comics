@@ -84,7 +84,7 @@ sub check {
         foreach my $l ($comic->languages()) {
             next if ($comic->_is_for($l) != $c->_is_for($l));
             if ($published_when eq $pub_when && $published_where eq $pub_where) {
-                $comic->_warn("duplicated date with $c->{srcFile}");
+                $comic->warning("duplicated date with $c->{srcFile}");
             }
         }
     }

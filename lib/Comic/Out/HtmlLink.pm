@@ -121,7 +121,7 @@ sub generate_all {
                 }
 
                 if (!$found) {
-                    $comic->_warn("$language link refers to non-existent ${$references}{$ref}");
+                    $comic->warning("$language link refers to non-existent ${$references}{$ref}");
                 }
             }
         }

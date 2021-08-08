@@ -80,7 +80,7 @@ sub check {
 
     foreach my $language ($comic->languages()) {
         unless ($comic->has_layer("$self->{prefix}$language")) {
-            $comic->_warn("No $self->{prefix}$language layer");
+            $comic->warning("No $self->{prefix}$language layer");
             next;
         }
 
@@ -94,10 +94,10 @@ sub check {
             }
         }
         if (!$any_text_found) {
-            $comic->_warn("No texts in $self->{prefix}$language layer");
+            $comic->warning("No texts in $self->{prefix}$language layer");
         }
         elsif (!$first_text_is_meta) {
-            $comic->_warn("First text must be from $self->{prefix}$language, " .
+            $comic->warning("First text must be from $self->{prefix}$language, " .
                 "but is '$first_text' from layer $language");
         }
     }

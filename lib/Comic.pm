@@ -979,7 +979,7 @@ sub _build_inkscape_command {
             '--export-area-drawing --export-background=#ffffff';
     }
     if ($version ne '1.0') {
-        $self->_warn("Don't know Inkscape $version, hoping it's compatible to 1.0");
+        $self->warning("Don't know Inkscape $version, hoping it's compatible to 1.0");
     }
 
     return 'inkscape --g-fatal-warnings ' .
@@ -1812,7 +1812,7 @@ Parameters:
 
 =over 4
 
-=item * B<message> error message.
+=item * B<$message> error message.
 
 =back
 
@@ -1824,7 +1824,29 @@ sub keel_over {
 }
 
 
-sub _warn {
+=head2 warning
+
+Add a warning to the current comic. Other code (or templates) can access
+warnings in the C<@warnings}> member variable. This is the reason to not use
+Perl's built in C<warn>: capture warnings per comic to show in a backlog or
+summary.
+
+If this Comic is already published, a warning is treated as error, and the
+Comic keels over. The intention is that most warnings should be addressed
+(or the Check that causes them should be disabled), and it's ok only for
+comics in progress to have pending warnings.
+
+Parameters:
+
+=over 4
+
+=item * B<$message> warning / error message.
+
+=back
+
+=cut
+
+sub warning {
     my ($self, $msg) = @ARG;
 
     $self->keel_over($msg) unless ($self->not_yet_published());

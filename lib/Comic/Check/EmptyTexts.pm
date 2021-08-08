@@ -68,7 +68,7 @@ sub check {
     foreach my $language ($comic->languages()) {
         foreach my $text ($comic->texts_in_language($language)) {
             if ($text eq '') {
-                $comic->_warn("empty text in $language");
+                $comic->warning("empty text in $language");
             }
         }
     }

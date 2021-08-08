@@ -71,7 +71,7 @@ sub check {
         my $need = _series_for($comic, $language);
         next unless (defined $need);
         if ($need eq '') {
-            $comic->_warn("Empty series for $language");
+            $comic->warning("Empty series for $language");
             next;
         }
 
@@ -79,10 +79,10 @@ sub check {
             next if ($language eq $l);
             my $has = _series_for($comic, $l);
             if (!$has) {
-                $comic->_warn("No series tag for $l but for $language");
+                $comic->warning("No series tag for $l but for $language");
             }
             elsif ($need eq $has) {
-                $comic->_warn("Duplicated series tag '$need' for $l and $language");
+                $comic->warning("Duplicated series tag '$need' for $l and $language");
                 # Do not exit the loop early here to avoid a duplicated warning
                 # when the check complains about the duplicated series for both
                 # languages. Exiting would skip other checks for other languages,

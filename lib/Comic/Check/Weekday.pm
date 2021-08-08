@@ -98,7 +98,7 @@ sub check {
     my $published_date = DateTime::Format::ISO8601->parse_datetime($published_when);
 
     if ($published_date->day_of_week() != $self->{weekday}) {
-        $comic->_warn('scheduled for ' . $published_date->day_name());
+        $comic->warning('scheduled for ' . $published_date->day_name());
     }
 
     return;

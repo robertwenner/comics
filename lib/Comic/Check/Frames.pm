@@ -137,38 +137,38 @@ sub check {
         if (defined $prev_bottom) {
             if ($next_row) {
                 if ($prev_bottom > $top) {
-                    $comic->_warn("frames overlap y at $prev_bottom and $top");
+                    $comic->warning("frames overlap y at $prev_bottom and $top");
                 }
                 if ($prev_bottom + $self->{FRAME_SPACING} > $top) {
-                    $comic->_warn('frames too close y (' . ($prev_bottom - $self->{FRAME_SPACING} - $top) . ") at $prev_bottom and $top");
+                    $comic->warning('frames too close y (' . ($prev_bottom - $self->{FRAME_SPACING} - $top) . ") at $prev_bottom and $top");
                 }
                 if ($prev_bottom + $self->{FRAME_SPACING} + $self->{FRAME_SPACING_TOLERANCE} < $top) {
-                    $comic->_warn("frames too far y at $prev_bottom and $top");
+                    $comic->warning("frames too far y at $prev_bottom and $top");
                 }
 
                 if (_more_off($left_most, $left_side, $self->{FRAME_TOLERANCE})) {
-                    $comic->_warn("frame left side not aligned: $left_most and $left_side");
+                    $comic->warning("frame left side not aligned: $left_most and $left_side");
                 }
                 if (_more_off($prev_right, $right_most, $self->{FRAME_TOLERANCE})) {
-                    $comic->_warn("frame right side not aligned: $right_side and $right_most");
+                    $comic->warning("frame right side not aligned: $right_side and $right_most");
                 }
             }
             else {
                 if (_more_off($prev_bottom, $bottom, $self->{FRAME_TOLERANCE})) {
-                    $comic->_warn("frame bottoms not aligned: $prev_bottom and $bottom");
+                    $comic->warning("frame bottoms not aligned: $prev_bottom and $bottom");
                 }
                 if (_more_off($prev_top, $top, $self->{FRAME_TOLERANCE})) {
-                    $comic->_warn("frame tops not aligned: $prev_top and $top");
+                    $comic->warning("frame tops not aligned: $prev_top and $top");
                 }
 
                 if ($prev_right > $left_side) {
-                    $comic->_warn("frames overlap x at $prev_right and $left_side");
+                    $comic->warning("frames overlap x at $prev_right and $left_side");
                 }
                 if ($prev_right + $self->{FRAME_SPACING} > $left_side) {
-                    $comic->_warn("frames too close x at $prev_right and $left_side");
+                    $comic->warning("frames too close x at $prev_right and $left_side");
                 }
                 if ($prev_right + $self->{FRAME_SPACING} + $self->{FRAME_SPACING_TOLERANCE} < $left_side) {
-                    $comic->_warn('frames too far x (' . ($left_side - ($prev_right + $self->{FRAME_SPACING} + $self->{FRAME_SPACING_TOLERANCE})) . ") at $prev_right and $left_side");
+                    $comic->warning('frames too far x (' . ($left_side - ($prev_right + $self->{FRAME_SPACING} + $self->{FRAME_SPACING_TOLERANCE})) . ") at $prev_right and $left_side");
                 }
             }
         }
@@ -188,14 +188,14 @@ sub _check_frame_style {
     if ($style =~ m{;stroke-width:([^;]+);}) {
         my $width = $1;
         if ($width < $self->{FRAME_WIDTH} - $self->{FRAME_WIDTH_DEVIATION}) {
-            $comic->_warn("Frame too narrow ($width)");
+            $comic->warning("Frame too narrow ($width)");
         }
         if ($width > $self->{FRAME_WIDTH} + $self->{FRAME_WIDTH_DEVIATION}) {
-            $comic->_warn("Frame too wide ($width)");
+            $comic->warning("Frame too wide ($width)");
         }
     }
     else {
-        $comic->_warn("Cannot find width in '$style'");
+        $comic->warning("Cannot find width in '$style'");
     }
     return;
 }
