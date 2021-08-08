@@ -119,7 +119,7 @@ sub mock_methods {
         return $now ? $now->clone() : DateTime->now;
     };
 
-    *Comic::_up_to_date = sub {
+    *Comic::up_to_date = sub {
         my ($source, $target) = @_;
         # Most tests use XML, so tell them to not use the cache.
         return 0;

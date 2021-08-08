@@ -298,7 +298,7 @@ sub _load {
 
     my $meta_data;
     my $meta_cache = _meta_cache_for($self->{srcFile});
-    $self->{use_meta_data_cache} = _up_to_date($self->{srcFile}, $meta_cache);
+    $self->{use_meta_data_cache} = up_to_date($self->{srcFile}, $meta_cache);
     if ($self->{use_meta_data_cache}) {
         $meta_data = File::Slurper::read_text($meta_cache);
     }
@@ -487,11 +487,11 @@ sub export_png {
         my $png_file = "$self->{dirName}{$language}/$self->{pngFile}{$language}";
         my $backlog_png = "$self->{backlogPath}{$language}/$self->{pngFile}{$language}" || '';
 
-        if (_up_to_date($self->{srcFile}, $backlog_png)) {
+        if (up_to_date($self->{srcFile}, $backlog_png)) {
             _move($backlog_png, $png_file) or $self->keel_over("Cannot move $backlog_png to $png_file: $OS_ERROR");
         }
 
-        unless (_up_to_date($self->{srcFile}, $png_file)) {
+        unless (up_to_date($self->{srcFile}, $png_file)) {
             $self->_flip_language_layers($language);
             my $language_svg = $self->_write_temp_svg_file($language);
             $self->_svg_to_png($language, $language_svg);
@@ -593,7 +593,7 @@ sub get_transcript {
 
     if (!defined($self->{transcript}{$language})) {
         my $cache = _transcript_cache_for($self->{srcFile}, $language);
-        my $transcript_cached = _up_to_date($self->{srcFile}, $cache);
+        my $transcript_cached = up_to_date($self->{srcFile}, $cache);
         if ($transcript_cached) {
             @{$self->{transcript}{$language}} = split /[\r\n]+/, File::Slurper::read_text($cache);
         }
@@ -606,7 +606,31 @@ sub get_transcript {
 }
 
 
-sub _up_to_date {
+=head2 up_to_date
+
+Checks whether the given target file is up to date from the given source
+file's point of view. A target file is up to date if both source and target
+files exist and the target has a last modification time later than the
+source file.
+
+This allows simple file modification based check to skip potentially
+expensive tasks when nothing has changed and hence the output will be the
+same.
+
+Parameters:
+
+=over 4
+
+=item * B<$source> source file, usually a Comic's C<.svg> file.
+
+=item * B<$target> target file, usually something derived / created from the
+    source file.
+
+=back
+
+=cut
+
+sub up_to_date {
     # Takes file names as arguments rather than being a member method for
     # easier mocking.
     my ($source, $target) = @ARG;

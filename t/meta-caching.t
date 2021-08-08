@@ -37,7 +37,7 @@ sub creates_meta_data_cache_dir_nested : Tests {
 sub checks_json_cache : Tests {
     my $called = 0;
     no warnings qw/redefine/;
-    local *Comic::_up_to_date = sub {
+    local *Comic::up_to_date = sub {
         is_deeply(['some_comic.svg', 'generated/tmp/meta/some_comic.json'], \@_);
         $called++;
         return 0;
@@ -51,7 +51,7 @@ sub checks_json_cache : Tests {
 
 sub reads_meta_data_from_cache_and_does_not_recreate_cache : Tests {
     no warnings qw/redefine/;
-    local *Comic::_up_to_date = sub {
+    local *Comic::up_to_date = sub {
         return 1;
     };
     use warnings;
@@ -97,7 +97,7 @@ JSON
 
 sub no_checks_if_cache_used : Tests {
     no warnings qw/redefine/;
-    local *Comic::_up_to_date = sub {
+    local *Comic::up_to_date = sub {
         return 1;
     };
     use warnings;
@@ -128,7 +128,7 @@ sub transcript_cache_path : Tests {
 
 sub uses_cached_transcript : Tests {
     no warnings qw/redefine/;
-    local *Comic::_up_to_date = sub {
+    local *Comic::up_to_date = sub {
         return 1;
     };
     use warnings;

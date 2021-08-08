@@ -259,7 +259,7 @@ sub moves_from_backlog : Tests {
     my $to;
 
     no warnings qw/redefine/;
-    local *Comic::_up_to_date = sub {
+    local *Comic::up_to_date = sub {
         my ($source, $target) = @_;
         return 1 if ($target !~ m/\.json$/);
     };
