@@ -6,6 +6,7 @@ use Test::More;
 
 use lib 't';
 use MockComic;
+use Comic::Out::Png;
 
 __PACKAGE__->runtests() unless caller;
 
@@ -70,37 +71,37 @@ sub assert_visible {
 
 sub german_only : Tests {
     setup();
-    $comic->_flip_language_layers("Deutsch", ("Deutsch", "English"));
+    Comic::Out::Png::_flip_language_layers($comic, "Deutsch");
     assert_visible(qw(Deutsch Rahmen Figuren Hintergrund));
 }
 
 
-sub englishOnly : Tests {
+sub english_only : Tests {
     setup();
-    $comic->_flip_language_layers("English", ("Deutsch", "English"));
+    Comic::Out::Png::_flip_language_layers($comic, "English");
     assert_visible(qw(English Rahmen Figuren Hintergrund));
 }
 
 
-sub failsOnUnknownLanguage : Test {
+sub fails_on_unknown_language : Test {
     setup();
     eval {
-        $comic->_flip_language_layers("Pimperanto", ("Deutsch", "English"));
+        Comic::Out::Png::_flip_language_layers($comic, "Pimperanto");
     };
     like($@, qr/no Pimperanto layer/i);
 }
 
 
-sub flipsUnknownLayerWithTrailingLanguageName : Tests {
+sub flips_unknown_layer_with_trailing_language_name : Tests {
     setup('HintergrundDeutsch');
-    $comic->_flip_language_layers("Deutsch", ("Deutsch", "English"));
+    Comic::Out::Png::_flip_language_layers($comic, "Deutsch");
     assert_visible(qw(Deutsch Rahmen Figuren Hintergrund HintergrundDeutsch));
 }
 
 
-sub ignoresUnknownLayerWithEmbeddedLanguageName : Tests {
+sub ignores_unknown_layer_with_embedded_language_name : Tests {
     setup('HintergrundDeutschUndSo', 'HintergrundEnglishUndSo');
-    $comic->_flip_language_layers("Deutsch", ("Deutsch", "English"));
+    Comic::Out::Png::_flip_language_layers($comic, "Deutsch");
     assert_visible(qw(Deutsch Rahmen Figuren Hintergrund
         HintergrundDeutschUndSo HintergrundEnglishUndSo));
 }
@@ -108,7 +109,7 @@ sub ignoresUnknownLayerWithEmbeddedLanguageName : Tests {
 
 sub keeps_background_opacity : Tests {
     setup_xml('<g inkscape:groupmode="layer" id="layer18" inkscape:label="HintergrundDeutsch" style="display:inline;opacity:0.35"/>');
-    $comic->_flip_language_layers("English", ("Deutsch", "English"));
+    Comic::Out::Png::_flip_language_layers($comic, "English");
     assert_visible(qw(English));
 
     my $xpath = XML::LibXML::XPathContext->new($comic->{dom});
@@ -121,7 +122,7 @@ sub keeps_background_opacity : Tests {
 
 sub no_style_on_layer : Tests {
     setup_xml('<g inkscape:groupmode="layer" id="layer18" inkscape:label="HintergrundDeutsch"/>');
-    $comic->_flip_language_layers("Deutsch", ("Deutsch", "English"));
+    Comic::Out::Png::_flip_language_layers($comic, "Deutsch");
     assert_visible(qw(Deutsch HintergrundDeutsch));
 }
 
@@ -137,6 +138,6 @@ sub container_layer : Tests {
         <g inkscape:groupmode="layer" id="layer31" inkscape:label="HintergrundEnglish"/>
     </g>
 XML
-    $comic->_flip_language_layers("Deutsch", ("Deutsch", "English"));
+    Comic::Out::Png::_flip_language_layers($comic, "Deutsch");
     assert_visible(qw(ContainerDeutsch Deutsch HintergrundDeutsch));
 }

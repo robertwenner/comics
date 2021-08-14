@@ -17,7 +17,6 @@ use DateTime::Format::ISO8601;
 use DateTime::Format::RFC3339;
 use File::Path qw(make_path);
 use File::Basename;
-use File::Copy;
 use File::Slurper;
 use open ':std', ':encoding(UTF-8)'; # to handle e.g., umlauts correctly
 use XML::LibXML;
@@ -80,13 +79,11 @@ Readonly my $UNPUBLISHED => '3000-01-01';
 Readonly my $TEMPDIR => 'tmp';
 
 
+# @todo get rid of %counts
 my %counts;
 my %language_code_cache;
 # @todo get rid of @comics
 my @comics;
-## no critic(Variables::ProhibitPackageVars)
-our $inkscape_version;
-## use critic
 
 
 =head1 SUBROUTINES/METHODS
@@ -468,46 +465,6 @@ sub outdir {
 }
 
 
-=head2 export_png
-
-Exports PNGs for all languages with meta data in this Comic.
-
-The png file will be the lower case title of the comic, limited to letters,
-numbers, and hyphens only. It will be placed in F<generated/web/$language/>.
-
-Inkscape files must have meta data matching layer names, e.g., "English" in
-the meta data and an "English" layer and an "MetaEnglish" layer.
-
-=cut
-
-sub export_png {
-    my ($self) = @ARG;
-
-    foreach my $language ($self->languages()) {
-        my $png_file = "$self->{dirName}{$language}/$self->{pngFile}{$language}";
-        my $backlog_png = "$self->{backlogPath}{$language}/$self->{pngFile}{$language}" || '';
-
-        if (up_to_date($self->{srcFile}, $backlog_png)) {
-            _move($backlog_png, $png_file) or $self->keel_over("Cannot move $backlog_png to $png_file: $OS_ERROR");
-        }
-
-        unless (up_to_date($self->{srcFile}, $png_file)) {
-            $self->_flip_language_layers($language);
-            my $language_svg = $self->_write_temp_svg_file($language);
-            $self->_svg_to_png($language, $language_svg);
-        }
-        $self->_get_png_info($png_file, $language);
-    }
-    return;
-}
-
-
-sub _move {
-    # uncoverable subroutine
-    return File::Copy::move(@ARG); # uncoverable statement
-}
-
-
 =head2 check
 
 Runs all configured checks on this comic. The order in which checks run is
@@ -715,33 +672,6 @@ sub get_all_layers {
 }
 
 
-sub _flip_language_layers {
-    my ($self, $language) = @ARG;
-
-    # Hide all but current language layers
-    my $had_lang = 0;
-    foreach my $layer ($self->{xpath}->findnodes(_find_layers())) {
-        my $label = $layer->{'inkscape:label'};
-        $layer->{'style'} = 'display:inline' unless (defined($layer->{'style'}));
-        foreach my $other_lang ($self->languages()) {
-            # Turn off all meta layers and all other languages
-            if ($label =~ m/$other_lang$/ || $label =~ m/^Meta/) {
-                $layer->{'style'} =~ s{\bdisplay:inline\b}{display:none};
-            }
-        }
-        # Make sure the right language layer is visible
-        if ($label =~ m/$language$/ && $label !~ m/Meta/) {
-            $layer->{'style'} =~ s{\bdisplay:none\b}{display:inline};
-            $had_lang = 1;
-        }
-    }
-    unless ($had_lang) {
-        $self->keel_over("no $language layer");
-    }
-    return;
-}
-
-
 =head2 has_layer
 
 Checks whether this Comic has (all the Inkscape layer(s) by the given name(s).
@@ -803,37 +733,16 @@ sub _build_xpath {
 }
 
 
-sub _write_temp_svg_file {
-    my ($self, $language) = @ARG;
+=head2 copy_svg
 
-    my $temp_file_name = make_dir("$TEMPDIR/" . lc $language . '/svg/') . "$self->{baseName}{$language}.svg";
-    my $svg = $self->_copy_svg($language);
-    _drop_top_level_layers($svg, 'Raw');
-    $self->_insert_url($svg, $language);
-    $svg->toFile($temp_file_name);
-    return $temp_file_name;
-}
+Returns a copy of this Comic's SVG structure, parsed. Call this if you need
+to (temporarily) modify the Comic's SVG.
 
+=cut
 
-sub _copy_svg {
+sub copy_svg {
     my ($self) = @ARG;
     return _parse_xml($self->{dom}->toString());
-}
-
-
-sub _drop_top_level_layers {
-    my ($svg, @layers) = @ARG;
-
-    my %wanted = map { $_ => 1 } @layers;
-    my $root = $svg->documentElement();
-    foreach my $node ($root->childNodes()) {
-        if ($node->nodeName() eq 'g'
-        && ($node->getAttribute('inkscape:groupmode') || '') eq 'layer'
-        && $wanted{$node->getAttribute('inkscape:label' || '')}) {
-            $root->removeChild($node);
-        }
-    }
-    return;
 }
 
 
@@ -951,158 +860,12 @@ sub _frames_in_rows {
 }
 
 
-sub _query_inkscape_version {
-    # uncoverable subroutine
-    my ($self) = @ARG; # uncoverable statement
-
-    # Inkscape seems to print its plugins information to stderr, e.g.:
-    #    Pango version: 1.46.0
-    # Hence redirect stderr to /dev/null.
-
-    ## no critic(InputOutput::ProhibitBacktickOperators)
-    my $version = `inkscape --version 2>/dev/null`; # uncoverable statement
-    ## use critic
-    if ($OS_ERROR) { # uncoverable branch true
-        $self->keel_over('Could not run Inkscape'); # uncoverable statement
-    }
-    return $version; # uncoverable statement
-}
-
-
-sub _parse_inkscape_version {
-    my ($self, $inkscape_output) = @ARG;
-
-    # Inkscape 0.92.5 (2060ec1f9f, 2020-04-08)
-    # Inkscape 1.0 (4035a4fb49, 2020-05-01)
-    if ($inkscape_output =~ m/^Inkscape\s+(\d\.\d)/) {
-        return $1;
-    }
-    $self->keel_over("Cannot figure out Inkscape version from this:\n$inkscape_output");
-    # PerlCritic doesn't know that keel_over doesn't return and the return statement
-    # here is unreachable.
-    return 'unknown';
-}
-
-
-sub _get_inkscape_version {
-    my ($self) = @ARG;
-
-    unless (defined $inkscape_version) {
-        $inkscape_version = $self->_parse_inkscape_version($self->_query_inkscape_version());
-    }
-    return $inkscape_version;
-}
-
-
-sub _build_inkscape_command {
-    my ($self, $svg_file, $png_file, $version) = @ARG;
-
-    if ($version eq '0.9') {
-        return 'inkscape --g-fatal-warnings --without-gui ' .
-            "--file=$svg_file --export-png=$png_file " .
-            '--export-area-drawing --export-background=#ffffff';
-    }
-    if ($version ne '1.0') {
-        $self->warning("Don't know Inkscape $version, hoping it's compatible to 1.0");
-    }
-
-    return 'inkscape --g-fatal-warnings ' .
-        "--export-type=png --export-filename=$png_file " .
-        "--export-area-drawing --export-background=#ffffff $svg_file";
-}
-
-
-sub _svg_to_png {
-    my ($self, $language, $svg_file) = @ARG;
-
-    my $png_file = "$self->{dirName}{$language}/$self->{pngFile}{$language}";
-    my $version = $self->_get_inkscape_version();
-    my $export_cmd = $self->_build_inkscape_command($svg_file, $png_file, $version);
-    _system($export_cmd) && $self->keel_over("could not export: $export_cmd: $OS_ERROR");
-
-    my $tool = Image::ExifTool->new();
-    # Add data inferred from comic
-    my %meta_data = (
-        'Title' => $self->{meta_data}->{title}->{$language},
-        'Description' => join('', $self->get_transcript($language)),
-        'CreationTime' => $self->{modified},
-        'URL' => $self->{url}{$language},
-    );
-    foreach my $m (keys %meta_data) {
-        $self->_set_png_meta($tool, $m, $meta_data{$m});
-    }
-    # Add global settings
-    my %settings = %{$self->{settings}};
-    foreach my $key (qw/Author Artist Copyright/) {
-        if ($settings{$key}) {
-            $self->_set_png_meta($tool, $key, $settings{$key});
-        }
-    }
-    # Add data explicitly overriden in comic meta data
-    my $svg_meta = $self->{meta_data}->{'png-meta-data'};
-    if (ref($svg_meta) eq 'HASH') {
-        foreach my $key (keys %{$svg_meta}) {
-            $self->_set_png_meta($tool, $key, ${${svg_meta}}{$key});
-        }
-    }
-    # Finally write png meta data
-    my $rc = $tool->WriteInfo($png_file);
-    if ($rc != 1) {
-        $self->keel_over('cannot write PNG meta data: ' . $tool->GetValue('Error'));
-    }
-
-    # Shrink / optimize PNG
-    my $shrink_cmd = "optipng --quiet $png_file";
-    _system($shrink_cmd) && $self->keel_over("Could not shrink: $shrink_cmd: $OS_ERROR");
-
-    return;
-}
-
-
-sub _system {
-    # uncoverable subroutine
-    return system @ARG; # uncoverable statement
-}
-
-
 sub _unhtml {
     # Inkscape is XML, so it uses &lt;, &gt;, &amp;, and &quot; in it's meta
     # data. This is convenient for the HTML export, but not for adding meta
     # data to the .png file.
     my ($text) = @ARG;
     return decode_entities($text);
-}
-
-
-sub _set_png_meta {
-    my ($self, $tool, $name, $value) = @ARG;
-
-    my ($count_set, $error) = $tool->SetNewValue($name, $value);
-    $self->keel_over("Cannot set $name: $error") if ($error);
-    return;
-}
-
-
-sub _get_png_info {
-    my ($self, $png_file, $language) = @_;
-
-    my $tool = Image::ExifTool->new();
-    my $info = $tool->ImageInfo($png_file);
-
-    # @fixme should height and width be different per language?
-    $self->{height} = ${$info}{'ImageHeight'};
-    $self->{width} = ${$info}{'ImageWidth'};
-    $self->{pngSize}{$language} = _file_size($png_file);
-    return;
-}
-
-
-sub _file_size {
-    # uncoverable subroutine
-    my ($name) = @_; # uncoverable statement
-
-    Readonly my $SIZE => 7; # uncoverable statement
-    return (stat $name)[$SIZE]; # uncoverable statement
 }
 
 
@@ -1657,7 +1420,6 @@ Helper to allow tests to clear internal static state.
 sub reset_statics {
     %counts = ();
     @comics = ();
-    $inkscape_version = undef;
     return;
 }
 

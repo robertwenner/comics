@@ -161,3 +161,9 @@
   If case matters, make sure it's used consistently.
 
 - feature: complain about unknown settings to catch typos
+
+- clean out backlog: when a comic goes from backlog to published, remove its
+  html file from the backlog
+
+- feature: check text positions as double, so that you can move texts
+  minimally to control the transcript without visual impact

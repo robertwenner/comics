@@ -35,7 +35,7 @@ sub load_huge : Tests {
 sub copy_huge_svg : Tests {
     my $comic = MockComic::make_comic($MockComic::XML => make_big_png());
     eval {
-        $comic->_copy_svg();
+        $comic->copy_svg();
     };
     is("", $@, "should copy huge SVG / XML");
 }

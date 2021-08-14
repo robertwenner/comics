@@ -18,11 +18,6 @@ sub set_up : Test(setup) {
 sub make_comic {
     my %layers = (
         $MockComic::DEUTSCH => ['blah'],
-#        $MockComic::META_DEUTSCH => [],
-#        $MockComic::ENGLISH => [],
-#        $MockComic::META_ENGLISH => [],
-#        $MockComic::HINTERGRUND => [],
-#        $MockComic::FIGUREN => [],
     );
     foreach my $l (@_) {
         $layers{$l} = [];
@@ -52,7 +47,7 @@ sub get_layer {
 
 sub copy_svg : Tests {
     my $comic = make_comic();
-    my $svg = $comic->_copy_svg();
+    my $svg = $comic->copy_svg();
     is($svg, $comic->{dom}, 'should be equal');
     is_deeply($svg, $comic->{dom}, 'should be deeply equal');
     ok($comic->{dom} != $svg, 'should not be the same');
@@ -61,7 +56,7 @@ sub copy_svg : Tests {
 
 sub can_safely_modify_copy : Tests {
     my $comic = make_comic();
-    my $svg = $comic->_copy_svg();
+    my $svg = $comic->copy_svg();
     $svg->documentElement()->addNewChild(undef, 'foo');
     isnt($svg, $comic->{dom}, 'should not be equal anymore');
 }

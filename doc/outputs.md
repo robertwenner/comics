@@ -125,3 +125,35 @@ The `index.html` file uses the same template as the regular comic pages.
 When writing the `index.html`, the code sets a variable in the last published
 comic in each language, `isLatestPublished`. The template can query to flag
 and change the layout for the last published comic.
+
+
+## Comic::Out::Png
+
+Generates a Portable Network Graphics (`.png`) file for each language in the
+comic.
+
+The configuration looks like this:
+
+```json
+{
+    "Out": {
+        "Png": {
+            "outdir": "generated/web"
+        }
+    }
+}
+```
+
+The generated `.png` files will be placed in a language specific directory
+(lower case name of the language, e.g., "english" or "deutsch") under the
+given `outdir`.
+
+The name of the `.png` is derived from the comic's lower-cased title in that
+language, but any characters that are not letters, numbers, or hyphens will
+be removed; blanks will be replaces with hyphens. For example, a title
+"Let's drink!" will be result in "lets-drink".
+
+The generated file's extension will be `.png`.
+
+The file name will be saved in the comic as `pngFile` so that tempalates
+like Comic::Out::HtmlComicPage can access it.
