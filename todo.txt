@@ -167,3 +167,8 @@
 
 - feature: check text positions as double, so that you can move texts
   minimally to control the transcript without visual impact
+
+- performance: does it make a difference to remove unneeded top level layers
+  (other languages, turned invisible in Inkscape) instead of switching them
+  to hidden? Files would be smaller (is disk space an issue anyway?), but
+  would converting them be faster?

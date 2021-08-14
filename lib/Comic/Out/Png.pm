@@ -5,17 +5,14 @@ use warnings;
 use utf8;
 use English '-no_match_vars';
 use Carp;
-use Readonly;
 use File::Copy;
+use Readonly;
 
 use Comic::Out::Generator;
 use base('Comic::Out::Generator');
 
 
 use version; our $VERSION = qv('0.0.3');
-
-# Temp dir for per-langugage svg exports.
-Readonly my $TEMPDIR => 'tmp';
 
 
 =for stopwords Wenner merchantability perlartistic png whitespace metaenglish optipng
@@ -32,20 +29,12 @@ the given Comic in each of the Comic's languages.
 
 =head1 DESCRIPTION
 
-The template file name must be given in the configuration for each language
-like this:
+This module builds on work of other modules, in particular L<Comic::Out::SvgPerLanguage>.
+It takes the F<.svg> files produces and converts them. Any other changes to the
+F<.svg> files need to be done between these two modules.
 
-    {
-        "Out": {
-            "Png": {
-                "outdir": "generated/web/comics",
-                "tmpdir": "generated/tmp",
-            }
-        }
-    }
-
-The F<.png>s will be placed in the given C<outdir>. The names are derived
-from the Comic's titles in their languages.
+The F<.png>s will be placed per-language directories under the given
+C<outdir>. The names are derived from the Comic's titles in their languages.
 
 =cut
 
@@ -71,7 +60,7 @@ For example:
     my $settings = {
         'Out' => {
             'Png' => {
-                'outdir' => 'generated',
+                'outdir' => 'generated/web/'
             }
         }
     }
@@ -90,10 +79,6 @@ sub new {
     croak('Must specify Png.outdir output directory') unless ($self->{settings}->{outdir});
     $self->{settings}->{outdir} .= q{/} unless ($self->{settings}->{outdir} =~ m{/$});
 
-    # Devel::Cover does not see that $TEMPDIR is an always set const:
-    # uncoverable condition right
-    # uncoverable condition false
-    $self->{settings}->{tempdir} ||= $TEMPDIR;
     $self->{inkscape_version} = undef;
 
     return $self;
@@ -104,13 +89,7 @@ sub new {
 
 Generates the F<.png>s for all languages in the given Comic.
 
-The F<.png> file will be derived from the title of the comic, limited to
-letters, numbers, and hyphens only. Whitespace is replaced by hyphens. The
-F<.png> file will be placed in a per-language directory under the configured
-C<outdir>.
-
-Inkscape files must have meta data matching layer names, e.g., "English" in
-the meta data and an "English" layer and an "MetaEnglish" layer.
+The F<.png> file will be derived from the title of the comic.
 
 If C<optipng> is installed, it is run on the produced F<.png> files.
 
@@ -118,7 +97,7 @@ Parameters:
 
 =over 4
 
-=item * B<$comic> Comic for which to write he F<.png> files.
+=item * B<$comic> Comic for which to write the F<.png> files.
 
 =back
 
@@ -138,9 +117,8 @@ sub generate {
             _move($backlog_png, $png_file) or $comic->keel_over("Cannot move $backlog_png to $png_file: $OS_ERROR");
         }
 
-        unless (Comic::up_to_date($comic->{srcFile}, $png_file)) {
-            _flip_language_layers($comic, $language);
-            my $language_svg = $self->_write_temp_svg_file($comic, $language);
+        my $language_svg = $comic->{svgFile}{$language};
+        unless (Comic::up_to_date($language_svg, $png_file)) {
             $self->_svg_to_png($comic, $language, $language_svg, $png_file);
             _optimize_png($comic, $png_file);
         }
@@ -153,62 +131,6 @@ sub generate {
 sub _move {
     # uncoverable subroutine
     return File::Copy::move(@ARG); # uncoverable statement
-}
-
-
-sub _flip_language_layers {
-    my ($comic, $language) = @ARG;
-
-    # Hide all but current language layers
-    my $had_lang = 0;
-    foreach my $layer ($comic->get_all_layers()) {
-        my $label = $layer->{'inkscape:label'};
-        $layer->{'style'} = 'display:inline' unless (defined($layer->{'style'}));
-        foreach my $other_lang ($comic->languages()) {
-            # Turn off all meta layers and all other languages
-            if ($label =~ m/$other_lang$/ || $label =~ m/^Meta/) {
-                $layer->{'style'} =~ s{\bdisplay:inline\b}{display:none};
-            }
-        }
-        # Make sure the right language layer is visible
-        if ($label =~ m/$language$/ && $label !~ m/Meta/) {
-            $layer->{'style'} =~ s{\bdisplay:none\b}{display:inline};
-            $had_lang = 1;
-        }
-    }
-    unless ($had_lang) {
-        $comic->keel_over("no $language layer");
-    }
-    return;
-}
-
-
-sub _write_temp_svg_file {
-    my ($self, $comic, $language) = @ARG;
-
-    my $dir = $self->{settings}->{tempdir} . lc $language . '/svg/';
-    my $temp_file_name = Comic::make_dir($dir) . "$comic->{baseName}{$language}.svg";
-    my $svg = $comic->copy_svg();
-    _drop_top_level_layers($svg, 'Raw');
-    $comic->_insert_url($svg, $language);
-    $svg->toFile($temp_file_name);
-    return $temp_file_name;
-}
-
-
-sub _drop_top_level_layers {
-    my ($svg, @layers) = @ARG;
-
-    my %wanted = map { $_ => 1 } @layers;
-    my $root = $svg->documentElement();
-    foreach my $node ($root->childNodes()) {
-        if ($node->nodeName() eq 'g'
-        && ($node->getAttribute('inkscape:groupmode') || '') eq 'layer'
-        && $wanted{$node->getAttribute('inkscape:label' || '')}) {
-            $root->removeChild($node);
-        }
-    }
-    return;
 }
 
 

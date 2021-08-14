@@ -1,5 +1,16 @@
 # Output
 
+## File name
+
+When a file is written, the file name is derived from the comic's title in
+the given language.
+
+These file names are stripped of certain characters that could cause
+problems in URLs and file names: any characters that are not letters,
+numbers, or hyphens will be removed; blanks will be replaces with hyphens.
+For example, a title "Let's drink!" will be result in "lets-drink".
+
+
 ## Dependencies
 
 Order matters in the configuration file; if you rely on the output from a
@@ -9,6 +20,12 @@ For example, the Comic::Out::QrCode module will create QR codes for comic
 pages and put the URL in the Comic. If the Comic::Out::HtmlComicPage module
 wants to include the QR code in the page, it must run after (that means:
 configured after) the Comic::Out::QrCode module.
+
+Most notably: To export your comics as `.png`, you first need to export them
+as per-language `.svg`s, then the `Png` module will work with the
+per-language `.svg`s. This also allows to put modules between the language
+splitting and `.png` conversion, for example a module to add a copyright
+notice.
 
 
 ## Output Organization
@@ -129,8 +146,8 @@ and change the layout for the last published comic.
 
 ## Comic::Out::Png
 
-Generates a Portable Network Graphics (`.png`) file for each language in the
-comic.
+Generates a Portable Network Graphics (`.png`) file for from a Scalable
+Vector Graphics (`.svg`) file.
 
 The configuration looks like this:
 
@@ -146,14 +163,22 @@ The configuration looks like this:
 
 The generated `.png` files will be placed in a language specific directory
 (lower case name of the language, e.g., "english" or "deutsch") under the
-given `outdir`.
+given `outdir`. Its name is derived from the comic's lower-cased title in
+that language.
 
-The name of the `.png` is derived from the comic's lower-cased title in that
-language, but any characters that are not letters, numbers, or hyphens will
-be removed; blanks will be replaces with hyphens. For example, a title
-"Let's drink!" will be result in "lets-drink".
-
-The generated file's extension will be `.png`.
-
-The file name will be saved in the comic as `pngFile` so that tempalates
+The file name will be saved in the comic as `pngFile` so that templates
 like Comic::Out::HtmlComicPage can access it.
+
+
+### Comic::Out::SvgPerLanguage
+
+Exports a `.svg` file per language in the comic. Each of these `.svg` files has
+only the layers that are common for all languages and the layers for the
+respective language.
+
+To determine which layers are for a language, the code looks at the comic's
+meta data in the "Description" field in Inkscape; see
+[metadata](metadata.md) for details.
+
+The `.svg` file names will be saved in the comic as `svgFile` so that later
+code or templates can use them.

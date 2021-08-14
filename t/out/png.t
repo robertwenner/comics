@@ -96,23 +96,6 @@ sub ctor_adds_trailing_slash_to_outdir : Tests {
 }
 
 
-sub ctor_override_temp_dir : Tests {
-    $png = Comic::Out::Png->new({
-        'Png' => {
-            'outdir' => 'generated',
-        },
-    });
-    like($png->{settings}->{tempdir}, qr{^\S+$}, 'should use default temp dir');
-    $png = Comic::Out::Png->new({
-        'Png' => {
-            'outdir' => 'generated',
-            'tempdir' => '/tmp/dir/test/',
-        },
-    });
-    is($png->{settings}->{tempdir}, '/tmp/dir/test/', 'should override temp dir');
-}
-
-
 sub parses_inkscape_version : Tests {
     my $comic = MockComic::make_comic();
     is(Comic::Out::Png::_parse_inkscape_version($comic, "Inkscape 0.92.5 (2060ec1f9f, 2020-04-08)\n"), "0.9");
@@ -363,18 +346,6 @@ sub generate_ok : Tests {
 sub generate_skips_if_cached: Tests {
     assert called _move
     assert read png info into comic
-}
-
-
-sub generate_fails_if_language_layer_not_found : Tests {
-    my $comic = MockComic::make_comic(
-        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
-    );
-    eval {
-        $png->generate($comic);
-    };
-    like($@, qr{\blayer\b}, 'should say what is missing');
-    like($@, qr{\bEnglish\b}, 'should mention language');
 }
 
 
