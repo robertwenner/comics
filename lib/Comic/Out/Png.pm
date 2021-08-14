@@ -15,7 +15,7 @@ use base('Comic::Out::Generator');
 use version; our $VERSION = qv('0.0.3');
 
 
-=for stopwords Wenner merchantability perlartistic png whitespace metaenglish optipng
+=for stopwords Wenner merchantability perlartistic png optipng
 
 =head1 NAME
 
@@ -24,7 +24,10 @@ the given Comic in each of the Comic's languages.
 
 =head1 SYNOPSIS
 
-    my $png = Comic::Out::Png->new(\%settings);
+    my $settings = {
+        # ...
+    };
+    my $png = Comic::Out::Png->new($settings);
     $png->generate($comic);
 
 =head1 DESCRIPTION
@@ -87,9 +90,11 @@ sub new {
 
 =head2 generate
 
-Generates the F<.png>s for all languages in the given Comic.
+Generates the F<.png>s for all language-specific F<.svg> files of the given
+Comic.
 
-The F<.png> file will be derived from the title of the comic.
+The F<.png> file will be derived from the title of the comic and placed in
+the configured c<outdir>.
 
 If C<optipng> is installed, it is run on the produced F<.png> files.
 
@@ -198,9 +203,10 @@ sub _get_png_info {
     my $tool = Image::ExifTool->new();
     my $info = $tool->ImageInfo($png_file);
 
-    # @fixme should height and width be different per language?
-    $comic->{height} = ${$info}{'ImageHeight'};
-    $comic->{width} = ${$info}{'ImageWidth'};
+    # TODO could height and width be different per language?
+    $comic->{height} = $info->{'ImageHeight'};
+    $comic->{width} = $info->{'ImageWidth'};
+    # Can't use $info->{'ImageSize'} as it returns e.g., 26 KiB
     $comic->{pngSize}{$language} = _file_size($png_file);
     return;
 }
@@ -235,7 +241,7 @@ sub _query_inkscape_version {
     ## no critic(InputOutput::ProhibitBacktickOperators)
     my $version = `inkscape --version 2>/dev/null`; # uncoverable statement
     ## use critic
-    if ($OS_ERROR) { # uncoverable statement
+    if ($OS_ERROR) { # uncoverable branch true
         $comic->keel_over("Could not run Inkscape: $OS_ERROR"); # uncoverable statement
     }
     return $version; # uncoverable statement

@@ -33,12 +33,18 @@ sub set_up : Test(setup) {
         $png_meta{$name} = $value;
     });
     $exif_tool->redefine('WriteInfo', sub($$;$$) {
-        $wrote_png= $_[1];
+        $wrote_png = $_[1];
         return $write_info_exit_code;
     });
     $exif_tool->redefine('GetValue', sub($$;$) {
         $asked_value = $_[1];
         return $get_value;
+    });
+    $exif_tool->redefine('ImageInfo', sub($) {
+        return {
+            'ImageHeight' => 'png height',
+            'ImageWidth' => 'png width',
+        };
     });
     no warnings qw/redefine/;
     *Comic::Out::Png::_query_inkscape_version = sub {
@@ -47,6 +53,9 @@ sub set_up : Test(setup) {
     *Comic::Out::Png::_system = sub {
         push @command_lines, @_;
         return $system_exit_code;
+    };
+    *Comic::Out::Png::_file_size = sub {
+        return 'file size';
     };
     use warnings;
 
@@ -322,37 +331,6 @@ sub optimize_png_fails : Tests {
     like($comic->{warnings}[0], qr{\boptipng\b});
 }
 
-__END__
-sub generate_ok : Tests {
-    my $comic = MockComic::make_comic(
-        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
-        $MockComic::TEXTS => {
-            $MockComic::ENGLISH => ['burp'],
-        },
-    );
-    $png->generate($comic);
-
-    # Code under test does:
-    # check for an existing backlog png
-    # check if existing regular output png is up to date
-    # _flip_language_layers($comic, $language);
-    # my $language_svg = $self->_write_temp_svg_file($comic, $language);
-    # $self->_svg_to_png($comic, $language, $language_svg, $png_file);
-    # _optimize_png($comic, $png_file);
-    # get_png_info
-}
-
-
-sub generate_skips_if_cached: Tests {
-    assert called _move
-    assert read png info into comic
-}
-
-
-sub generate_for_backlog : Tests {
-    assert that it uses the right folder
-}
-
 
 sub moves_from_backlog : Tests {
     my $from;
@@ -361,9 +339,9 @@ sub moves_from_backlog : Tests {
     no warnings qw/redefine/;
     local *Comic::up_to_date = sub {
         my ($source, $target) = @_;
-        return 1 if ($target !~ m/\.json$/);
+        return $target =~ m/\.png$/;
     };
-    local *Comic::_move = sub {
+    local *Comic::Out::Png::_move = sub {
         ($from, $to) = @_;
         return 1;   # success according to perldoc File::Copy
     };
@@ -372,8 +350,93 @@ sub moves_from_backlog : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
     );
-    $comic->export_png();
+    $png->generate($comic);
 
     is($from, "generated/backlog/english/latest-comic.png", 'wrong move source');
     is($to, "generated/web/english/comics/latest-comic.png", 'wrong move target');
+    is($wrote_png, undef, 'should not write png file');
+}
+
+
+sub moves_from_backlog_fails : Tests {
+    no warnings qw/redefine/;
+    local *Comic::up_to_date = sub {
+        my ($source, $target) = @_;
+        return $target =~ m/\.png$/;
+    };
+    local *Comic::Out::Png::_move = sub {
+        return 0;
+    };
+    use warnings;
+
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+    );
+    eval {
+        $png->generate($comic);
+    };
+    like($@, qr{Cannot move}i, 'should have croaked');
+}
+
+
+sub does_not_generate_if_png_is_up_to_date : Tests {
+    my $svg_file;
+    my $png_file;
+
+    no warnings qw/redefine/;
+    local *Comic::up_to_date = sub {
+        my ($source, $target) = @_;
+        return $target !~ m/backlog/ && $target =~ m/\.png$/;
+    };
+    local *Comic::Out::Png::_svg_to_png = sub {
+        fail("Called _svg_to_png");
+    };
+    use warnings;
+    $get_value = 123;
+
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+    );
+    $comic->{svgFile}{'English'} = 'generated/tmp/svg/english/latest-comic.svg';
+    $png->generate($comic); # would have thrown / failed if it tried to generate png
+
+    is_deeply($comic->{pngSize}, {'English' => 'file size'}, 'wrong size');
+    is($comic->{height}, 'png height', 'wrong height');
+    is($comic->{width}, 'png width', 'wrong width');
+}
+
+
+sub generates_png_from_svn : Tests {
+    my $svg_file;
+    my $png_file;
+
+    no warnings qw/redefine/;
+    local *Comic::up_to_date = sub {
+        my ($source, $target) = @_;
+        return 0;
+    };
+    local *Comic::Out::Png::_svg_to_png = sub {
+        ($svg_file, $png_file) = @_[3, 4];
+        return;
+    };
+    use warnings;
+
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+    );
+    $comic->{svgFile}{'English'} = 'generated/tmp/svg/english/latest-comic.svg';
+    $png->generate($comic);
+
+    is($svg_file, 'generated/tmp/svg/english/latest-comic.svg', 'passed wrong svg file');
+    is($png_file, 'generated/web/english/comics/latest-comic.png', 'wrong png file');
+    is_deeply($comic->{pngSize}, {'English' => 'file size'}, 'wrong size');
+    is($comic->{height}, 'png height', 'wrong height');
+    is($comic->{width}, 'png width', 'wrong width');
+}
+
+
+__END__
+
+sub generate_for_backlog : Tests {
+    assert that it uses the right folder
 }

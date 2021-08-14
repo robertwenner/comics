@@ -163,11 +163,48 @@ The configuration looks like this:
 
 The generated `.png` files will be placed in a language specific directory
 (lower case name of the language, e.g., "english" or "deutsch") under the
-given `outdir`. Its name is derived from the comic's lower-cased title in
-that language.
+given `outdir`. Its name is derived from the comic's title in that language.
 
 The file name will be saved in the comic as `pngFile` so that templates
 like Comic::Out::HtmlComicPage can access it.
+
+The following meta data will be set on the `.png` file:
+
+* Title, taken from the Comic's meta data
+
+* Description (as the transcript)
+
+* `CreationTime`: as the comic's last modified date / time
+
+* URL: the comic's canonical URL
+
+After that, global settings for Author, Artist, and Copyright are added, if
+they are defined.
+
+Finally, if the comic has a JSON element named `png-meta-data`, its values
+are taken to the `.png` file. For example
+
+```json
+{
+    "png-meta-data": {
+        "foo": "bar"
+    }
+}
+```
+
+Would set a field named "foo" to "bar".
+
+After writing, this Generator defines these values in the comic for use in
+templates or other generators:
+
+* `pngSize`: image size in bytes, per language
+
+* `height`: height of the images in pixels
+
+* `width`: width of the image in pixels
+
+Height and width are not per-language, assuming a comic has the same size in
+each language.
 
 
 ### Comic::Out::SvgPerLanguage
