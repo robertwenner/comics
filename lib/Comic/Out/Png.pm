@@ -112,22 +112,22 @@ sub generate {
     my ($self, $comic) = @ARG;
 
     foreach my $language ($comic->languages()) {
-        my $png_file = "$comic->{dirName}{$language}/$comic->{pngFile}{$language}";
+        my $published_png = "$comic->{dirName}{$language}/$comic->{baseName}{$language}.png";
         # TODO pull backlog out of here, write only published pngs
         # OR pass a published and a not published outdir
         # OR pass a hash of outdir to coderef to decide which png goes where --- yay for overengineering!
-        my $backlog_png = "$comic->{backlogPath}{$language}/$comic->{pngFile}{$language}" || '';
+        my $backlog_png = "$comic->{backlogPath}{$language}/$comic->{baseName}{$language}.png" || '';
 
         if (Comic::up_to_date($comic->{srcFile}, $backlog_png)) {
-            _move($backlog_png, $png_file) or $comic->keel_over("Cannot move $backlog_png to $png_file: $OS_ERROR");
+            _move($backlog_png, $published_png) or $comic->keel_over("Cannot move $backlog_png to $published_png: $OS_ERROR");
         }
 
         my $language_svg = $comic->{svgFile}{$language};
-        unless (Comic::up_to_date($language_svg, $png_file)) {
-            $self->_svg_to_png($comic, $language, $language_svg, $png_file);
-            _optimize_png($comic, $png_file);
+        unless (Comic::up_to_date($language_svg, $published_png)) {
+            $self->_svg_to_png($comic, $language, $language_svg, $published_png);
+            _optimize_png($comic, $published_png);
         }
-        _get_png_info($comic, $png_file, $language);
+        _get_png_info($comic, $published_png, $language);
     }
     return;
 }
@@ -203,6 +203,7 @@ sub _get_png_info {
     my $tool = Image::ExifTool->new();
     my $info = $tool->ImageInfo($png_file);
 
+    $comic->{pngFile}{$language} = "$comic->{baseName}{$language}.png";
     # TODO could height and width be different per language?
     $comic->{height} = $info->{'ImageHeight'};
     $comic->{width} = $info->{'ImageWidth'};

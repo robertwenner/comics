@@ -64,6 +64,7 @@ sub tweet_png : Tests {
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
         $MockComic::DESCRIPTION => { $MockComic::ENGLISH => 'This is the latest beercomic!' },
     );
+    $comic->{pngFile}{'English'} = "latest-comic.png";
     my $cs_twitter = Comic::Social::Twitter->new(mode => 'png');
     $cs_twitter->tweet($comic);
     is_deeply([@{$twitter_args{'update_with_media'}}],
@@ -77,6 +78,7 @@ sub tweet_html : Tests {
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
         $MockComic::DESCRIPTION => { $MockComic::ENGLISH => 'This is the latest beercomic!' },
     );
+    $comic->{pngFile}{'English'} = "latest-comic.png";
     my $cs_twitter = Comic::Social::Twitter->new(mode => 'html');
     $cs_twitter->tweet($comic);
     is_deeply([@{$twitter_args{'update'}}], ['https://beercomics.com/comics/latest-comic.html']);
@@ -89,6 +91,7 @@ sub shortens_text : Tests {
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
         $MockComic::DESCRIPTION => { $MockComic::ENGLISH => 'x' x 290 },
     );
+    $comic->{pngFile}{'English'} = "latest-comic.png";
     my $cs_twitter = Comic::Social::Twitter->new();
     $cs_twitter->tweet($comic);
     is_deeply([@{$twitter_args{'update_with_media'}}],
@@ -102,6 +105,7 @@ sub hashtags_from_meta : Tests {
         $MockComic::DESCRIPTION => { $MockComic::ENGLISH => 'Funny stuff' },
         $MockComic::TWITTER => { $MockComic::ENGLISH => ['#beer', '#craftbeer', '@you'] },
     );
+    $comic->{pngFile}{'English'} = "latest-comic.png";
     my $cs_twitter = Comic::Social::Twitter->new();
     $cs_twitter->tweet($comic);
     is_deeply([@{$twitter_args{'update_with_media'}}],
@@ -114,6 +118,7 @@ sub handles_other_error : Tests {
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
         $MockComic::DESCRIPTION => { $MockComic::ENGLISH => 'This is the latest beercomic!' },
     );
+    $comic->{pngFile}{'English'} = "latest-comic.png";
     $twitter_error = "Oops";
     my $cs_twitter = Comic::Social::Twitter->new(mode => 'html');
     eval {
@@ -129,6 +134,7 @@ sub handles_twitter_error : Tests {
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
         $MockComic::DESCRIPTION => { $MockComic::ENGLISH => 'This is the latest beercomic!' },
     );
+    $comic->{pngFile}{'English'} = "latest-comic.png";
     my $response = HTTP::Response->new(500, 'go away');
     $twitter_error = Net::Twitter::Error->new(http_response => $response);
     my $cs_twitter = Comic::Social::Twitter->new(mode => 'html');

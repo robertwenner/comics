@@ -401,6 +401,7 @@ sub does_not_generate_if_png_is_up_to_date : Tests {
     $png->generate($comic); # would have thrown / failed if it tried to generate png
 
     is_deeply($comic->{pngSize}, {'English' => 'file size'}, 'wrong size');
+    is_deeply($comic->{pngFile}, {'English' => 'latest-comic.png'}, 'wrong png file name');
     is($comic->{height}, 'png height', 'wrong height');
     is($comic->{width}, 'png width', 'wrong width');
 }
@@ -429,6 +430,7 @@ sub generates_png_from_svn : Tests {
 
     is($svg_file, 'generated/tmp/svg/english/latest-comic.svg', 'passed wrong svg file');
     is($png_file, 'generated/web/english/comics/latest-comic.png', 'wrong png file');
+    is_deeply($comic->{pngFile}, {'English' => 'latest-comic.png'}, 'wrong png file name');
     is_deeply($comic->{pngSize}, {'English' => 'file size'}, 'wrong size');
     is($comic->{height}, 'png height', 'wrong height');
     is($comic->{width}, 'png width', 'wrong width');

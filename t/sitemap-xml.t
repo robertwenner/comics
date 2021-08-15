@@ -152,6 +152,7 @@ sub encodes_xml_special_characters : Tests {
             'English' => '&lt;Ale &amp; Lager&gt;',
         },
     );
+    $comic->{pngFile}{English} = 'ale__lager.png';
     assert_wrote($comic, qr{<image:title>&lt;Ale &amp; Lager&gt;</image:title>}m);
 }
 

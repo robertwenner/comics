@@ -298,7 +298,8 @@ TEMPLATE
             },
         },
     });
-    $hcp->generate_all(($comic));
+    $comic->{pngFile}{'Deutsch'} = 'bier-trinken.png';
+    $hcp->generate_all($comic);
     my $wrote = $hcp->_do_export_html($comic, "Deutsch", 'templates/deutsch/comic-page.templ');
     like($wrote, qr/Bier trinken/m, "title");
     like($wrote, qr/2016-01-01/m, "last modified");
