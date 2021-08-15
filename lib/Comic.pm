@@ -607,7 +607,14 @@ sub _exists {
 }
 
 
-sub _all_frames_sorted {
+=head2 all_frames_sorted
+
+Returns all frames in this Comic, sorted from top left to bottom right.
+Only considers objects in the C<Rahmen> layer.
+
+=cut
+
+sub all_frames_sorted {
     my ($self) = @ARG;
 
     ## no critic(ValuesAndExpressions::RequireInterpolationOfMetachars)
@@ -799,7 +806,7 @@ sub _where_to_place_the_text {
 
     Readonly my $SPACING => 2;
     my ($x, $y, $transform);
-    my @frames = $self->_all_frames_sorted();
+    my @frames = $self->all_frames_sorted();
 
     if (@frames == 0) {
         # If the comic has no frames, place the text at the bottom.
@@ -1171,7 +1178,7 @@ sub _find_frames {
     # distance from each other are meant to be at the same x or y position,
     # respectively.
     my @frame_tops;
-    foreach my $f ($self->_all_frames_sorted()) {
+    foreach my $f ($self->all_frames_sorted()) {
         my $y = floor($f->getAttribute('y'));
         my $found = 0;
         foreach my $ff (@frame_tops) {
@@ -1247,7 +1254,7 @@ sub _pos_to_frame {
 sub _bottom_right {
     my ($self) = @ARG;
 
-    my @frames = $self->_all_frames_sorted();
+    my @frames = $self->all_frames_sorted();
     my $bottom_right = $frames[-1];
     # from 0/0, x increases to right, y increases to the bottom
     return ($bottom_right->getAttribute('x') + $bottom_right->getAttribute('width'),

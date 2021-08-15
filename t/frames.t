@@ -27,7 +27,7 @@ sub make_frames {
 sub assert_frames_xy {
     my @xy = @_;
     my $i = 0;
-    foreach my $frame ($comic->_all_frames_sorted()) {
+    foreach my $frame ($comic->all_frames_sorted()) {
         is($frame->getAttribute('x'), shift @xy, "x $i");
         is($frame->getAttribute('y'), shift @xy, "y $i");
         $i++;
@@ -161,7 +161,7 @@ sub sorts_numerically_ints : Tests {
         100, 100, 535, 680,
         100, 100, 845, 680,
         100, 100, 90, 680);
-    my @sorted = map { $_->getAttribute('x') } $comic->_all_frames_sorted();
+    my @sorted = map { $_->getAttribute('x') } $comic->all_frames_sorted();
     is_deeply([@sorted], [90, 535, 845]);
 }
 
@@ -172,6 +172,6 @@ sub sorts_numerically_floats : Tests {
         100, 100, 535.66895, 679.83606,
         100, 100, 845.66669, 679.8938,
         100, 100, 90.664955, 680.06812);
-    my @sorted = map { $_->getAttribute('x') } $comic->_all_frames_sorted();
+    my @sorted = map { $_->getAttribute('x') } $comic->all_frames_sorted();
     is_deeply([@sorted], [90.664955, 535.66895, 845.66669]);
 }

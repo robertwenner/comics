@@ -122,7 +122,7 @@ sub check {
 
     my $first_row = 1;
 
-    foreach my $f ($comic->_all_frames_sorted()) {
+    foreach my $f ($comic->all_frames_sorted()) {
         $self->_check_frame_style($comic, $f);
 
         my $top = $f->getAttribute('y') * 1.0;
