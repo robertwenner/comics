@@ -94,7 +94,6 @@ sub new {
     %{$self->{settings}} = %{$settings->{SvgPerLanguage}};
 
     # Devel::Cover does not see that $SVGDIR is an always set const:
-    # uncoverable condition right
     # uncoverable condition false
     $self->{settings}->{outdir} ||= $SVGDIR;
     $self->{settings}->{outdir} .= q{/} unless ($self->{settings}->{outdir} =~ m{/$});
