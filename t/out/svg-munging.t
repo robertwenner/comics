@@ -7,11 +7,21 @@ use Test::More;
 use lib 't';
 use MockComic;
 
+use Comic::Out::Copyright;
+
+
 __PACKAGE__->runtests() unless caller;
+
+
+my $copyright;
 
 
 sub set_up : Test(setup) {
     MockComic::set_up();
+    $copyright = Comic::Out::Copyright->new({
+        'Copyright' => {
+        },
+    });
 }
 
 
@@ -62,9 +72,17 @@ sub can_safely_modify_copy : Tests {
 }
 
 
+sub needs_configuration : Tests {
+    eval {
+        Comic::Out::Copyright->new();
+    };
+    like($@, qr{copyright configuration}i);
+}
+
+
 sub adds_url_and_license : Tests {
     my $comic = make_comic();
-    $comic->_insert_url($comic->{dom}, 'Deutsch');
+    $copyright->generate($comic);
     is(get_layer($comic->{dom}, 'LicenseDeutsch')->getFirstChild()->textContent(),
         'biercomics.de — CC BY-NC-SA 4.0');
 }
@@ -72,8 +90,7 @@ sub adds_url_and_license : Tests {
 
 sub adds_url_and_license_per_language : Tests {
     my $comic = MockComic::make_comic($MockComic::FRAMES => [0, 0, 100, 100]);
-    $comic->_insert_url($comic->{dom}, $MockComic::DEUTSCH);
-    $comic->_insert_url($comic->{dom}, $MockComic::ENGLISH);
+    $copyright->generate($comic);
     is(get_layer($comic->{dom}, "LicenseDeutsch")->getFirstChild()->textContent(), "biercomics.de — CC BY-NC-SA 4.0");
     is(get_layer($comic->{dom}, "LicenseEnglish")->getFirstChild()->textContent(), "beercomics.com — CC BY-NC-SA 4.0");
 }
@@ -86,8 +103,8 @@ sub one_frame_places_text_at_the_bottom : Tests {
             100, 200, 0, 0,
         ],
     );
-    is_deeply([2, 198, undef], [$comic->_where_to_place_the_text()]);
-    $comic->_insert_url($comic->{dom}, 'Deutsch');
+    is_deeply([2, 198, undef], [Comic::Out::Copyright::_where_to_place_the_text($comic)]);
+    $copyright->generate($comic);
     my $text = get_layer($comic->{dom}, 'LicenseDeutsch')->getFirstChild();
     is($text->getAttribute('x'), 2);
     is($text->getAttribute('y'), 198);
@@ -103,8 +120,8 @@ sub two_frames_in_columns_places_text_between : Tests {
             100, 100, 110, 0,
         ],
     );
-    is_deeply([102, 0, 'rotate(90, 102, 0)'], [$comic->_where_to_place_the_text()]);
-    $comic->_insert_url($comic->{dom}, 'Deutsch');
+    is_deeply([102, 0, 'rotate(90, 102, 0)'], [Comic::Out::Copyright::_where_to_place_the_text($comic)]);
+    $copyright->generate($comic);
     my $text = get_layer($comic->{dom}, 'LicenseDeutsch')->getFirstChild();
     is($text->getAttribute('x'), 102);
     is($text->getAttribute('y'), 0);
@@ -120,8 +137,8 @@ sub two_frames_in_rows_places_text_between : Tests {
             100, 100, 0, 110,
         ],
     );
-    is_deeply([$comic->_where_to_place_the_text()], [0, 108, undef]);
-    $comic->_insert_url($comic->{dom}, 'Deutsch');
+    is_deeply([Comic::Out::Copyright::_where_to_place_the_text($comic)], [0, 108, undef]);
+    $copyright->generate($comic);
     my $text = get_layer($comic->{dom}, 'LicenseDeutsch')->getFirstChild();
     is($text->getAttribute('x'), 0);
     is($text->getAttribute('y'), 108);
@@ -131,7 +148,7 @@ sub two_frames_in_rows_places_text_between : Tests {
 
 sub no_frame_places_text_at_the_bottom : Tests {
     no warnings qw/redefine/;
-    local *Comic::_inkscape_query = sub {
+    local *Comic::Out::Copyright::_inkscape_query = sub {
         my ($self, $what) = @_;
         my %dims = ('W' => 100, 'H' => 200, 'X' => 500, 'Y' => '500');
         return $dims{$what};
@@ -140,8 +157,8 @@ sub no_frame_places_text_at_the_bottom : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::FRAMES => [],
     );
-    is_deeply([500, 500, undef], [$comic->_where_to_place_the_text()]);
-    $comic->_insert_url($comic->{dom}, 'Deutsch');
+    is_deeply([500, 500, undef], [Comic::Out::Copyright::_where_to_place_the_text($comic)]);
+    $copyright->generate($comic);
     my $text = get_layer($comic->{dom}, 'LicenseDeutsch')->getFirstChild();
     is($text->getAttribute('x'), 500);
     is($text->getAttribute('y'), 500);

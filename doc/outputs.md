@@ -47,6 +47,13 @@ English comic not yet published may go in `backlog/` (both directories being
 within the specified `out` directory, here `generated/`.
 
 
+## Comic::Out::Copyright
+
+Places a copyright or license or URL note on the per-language SVG comic.
+
+Depends on `Comic::Out::SvgPerLanguage`.
+
+
 ## Comic::Out::Feed
 
 Generates website feeds (e.g., in [RSS](https://en.wikipedia.org/wiki/RSS)

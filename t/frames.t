@@ -7,6 +7,9 @@ use Test::More;
 use lib 't';
 use MockComic;
 
+use Comic::Out::Copyright;
+
+
 __PACKAGE__->runtests() unless caller;
 
 
@@ -152,7 +155,7 @@ sub bottom_right_corner : Tests {
         10, 10,  0, -15,
         10, 10, 15, -15,
         10, 10, 30, -15);
-    is_deeply([$comic->_bottom_right()], [40, 0]);
+    is_deeply([Comic::Out::Copyright::_bottom_right($comic)], [40, 0]);
 }
 
 

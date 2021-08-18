@@ -393,6 +393,15 @@ sub _parse_xml {
 }
 
 
+sub _unhtml {
+    # Inkscape is XML, so it uses &lt;, &gt;, &amp;, and &quot; in it's meta
+    # data. This is convenient for the HTML export, but not for adding meta
+    # data to the .png file.
+    my ($text) = @ARG;
+    return decode_entities($text);
+}
+
+
 sub _append_speech_to_speaker {
     my @texts;
     my $prev = '';
@@ -749,129 +758,6 @@ to (temporarily) modify the Comic's SVG.
 sub copy_svg {
     my ($self) = @ARG;
     return _parse_xml($self->{dom}->toString());
-}
-
-
-sub _insert_url {
-    my ($self, $svg, $language) = @ARG;
-
-    my $domain = ${$self->{settings}->{Domains}}{$language};
-    my $payload = XML::LibXML::Text->new("$domain — CC BY-NC-SA 4.0");
-    my $tspan = XML::LibXML::Element->new('tspan');
-    $tspan->setAttribute('sodipodi:role', 'line');
-    $tspan->appendChild($payload);
-
-    my $text = XML::LibXML::Element->new('text');
-    my ($x, $y, $transform) = $self->_where_to_place_the_text();
-    $text->setAttribute('x', $x);
-    $text->setAttribute('y', $y);
-    $text->setAttribute('id', 'UrlLicense');
-    $text->setAttribute('xml:space', 'preserve');
-    my $style = <<'STYLE';
-        color:#000000;font-style:normal;font-variant:normal;font-weight:normal;
-        font-stretch:normal;font-size:10px;line-height:125%;font-family:
-        'Comic Relief';-inkscape-font-specification:'Comic Relief, Normal';
-        text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;
-        text-anchor:start;clip-rule:nonzero;display:inline;overflow:visible;
-        visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;.
-        color-interpolation:sRGB;color-interpolation-filters:linearRGB;
-        solid-color:#000000;solid-opacity:1;fill:#000000;fill-opacity:1;
-        fill-rule:nonzero;stroke:none;stroke-width:1px;stroke-linecap:butt;
-        stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;
-        stroke-dashoffset:0;stroke-opacity:1;color-rendering:auto;
-        image-rendering:auto;shape-rendering:auto;text-rendering:auto;
-        enable-background:accumulate");
-STYLE
-    $style =~ s/\s//mg;
-    $text->setAttribute('style', $style);
-    $text->setAttribute('transform', $transform) if ($transform);
-
-    $text->appendChild($tspan);
-
-    my $layer = XML::LibXML::Element->new('g');
-    $layer->setAttribute('inkscape:groupmode', 'layer');
-    $layer->setAttribute('inkscape:label', "License$language");
-    $layer->setAttribute('style', 'display:inline');
-    $layer->setAttribute('id', 'License');
-    $layer->appendChild($text);
-
-    my $root = $svg->documentElement();
-    $root->appendChild($layer);
-    return;
-}
-
-
-sub _where_to_place_the_text {
-    my ($self) = @ARG;
-
-    Readonly my $SPACING => 2;
-    my ($x, $y, $transform);
-    my @frames = $self->all_frames_sorted();
-
-    if (@frames == 0) {
-        # If the comic has no frames, place the text at the bottom.
-        # Ask Inkscape about the drawing size.
-        my $width = $self->_inkscape_query('W');
-        my $height = $self->_inkscape_query('H');
-        my $xpos = $self->_inkscape_query('X');
-        my $ypos = $self->_inkscape_query('Y');
-        $x = $xpos;# - $width;
-        $y = $ypos;# + $height;
-    }
-    elsif (@frames == 1) {
-        # If there is only one frame, place the text at the bottom left
-        # corner just inside the frame.
-        $x = $frames[0]->getAttribute('x') + $SPACING;
-        $y = $frames[0]->getAttribute('y') + $frames[0]->getAttribute('height') - $SPACING;
-    }
-    elsif (_frames_in_rows(@frames)) {
-        # Prefer putting the text between two rows of frames so that it's
-        # easier to read.
-        $x = $frames[-1]->getAttribute('x');
-        $y = $frames[-1]->getAttribute('y') - $SPACING;
-    }
-    else {
-        # If there are no rows of frames but more than two frames, put the text
-        # between the first two frames, rotated 90 degrees.
-        ($x, $y) = $self->_bottom_right();
-        $x = $frames[0]->getAttribute('x') + $frames[0]->getAttribute('width') + $SPACING;
-        $y = $frames[0]->getAttribute('y');
-        $transform = "rotate(90, $x, $y)";
-    }
-
-    return ($x, $y, $transform);
-}
-
-
-sub _inkscape_query {
-    # uncoverable subroutine
-    my ($self, $what) = @ARG; # uncoverable statement
-    ## no critic(InputOutput::ProhibitBacktickOperators)
-    return `inkscape -$what $self->{srcFile}`; # uncoverable statement
-    ## use critic
-}
-
-
-sub _frames_in_rows {
-    my @frames = @ARG;
-    my $prev = shift @frames;
-    foreach my $frame (@frames) {
-        my $off_by = $frame->getAttribute('y') - $prev->getAttribute('y');
-        if ($off_by < -$Comic::Consts::FRAME_SPACING || $off_by > $Comic::Consts::FRAME_SPACING) {
-            return 1;
-        }
-        $prev = $frame;
-    }
-    return 0;
-}
-
-
-sub _unhtml {
-    # Inkscape is XML, so it uses &lt;, &gt;, &amp;, and &quot; in it's meta
-    # data. This is convenient for the HTML export, but not for adding meta
-    # data to the .png file.
-    my ($text) = @ARG;
-    return decode_entities($text);
 }
 
 
@@ -1248,17 +1134,6 @@ sub _pos_to_frame {
         return $i if ($y < @{$self->{frame_tops}}[$i]);
     }
     return @{$self->{frame_tops}};
-}
-
-
-sub _bottom_right {
-    my ($self) = @ARG;
-
-    my @frames = $self->all_frames_sorted();
-    my $bottom_right = $frames[-1];
-    # from 0/0, x increases to right, y increases to the bottom
-    return ($bottom_right->getAttribute('x') + $bottom_right->getAttribute('width'),
-        $bottom_right->getAttribute('y'));
 }
 
 
