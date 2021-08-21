@@ -52,7 +52,7 @@ sub setup_xml {
 
 sub assert_visible {
     my %expected = map {$_ => 1} @_;
-    foreach my $layer ($comic->{xpath}->findnodes(Comic::_find_layers())) {
+    foreach my $layer ($comic->{xpath}->findnodes(Comic::_top_level_layers_xpath())) {
         my $label = $layer->{"inkscape:label"};
         my $style = $layer->{"style"};
         if (exists($expected{$label})) {
