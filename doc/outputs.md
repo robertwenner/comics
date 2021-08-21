@@ -49,9 +49,37 @@ within the specified `out` directory, here `generated/`.
 
 ## Comic::Out::Copyright
 
-Places a copyright or license or URL note on the per-language SVG comic.
+Places a copyright or license or URL note on the per-language `.svg` comic
+(i.e., this module depends on `Comic::Out::SvgPerLanguage`).
 
-Depends on `Comic::Out::SvgPerLanguage`.
+```json
+{
+    "Out": {
+        "Copyright": {
+            "Text": {
+                "English": "beercomics.com -- CC BY-NC-SA 4.0"
+            },
+            "style": "font-family: sans-serif; font-size: 10px"
+        }
+    }
+}
+```
+
+In the above example configuration, the English comics would get the text
+"beercomics.com -- CC BY-NC-SA 4.0" inserted. If other languages are present
+in the comic but not in the `Comic::Out::Copyright` configuration, comic
+generation will fail with an error. If you want to not add a text for other
+languages, define an empty text (e.g., `"Deutsch": ""`).
+
+The style is optional. If not specified, it defaults to a black sans-serif
+font of size 10px. To pick a style, look at the XML of your comic texts
+(Inkscape menu Edit, then XML Editor...) and copy a `style=` description.
+
+The position for the Copyright note is picked automatically and depends on
+the frames in the comic. If there are rows of frames, the text will be
+placed between the last two rows. If all frames are in one row, the text
+will be turned 90 degrees and placed between frames. If there is only one
+frame, the text will go in the bottom left corner of that frame.
 
 
 ## Comic::Out::Feed

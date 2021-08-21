@@ -6,6 +6,7 @@ use utf8;
 use English '-no_match_vars';
 use Carp;
 use Readonly;
+use XML::LibXML;
 
 use Comic::Out::Generator;
 use base('Comic::Out::Generator');
@@ -13,8 +14,11 @@ use base('Comic::Out::Generator');
 
 use version; our $VERSION = qv('0.0.3');
 
+Readonly my $STYLE => 'color:#000000;font-size:10px;line-height:125%;font-family:sans-serif;display:inline';
+
 
 =for stopwords Wenner merchantability perlartistic
+
 
 =head1 NAME
 
@@ -34,6 +38,10 @@ The note to add is given in the configuration like this:
     {
         "Out": {
             "Copyright": {
+                "Text": {
+                    "English": "beercomics.com -- CC BY-NC-SA 4.0"
+                },
+                "style": "font-family: sans-serif; font-size: 10px"
             }
         }
     }
@@ -64,6 +72,10 @@ sub new {
 
     croak('No Copyright configuration') unless ($settings->{Copyright});
     %{$self->{settings}} = %{$settings->{Copyright}};
+    croak('No Text in Copyright configuration') unless ($self->{settings}->{Text});
+    # Devel::Cover does not see that $STYLE is an always set const:
+    # uncoverable condition false
+    $self->{settings}->{style} ||= $STYLE;
 
     return $self;
 }
@@ -72,8 +84,8 @@ sub new {
 =head2 generate
 
 Generates the copyright note in the given Comic. The text will be placed in
-a new layer.
-
+a new layer named "Copyright" plus the language name (with the first letter
+capitalized).
 
 Parameters:
 
@@ -91,8 +103,11 @@ sub generate {
     foreach my $language ($comic->languages()) {
         my $svg = $comic->{dom};
 
-        my $domain = ${$comic->{settings}->{Domains}}{$language};
-        my $payload = XML::LibXML::Text->new("$domain — CC BY-NC-SA 4.0");
+        unless ($self->{settings}->{Text}->{$language}) {
+            croak("No $language Out.Copyright text configured");
+        }
+        my $payload = XML::LibXML::Text->new($self->{settings}->{Text}->{$language});
+
         my $tspan = XML::LibXML::Element->new('tspan');
         $tspan->setAttribute('sodipodi:role', 'line');
         $tspan->appendChild($payload);
@@ -101,24 +116,10 @@ sub generate {
         my ($x, $y, $transform) = _where_to_place_the_text($comic);
         $text->setAttribute('x', $x);
         $text->setAttribute('y', $y);
-        $text->setAttribute('id', 'UrlLicense');
+        $text->setAttribute('id', 'Copyright');
         $text->setAttribute('xml:space', 'preserve');
-        my $style = <<'STYLE';
-            color:#000000;font-style:normal;font-variant:normal;font-weight:normal;
-            font-stretch:normal;font-size:10px;line-height:125%;font-family:
-            'Comic Relief';-inkscape-font-specification:'Comic Relief, Normal';
-            text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;
-            text-anchor:start;clip-rule:nonzero;display:inline;overflow:visible;
-            visibility:visible;opacity:1;isolation:auto;mix-blend-mode:normal;.
-            color-interpolation:sRGB;color-interpolation-filters:linearRGB;
-            solid-color:#000000;solid-opacity:1;fill:#000000;fill-opacity:1;
-            fill-rule:nonzero;stroke:none;stroke-width:1px;stroke-linecap:butt;
-            stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;
-            stroke-dashoffset:0;stroke-opacity:1;color-rendering:auto;
-            image-rendering:auto;shape-rendering:auto;text-rendering:auto;
-            enable-background:accumulate");
-STYLE
-        $style =~ s/\s//mg;
+
+        my $style = $self->{settings}->{style};
         $text->setAttribute('style', $style);
         $text->setAttribute('transform', $transform) if ($transform);
 
@@ -126,9 +127,9 @@ STYLE
 
         my $layer = XML::LibXML::Element->new('g');
         $layer->setAttribute('inkscape:groupmode', 'layer');
-        $layer->setAttribute('inkscape:label', "License$language");
+        $layer->setAttribute('inkscape:label', "Copyright$language");
         $layer->setAttribute('style', 'display:inline');
-        $layer->setAttribute('id', 'License');
+        $layer->setAttribute('id', 'Copyright');
         $layer->appendChild($text);
 
         my $root = $svg->documentElement();

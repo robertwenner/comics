@@ -20,6 +20,10 @@ sub set_up : Test(setup) {
     MockComic::set_up();
     $copyright = Comic::Out::Copyright->new({
         'Copyright' => {
+            'Text' =>  {
+                'English' => 'beercomics.com',
+                'Deutsch' => 'biercomics.de',
+            },
         },
     });
 }
@@ -77,22 +81,77 @@ sub needs_configuration : Tests {
         Comic::Out::Copyright->new();
     };
     like($@, qr{copyright configuration}i);
+
+    eval {
+        Comic::Out::Copyright->new({
+            'Copyright' => {
+            },
+        });
+    };
+    like($@, qr{copyright configuration}i);
+    like($@, qr{\bText\b}i);
+
+    eval {
+        Comic::Out::Copyright->new({
+            'Copyright' => {
+                'Text' => {
+                },
+            },
+        });
+    };
+    is($@, '');
+}
+
+
+sub configure_style : Tests {
+    $copyright = Comic::Out::Copyright->new({
+        'Copyright' => {
+            'Text' => {
+                'English' => 'beercomics.com',
+                'Deutsch' => 'biercomics.de',
+            },
+            'style' => 'my great style',
+        },
+    });
+    my $comic = make_comic();
+    $copyright->generate($comic);
+    my $text = get_layer($comic->{dom}, 'CopyrightDeutsch')->getFirstChild();
+    is($text->{style}, 'my great style');
+}
+
+
+sub croaks_if_no_style : Tests {
+    $copyright = Comic::Out::Copyright->new({
+        'Copyright' => {
+            'Text' => {
+                'English' => 'beercomics.com',
+            },
+            'style' => 'my great style',
+        },
+    });
+    my $comic = make_comic();
+    eval {
+        $copyright->generate($comic);
+    };
+    like($@, qr{\btext\b}i, 'should say what is wrong');
+    like($@, qr{\bCopyright\b}i, 'should mention module');
+    like($@, qr{\bDeutsch\b}i, 'should mention missing language');
 }
 
 
 sub adds_url_and_license : Tests {
     my $comic = make_comic();
     $copyright->generate($comic);
-    is(get_layer($comic->{dom}, 'LicenseDeutsch')->getFirstChild()->textContent(),
-        'biercomics.de — CC BY-NC-SA 4.0');
+    is(get_layer($comic->{dom}, 'CopyrightDeutsch')->getFirstChild()->textContent(),
+        'biercomics.de');
 }
 
 
 sub adds_url_and_license_per_language : Tests {
     my $comic = MockComic::make_comic($MockComic::FRAMES => [0, 0, 100, 100]);
     $copyright->generate($comic);
-    is(get_layer($comic->{dom}, "LicenseDeutsch")->getFirstChild()->textContent(), "biercomics.de — CC BY-NC-SA 4.0");
-    is(get_layer($comic->{dom}, "LicenseEnglish")->getFirstChild()->textContent(), "beercomics.com — CC BY-NC-SA 4.0");
+    is(get_layer($comic->{dom}, "CopyrightDeutsch")->getFirstChild()->textContent(), "biercomics.de");
+    is(get_layer($comic->{dom}, "CopyrightEnglish")->getFirstChild()->textContent(), "beercomics.com");
 }
 
 
@@ -105,7 +164,7 @@ sub one_frame_places_text_at_the_bottom : Tests {
     );
     is_deeply([2, 198, undef], [Comic::Out::Copyright::_where_to_place_the_text($comic)]);
     $copyright->generate($comic);
-    my $text = get_layer($comic->{dom}, 'LicenseDeutsch')->getFirstChild();
+    my $text = get_layer($comic->{dom}, 'CopyrightDeutsch')->getFirstChild();
     is($text->getAttribute('x'), 2);
     is($text->getAttribute('y'), 198);
     is($text->getAttribute('transform'), undef);
@@ -122,7 +181,7 @@ sub two_frames_in_columns_places_text_between : Tests {
     );
     is_deeply([102, 0, 'rotate(90, 102, 0)'], [Comic::Out::Copyright::_where_to_place_the_text($comic)]);
     $copyright->generate($comic);
-    my $text = get_layer($comic->{dom}, 'LicenseDeutsch')->getFirstChild();
+    my $text = get_layer($comic->{dom}, 'CopyrightDeutsch')->getFirstChild();
     is($text->getAttribute('x'), 102);
     is($text->getAttribute('y'), 0);
     is($text->getAttribute('transform'), 'rotate(90, 102, 0)');
@@ -139,7 +198,7 @@ sub two_frames_in_rows_places_text_between : Tests {
     );
     is_deeply([Comic::Out::Copyright::_where_to_place_the_text($comic)], [0, 108, undef]);
     $copyright->generate($comic);
-    my $text = get_layer($comic->{dom}, 'LicenseDeutsch')->getFirstChild();
+    my $text = get_layer($comic->{dom}, 'CopyrightDeutsch')->getFirstChild();
     is($text->getAttribute('x'), 0);
     is($text->getAttribute('y'), 108);
     is($text->getAttribute('transform'), undef);
@@ -159,7 +218,7 @@ sub no_frame_places_text_at_the_bottom : Tests {
     );
     is_deeply([500, 500, undef], [Comic::Out::Copyright::_where_to_place_the_text($comic)]);
     $copyright->generate($comic);
-    my $text = get_layer($comic->{dom}, 'LicenseDeutsch')->getFirstChild();
+    my $text = get_layer($comic->{dom}, 'CopyrightDeutsch')->getFirstChild();
     is($text->getAttribute('x'), 500);
     is($text->getAttribute('y'), 500);
     is($text->getAttribute('transform'), undef);
