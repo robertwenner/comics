@@ -233,19 +233,26 @@ sub _set_png_meta {
 
 sub _query_inkscape_version {
     # uncoverable subroutine
-    my ($comic) = @ARG; # uncoverable statement
+    # uncoverable statement
+    my ($comic) = @ARG;
 
     # Inkscape seems to print its plugins information to stderr, e.g.:
     #    Pango version: 1.46.0
     # Hence redirect stderr to /dev/null.
 
     ## no critic(InputOutput::ProhibitBacktickOperators)
-    my $version = `inkscape --version 2>/dev/null`; # uncoverable statement
+    # uncoverable statement
+    my $version = `inkscape --version 2>/dev/null`;
     ## use critic
-    if ($OS_ERROR) { # uncoverable branch true
-        $comic->keel_over("Could not run Inkscape: $OS_ERROR"); # uncoverable statement
+    # uncoverable statement
+    # uncoverable branch true
+    # uncoverable branch false
+    if ($OS_ERROR) {
+        # uncoverable statement
+        $comic->keel_over("Could not run Inkscape: $OS_ERROR");
     }
-    return $version; # uncoverable statement
+    # uncoverable statement
+    return $version;
 }
 
 
