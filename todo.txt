@@ -172,3 +172,17 @@
   (other languages, turned invisible in Inkscape) instead of switching them
   to hidden? Files would be smaller (is disk space an issue anyway?), but
   would converting them be faster?
+
+- feature: make tags configurable instead of using hard-coded "who",
+  "series", and "tags"; for backlog as well as various comics-by-x overviews
+
+- replace vars{'tags'} and vars{'tagsOrder'} in backlog with an ordered hash
+  if Template supports this nicely
+
+- backlog currently appends language name to tags and series, could instead
+  return hashes with language as keys. On the one hand the template gets
+  more complicated (one more nested loop), on the other hand it's cleaner
+  and would allow to show / hide tags or series per language
+
+- break up Comic::Out::Backlog into the actual backlog part and the overview
+  of series, tags, etc part

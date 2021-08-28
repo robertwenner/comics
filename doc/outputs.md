@@ -47,6 +47,67 @@ English comic not yet published may go in `backlog/` (both directories being
 within the specified `out` directory, here `generated/`.
 
 
+## Comic::Out::Backlog
+
+Generates an overview of the comics in the queue, plus the tags, character
+names, and series used in all comics. This should help when creating a new
+comic to look up what keywords (tags) other comics used.
+
+```json
+{
+    "Out": {
+        "Backlog": {
+            "template": "templates/backlog.templ",
+            "outfile": "generated/backlog.html",
+            "toplocation": "web"
+        }
+    }
+}
+```
+
+* The `template` defines the file with Perl Toolkit template to use to
+  generate the actual backlog.
+
+* The `outfile` specifies where the output (the finished backlog) should go.
+
+* The generated backlog can be sorted by the location where the comics are
+  published (`published.where` in the comic's meta data). The backlog
+  template can iterate over the locations and print the backlog comics per
+  location. However, if your main publishing location is e.g., "web",
+  chances are you have other less important locations that would get sorted
+  before "web". To see your main backlog first without having to scroll and
+  without duplicating or complicating the template code, you can specify the
+  `toplocation`. This will be the first item in the locations array,
+  followed by all other locations in alphabetical order.
+
+When the template is processed, these variables are available:
+
+* `comics` array of all comics in the backlog, with any meta data or
+  information from other output generators that already ran available.
+
+* `languages`: array of names of all languages in all comics.
+
+* `publishers`: array of locations where comics are scheduled to be
+   published (from the comic's `published.where` meta data). The template
+   can use this to group backlog comics by location, e.g., one list for
+   online and one for a magazine.
+
+* `tags`, `%who`, `series`: hashes of tags, characters, and series
+   to the count of these in all comics.
+
+* `tagsOrder`, `whoOrder`, `seriesOrder`: lists ordered by how often that
+    tag, character, or series has been seen in all comics. The template can
+    iterate over these arrays and use the values as keys to the respective
+    `tags`, `who`, and `series` hashes to print the tags, characters, and
+    series in order.
+
+=back
+
+Only `comics` is useful for showing how many comics are in the queue /
+backlog. The other variables are meant to show what tags, series, or
+characters already exist, to make it easy to align new comics with those.
+
+
 ## Comic::Out::Copyright
 
 Places a copyright or license or URL note on the per-language `.svg` comic
