@@ -118,13 +118,24 @@ Parameters:
 
 =back
 
+This defines these variables in the passed Comic:
+
+=over 4
+
+=item * B<%href> hash of language to its relative URL from the server root.
+
+=item * B<%htmlFile> hash of language to the html file name (without path).
+
+=back
+
 =cut
 
 sub generate {
     my ($self, $comic) = @ARG;
 
     foreach my $language ($comic->languages()) {
-        $comic->{href}{$language} = "comics/$self->{htmlFile}{$language}";
+        $comic->{htmlFile}{$language} = "$comic->{baseName}{$language}.html";
+        $comic->{href}{$language} = "comics/$comic->{htmlFile}{$language}";
     }
     return;
 }

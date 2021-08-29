@@ -40,11 +40,6 @@ sub make_comic {
 
 sub generate {
     my @comics = @_;
-    foreach my $comic (@comics) {
-        foreach my $language ($comic->languages()) {
-            $comic->{href}{$language} = "comics/$comic->{htmlFile}{$language}";
-        }
-    }
     Comics::_generate_archive(
         {'Deutsch' => 'templates/deutsch/archiv.templ'},
         {'Deutsch' => 'generated/web/deutsch/archiv.html'},

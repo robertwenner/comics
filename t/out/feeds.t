@@ -56,7 +56,6 @@ sub make_comic {
         },
         $MockComic::PUBLISHED_WHEN => $published
     );
-    $comic->{href}{$MockComic::ENGLISH} = "comics/$comic->{htmlFile}{$MockComic::ENGLISH}";
     return $comic;
 }
 

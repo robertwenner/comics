@@ -346,7 +346,6 @@ sub _load {
         $self->{titleUrlEncoded}{$language} = uri_encode($self->{meta_data}->{title}->{$language}, %uri_encoding_options);
         $self->{dirName}{$language} = make_dir($base);
         $self->{baseName}{$language} = $self->_normalized_title($language);
-        $self->{htmlFile}{$language} = "$self->{baseName}{$language}.html";
         $self->{url}{$language} = "https://$domain/comics/$self->{baseName}{$language}.html";
         $self->{urlUrlEncoded}{$language} = uri_encode($self->{url}{$language}, %uri_encoding_options);
         $self->{imageUrl}{$language} = "https://$domain/comics/$self->{baseName}{$language}.png";

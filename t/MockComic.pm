@@ -197,6 +197,10 @@ sub make_comic {
     my $comic = new Comic($args{$IN_FILE}, $args{$SETTINGS});
     $comic->{height} = $args{$HEIGHT};
     $comic->{width} = $args{$WIDTH};
+    foreach my $language ($comic->languages()) {
+        $comic->{htmlFile}{$language} = "$comic->{baseName}{$language}.html";
+        $comic->{href}{$language} = "comics/$comic->{htmlFile}{$language}";
+    }
     return $comic;
 }
 

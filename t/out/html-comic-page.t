@@ -96,6 +96,16 @@ sub fails_if_no_template_for_language : Tests {
 }
 
 
+sub generates_html_page_and_href : Tests {
+    my $comic = make_comic('English', 'Beer brewing', '2016-01-01');
+    $comic->{baseName}{'English'} = "bass";
+    my $hcp = make_generator();
+    $hcp->generate($comic);
+    is_deeply($comic->{htmlFile}, {'English' => 'bass.html'});
+    is_deeply($comic->{href}, {'English' => 'comics/bass.html'});
+}
+
+
 sub navigation_links_first : Tests {
     my $jan = make_comic('English', 'Jan', '2016-01-01');
     my $feb = make_comic('English', 'Feb', '2016-02-01');
