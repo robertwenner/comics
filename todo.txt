@@ -179,10 +179,12 @@
 - replace vars{'tags'} and vars{'tagsOrder'} in backlog with an ordered hash
   if Template supports this nicely
 
-- backlog currently appends language name to tags and series, could instead
-  return hashes with language as keys. On the one hand the template gets
-  more complicated (one more nested loop), on the other hand it's cleaner
-  and would allow to show / hide tags or series per language
+- backlog currently appends language name to tags and series, it could
+  instead return hashes with languages as keys. On the one hand the template
+  gets more complicated (one more nested loop), on the other hand it's
+  cleaner and would allow to show / hide tags or series per language
 
-- break up Comic::Out::Backlog into the actual backlog part and the overview
-  of series, tags, etc part
+- break up Comic::Out::Backlog into the actual backlog part and meta data
+  (e.g., tags) aggregation overview
+
+- support aggregating meta data that's not per-language in the backlog

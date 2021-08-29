@@ -24,16 +24,13 @@ sub set_up : Test(setup) {
 [% FOREACH l IN languages %][% END %]
 [% FOREACH t IN tags %][% END %]
 [% FOREACH t IN tagOrder %][% END %]
-[% FOREACH s IN series %][% END %]
-[% FOREACH s IN seriesOrder %][% END %]
-[% FOREACH w IN who %][% END %]
-[% FOREACH w IN whoOrder %][% END %]
 TEMPL
 
     $backlog = Comic::Out::Backlog->new({
         'Backlog' => {
             'template' => 'backlog.templ',
             'outfile' => 'generated/backlog.html',
+            'collect' => ['tags', 'series', 'who'],
         },
     });
 }
@@ -48,11 +45,11 @@ sub make_comic {
 }
 
 
-sub make_comic_with_tag {
-    my ($tag) = @_;
+sub make_comic_with_tags {
+    my @tags = @_;
     return MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::DEUTSCH => 'Bier trinken' },
-        $MockComic::TAGS => { $MockComic::DEUTSCH => [$tag]},
+        $MockComic::TAGS => { $MockComic::DEUTSCH => [@tags]},
         $MockComic::PUBLISHED_WHEN => '3016-01-01',
     );
 }
@@ -108,6 +105,21 @@ sub constructor_arguments : Tests {
         });
     };
     like($@, qr{\boutfile\b});
+
+    eval {
+        $backlog = Comic::Out::Backlog->new({
+            'Backlog' => {
+                'template' => '...',
+                'outfile' => '...',
+                'collect' => {
+                    "me" => 1,
+                },
+            },
+        });
+    };
+    like($@, qr{\bcollect\b});
+    like($@, qr{\barray\b});
+    like($@, qr{\bsingle value\b});
 }
 
 
@@ -192,9 +204,16 @@ sub populates_fields_empty_backlog : Tests {
 }
 
 
-sub populates_fields_one_comic_in_backlog : Tests {
+sub populates_fields_collect_array_one_comic_in_backlog : Tests {
     my $comic = make_comic('eins', 'Deutsch', '3016-01-01');
 
+    $backlog = Comic::Out::Backlog->new({
+        'Backlog' => {
+            'template' => 'backlog.templ',
+            'outfile' => 'generated/backlog.html',
+            'collect' => ['tags', 'series', 'who'],
+        },
+    });
     my %vars = $backlog->_populate_vars($comic);
 
     is_deeply($vars{publishers}, ['web']);
@@ -206,6 +225,45 @@ sub populates_fields_one_comic_in_backlog : Tests {
     is_deeply($vars{who}, {});
     is_deeply($vars{seriesOrder}, []);
     is_deeply($vars{series}, {});
+}
+
+
+sub populates_fields_collect_scalar_one_comic_in_backlog : Tests {
+    my $comic = make_comic('eins', 'Deutsch', '3016-01-01');
+
+    $backlog = Comic::Out::Backlog->new({
+        'Backlog' => {
+            'template' => 'backlog.templ',
+            'outfile' => 'generated/backlog.html',
+            'collect' => 'tags',
+        },
+    });
+    my %vars = $backlog->_populate_vars($comic);
+
+    is_deeply($vars{publishers}, ['web']);
+    is_deeply($vars{languages}, ['Deutsch']);
+    is_deeply($vars{comics}, [$comic]);
+    is_deeply($vars{tagsOrder}, ['Bier (Deutsch)', 'Craft (Deutsch)']);
+    is_deeply($vars{tags}, {'Bier (Deutsch)' => 1, 'Craft (Deutsch)' => 1});
+    is($vars{who}, undef);
+    is($vars{whoOrder}, undef);
+}
+
+
+sub populates_fields_no_collect_one_comic_in_backlog : Tests {
+    my $comic = make_comic('eins', 'Deutsch', '3016-01-01');
+
+    $backlog = Comic::Out::Backlog->new({
+        'Backlog' => {
+            'template' => 'backlog.templ',
+            'outfile' => 'generated/backlog.html',
+        },
+    });
+    my %vars = $backlog->_populate_vars($comic);
+
+    is_deeply($vars{publishers}, ['web']);
+    is_deeply($vars{languages}, ['Deutsch']);
+    is_deeply($vars{comics}, [$comic]);
 }
 
 
@@ -274,16 +332,13 @@ sub includes_lanuage_in_series_some_language_has_no_series: Tests {
 }
 
 
-sub tags : Tests {
+sub collect_array_ordering : Tests {
     my @comics = (
-        make_comic_with_tag('Bym'),
-        make_comic_with_tag('Bym'),
-        make_comic_with_tag('YetOther'),
-        make_comic_with_tag('Other'),
-        make_comic_with_tag('Bym'),
-        make_comic_with_tag('Other'),
-        make_comic_with_tag('AndThenSome'),
-        make_comic_with_tag('YetOther'),
+        make_comic_with_tags('Bym', 'Other'),
+        make_comic_with_tags('Bym'),
+        make_comic_with_tags('YetOther'),
+        make_comic_with_tags('Other', 'YetOther', 'Bym'),
+        make_comic_with_tags('AndThenSome'),
     );
 
     my %vars = $backlog->_populate_vars(@comics);
@@ -293,11 +348,11 @@ sub tags : Tests {
 }
 
 
-sub tags_case_are_sensitive : Tests {
+sub collects_array_ordering_case_insensitive : Tests {
     my @comics = (
-        make_comic_with_tag('Bym'),
-        make_comic_with_tag('bym'),
-        make_comic_with_tag('ale'),
+        make_comic_with_tags('Bym'),
+        make_comic_with_tags('bym'),
+        make_comic_with_tags('ale'),
     );
 
     my %vars = $backlog->_populate_vars(@comics);
@@ -307,36 +362,7 @@ sub tags_case_are_sensitive : Tests {
 }
 
 
-sub who : Tests {
-    my @comics = (
-        make_comic_with_people('Paul', 'Max'),
-        make_comic_with_people('Paul', 'Max'),
-        make_comic_with_people('Paul'),
-        make_comic_with_people('Mike', 'Robert'),
-    );
-
-    my %vars = $backlog->_populate_vars(@comics);
-
-    is_deeply($vars{who}, {'Paul (Deutsch)' => 3, 'Max (Deutsch)' => 2, 'Mike (Deutsch)' => 1, 'Robert (Deutsch)' => 1});
-    is_deeply($vars{whoOrder}, ['Paul (Deutsch)', 'Max (Deutsch)', 'Mike (Deutsch)', 'Robert (Deutsch)']);
-}
-
-
-sub who_case : Tests {
-    my @comics = (
-        make_comic_with_people('Paul'),
-        make_comic_with_people('paul'),
-        make_comic_with_people('max'),
-    );
-
-    my %vars = $backlog->_populate_vars(@comics);
-
-    is_deeply($vars{who}, {'max (Deutsch)' => 1, 'Paul (Deutsch)' => 1, 'paul (Deutsch)' => 1});
-    is_deeply($vars{whoOrder}, ['max (Deutsch)', 'Paul (Deutsch)', 'paul (Deutsch)']);
-}
-
-
-sub series : Tests {
+sub collect_scalar : Tests {
     my @comics = (
         make_comic_with_series('Buckimude'),
         make_comic_with_series('Buckimude'),
@@ -350,9 +376,11 @@ sub series : Tests {
 }
 
 
-sub series_case : Tests {
+sub collect_scalar_ordering_case_insensirive : Tests {
     my @comics = (
         make_comic_with_series('AAA'),
+        make_comic_with_series('AAA'),
+        make_comic_with_series('aaa'),
         make_comic_with_series('bbb'),
         make_comic_with_series('CCC'),
         make_comic_with_series('ddd'),
@@ -360,12 +388,24 @@ sub series_case : Tests {
 
     my %vars = $backlog->_populate_vars(@comics);
 
-    is_deeply($vars{series}, {'AAA (Deutsch)' => 1, 'bbb (Deutsch)' => 1, 'CCC (Deutsch)' => 1, 'ddd (Deutsch)' => 1});
-    is_deeply($vars{seriesOrder}, ['AAA (Deutsch)', 'bbb (Deutsch)', 'CCC (Deutsch)', 'ddd (Deutsch)']);
+    is_deeply($vars{series}, {
+        'AAA (Deutsch)' => 2,
+        'aaa (Deutsch)' => 1,
+        'bbb (Deutsch)' => 1,
+        'CCC (Deutsch)' => 1,
+        'ddd (Deutsch)' => 1,
+    });
+    is_deeply($vars{seriesOrder}, [
+        'AAA (Deutsch)',
+        'aaa (Deutsch)',
+        'bbb (Deutsch)',
+        'CCC (Deutsch)',
+        'ddd (Deutsch)',
+    ]);
 }
 
 
-sub empty_series_array : Tests {
+sub collect_empty_meta_data : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::JSON => '"series": {}',
         $MockComic::PUBLISHED_WHEN => '3000-01-01',
@@ -375,4 +415,21 @@ sub empty_series_array : Tests {
 
     is_deeply($vars{series}, {});
     is_deeply($vars{seriesOrder}, []);
+}
+
+
+sub collect_unsupported_stuff : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::JSON => '"series": {"English": {"foo": "bar"}}',
+        $MockComic::PUBLISHED_WHEN => '3000-01-01',
+    );
+
+    eval {
+        $backlog->_populate_vars($comic);
+    };
+    like($@, qr{\bcannot handle\b}i, 'mentions the problem');
+    like($@, qr{\barray\b}i, 'mentioned what was expected');
+    like($@, qr{\bsingle\b}i, 'mentioned what was expected');
+    like($@, qr{\bseries\b}i, 'mentions bad tag');
+    like($@, qr{\bHASH\b}i, 'mentions what it found');
 }

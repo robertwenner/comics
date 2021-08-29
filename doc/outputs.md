@@ -59,7 +59,8 @@ comic to look up what keywords (tags) other comics used.
         "Backlog": {
             "template": "templates/backlog.templ",
             "outfile": "generated/backlog.html",
-            "toplocation": "web"
+            "toplocation": "web",
+            "collect": [ "who", "tags", "series" ]
         }
     }
 }
@@ -80,26 +81,48 @@ comic to look up what keywords (tags) other comics used.
   `toplocation`. This will be the first item in the locations array,
   followed by all other locations in alphabetical order.
 
+* The optional `collect` array specifies which per-language meta data from
+  the comics to collect and make available. These need to be given in the
+  comics like this:
+
+```json
+{
+    "series": {
+        "English": {
+            "making beer"
+        }
+    },
+    "who": {
+        "English": [ "Max", "Paul" ]
+    },
+    "tags": [
+        "brewing", "malt", "yeast"
+    ]
+}
+```
+
+   For the backlog, they will be sorted by number of occurrence, then
+   alphabetically.
+
 When the template is processed, these variables are available:
 
 * `comics` array of all comics in the backlog, with any meta data or
   information from other output generators that already ran available.
 
-* `languages`: array of names of all languages in all comics.
+* `languages`: array of names of all languages in all comics (published or
+   not).
 
 * `publishers`: array of locations where comics are scheduled to be
    published (from the comic's `published.where` meta data). The template
    can use this to group backlog comics by location, e.g., one list for
    online and one for a magazine.
 
-* `tags`, `%who`, `series`: hashes of tags, characters, and series
-   to the count of these in all comics.
+* `x`, where x is each element in the configured `collect` parameter: a hash
+   of that comic meta data to the count it occurred.
 
-* `tagsOrder`, `whoOrder`, `seriesOrder`: lists ordered by how often that
-    tag, character, or series has been seen in all comics. The template can
-    iterate over these arrays and use the values as keys to the respective
-    `tags`, `who`, and `series` hashes to print the tags, characters, and
-    series in order.
+* `xOrder`, ordered by how often that x meta data has been seen in all
+   comics. The template can iterate over these arrays and use the values as
+   keys to the respective `x` hashes to print the them in order.
 
 =back
 

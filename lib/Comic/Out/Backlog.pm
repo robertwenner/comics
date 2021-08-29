@@ -18,7 +18,8 @@ use version; our $VERSION = qv('0.0.3');
 =head1 NAME
 
 Comic::Out::Backlog - Generates a single html page with all unpublished
-comics plus lists of used tags, series, and characters.
+comics plus possibly lists of used tags, series and other per-language
+comic meta data.
 
 =head1 SYNOPSIS
 
@@ -26,7 +27,7 @@ comics plus lists of used tags, series, and characters.
         # ...
     };
     my $png = Comic::Out::Backlog->new($settings);
-    $png->generate($comic);
+    $png->generate_all(@comics);
 
 =head1 DESCRIPTION
 
@@ -66,6 +67,7 @@ For example:
                 'outfile' => 'generated/backlog.html',
                 'template' => 'templates/backlog.templ',
                 'toplocation' => 'web',
+				'collect' => ['tags', 'series', 'who'],
             }
         }
     }
@@ -79,6 +81,9 @@ The C<toplocation> will be the first element in the C<publishers> array made
 available to the template, to move one publisher to the beginning of the
 list, as a preferred one in ordering.
 
+The C<collect> array says which per-language meta data to add to the backlog
+overview.
+
 =cut
 
 
@@ -90,6 +95,19 @@ sub new {
     %{$self->{settings}} = %{$settings->{Backlog}};
     croak('Must specify Backlog.template') unless ($self->{settings}->{template});
     croak('Must specify Backlog.outfile') unless ($self->{settings}->{outfile});
+
+	if ($self->{settings}->{collect}) {
+		if (ref $self->{settings}->{collect} eq '') {
+			# Turn into an array for easier use later.
+			$self->{settings}->{collect} = [ $self->{settings}->{collect} ];
+		}
+		if (ref $self->{settings}->{collect} ne 'ARRAY') {
+			croak('Backlog.collect must be array or single value');
+		}
+	}
+	else {
+	    $self->{settings}->{collect} = [];
+	}
 
     return $self;
 }
@@ -132,24 +150,46 @@ sub _populate_vars {
     } @comics;
 
     my %languages;
-    my %tags;
-    my %who;
-    my %series;
     foreach my $comic (@comics) {
         foreach my $language ($comic->languages()) {
             $languages{$language} = 1;
-            foreach my $tag (@{$comic->{meta_data}->{tags}->{$language}}) {
-                $tag = Comic::_normalize_whitespace($tag);
-                $tags{"$tag ($language)"}++;
+        }
+    }
+
+    my @to_collect = @{$self->{settings}->{collect}};
+    my %collected;
+    # Manually set to empty hashes for easier use in the template.
+    # Auto-vivification doesn't happen if we never enter the per-comic loop below.
+    foreach my $want (@to_collect) {
+        $collected{$want} = {};
+    }
+
+    foreach my $comic (@comics) {
+        foreach my $want (@to_collect) {
+            my $found = $comic->{meta_data}->{$want};
+            next unless ($found);
+
+            # Tag exists in meta data.
+            foreach my $language ($comic->languages()) {
+                my $per_language = $found->{$language};
+				# Silently ignore empty tags. If a Check is configured, it may
+                # or may not catch this.
+                next unless ($per_language);
+
+                if (ref $per_language eq '') {
+                    # Single value, like series
+                    $collected{$want}{"$per_language ($language)"}++;
+                }
+                elsif (ref $per_language eq 'ARRAY') {
+                    # Multiple values, like tags
+                    foreach my $got (@{$found->{$language}}) {
+                        $collected{$want}{"$got ($language)"}++;
+                    }
+                }
+                else {
+                    croak("Cannot handle $want: must be array or single value, but got " . ref $per_language);
+                }
             }
-            foreach my $who (@{$comic->{meta_data}->{who}->{$language}}) {
-                $who{"$who ($language)"}++;
-            }
-            if ($comic->{meta_data}->{series}) {
-                my $serie = $comic->{meta_data}->{series}->{$language};
-                $series{"$serie ($language)"}++ if ($serie);
-            }
-            $comic->{htmlFile}{$language} = lc $language  . "/$comic->{htmlFile}{$language}";
         }
     }
 
@@ -158,32 +198,23 @@ sub _populate_vars {
     $vars{'languages'} = \@languages;
     $vars{'comics'} = \@unpublished;
     $vars{'publishers'} = $self->_publishers(@comics);
-    $vars{'tags'} = \%tags;
-    $vars{'who'} = \%who;
-    $vars{'series'} = \%series;
 
-    ## no critic(BuiltinFunctions::ProhibitReverseSortBlock)
-    # I need to sort by count first, then alphabetically by name, so I have to use
-    # $b on the left side of the comparison operator. Perl Critic doesn't understand
-    # my sorting needs...
-    $vars{'tagsOrder'} = [ sort {
-        # First, sort by count
-        $tags{$b} <=> $tags{$a} or
-        # then by name, case insensitive, so that e.g., m and M get sorted together
-        lc $a cmp lc $b or
-        # then by name, case sensitive, to avoid names "jumping" around (and breaking tests).
-        $a cmp $b
-    } keys %tags ];
-    $vars{'whoOrder'} = [ sort {
-        $who{$b} <=> $who{$a} or
-        lc $a cmp lc $b or
-        $a cmp $b
-    } keys %who ];
-    # use critic
-    $vars{'seriesOrder'} = [ sort {
-        lc $a cmp lc $b or
-        $a cmp $b
-    } keys %series ];
+    foreach my $want (@to_collect) {
+		$vars{$want} = $collected{$want};
+        ## no critic(BuiltinFunctions::ProhibitReverseSortBlock)
+        # I need to sort by count first, then alphabetically by name, so I have to use
+        # $b on the left side of the comparison operator. Perl Critic doesn't understand
+        # my sorting needs...
+		$vars{"${want}Order"} = [ sort {
+            # First, sort by count
+            $collected{$want}{$b} <=> $collected{$want}{$a} or
+		# use critic
+            # then by name, case insensitive, so that e.g., m and M get sorted together
+            lc $a cmp lc $b or
+            # then by name, case sensitive, to avoid names "jumping" around (and breaking tests).
+            $a cmp $b
+        } keys %{$collected{$want}} ];
+	}
 
     return %vars;
 }
