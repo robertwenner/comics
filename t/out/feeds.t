@@ -50,12 +50,14 @@ TEMPL
 sub make_comic {
     my ($title, $published) = @_;
 
-    return MockComic::make_comic(
+    my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
             $MockComic::ENGLISH => $title,
         },
         $MockComic::PUBLISHED_WHEN => $published
     );
+    $comic->{href}{$MockComic::ENGLISH} = "comics/$comic->{htmlFile}{$MockComic::ENGLISH}";
+    return $comic;
 }
 
 

@@ -106,6 +106,30 @@ sub new {
 }
 
 
+=head2 generate
+
+Places the URL for the given comic in the given comic.
+
+Parameters:
+
+=over 4
+
+=item * B<$comic> Comic to process.
+
+=back
+
+=cut
+
+sub generate {
+    my ($self, $comic) = @ARG;
+
+    foreach my $language ($comic->languages()) {
+        $comic->{href}{$language} = "comics/$self->{htmlFile}{$language}";
+    }
+    return;
+}
+
+
 =head2 generate_all
 
 Generates the html pages for the given Comics.

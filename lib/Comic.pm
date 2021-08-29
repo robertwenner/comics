@@ -350,7 +350,6 @@ sub _load {
         $self->{url}{$language} = "https://$domain/comics/$self->{baseName}{$language}.html";
         $self->{urlUrlEncoded}{$language} = uri_encode($self->{url}{$language}, %uri_encoding_options);
         $self->{imageUrl}{$language} = "https://$domain/comics/$self->{baseName}{$language}.png";
-        $self->{href}{$language} = "comics/$self->{htmlFile}{$language}";
 
         $counts{'comics'}{$language}++;
     }
