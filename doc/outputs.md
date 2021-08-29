@@ -172,6 +172,10 @@ Generates website feeds (e.g., in [RSS](https://en.wikipedia.org/wiki/RSS)
 or [Atom](https://en.wikipedia.org/wiki/Atom_(Web_standard) format) from
 provided Perl [Template Toolkit](http://template-toolkit.org/) templates.
 
+While not many people use RSS readers these days, feeds can be used to
+trigger an action with [Zapier](https://zapier.com) like uploading the new
+comic on Facebook.
+
 ```json
 {
     "Out": {
