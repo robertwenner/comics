@@ -11,6 +11,7 @@ use Comic;
 use Comic::Settings;
 use Carp;
 use JSON;
+use URI::Encode qw(uri_encode);
 
 # Constants to catch typos when defining meta data.
 our Readonly $ENGLISH = 'English';
@@ -197,9 +198,14 @@ sub make_comic {
     my $comic = new Comic($args{$IN_FILE}, $args{$SETTINGS});
     $comic->{height} = $args{$HEIGHT};
     $comic->{width} = $args{$WIDTH};
+    my %uri_encoding_options = (encode_reserved => 1);
     foreach my $language ($comic->languages()) {
+        my $domain = ${$comic->{settings}->{Domains}}{$language};
         $comic->{htmlFile}{$language} = "$comic->{baseName}{$language}.html";
         $comic->{href}{$language} = "comics/$comic->{htmlFile}{$language}";
+        $comic->{url}{$language} = "https://$domain/comics/$comic->{baseName}{$language}.html";
+        $comic->{urlUrlEncoded}{$language} = uri_encode($comic->{url}{$language}, %uri_encoding_options);
+        $comic->{imageUrl}{$language} = "https://$domain/comics/$comic->{baseName}{$language}.png";
     }
     return $comic;
 }

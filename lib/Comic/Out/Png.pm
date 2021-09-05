@@ -207,9 +207,9 @@ sub _get_png_info {
     # TODO could height and width be different per language?
     $comic->{height} = $info->{'ImageHeight'};
     $comic->{width} = $info->{'ImageWidth'};
-    # Can't use $info->{'ImageSize'} as it returns e.g., 26 KiB
-    $comic->{pngSize}{$language} = _file_size($png_file);
-    return;
+    # Can't use $info->{'ImageSize'} as it returns e.g., 26 KiB, and parsing
+    # that would be more complicated than just asking the file system.
+    $comic->{pngSize}{$language} = _file_size($png_file); return;
 }
 
 

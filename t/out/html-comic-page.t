@@ -38,6 +38,9 @@ sub make_generator {
             'Templates' => {
                 'English' => 'en-comic.templ',
             },
+            'Domains' => {
+                'English' => 'beercomics.com',
+            },
         },
     );
     foreach my $key (keys %templates) {
@@ -47,36 +50,43 @@ sub make_generator {
 }
 
 
-sub fails_if_no_config : Tests {
+sub fails_on_missing_configuration : Tests {
     eval {
         Comic::Out::HtmlComicPage->new({});
     };
-    like($@, qr{\bconfiguration\b});
-}
+    like($@, qr{\bHtmlComicPage\b});
+    like($@, qr{\bconfiguration\b}i);
 
-
-sub fails_if_no_outdir : Tests {
     eval {
         Comic::Out::HtmlComicPage->new({
             'HtmlComicPage' => {
                 'Templates' => {},
+                'Domains' => {},
             },
         });
     };
-    like($@, qr{\boutdir\b});
-    like($@, qr{\boutput directory\b});
-}
+    like($@, qr{\bHtmlComicPage\.outdir\b});
+    like($@, qr{\boutput directory\b}i);
 
-
-sub fails_if_no_templates : Tests {
     eval {
         Comic::Out::HtmlComicPage->new({
             'HtmlComicPage' => {
                 'outdir' => '/tmp',
+                'Domains' => {},
             },
         });
     };
-    like($@, qr{\bTemplates\b});
+    like($@, qr{\bHtmlComicPage\.Templates\b});
+
+    eval {
+        Comic::Out::HtmlComicPage->new({
+            'HtmlComicPage' => {
+                'outdir' => '/tmp',
+                'Templates' => {},
+            },
+        });
+    };
+    like($@, qr{\bHtmlComicPage\.Domains\b});
 }
 
 
@@ -86,6 +96,26 @@ sub fails_if_no_template_for_language : Tests {
         'HtmlComicPage' => {
             'outdir' => 'generated/web',
             'Templates' => {},
+            'Domains' => {
+                'English' => 'beercomics.com',
+            },
+        },
+    });
+    eval {
+        $hcp->generate_all($comic);
+    };
+    like($@, qr{\btemplate\b});
+    like($@, qr{\bEnglish\b});
+
+    $hcp = Comic::Out::HtmlComicPage->new({
+        'HtmlComicPage' => {
+            'outdir' => 'generated/web',
+            'Templates' => {
+                'English' => '',
+            },
+            'Domains' => {
+                'English' => 'beercomics.com',
+            },
         },
     });
     eval {
@@ -96,13 +126,35 @@ sub fails_if_no_template_for_language : Tests {
 }
 
 
+sub fails_if_no_domain_for_language : Tests {
+    my $comic = make_comic('English', 'Beer brewing', '2016-01-01');
+    my $hcp = Comic::Out::HtmlComicPage->new({
+        'HtmlComicPage' => {
+            'outdir' => 'generated/web',
+            'Templates' => {
+                'English' => 'en-comic.templ',
+            },
+            'Domains' => {},
+        },
+    });
+    eval {
+        $hcp->generate($comic);
+    };
+    like($@, qr{\HtmlComicPage.Domains\b}i);
+    like($@, qr{\bEnglish\b});
+}
+
+
 sub generates_html_page_and_href : Tests {
     my $comic = make_comic('English', 'Beer brewing', '2016-01-01');
     $comic->{baseName}{'English'} = "bass";
     my $hcp = make_generator();
     $hcp->generate($comic);
-    is_deeply($comic->{htmlFile}, {'English' => 'bass.html'});
-    is_deeply($comic->{href}, {'English' => 'comics/bass.html'});
+    $hcp->generate_all($comic);
+    is_deeply($comic->{htmlFile}, {'English' => 'bass.html'}, 'wrong html file name');
+    is_deeply($comic->{href}, {'English' => 'comics/bass.html'}, 'wrong href');
+    is_deeply($comic->{url}, {'English' => 'https://beercomics.com/comics/bass.html'}, 'wrong url');
+    is_deeply($comic->{urlUrlEncoded}, {'English' => 'https%3A%2F%2Fbeercomics.com%2Fcomics%2Fbass.html'}, 'wrong encoded url');
 }
 
 

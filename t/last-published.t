@@ -27,6 +27,11 @@ sub set_up : Test(setup) {
                 $MockComic::DEUTSCH => 'comic-page.templ',
                 "$MockComic::ESPAÑOL" => 'comic-page.templ',
             },
+            'Domains' => {
+                $MockComic::ENGLISH => 'beercomics.com',
+                $MockComic::DEUTSCH => 'biercomics.de',
+                "$MockComic::ESPAÑOL" => 'cervezacomics.es',
+            },
         },
     });
 }

@@ -30,6 +30,9 @@ sub make_generator {
             'Templates' => {
                 'English' => 'en-comic.templ',
             },
+            'Domains' => {
+                'English' => 'beercomics.com',
+            },
         },
     );
     foreach my $key (keys %templates) {

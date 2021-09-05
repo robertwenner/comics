@@ -250,6 +250,9 @@ The configuration needs to be like this:
             "outdir": "generated/web",
             "Templates": {
                 "English": "templ/comic-page.templ"
+            },
+            "Domains": {
+                "English": "example.org"
             }
         }
     }
@@ -259,6 +262,12 @@ The configuration needs to be like this:
 The `outdir` specifies the main output directory; the actual files will be
 generated underneath, in a directory for each language, with the HTML file
 name derived from the comic's title.
+
+The `Templates` refers to a Perl Toolkit template per language that will be
+used to generate the page.
+
+The `Domains` gives the domain name (e.g., example.com) so that the module
+can generate the full domain name for use in the template.
 
 The `index.html` file uses the same template as the regular comic pages.
 

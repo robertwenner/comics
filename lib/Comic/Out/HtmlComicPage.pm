@@ -8,8 +8,9 @@ use English '-no_match_vars';
 use Carp;
 use Readonly;
 use Clone qw(clone);
-use Comic::Out::Template;
+use URI::Encode qw(uri_encode uri_decode);
 
+use Comic::Out::Template;
 use Comic::Out::Generator;
 use base('Comic::Out::Generator');
 
@@ -45,6 +46,10 @@ like this:
                 "Templates": {
                     "English": "templates/comic-page.templ",
                     "Deutsch": "templates/comic-page.templ"
+                },
+                "Domains": {
+                    "English": "beercomics.com",
+                    "Deutsch": "biercomics.de"
                 }
             }
         }
@@ -71,7 +76,8 @@ Parameters:
 =back
 
 The passed settings need to have output directory (C<outdir>) and the
-per-language templates for the comic pages (C<Settings>).
+per-language templates for the comic pages (C<Settings>) and the domains
+(per language).
 
 For example:
 
@@ -80,10 +86,13 @@ For example:
             'HtmlComicPage' => {
                 'outdir' => 'generated',
                 'Templates' => {
-                    'English'=> 'path/to/template-file',
-                }
-            }
-        }
+                    'English' => 'path/to/template-file',
+                },
+                'Domains' => {
+                    'English' => 'example.com',
+                },
+            },
+        },
     }
     my $hcp = Comic::Out::HtmlComicPage($settings);
 
@@ -101,6 +110,7 @@ sub new {
     $self->{settings}->{outdir} .= q{/} unless ($self->{settings}->{outdir} =~ m{/$});
 
     croak('Must specify HtmlComicPage.Templates') unless ($self->{settings}->{Templates});
+    croak('Must specify HtmlComicPage.Domains') unless ($self->{settings}->{Domains});
 
     return $self;
 }
@@ -133,9 +143,17 @@ This defines these variables in the passed Comic:
 sub generate {
     my ($self, $comic) = @ARG;
 
+    my %uri_encoding_options = (encode_reserved => 1);
+    my %domains = %{$self->{settings}->{Domains}};
+
     foreach my $language ($comic->languages()) {
+        my $domain = $domains{$language};
+        $comic->keel_over("No $language HtmlComicPage.Domains configured") unless ($domain);
+
         $comic->{htmlFile}{$language} = "$comic->{baseName}{$language}.html";
-        $comic->{href}{$language} = "comics/$comic->{htmlFile}{$language}";
+        $comic->{href}{$language} = 'comics/' . $comic->{htmlFile}{$language};
+        $comic->{url}{$language} = "https://$domain/$comic->{href}{$language}";
+        $comic->{urlUrlEncoded}{$language} = uri_encode($comic->{url}{$language}, %uri_encoding_options);
     }
     return;
 }
@@ -176,7 +194,7 @@ sub generate_all {
             my $last_comic = _find_next($language, $i, \@sorted, [reverse $i + 1 .. @sorted - 1]);
             $comic->{'last'}{$language} = $last_comic ? $last_comic->{htmlFile}{$language} : 0;
 
-            # Create dir(s).
+            # Create dir(s)
             Comic::make_dir($self->{settings}->{outdir} . lc $language);
 
             # The actual export

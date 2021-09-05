@@ -296,6 +296,9 @@ TEMPLATE
             'Templates' => {
                 'Deutsch' => 'templates/deutsch/comic-page.templ',
             },
+            'Domains' => {
+                'Deutsch' => 'biercomics.de',
+            },
         },
     });
     $comic->{pngFile}{'Deutsch'} = 'bier-trinken.png';
