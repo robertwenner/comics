@@ -38,9 +38,6 @@ sub make_generator {
             'Templates' => {
                 'English' => 'en-comic.templ',
             },
-            'Domains' => {
-                'English' => 'beercomics.com',
-            },
         },
     );
     foreach my $key (keys %templates) {
@@ -61,7 +58,6 @@ sub fails_on_missing_configuration : Tests {
         Comic::Out::HtmlComicPage->new({
             'HtmlComicPage' => {
                 'Templates' => {},
-                'Domains' => {},
             },
         });
     };
@@ -72,21 +68,10 @@ sub fails_on_missing_configuration : Tests {
         Comic::Out::HtmlComicPage->new({
             'HtmlComicPage' => {
                 'outdir' => '/tmp',
-                'Domains' => {},
             },
         });
     };
     like($@, qr{\bHtmlComicPage\.Templates\b});
-
-    eval {
-        Comic::Out::HtmlComicPage->new({
-            'HtmlComicPage' => {
-                'outdir' => '/tmp',
-                'Templates' => {},
-            },
-        });
-    };
-    like($@, qr{\bHtmlComicPage\.Domains\b});
 }
 
 
@@ -96,9 +81,6 @@ sub fails_if_no_template_for_language : Tests {
         'HtmlComicPage' => {
             'outdir' => 'generated/web',
             'Templates' => {},
-            'Domains' => {
-                'English' => 'beercomics.com',
-            },
         },
     });
     eval {
@@ -113,34 +95,12 @@ sub fails_if_no_template_for_language : Tests {
             'Templates' => {
                 'English' => '',
             },
-            'Domains' => {
-                'English' => 'beercomics.com',
-            },
         },
     });
     eval {
         $hcp->generate_all($comic);
     };
     like($@, qr{\btemplate\b});
-    like($@, qr{\bEnglish\b});
-}
-
-
-sub fails_if_no_domain_for_language : Tests {
-    my $comic = make_comic('English', 'Beer brewing', '2016-01-01');
-    my $hcp = Comic::Out::HtmlComicPage->new({
-        'HtmlComicPage' => {
-            'outdir' => 'generated/web',
-            'Templates' => {
-                'English' => 'en-comic.templ',
-            },
-            'Domains' => {},
-        },
-    });
-    eval {
-        $hcp->generate($comic);
-    };
-    like($@, qr{\HtmlComicPage.Domains\b}i);
     like($@, qr{\bEnglish\b});
 }
 
@@ -153,8 +113,6 @@ sub generates_html_page_and_href : Tests {
     $hcp->generate_all($comic);
     is_deeply($comic->{htmlFile}, {'English' => 'bass.html'}, 'wrong html file name');
     is_deeply($comic->{href}, {'English' => 'comics/bass.html'}, 'wrong href');
-    is_deeply($comic->{url}, {'English' => 'https://beercomics.com/comics/bass.html'}, 'wrong url');
-    is_deeply($comic->{urlUrlEncoded}, {'English' => 'https%3A%2F%2Fbeercomics.com%2Fcomics%2Fbass.html'}, 'wrong encoded url');
 }
 
 
@@ -423,7 +381,6 @@ sub fb_open_graph : Tests {
 <meta property="og:title" content="[% comic.meta_data.title.$Language %]"/>
 <meta property="og:site_name" content="Biercomics"/>
 <meta property="og:description" content="[% FILTER html %][% comic.meta_data.description.$Language %][% END %]"/>
-<meta property="og:image" content="[% comic.imageUrl.$Language %]"/>
 <meta property="og:locale" content="de"/>
 <meta property="og:image:type" content="image/png"/>
 <meta property="og:image:height" content="[% comic.height %]"/>
@@ -452,8 +409,6 @@ XML
         'Title not found');
     like($exported, qr{<meta property="og:description" content="Paul und Max &quot;gehen&quot; Bier trinken."/>},
         'Description not found');
-    like($exported, qr{<meta property="og:image" content="https://biercomics\.de/comics/bier-trinken.png"/>},
-        'Image not found');
 }
 
 

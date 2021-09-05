@@ -8,7 +8,6 @@ use English '-no_match_vars';
 use Carp;
 use Readonly;
 use Clone qw(clone);
-use URI::Encode qw(uri_encode uri_decode);
 
 use Comic::Out::Template;
 use Comic::Out::Generator;
@@ -46,10 +45,6 @@ like this:
                 "Templates": {
                     "English": "templates/comic-page.templ",
                     "Deutsch": "templates/comic-page.templ"
-                },
-                "Domains": {
-                    "English": "beercomics.com",
-                    "Deutsch": "biercomics.de"
                 }
             }
         }
@@ -88,9 +83,6 @@ For example:
                 'Templates' => {
                     'English' => 'path/to/template-file',
                 },
-                'Domains' => {
-                    'English' => 'example.com',
-                },
             },
         },
     }
@@ -110,7 +102,6 @@ sub new {
     $self->{settings}->{outdir} .= q{/} unless ($self->{settings}->{outdir} =~ m{/$});
 
     croak('Must specify HtmlComicPage.Templates') unless ($self->{settings}->{Templates});
-    croak('Must specify HtmlComicPage.Domains') unless ($self->{settings}->{Domains});
 
     return $self;
 }
@@ -118,7 +109,7 @@ sub new {
 
 =head2 generate
 
-Places the URL for the given comic in the given comic.
+Places HTML specific variables for the given comic in the given comic.
 
 Parameters:
 
@@ -128,7 +119,7 @@ Parameters:
 
 =back
 
-This defines these variables in the passed Comic:
+Defines these variables in the passed Comic:
 
 =over 4
 
@@ -143,17 +134,9 @@ This defines these variables in the passed Comic:
 sub generate {
     my ($self, $comic) = @ARG;
 
-    my %uri_encoding_options = (encode_reserved => 1);
-    my %domains = %{$self->{settings}->{Domains}};
-
     foreach my $language ($comic->languages()) {
-        my $domain = $domains{$language};
-        $comic->keel_over("No $language HtmlComicPage.Domains configured") unless ($domain);
-
         $comic->{htmlFile}{$language} = "$comic->{baseName}{$language}.html";
         $comic->{href}{$language} = 'comics/' . $comic->{htmlFile}{$language};
-        $comic->{url}{$language} = "https://$domain/$comic->{href}{$language}";
-        $comic->{urlUrlEncoded}{$language} = uri_encode($comic->{url}{$language}, %uri_encoding_options);
     }
     return;
 }
