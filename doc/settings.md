@@ -18,10 +18,10 @@ this top-level object.
 You can configure these at the top level:
 
 * Artist: Your name, optionally with an email address. This is inserted into
-  the PNG's meta information.
+  the `png`'s meta information.
 * Author: Like for Artist, in case these differ.
 * Copyright: The copyright or license for your comic. This is inserted into
-  the PNG's meta information.
+  the `png`'s meta information.
 
 For example:
 

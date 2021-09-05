@@ -16,10 +16,10 @@ For example, a title "Let's drink!" will be result in "lets-drink".
 Order matters in the configuration file; if you rely on the output from a
 previous module, it needs to go before the module that requires the output.
 
-For example, the Comic::Out::QrCode module will create QR codes for comic
-pages and put the URL in the Comic. If the Comic::Out::HtmlComicPage module
+For example, the `Comic::Out::QrCode` module will create QR codes for comic
+pages and put the URL in the Comic. If the `Comic::Out::HtmlComicPage` module
 wants to include the QR code in the page, it must run after (that means:
-configured after) the Comic::Out::QrCode module.
+configured after) the `Comic::Out::QrCode` module.
 
 Most notably: To export your comics as `.png`, you first need to export them
 as per-language `.svg`s, then the `Png` module will work with the
@@ -47,7 +47,7 @@ English comic not yet published may go in `backlog/` (both directories being
 within the specified `out` directory, here `generated/`.
 
 
-## Comic::Out::Backlog
+## `Comic::Out::Backlog`
 
 Generates an overview of the comics in the queue, plus the tags, character
 names, and series used in all comics. This should help when creating a new
@@ -131,7 +131,7 @@ backlog. The other variables are meant to show what tags, series, or
 characters already exist, to make it easy to align new comics with those.
 
 
-## Comic::Out::Copyright
+## `Comic::Out::Copyright`
 
 Places a copyright or license or URL note on the per-language `.svg` comic
 (i.e., this module depends on `Comic::Out::SvgPerLanguage`).
@@ -166,7 +166,7 @@ will be turned 90 degrees and placed between frames. If there is only one
 frame, the text will go in the bottom left corner of that frame.
 
 
-## Comic::Out::Feed
+## `Comic::Out::Feed`
 
 Generates website feeds (e.g., in [RSS](https://en.wikipedia.org/wiki/RSS)
 or [Atom](https://en.wikipedia.org/wiki/Atom_(Web_standard) format) from
@@ -214,7 +214,7 @@ Each feed configuration can take these arguments:
   `generated/web/english/atom.xml` for the atom example above.
   Defaults to the lower-case feed name plus an `.xml` extension.
 
-The Comic::Out::Feed module defines some variables for use in the template:
+The `Comic::Out::Feed` module defines some variables for use in the template:
 
 * `comics`: all comics, sorted from latest to oldest. All comic meta
   information is available. All comics are passed so that the template can
@@ -222,7 +222,7 @@ The Comic::Out::Feed module defines some variables for use in the template:
   templates at the price of higher template complexity if there are comics
   that don't exist in all languages.
 
-* `language`: Comic::Out::Feed will populate the template for each language
+* `language`: `Comic::Out::Feed` will populate the template for each language
   found; the currently processed language is in this variable.
 
 * `max`: maximum number of feed items, as per configuration.
@@ -236,7 +236,7 @@ The Comic::Out::Feed module defines some variables for use in the template:
   format (needed in Atom format).
 
 
-## Comic::Out::HtmlComicPage
+## `Comic::Out::HtmlComicPage`
 
 This is the main output generator for web comics. It generates a HTML page
 for each comic, plus an `index.html` overview page.
@@ -309,7 +309,7 @@ When the template is processed, these variables are also available:
 The `index.html` file uses the same template as the regular comic pages.
 
 
-## Comic::Out::Png
+## `Comic::Out::Png`
 
 Generates a Portable Network Graphics (`.png`) file for from a Scalable
 Vector Graphics (`.svg`) file.
@@ -331,7 +331,7 @@ The generated `.png` files will be placed in a language specific directory
 given `outdir`. Its name is derived from the comic's title in that language.
 
 The file name will be saved in the comic as `pngFile` so that templates
-like Comic::Out::HtmlComicPage can access it.
+like `Comic::Out::HtmlComicPage` can access it.
 
 The following meta data will be set on the `.png` file:
 
@@ -372,7 +372,7 @@ Height and width are not per-language, assuming a comic has the same size in
 each language.
 
 
-### Comic::Out::Sitemap
+### `Comic::Out::Sitemap`
 
 Generates a [sitemap](https://en.wikipedia.org/wiki/Sitemaps) per language.
 Sitemaps can tell search engines which pages they should crawl.
@@ -402,7 +402,7 @@ The module makes these variables available in the template:
   should be included in the sitemap.
 
 
-### Comic::Out::SvgPerLanguage
+### `Comic::Out::SvgPerLanguage`
 
 Exports a `.svg` file per language in the comic. Each of these `.svg` files has
 only the layers that are common for all languages and the layers for the

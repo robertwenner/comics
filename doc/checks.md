@@ -21,7 +21,7 @@ Each comic can override the globally configured checks; see the
 [Comic](comic.md) documentation.
 
 
-## Comic::Check::Actors
+## `Comic::Check::Actors`
 
 Checks that the given Comic's actors don't have empty names (probably
 forgotten to enter a name) and that each language has the same number of
@@ -43,7 +43,7 @@ list has less items than the others.
 ```
 
 
-## Comic::Check::DateCollision
+## `Comic::Check::DateCollision`
 
 Checks that comics are not published on the same day in the same location.
 
@@ -54,8 +54,8 @@ different locations on the same day.
 Dates need to be in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601)
 format, without time.
 
-The DateCollision check will fail if you have two comics with this meta
-data:
+`Comic::Check::DateCollision` check will fail if you have two comics with
+this meta data:
 
 ```json
 {
@@ -73,7 +73,7 @@ This check ignores comics without a published date or with an empty
 published date.
 
 
-## Comic::Check::DontPublish
+## `Comic::Check::DontPublish`
 
 Checks the comics for special markers. If any of the special markers is
 found in any text in the comic, the comic is flagged with a warning.
@@ -98,7 +98,7 @@ should look for. In your settings file, use something like this:
 Now any comic that has `DONT_PUBLISH` or `FIXME` anywhere will be flagged.
 
 
-## Comic::Check::DuplicatedTexts
+## `Comic::Check::DuplicatedTexts`
 
 Checks that the given comic has no duplicated texts, which could be copy
 & paste errors and texts forgotten to translate.
@@ -127,13 +127,13 @@ in different languages without having to define an `allow-duplicated`
 exception each time.
 
 
-## Comic::Check::EmptyTexts
+## `Comic::Check::EmptyTexts`
 
 Checks that the given comic doesn't have empty texts. Empty texts were
 probably added by accident. They can confuse other checks or tools.
 
 
-## Comic::Check::Frames
+## `Comic::Check::Frames`
 
 Checks a comic's frame style, width, and positions. Warns if frames (i.e.,
 borders around the images) are inconsistent within a comic: too little or
@@ -181,7 +181,7 @@ will still accept anything between 1.5 and 2.5 pixels:
 Frames must be in a layer named "Frames".
 
 
-## Comic::Check::MetaLayer
+## `Comic::Check::MetaLayer`
 
 Checks the comic's meta layers. Meta layers should contain explanatory texts
 for what's going on in the comic. This can be used to generate a transcript
@@ -208,7 +208,7 @@ the language. For example, if meta marker is `Meta` and language is
 ```
 
 
-## Comic::Check::Series
+## `Comic::Check::Series`
 
 Checks the given comic's series meta information to catch copy and paste
 errors or when a comic belongs to a series in one language but not in
@@ -229,7 +229,7 @@ You will also get a warning if there is only one comic in a series. This
 could be a typo, or it could be ok (first comic in a series).
 
 
-## Comic::Check::Spelling
+## `Comic::Check::Spelling`
 
 Spellchecks the given comic. Inkscape has built-in spell checking, but
 doesn't know which texts are in which language. Inkscape also doesn't check
@@ -260,7 +260,7 @@ sudo apt-get install aspell libaspell-dev aspell-en aspell-de
 Add additional languages (like `aspell-de` above for German) as needed.
 
 
-## Comic::Check::Tag
+## `Comic::Check::Tag`
 
 This flags comics that contain tags that differ from previously seen tags in
 case or white space only. This may help with case- and white space sensitive
@@ -304,7 +304,7 @@ The above example would be flagged cause the German `who` has only Max when
 the English one has Max and Paul.
 
 
-## Comic::Check::Title
+## `Comic::Check::Title`
 
 Checks a comic's title to prevent duplicate titles. Duplicate titles make it
 impossible to uniquely refer to a particular comic by title and could lead
@@ -326,7 +326,7 @@ The title is expected in the comic meta data like this:
 ```
 
 
-## Comic::Check::Transcript
+## `Comic::Check::Transcript`
 
 Checks a comic's transcript for meta information and real comic text order.
 In particular, this checks that the a comic's transcript always has a
@@ -342,7 +342,7 @@ This assumes that you have a layer per language, and within that the actual
 text and meta data layers.
 
 
-## Comic::Check::Weekday
+## `Comic::Check::Weekday`
 
 Checks a comic's published date is always on certain weekdays. For regularly
 published comics, it may make sense to check that a comic is always
