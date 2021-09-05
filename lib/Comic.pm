@@ -794,55 +794,6 @@ sub _normalized_title {
 }
 
 
-sub _all_comic_languages {
-    my (@all_comics) = @ARG;
-
-    my %languages;
-    foreach my $c (@all_comics) {
-        foreach my $language ($c->languages()) {
-            $languages{$language} = 1;
-        }
-    }
-    return keys %languages;
-}
-
-
-=head2 export_sitemap
-
-Generates a sitemap per language seen in all comics.
-
-Parameters:
-
-=over 4
-
-=item * B<%site_map_templates> hash of language to path / file name of the
-sitemap templates.
-
-=item * B<%outputs> hash of language to path / file name of the generated
-sitemaps.
-
-=back
-
-=cut
-
-sub export_sitemap {
-    # @todo move templates and output paths into config
-    my ($site_map_templates, $outputs, @all_comics) = @_;
-
-    my @sorted = sort from_oldest_to_latest @all_comics;
-    my %vars;
-    $vars{'comics'} = [ @sorted ];
-    $vars{'notFor'} = \&_not_published_on_the_web;
-    foreach my $language (_all_comic_languages(@all_comics)) {
-        my $templ = ${$site_map_templates}{$language};
-        my $xml = Comic::Out::Template::templatize('(none)', $templ, $language, %vars);
-        write_file(${$outputs}{$language}, $xml);
-    }
-
-    return;
-}
-
-
 =head2 languages
 
 Gets an alphabetically sorted array of all languages used in this Comic.

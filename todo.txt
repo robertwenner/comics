@@ -188,3 +188,8 @@
   (e.g., tags) aggregation overview
 
 - support aggregating meta data that's not per-language in the backlog
+
+- sitemap should work without people having to define a template
+
+- if we keep the sitemap via template, filter the list passed to each
+  template instead of passing the filter notFor function for easier use

@@ -372,6 +372,36 @@ Height and width are not per-language, assuming a comic has the same size in
 each language.
 
 
+### Comic::Out::Sitemap
+
+Generates a [sitemap](https://en.wikipedia.org/wiki/Sitemaps) per language.
+Sitemaps can tell search engines which pages they should crawl.
+
+```json
+{
+    "Out": {
+        "Sitemap": {
+            "Templates": {
+                "English": "templates/sitemap-en.xml",
+                "Deutsch": "templates/sitemap-de.xml",
+            },
+            "output": {
+                "English": "generated/web/english/sitemap.xml",
+                "Deutsch": "generated/web/deutsch/sitemap.xml"
+            }
+        }
+    }
+}
+```
+
+The module makes these variables available in the template:
+
+* `comics`: sorted (oldest to latest) list of published comics.
+
+* `notFor`: code reference to a function to check whether a given comic
+  should be included in the sitemap.
+
+
 ### Comic::Out::SvgPerLanguage
 
 Exports a `.svg` file per language in the comic. Each of these `.svg` files has
