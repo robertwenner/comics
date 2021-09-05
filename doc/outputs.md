@@ -250,9 +250,6 @@ The configuration needs to be like this:
             "outdir": "generated/web",
             "Templates": {
                 "English": "templ/comic-page.templ"
-            },
-            "Domains": {
-                "English": "example.org"
             }
         }
     }
@@ -266,14 +263,50 @@ name derived from the comic's title.
 The `Templates` refers to a Perl Toolkit template per language that will be
 used to generate the page.
 
-The `Domains` gives the domain name (e.g., example.com) so that the module
-can generate the full domain name for use in the template.
+This module defines these variables in each comic, that the templates can
+use:
+
+* `htmlFile` hash of language to file name of the generated HTML file,
+  derived from the comic's title, e.g., for a comic with an English title of
+  "Beer brewing" this could be `beer-brewing.html`.
+
+* `href` the path to the comic's HTML file relative to the server root,
+  e.g., `comics/beer-brewing.html` for English.
+
+* `first`, `prev`, `next`, `last` are the `htmlFile` values of the first,
+  previous, next, and last comic in that language, respectively.
+
+* `isLatestPublished`: this variable is only defined on the last published
+  comic in each language. The template can query this flag and change the
+  page for the last published comic.
+
+When the template is processed, these variables are also available:
+
+* `comic`: the current comic.
+
+* `languages` is a list of languages used in this comic.
+
+* `languagecodes` is a list of language codes used in this comic, e.g, "en"
+  for English and "de" for German. See the [CLDR](https://cldr.unicode.org/)
+  for details.
+
+* `languageurls` hash of language to URL to link to the comic in a different
+  language.
+
+* `year` 4-digit year when the comic was created, for use in e.g., a
+  copyright statement.
+
+* `canonicalUrl` full URL of the comic.
+
+* `comicsPath` path to comics, relative to the server root, e.g., `comics/`.
+
+* `indexAdjust`: prefix for paths / URLs to other comics, so that navigation linking
+  works in published an non-published comics.
+
+* `root`: points to the server root, to be used to include CSS, static
+  images, or JavaScript code.
 
 The `index.html` file uses the same template as the regular comic pages.
-
-When writing the `index.html`, the code sets a variable in the last published
-comic in each language, `isLatestPublished`. The template can query to flag
-and change the layout for the last published comic.
 
 
 ## Comic::Out::Png
