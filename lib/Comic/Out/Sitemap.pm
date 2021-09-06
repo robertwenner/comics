@@ -126,7 +126,7 @@ sub generate_all {
 
     my %vars;
     $vars{'comics'} = [ @sorted ];
-    $vars{'notFor'} = \&Comic::_not_published_on_the_web;
+    $vars{'notFor'} = \&Comic::not_published_on_the_web;
 
     foreach my $language (_all_comic_languages(@sorted)) {
         my $templ = $site_map_templates{$language};

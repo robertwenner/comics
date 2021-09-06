@@ -455,7 +455,7 @@ sub outdir {
     my ($self, $language) = @ARG;
 
     my $outdir;
-    if ($self->_not_published_on_the_web($language)) {
+    if ($self->not_published_on_the_web($language)) {
         $outdir = 'generated/backlog/';
     }
     else {
@@ -873,8 +873,13 @@ sub _is_for {
 }
 
 
-sub _not_published_on_the_web {
-    # TODO passed to a template, should probably be documented.
+=head2 not_published_on_the_web
+
+Returns whether this Comic is not (yet) published on the web.
+
+=cut
+
+sub not_published_on_the_web {
     my ($self, $language) = @ARG;
     return !$self->_is_for($language) || $self->not_yet_published();
 }
