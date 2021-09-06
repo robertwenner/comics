@@ -402,6 +402,58 @@ The module makes these variables available in the template:
   should be included in the sitemap.
 
 
+### `Comic::Out::Sizemap`
+
+Generates a size map showing all different overall sizes used in the comics.
+This can help figuring out what size works nicely for one's style.
+
+The size map is configured like this:
+
+```json
+{
+    "Out": {
+        "Sizemap": {
+            "template": "templates/sizemap.templ",
+            "output": "generated/sizemap.html",
+            "scale": 0.3,
+            "published_color": "green",
+            "unpublished_color": "blue"
+        }
+    }
+}
+```
+
+The configuration parameters are:
+
+* `template`: what Perl Template to use.
+
+* `output`: to which file to write the size map.
+
+* `scale`: by which factor to scale the shown frames; optional, defaults to
+  0.3
+
+* `published_color`: in which color to draw frames for published
+  comics; optional, defaults to "green". Any SVG color specification is
+  valid.
+
+* `unpublished_color`: in which color to draw frames for unpublished
+  comics; optional, defaults to "blue". Any SVG color specification is
+  valid.
+
+The template can access these variables:
+
+* `svg`: a SVG drawing of frames for the comic sizes, can be embedded in
+  HTML.
+
+* `min`, `max`, and `avg` for `width` and `height`, i.e., `minwidth` and
+  `maxheight`: The minimum, maximum, average values of height and width of
+  all comics.
+
+* `comics_by_width`: list of all comics ordered by width (widest first).
+
+* `comics_by_height`: list of all comics ordered by height (tallest first).
+
+
 ### `Comic::Out::SvgPerLanguage`
 
 Exports a `.svg` file per language in the comic. Each of these `.svg` files has

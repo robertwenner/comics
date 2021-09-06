@@ -58,6 +58,8 @@
 
 - sizemap should have colors depending on where the comic was published
 
+- make sizemap svg attributes configurable
+
 - add a thumbnail / preview for really large images (posters), especially in
   RSS
 
