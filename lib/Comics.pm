@@ -13,6 +13,7 @@ use Comic;
 use Comic::Settings;
 use Comic::Out::Feed;
 use Comic::Out::QrCode;
+use Comic::Out::Template;
 
 
 use version; our $VERSION = qv('0.0.3');

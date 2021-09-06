@@ -30,8 +30,6 @@ use URI::Encode qw(uri_encode uri_decode);
 use Comic::Consts;
 use Comic::Settings;
 use Comic::Modules;
-use Comic::Check::Check;
-use Comic::Out::Template;
 use Comic::Social::Twitter;
 use Comic::Social::Reddit;
 

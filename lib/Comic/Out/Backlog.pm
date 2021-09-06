@@ -6,6 +6,7 @@ use utf8;
 use English '-no_match_vars';
 use Carp;
 
+use Comic::Out::Template;
 use Comic::Out::Generator;
 use base('Comic::Out::Generator');
 

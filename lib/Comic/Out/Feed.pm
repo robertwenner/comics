@@ -15,6 +15,7 @@ use version; our $VERSION = qv('0.0.3');
 use Readonly;
 Readonly my $FEED_ITEM_COUNT => 10;
 
+use Comic::Out::Template;
 use Comic::Out::Generator;
 use base('Comic::Out::Generator');
 

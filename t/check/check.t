@@ -5,6 +5,7 @@ use base 'Test::Class';
 use Test::More;
 
 use File::Slurper;
+use Comic::Check::Check;
 use Comics;
 
 __PACKAGE__->runtests() unless caller;
