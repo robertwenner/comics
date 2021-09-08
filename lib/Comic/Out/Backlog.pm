@@ -90,7 +90,7 @@ overview.
 
 sub new {
     my ($class, $settings) = @ARG;
-    my $self = bless{}, $class;
+    my $self = $class->SUPER::new();
 
     croak('No Backlog configuration') unless ($settings->{Backlog});
     %{$self->{settings}} = %{$settings->{Backlog}};

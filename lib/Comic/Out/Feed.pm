@@ -12,12 +12,12 @@ use DateTime::Format::RFC3339;
 
 use version; our $VERSION = qv('0.0.3');
 
-use Readonly;
-Readonly my $FEED_ITEM_COUNT => 10;
-
 use Comic::Out::Template;
 use Comic::Out::Generator;
 use base('Comic::Out::Generator');
+
+use Readonly;
+Readonly my $FEED_ITEM_COUNT => 10;
 
 
 =for stopwords Wenner merchantability perlartistic RSS notFor outdir
@@ -99,7 +99,7 @@ F<generated/web/english/rss.xml> and F<generated/web/deutsch/rss.xml>.
 
 sub new {
     my ($class, $settings) = @ARG;
-    my $self = bless{}, $class;
+    my $self = $class->SUPER::new();
 
     croak('No Feed configuration') unless ($settings->{Feed});
     %{$self->{settings}} = %{$settings->{Feed}};

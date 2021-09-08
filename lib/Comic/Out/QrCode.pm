@@ -7,8 +7,12 @@ use English '-no_match_vars';
 use Hash::Merge;
 use Imager::QRCode;
 
+use Comic::Out::Generator;
+use base('Comic::Out::Generator');
+
 
 use version; our $VERSION = qv('0.0.3');
+
 
 use Readonly;
 Readonly::Hash my %DEFAULT_SETTINGS => {
@@ -78,7 +82,7 @@ The passed settings must be a structure like this:
 
 sub new {
     my ($class, $settings) = @ARG;
-    my $self = bless{}, $class;
+    my $self = $class->SUPER::new();
 
     if ($settings && $settings->{Out} && $settings->{Out}->{QrCode}) {
         my $merger = Hash::Merge->new('RIGHT_PRECEDENT');

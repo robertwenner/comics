@@ -102,7 +102,7 @@ Other supported settings are:
 
 sub new {
     my ($class, $settings) = @ARG;
-    my $self = bless{}, $class;
+    my $self = $class->SUPER::new();
 
     croak('No Sizemap configuration') unless ($settings->{Sizemap});
     %{$self->{settings}} = %{$settings->{Sizemap}};

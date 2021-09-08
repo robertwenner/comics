@@ -74,7 +74,7 @@ For example:
 
 sub new {
     my ($class, $settings) = @ARG;
-    my $self = bless{}, $class;
+    my $self = $class->SUPER::new();
 
     croak('No Png configuration') unless ($settings->{Png});
     %{$self->{settings}} = %{$settings->{Png}};

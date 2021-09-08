@@ -6,10 +6,14 @@ use Scalar::Util qw/blessed/;
 use English '-no_match_vars';
 use Carp;
 use Readonly;
-
 use Reddit::Client;
 
+use Comic::Social::Social;
+use base('Comic::Social::Social');
+
+
 use version; our $VERSION = qv('0.0.3');
+
 
 
 =encoding utf8
@@ -71,7 +75,7 @@ arguments as well as any other possible arguments.
 
 sub new {
     my ($class, %args) = @ARG;
-    my $self = bless{}, $class;
+    my $self = $class->SUPER::new();
 
     my %settings = (
         user_agent => 'Comic::Social::Reddit by /u/beercomics',

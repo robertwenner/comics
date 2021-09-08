@@ -88,7 +88,7 @@ For example:
 
 sub new {
     my ($class, $settings) = @ARG;
-    my $self = bless{}, $class;
+    my $self = $class->SUPER::new();
 
     croak('No SvgPerLanguage configuration') unless ($settings->{SvgPerLanguage});
     %{$self->{settings}} = %{$settings->{SvgPerLanguage}};

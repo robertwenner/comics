@@ -75,7 +75,7 @@ The C<outfile> where the output should go.
 
 sub new {
     my ($class, $settings) = @ARG;
-    my $self = bless{}, $class;
+    my $self = $class->SUPER::new();
 
     croak('No HtmlArchivePage configuration') unless ($settings->{HtmlArchivePage});
     %{$self->{settings}} = %{$settings->{HtmlArchivePage}};

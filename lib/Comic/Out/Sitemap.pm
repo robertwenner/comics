@@ -91,7 +91,7 @@ For example:
 
 sub new {
     my ($class, $settings) = @ARG;
-    my $self = bless{}, $class;
+    my $self = $class->SUPER::new();
 
     croak('No Sitemap configuration') unless ($settings->{Sitemap});
     %{$self->{settings}} = %{$settings->{Sitemap}};

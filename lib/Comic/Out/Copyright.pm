@@ -68,7 +68,7 @@ Parameters:
 
 sub new {
     my ($class, $settings) = @ARG;
-    my $self = bless{}, $class;
+    my $self = $class->SUPER::new();
 
     croak('No Copyright configuration') unless ($settings->{Copyright});
     %{$self->{settings}} = %{$settings->{Copyright}};

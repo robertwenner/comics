@@ -59,7 +59,7 @@ Links are per-language cause the link text varies by language.
 
 sub new {
     my ($class) = @ARG;
-    my $self = bless{}, $class;
+    my $self = $class->SUPER::new();
     %{$self->{settings}} = ();
     return $self;
 }
