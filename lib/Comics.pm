@@ -11,9 +11,9 @@ use File::Find;
 
 use Comic;
 use Comic::Settings;
-use Comic::Out::Feed;
-use Comic::Out::QrCode;
-use Comic::Out::Template;
+use Comic::Check::Check;
+use Comic::Out::Generator;
+use Comic::Social::Social;
 
 
 use version; our $VERSION = qv('0.0.3');
@@ -26,7 +26,6 @@ use version; our $VERSION = qv('0.0.3');
 Comics - Exports comics in multiple languages from Inkscape files to png and
 generates web pages for these.
 
-
 =head1 SYNOPSIS
 
     use Comics;
@@ -34,7 +33,7 @@ generates web pages for these.
     # Detailled:
     my $comics = Comics->new();
     $comics->load_settings("my-settings.json");
-    $comics->load_comics("comics/");
+    $comics->load_comics("/path/to/comics/svg/");
     $comics->export_all();
 
     # Lazy cronjob:
@@ -46,10 +45,6 @@ This module simplifies working with individual Comics: finding input files,
 having a main configuration, generating pngs and web pages.
 
 =cut
-
-
-# Default main configuration file.
-Readonly my $MAIN_CONFIG_FILE => 'settings.json';
 
 
 =head1 SUBROUTINES/METHODS
@@ -130,9 +125,9 @@ Publishes latest comic and any updates to previous comics.
 This is meant as a single method to call to do everything needed to publish
 a web comic, e.g. in a cronjob.
 
-    perl -MComics -e 'Comics::publish("/home/robert/comics/bier/comics/web");'
+    perl -MComics -e 'Comics::publish("/home/robert/comics/bier/config.json", "/home/robert/comics/bier/comics/web");'
 
-It loads the configuration from the main configuration file, collects the
+It loads the configuration from the given configuration file, collects the
 comics in the passed directories, checks them, exports them as png, generates
 the web pages, uploads the comics, and posts the latest comic on social media.
 
@@ -140,14 +135,16 @@ Arguments:
 
 =over 4
 
-=item * B<dir(s)> directories from which to collect comics.
+=item * B<$config> path to the configuration file.
+
+=item * B<@dirs> directories from which to collect comics.
 
 =back
 
 =cut
 
 sub publish {
-    my @dirs = @ARG;
+    my ($config, @dirs) = @ARG;
 
     my $comics = generate(@dirs);
     $comics->upload();
