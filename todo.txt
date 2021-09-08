@@ -195,3 +195,8 @@
 
 - if we keep the sitemap via template, filter the list passed to each
   template instead of passing the filter notFor function for easier use
+
+- default subreddits should be per language
+
+- fix: save png image size per language; it can vary by language, e.g., when
+  one language has 2 lines of text under the comic and the other three
