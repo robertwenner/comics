@@ -6,10 +6,14 @@ use Scalar::Util qw/blessed/;
 use English '-no_match_vars';
 use Carp;
 use Readonly;
-
 use Net::Twitter;
 
+use Comic::Social::Social;
+use base('Comic::Social::Social');
+
+
 use version; our $VERSION = qv('0.0.3');
+
 
 # Maximum length of a tweet in characters, as defined by Twitter.
 Readonly my $MAX_LEN => 280;
@@ -21,19 +25,20 @@ Readonly my $MAX_LEN => 280;
 
 =head1 NAME
 
-Comic::Social::Twitter - tweet the a Comic.
+Comic::Social::Twitter - tweet a Comic.
 
 =head1 SYNOPSIS
 
-    my $twitter = Comic::Social::Twitter->new(
-        consumer_key => '...',
-        consumer_secret => '...',
-        access_token => '...',
-        access_token_secret => '...',
-        mode => 'png'
-    );
-    my $comic = ...
-    my $result = $comic->tweet('/c/comics');
+    my $twitter = Comic::Social::Twitter->new({
+        'Twitter' => {
+            consumer_key => '...',
+            consumer_secret => '...',
+            access_token => '...',
+            access_token_secret => '...',
+            mode => 'png',
+        },
+    });
+    my $result = $twitter->post($comic);
     print "$result\n";
 
 =head1 DESCRIPTION
@@ -55,8 +60,19 @@ Arguments:
 
 =over 4
 
+=item * B<%settings> hash of settings as below.
+
+=back
+
+The settings hash needs to have these keys:
+
+=over 4
+
 =item * B<$mode> either 'html' or 'png' to tweet either a link to the comic or
-    the actual comic png. Defaults to 'png'.
+    the actual comic png. Defaults to 'png'. 'html' mode requires that the
+    comic is uploaded and the URL is available in the Comic. 'png' mode
+    requires that a png has been generated and its file name is stored in
+    the Comic.
 
 =item * B<$consumer_key> passed to C<Net::Twitter>.
 
@@ -66,8 +82,8 @@ Arguments:
 
 =item * B<$access_token_secret> passed to C<Net::Twitter>.
 
-=item * B<...> any other arguments to pass to the C<Net::Twitter> constructor.
-   (For experts only.)
+=item * B<...> any other optional arguments to pass to the C<Net::Twitter>
+   constructor. (For experts only.)
 
 =back
 
@@ -75,7 +91,6 @@ See L<Net::Twitter> for the meaning of the C<consumer...> and C<access...>
 arguments as well as any other possible arguments.
 
 =cut
-
 
 sub new {
     my ($class, %args) = @ARG;
@@ -85,7 +100,7 @@ sub new {
     unless ($self->{mode} eq 'png' || $self->{mode} eq 'html') {
         croak("Unknown twitter mode '$self->{mode}'");
     }
-    $args{'mode'} = undef;
+    $args{'mode'} = undef; # to pass the rest on to Net::Twitter->new
 
     my %settings = (
         traits => [qw/API::RESTv1_1/],
@@ -98,7 +113,7 @@ sub new {
 }
 
 
-=head2 tweet
+=head2 post
 
 Tweets the given Comic. This code doesn't know or check if the given Comic
 is the latest or whether it has already been tweeted. The caller needs to
@@ -127,9 +142,9 @@ For example, if the given Comic has this meta data:
         }
     }
 
-it will be tweeted in English with as "Brewing my own beer! Because I can!
-#beer #brewing" and in German as "Ich braue mein eigenes Bier! Weil ich's
-kann! #Bier #brauen".
+it will be tweeted in English as "Brewing my own beer! Because I can! #beer
+#brewing" and in German as "Ich braue mein eigenes Bier! Weil ich's kann!
+#Bier #brauen".
 
 Parameters:
 
@@ -143,7 +158,7 @@ Returns any messages from Twitter, separated by newlines.
 
 =cut
 
-sub tweet {
+sub post {
     my ($self, $comic) = @ARG;
 
     my @result;

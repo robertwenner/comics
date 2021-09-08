@@ -203,3 +203,5 @@
 
 - fix: save png image size per language; it can vary by language, e.g., when
   one language has 2 lines of text under the comic and the other three
+
+- feature: Comic::Social::Twitter needs a svg mode

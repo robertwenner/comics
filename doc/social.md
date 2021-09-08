@@ -54,3 +54,70 @@ These values are:
   "/r/comics". This is language-independent. If there is no default
   subreddit and the comic doesn't specify subreddits either, it won't be
   posted to Reddit at all.
+
+
+## `Comic::Social::Twitter`
+
+Tweets a comic.
+
+Before this module can tweet for you, you need to go to your Twitter [app
+settings](https://developer.twitter.com/apps/) and allow it to post on your
+behalf. This will get you the credentials you need below.
+
+The configuration looks like this:
+
+```json
+{
+    "Twitter": {
+        "mode": "png",
+        "consumer_key": "...",
+        "consumer_secret": "...",
+        "access_token": "...",
+        "access_token_secret": "..."
+    }
+}
+```
+
+The fields are:
+
+* `mode`: either `html` or `png` to tweet either a link to the comic or
+  the actual comic `png` file. Defaults to `png`. `html` mode requires that the
+  comic is uploaded and the URL is available in the Comic. `png` mode
+  requires that a png has been generated and its file name is stored in
+  the Comic.
+
+* `consumer_key` from your Twitter app settings.
+
+* `consumer_secret` from your Twitter app settings.
+
+* `access_token` from your Twitter app settings.
+
+* `access_token_secret` from your Twitter app settings.
+
+Tweeting the comic means to tweet it in each of its languages. The text for
+the tweet will be made from the comic's title, description, and twitter meta
+data (i.e., hashtags). Twitter hashtags can be passed in the Comic's
+`twitter -> language` array. If the combined text is too long, it will be
+truncated.
+
+For example, if the given Comic has this meta data:
+
+```
+{
+    "title": {
+        "english": "Brewing my own beer!",
+        "deutsch": "Ich braue mein eigenes Bier!"
+    },
+    "description": {
+        "english": "Because I can!",
+        "deutsch": "Weil ich's kann!"
+    },
+    "twitter": {
+        "english": [ "#beer", "#brewing" ],
+        "deutsch": [ "#Bier", "#brauen" ]
+    }
+}
+```
+
+it will be tweeted in English as "Brewing my own beer! Because I can! #beer #brewing"
+and in German as "Ich braue mein eigenes Bier! Weil ich's kann! #Bier #brauen".

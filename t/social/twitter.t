@@ -66,7 +66,7 @@ sub tweet_png : Tests {
     );
     $comic->{pngFile}{'English'} = "latest-comic.png";
     my $cs_twitter = Comic::Social::Twitter->new(mode => 'png');
-    $cs_twitter->tweet($comic);
+    $cs_twitter->post($comic);
     is_deeply([@{$twitter_args{'update_with_media'}}],
         ['This is the latest beercomic!', ['generated/web/english/comics/latest-comic.png']]);
     is($twitter_args{'update'}, undef);
@@ -80,7 +80,7 @@ sub tweet_html : Tests {
     );
     $comic->{pngFile}{'English'} = "latest-comic.png";
     my $cs_twitter = Comic::Social::Twitter->new(mode => 'html');
-    $cs_twitter->tweet($comic);
+    $cs_twitter->post($comic);
     is_deeply([@{$twitter_args{'update'}}], ['https://beercomics.com/comics/latest-comic.html']);
     is($twitter_args{'update_with_media'}, undef);
 }
@@ -93,7 +93,7 @@ sub shortens_text : Tests {
     );
     $comic->{pngFile}{'English'} = "latest-comic.png";
     my $cs_twitter = Comic::Social::Twitter->new();
-    $cs_twitter->tweet($comic);
+    $cs_twitter->post($comic);
     is_deeply([@{$twitter_args{'update_with_media'}}],
         ['x' x 280, ['generated/web/english/comics/latest-comic.png']]);
 }
@@ -107,7 +107,7 @@ sub hashtags_from_meta : Tests {
     );
     $comic->{pngFile}{'English'} = "latest-comic.png";
     my $cs_twitter = Comic::Social::Twitter->new();
-    $cs_twitter->tweet($comic);
+    $cs_twitter->post($comic);
     is_deeply([@{$twitter_args{'update_with_media'}}],
         ['#beer #craftbeer @you Funny stuff', ['generated/web/english/comics/latest-comic.png']]);
 }
@@ -122,7 +122,7 @@ sub handles_other_error : Tests {
     $twitter_error = "Oops";
     my $cs_twitter = Comic::Social::Twitter->new(mode => 'html');
     eval {
-        $cs_twitter->tweet($comic);
+        $cs_twitter->post($comic);
         fail("should have thrown");
     };
     like($@, qr{\bOops\b});
@@ -139,7 +139,7 @@ sub handles_twitter_error : Tests {
     $twitter_error = Net::Twitter::Error->new(http_response => $response);
     my $cs_twitter = Comic::Social::Twitter->new(mode => 'html');
     eval {
-        $cs_twitter->tweet($comic);
+        $cs_twitter->post($comic);
         fail("should have thrown");
     };
     like($@, qr{\b500\b}, 'error code missing');
