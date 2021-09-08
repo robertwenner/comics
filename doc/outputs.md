@@ -236,6 +236,41 @@ The `Comic::Out::Feed` module defines some variables for use in the template:
   format (needed in Atom format).
 
 
+## `Comic::Out::HtmlArchivePage`
+
+Generates a per-language HTML page with all published comics comics in
+chronological order.
+
+The configuration takes a template and an output file for each language:
+
+```json
+{
+    "HtmlArchivePage": {
+        "template": {
+            "English": "templates/archive-en.templ"
+        },
+        "outfile": {
+            "English": "generated/web/English/archive.html"
+        }
+    }
+}
+```
+
+The templates are Perl Toolkit templates. The `outfile` specifies where to
+place the output.
+
+While processing the templates, these variables are available:
+
+* `comics`: list of all comics to include in the archive.
+
+* `modified`: last modification date of the latest comic, to be used in
+  time stamps in e.g., HTML headers.
+
+* `notFor`: function that takes a comic and a language and returns
+   whether the given comic is for the given language. This is useful if you
+   want just one template for all languages.
+
+
 ## `Comic::Out::HtmlComicPage`
 
 This is the main output generator for web comics. It generates a HTML page
