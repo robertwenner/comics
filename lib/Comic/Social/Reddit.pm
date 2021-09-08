@@ -11,9 +11,7 @@ use Reddit::Client;
 use Comic::Social::Social;
 use base('Comic::Social::Social');
 
-
 use version; our $VERSION = qv('0.0.3');
-
 
 
 =encoding utf8
@@ -26,12 +24,14 @@ Comic::Social::Reddit - post a Comic on L<https://reddit.com>.
 
 =head1 SYNOPSIS
 
-    my $twitter = Comic::Social::Reddit->new(
-        username => 'yourredditname',
-        password => 'secret',
-        client_id => '...'
-        secret => '...',
-    )
+    my $reddit = Comic::Social::Reddit->new({
+        'Reddit' => {
+            username => 'yourredditname',
+            password => 'secret',
+            client_id => '...'
+            secret => '...',
+        },
+    })
 
 =head1 DESCRIPTION
 
@@ -40,8 +40,8 @@ L<https://www.reddit.com/prefs/apps> then create an app (script). This will
 get you the secret needed to configure this module. See also
 L<https://redditclient.readthedocs.io/en/latest/oauth/>.
 
-Unfortunately you cannot use two factor authentication with or the script
-won't be able to log in.
+Unfortunately you cannot use Reddit's two factor authentication or the
+script won't be able to log in.
 
 
 =head1 SUBROUTINES/METHODS
@@ -62,26 +62,55 @@ Arguments:
 
 =item * B<$secret> from your account's apps details page.
 
-=item * B<...> any other arguments to pass to the C<Net::Reddit> constructor.
-   (For experts only.)
+=item * B<$default_subreddit> Optional default subreddit(s), e.g.,
+    "/r/comics" or "funny". This is language-independent. If there is no
+    default subreddit and the comic doesn't specify subreddits either, it
+    won't be posted to Reddit at all.
+
+=item * B<client_settings> any other arguments to pass to the L<Reddit::Client>
+    constructor. (For experts only.)
 
 =back
 
-See L<Net::Reddit> for the meaning of the C<consumer...> and C<access...>
-arguments as well as any other possible arguments.
-
 =cut
 
-
 sub new {
-    my ($class, %args) = @ARG;
+    my ($class, $settings) = @ARG;
     my $self = $class->SUPER::new();
 
-    my %settings = (
+    croak('No Reddit configuration') unless($settings->{'Reddit'});
+    croak('Must pass Reddit.username') unless ($settings->{'Reddit'}->{'username'});
+    croak('Must pass Reddit.password') unless ($settings->{'Reddit'}->{'password'});
+    croak('Must pass Reddit.secret') unless ($settings->{'Reddit'}->{'secret'});
+    croak('Must pass Reddit.client_id') unless ($settings->{'Reddit'}->{'client_id'});
+
+    my %mandatory_settings = (
         user_agent => 'Comic::Social::Reddit by /u/beercomics',
-        %args
+        username => $settings->{'Reddit'}->{'username'},
+        password => $settings->{'Reddit'}->{'password'},
+        client_id => $settings->{'Reddit'}->{'client_id'},
+        secret => $settings->{'Reddit'}->{'secret'},
     );
-    $self->{reddit} = Reddit::Client->new(%settings);
+    my %optional_settings = ();
+    if ($settings->{'Reddit'}->{'client_settings'}) {
+        %optional_settings = %{$settings->{'Reddit'}->{'client_settings'}};
+    }
+    my %client_settings = (%mandatory_settings, %optional_settings);
+    $self->{reddit} = Reddit::Client->new(%client_settings);
+
+    @{$self->{settings}->{default_subreddit}} = ();
+    my $def_srs = $settings->{'Reddit'}->{'default_subreddit'};
+    if ($def_srs) {
+        if (ref $def_srs eq '') {
+            push @{$self->{settings}->{'default_subreddit'}}, $def_srs;
+        }
+        elsif (ref $def_srs eq 'ARRAY') {
+            push @{$self->{settings}->{'default_subreddit'}}, @{$def_srs};
+        }
+        else {
+            croak('Reddit.default_subreddit must be scalar or array');
+        }
+    }
 
     return $self;
 }
@@ -89,8 +118,8 @@ sub new {
 
 =head2 post
 
-Posts the given Comic to the given subreddits and any subreddits mentioned
-in the comic's meta data.
+Posts the given Comic to the configured default subreddit(s) and any
+subreddits mentioned in the comic's meta data.
 
 For example, if the given Comic has this meta data:
 
@@ -105,11 +134,11 @@ then this module will post the English version of the given comic to
 L<https://reddit.com/r/beer> and L<https://reddit.com/r/homebrewing> and the
 German version to L<https://reddit.com/r/bier>.
 
-If a language has no C<subreddit> setting (in neither the global settings
-nor the comic's settings), that comic language won't be posted. For example,
-if the comic above was available in English, German, and Spanish, but the
-C<reddit> settings don't mention Spanish, the Spanish version won't be
-posted.
+If a language has no C<subreddit> setting (in neither the global
+default_subreddit settings nor the comic's settings), that comic language
+won't be posted. For example, if the comic above was available in English,
+German, and Spanish, but the C<reddit> settings don't mention Spanish, the
+Spanish version won't be posted.
 
 The comic's C<reddit> configuration can also include a boolean C<use-default>
 like this:
@@ -130,8 +159,6 @@ Parameters:
 
 =item * B<$comic> Comic to post.
 
-=item * B<$default_subreddit> Default subreddit(s), e.g., "/r/comics" or "funny".
-
 =back
 
 Returns any messages from Reddit, separated by newlines.
@@ -144,25 +171,12 @@ or until it receives an error.
 =cut
 
 sub post {
-    my ($self, $comic, @default_subreddits) = @ARG;
+    my ($self, $comic) = @ARG;
 
     my @result;
     foreach my $language ($comic->languages()) {
-        my @subreddits;
-
-        # Global default subredit
-        my $use_default = $comic->{meta_data}->{reddit}->{'use-default'} // 1;
-        if ($use_default) {
-            push @subreddits, @default_subreddits;
-        }
-
-        # Subreddits specified in the comic
-        push @subreddits, _get_subreddits($comic, $language);
-
-        foreach my $subreddit (@subreddits) {
-            if ($subreddit) {
-                push @result, $self->_post($comic, $language, $subreddit);
-            }
+        foreach my $subreddit ($self->_get_subreddits($comic, $language)) {
+            push @result, $self->_post($comic, $language, $subreddit);
         }
     }
 
@@ -171,6 +185,24 @@ sub post {
 
 
 sub _get_subreddits {
+    my ($self, $comic, $language) = @ARG;
+    my @subreddits;
+
+    # Global default subredit
+    my $use_default = $comic->{meta_data}->{reddit}->{'use-default'} // 1;
+    if ($use_default) {
+        push @subreddits, @{$self->{settings}->{default_subreddit}};
+    }
+
+    # Subreddits specified in the comic
+    push @subreddits, _subreddits_from_comic_meta_data($comic, $language);
+
+    # Filter out empty values in case someone leaves "" in the config.
+    return grep { $_ } @subreddits;
+}
+
+
+sub _subreddits_from_comic_meta_data {
     my ($comic, $language) = @ARG;
 
     my @subreddits;
@@ -179,8 +211,11 @@ sub _get_subreddits {
         if (ref($json) eq 'ARRAY') {
             push @subreddits, @{$json};
         }
-        else {
+        elsif (ref($json) eq '') {
             push @subreddits, $json;
+        }
+        else {
+            $comic->croak('Cannot handle ' . ref($json) . " in $language Reddit meta data");
         }
     }
     return @subreddits;

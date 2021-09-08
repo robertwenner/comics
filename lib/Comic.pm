@@ -1274,7 +1274,7 @@ sub post_to_social_media {
     my %settings = @ARG;
 
     my $twitter = Comic::Social::Twitter->new(%{$settings{'twitter'}});
-    my $reddit = Comic::Social::Reddit->new(%{$settings{'reddit'}});
+    my $reddit = Comic::Social::Reddit->new(\%settings);
 
     my $posted = 0;
     my $log;
