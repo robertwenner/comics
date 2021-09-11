@@ -9,9 +9,11 @@ use lib 't/check';
 use Comic::Settings;
 use DummyCheck;
 
+use Comics;
 use Comic::Check::Check;
 use Comic::Check::Actors;
 use Comic::Check::Weekday;
+
 
 __PACKAGE__->runtests() unless caller;
 
@@ -164,4 +166,40 @@ sub comic_check_unknown_command : Tests {
     like($@, qr{\buse\b}i);
     like($@, qr{\badd\b}i);
     like($@, qr{\bremove\b}i);
+}
+
+sub runs_global_final_checks : Tests {
+    my $comics = Comics->new();
+    my $check = DummyCheck->new();
+    push @{$comics->{checks}}, $check;
+    $comics->final_checks();
+    is(1, $check->{calls}{"final_check"});
+}
+
+
+sub runs_per_comic_final_checks : Tests {
+    my $comics = Comics->new();
+    my $comic = MockComic::make_comic();
+    my $check = DummyCheck->new();
+    push @{$comic->{checks}}, $check;
+    push @{$comics->{comics}}, $comic;
+
+    $comics->final_checks();
+    is(1, $check->{calls}{"final_check"});
+}
+
+
+sub runs_each_final_check_only_once : Tests {
+    my $comics = Comics->new();
+    my $comic = MockComic::make_comic();
+    my $global_check = DummyCheck->new();
+    my $local_check = DummyCheck->new();
+
+    push @{$comic->{checks}}, $global_check, $local_check;;
+    push @{$comics->{checks}}, $global_check;
+    push @{$comics->{comics}}, $comic;
+
+    $comics->final_checks();
+    is(1, $global_check->{calls}{"final_check"}, 'should have called global only once');
+    is(1, $local_check->{calls}{"final_check"}, 'should have called local only once');
 }
