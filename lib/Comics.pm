@@ -171,11 +171,13 @@ sub load_settings {
     my ($self, @files) = @ARG;
 
     foreach my $file (@files) {
-        if (_exists($file)) {
-            $self->{settings}->load_str(File::Slurper::read_text($file));
+        if (_is_directory($file)) {
+            croak("Cannot read directory $file");
         }
-        # TODO croak on missing / unreadable files
-        # TODO recurse into directories?
+        if (!_exists($file)) {
+            croak("$file not found");
+        }
+        $self->{settings}->load_str(File::Slurper::read_text($file));
     }
 
     return;

@@ -25,6 +25,9 @@ sub set_up : Test(setup) {
         $asked_exists{$file}++;
         return defined $faked_files{$file};
     };
+    *Comics::_is_directory = sub {
+        return 0;
+    };
     *File::Slurper::read_text = sub {
         my ($file) = @_;
         return $faked_files{$file};
@@ -46,15 +49,6 @@ sub module_path : Tests {
     is(Comic::Modules::module_path("foo"), "foo.pm");
     is(Comic::Modules::module_path("foo::bar::baz"), "foo/bar/baz.pm");
     is(Comic::Modules::module_path("foo/bar/baz.pm"), "foo/bar/baz.pm");
-}
-
-
-sub config_file_does_not_exist : Tests {
-    $comics->load_settings("config.json");
-
-    isnt($comics->{settings}, undef, 'should have initialized settings');
-    is_deeply($comics->{settings}->get(), {}, 'settings shoud be empty');
-    is_deeply($asked_exists{"config.json"}, 1, 'should have looked for config file');
 }
 
 

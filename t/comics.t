@@ -40,6 +40,44 @@ sub load_settings : Tests {
 }
 
 
+sub config_does_not_exist : Tests {
+    no warnings qw/redefine/;
+    local *Comics::_exists = sub {
+        return 0;
+    };
+    local *Comics::_is_directory = sub {
+        return 0;
+    };
+    use warnings;
+
+    my $comics = Comics->new();
+    eval {
+        $comics->load_settings("oops");
+    };
+    like($@, qr{\bnot found\b}i, 'gives reason');
+    like($@, qr{\boops\b}, 'includes file name');
+}
+
+
+sub config_is_directory : Tests {
+    no warnings qw/redefine/;
+    local *Comics::_exists = sub {
+        return 1;
+    };
+    local *Comics::_is_directory = sub {
+        return 1;
+    };
+    use warnings;
+
+    my $comics = Comics->new();
+    eval {
+        $comics->load_settings("oops");
+    };
+    like($@, qr{\bdirectory\b}i, 'gives reason');
+    like($@, qr{\boops\b}, 'includes directory name');
+}
+
+
 sub collect_files_adds_files_right_away : Tests {
     no warnings qw/redefine/;
     local *Comics::_is_directory = sub {
