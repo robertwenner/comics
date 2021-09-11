@@ -77,8 +77,6 @@ Readonly my $TEMPDIR => 'tmp';
 # @todo get rid of %counts
 my %counts;
 my %language_code_cache;
-# @todo get rid of @comics
-my @comics;
 
 
 =head1 SUBROUTINES/METHODS
@@ -346,7 +344,6 @@ sub _load {
         $counts{'comics'}{$language}++;
     }
 
-    push @comics, $self;
     $self->_count_tags();
     return;
 }
@@ -1162,7 +1159,6 @@ Helper to allow tests to clear internal static state.
 
 sub reset_statics {
     %counts = ();
-    @comics = ();
     return;
 }
 
