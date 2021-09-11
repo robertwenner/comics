@@ -97,7 +97,7 @@ Parameters:
 
 =over 4
 
-=item * B<$modues> reference to an array to put an instance of the loaded
+=item * B<$modules> reference to an array to put an instance of the loaded
     module into.
 
 =item * B<$name> name of the module to load, this can either be a module name as
@@ -121,7 +121,7 @@ sub load_module {
         $filename->import();
         1;  # indicate success, or we may end up with an empty eval error
     }
-    or croak("Error loading $filename: $EVAL_ERROR");
+    or croak("Error loading $name ($filename): $EVAL_ERROR");
 
     my @args;
     if (ref $args eq ref {}) {
