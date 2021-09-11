@@ -30,8 +30,6 @@ use URI::Encode qw(uri_encode uri_decode);
 use Comic::Consts;
 use Comic::Settings;
 use Comic::Modules;
-use Comic::Social::Twitter;
-use Comic::Social::Reddit;
 
 
 use version; our $VERSION = qv('0.0.3');
@@ -843,6 +841,22 @@ sub not_yet_published {
 }
 
 
+=head2 is_published_today
+
+Checks if this Comic is published today.
+
+=cut
+
+sub is_published_today {
+    my ($self) = @ARG;
+
+    my $today = _now();
+    $today->set_time_zone(_get_tz());
+    my $published = $self->{meta_data}->{published}->{when} || $UNPUBLISHED;
+    return ($published cmp $today->ymd) == 0;
+}
+
+
 =head2 not_for
 
 Checks whether this Comic is for the given language. A Comic is considered
@@ -1246,67 +1260,6 @@ sub _note {
     print {*STDOUT} "$self->{srcFile} : $msg\n";
     ## use critic
     return;
-}
-
-
-=head2 post_to_social_media
-
-Posts the latest comic on social media.
-
-Will not post a comic if it isn't scheduled for today, to avoid not having a
-comic and then blasting out the post for previous week's comic.
-
-Parameters:
-
-=over 4
-
-=item * B<mode> png or html to decide whether to post the PNG file directly
-    or rather the link to the comic's page.
-
-=back
-
-Returns log information (usually the URLs posted to and such) if successful,
-or keel over if no current comic was found or the last comic isn't from today.
-
-=cut
-
-sub post_to_social_media {
-    my %settings = @ARG;
-
-    my $twitter = Comic::Social::Twitter->new(%{$settings{'twitter'}});
-    my $reddit = Comic::Social::Reddit->new(\%settings);
-
-    my $posted = 0;
-    my $log;
-    my @published = reverse sort from_oldest_to_latest grep {
-        !$_->not_yet_published($_)
-    } @comics;
-    foreach my $comic (@published) {
-        # Sorting is by date first, so it's safe to exit the loop at the first
-        # comic that's not up to date. This allows to post multiple comics with
-        # the same date, when the comics for a day couldn't be translated and
-        # there are separate ones per language.
-        last if ($comic->_is_not_current());
-
-        $log .= $twitter->tweet($comic) . "\n";
-        $log .= $reddit->post($comic) . "\n";
-        $posted = 1;
-    }
-    if (!$posted) {
-        my $latest = $published[0];
-        $latest->keel_over("Not posting cause latest comic is not current ($latest->{meta_data}->{published}->{when})");
-    }
-    return $log;
-}
-
-
-sub _is_not_current {
-    my ($self) = @ARG;
-
-    my $today = _now();
-    $today->set_time_zone(_get_tz());
-    my $published = $self->{meta_data}->{published}->{when} || $UNPUBLISHED;
-    return ($published cmp $today->ymd) < 0;
 }
 
 

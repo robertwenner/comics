@@ -13,8 +13,11 @@ use Clone;
 use version; our $VERSION = qv('0.0.3');
 
 
+# Constants to point to the objects in the configuration where to find
+# settings for pluggable modules.
 Readonly our $CHECKS => 'Checks';
 Readonly our $GENERATORS => 'Out';
+Readonly our $SOCIAL_MEDIA_POSTERS => 'Social';
 
 
 =for stopwords JSON Wenner perlartistic MERCHANTABILITY

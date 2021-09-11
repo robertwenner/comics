@@ -34,7 +34,7 @@ sub runs_output_generators_in_stages : Tests {
     @{$comics->{generators}} = ($gen, $gen);
     @{$comics->{comics}} = (MockComic::make_comic());
 
-    $comics->_generate();
+    $comics->generate_all();
 
     is_deeply($gen->{called}, ['generate', 'generate', 'generate_all', 'generate_all']);
 }
