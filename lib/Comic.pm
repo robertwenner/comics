@@ -262,7 +262,8 @@ sub _add_checks {
 
     $checks = _array_ref_to_hash_ref($checks);
     foreach my $name (keys %{$checks}) {
-        Comic::Modules::load_module($self->{checks}, $name, ${$checks}{$name} || []);
+        my $args = ${$checks}{$name} || [];
+        push @{$self->{checks}}, Comic::Modules::load_module($name, $args);
     }
 
     return;

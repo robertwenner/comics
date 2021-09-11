@@ -97,9 +97,6 @@ Parameters:
 
 =over 4
 
-=item * B<$modules> reference to an array to put an instance of the loaded
-    module into.
-
 =item * B<$name> name of the module to load, this can either be a module name as
     in C<use> (for example C<Comic::Check::SomeCheck>) or a path / file name
     of the module (e.g., C<Comic/Check/SomeCheck.pm>). The module must be in
@@ -110,10 +107,12 @@ Parameters:
 
 =back
 
+Returns an instance of the newly loaded module.
+
 =cut
 
 sub load_module {
-    my ($modules, $name, $args) = @ARG;
+    my ($name, $args) = @ARG;
 
     my $filename = module_path($name);
     eval {
@@ -139,9 +138,7 @@ sub load_module {
 
     my $classname = module_name($filename);
     my $instance = $classname->new(@args);
-    push @{$modules}, $instance;
-
-    return;
+    return $instance;
 }
 
 

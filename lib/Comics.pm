@@ -199,7 +199,7 @@ Loads the Checks modules defined in this Comics' configuration.
 sub load_checks {
     my ($self) = @ARG;
 
-    $self->_load_modules($self->{checks}, $Comic::Settings::CHECKS, \&Comic::Check::Check::find_all);
+    push @{$self->{checks}}, $self->_load_modules($Comic::Settings::CHECKS, \&Comic::Check::Check::find_all);
     return;
 }
 
@@ -213,7 +213,7 @@ Loads all output generating modules configured in the current configuration.
 sub load_generators {
     my ($self) = @ARG;
 
-    $self->_load_modules($self->{generators}, $Comic::Settings::GENERATORS, sub { return () }, 'No output generators configured');
+    push @{$self->{generators}}, $self->_load_modules($Comic::Settings::GENERATORS, sub { return () }, 'No output generators configured');
     return;
 }
 
@@ -227,7 +227,7 @@ Loads all configured uploader modules.
 sub load_uploaders {
     my ($self) = @ARG;
 
-    $self->_load_modules($self->{uploaders}, $Comic::Settings::UPLOADERS, sub { return () });
+    push @{$self->{uploaders}}, $self->_load_modules($Comic::Settings::UPLOADERS, sub { return () });
     return;
 }
 
@@ -241,13 +241,13 @@ Loads all social media posting modules.
 sub load_social_media_posters {
     my ($self) = @ARG;
 
-    $self->_load_modules($self->{social_media_posters}, $Comic::Settings::SOCIAL_MEDIA_POSTERS, sub { return () });
+    push @{$self->{social_media_posters}}, $self->_load_modules($Comic::Settings::SOCIAL_MEDIA_POSTERS, sub { return () });
     return;
 }
 
 
 sub _load_modules {
-    my ($self, $container, $type, $get_default_modules, $no_modules_error) = @ARG;
+    my ($self, $type, $get_default_modules, $error_if_no_modules) = @ARG;
 
     my $actual_settings = $self->{settings}->get();
     my $wants_to_load;
@@ -261,16 +261,18 @@ sub _load_modules {
         $wants_to_load = { map { $_ => [] } &{$get_default_modules} };
     }
 
+    my @loaded;
     foreach my $name (keys %{$wants_to_load}) {
-        Comic::Modules::load_module($container, $name, ${$wants_to_load}{$name} || []);
+        my $module_args = ${$wants_to_load}{$name} || [];
+        push @loaded, Comic::Modules::load_module($name, $module_args);
     }
 
-    if ($no_modules_error && !%{$wants_to_load}) {
+    if (!@loaded && $error_if_no_modules) {
         # No modules configured or found by default, but needs some --- bail out.
-        croak($no_modules_error);
+        croak($error_if_no_modules);
     }
 
-    return keys %{$wants_to_load};
+    return @loaded;
 }
 
 
