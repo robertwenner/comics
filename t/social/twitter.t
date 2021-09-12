@@ -113,19 +113,34 @@ sub hashtags_from_meta : Tests {
 }
 
 
-sub handles_other_error : Tests {
+sub handles_other_object_error : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
         $MockComic::DESCRIPTION => { $MockComic::ENGLISH => 'This is the latest beercomic!' },
     );
     $comic->{pngFile}{'English'} = "latest-comic.png";
+    $twitter_error = bless {};
+    my $cs_twitter = Comic::Social::Twitter->new(mode => 'html');
+
+    my $message = $cs_twitter->post($comic);
+    like($message, qr{\btwitter\b}i);
+    like($message, qr{\bmain\b});
+}
+
+
+sub handles_non_twitter_error : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+        $MockComic::DESCRIPTION => { $MockComic::ENGLISH => 'This is the latest beercomic!' },
+    );
+
+    $comic->{pngFile}{'English'} = "latest-comic.png";
     $twitter_error = "Oops";
     my $cs_twitter = Comic::Social::Twitter->new(mode => 'html');
-    eval {
-        $cs_twitter->post($comic);
-        fail("should have thrown");
-    };
-    like($@, qr{\bOops\b});
+
+    my $message = $cs_twitter->post($comic);
+    like($message, qr{\btwitter\b}i);
+    like($message, qr{\bOops\b});
 }
 
 
@@ -138,10 +153,9 @@ sub handles_twitter_error : Tests {
     my $response = HTTP::Response->new(500, 'go away');
     $twitter_error = Net::Twitter::Error->new(http_response => $response);
     my $cs_twitter = Comic::Social::Twitter->new(mode => 'html');
-    eval {
-        $cs_twitter->post($comic);
-        fail("should have thrown");
-    };
-    like($@, qr{\b500\b}, 'error code missing');
-    like($@, qr{\bgo away\b}, 'error message missing');
+
+    my $message = $cs_twitter->post($comic);
+
+    like($message, qr{\b500\b}, 'error code missing');
+    like($message, qr{\bgo away\b}, 'error message missing');
 }

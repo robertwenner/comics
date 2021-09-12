@@ -180,13 +180,17 @@ sub post {
                     "$comic->{dirName}{$language}/$comic->{pngFile}{$language}"
                 ]);
             }
+            push @result, $status->{text};
         }
         or do {
             my $err = $EVAL_ERROR;
-            croak $err unless blessed $err && $err->isa('Net::Twitter::Error');
-            croak $err->code, ': ', $err->message, "\n", $err->error, "\n";
+            if (blessed $err && $err->isa('Net::Twitter::Error')) {
+                push @result, "Twitter error: $err->code $err->message ($err->error)";
+            }
+            else {
+                push @result, "Twitter error: $err (" . ref($err) .")";
+            }
         };
-        push @result, $status->{text};
     }
 
     return join "\n", @result;
