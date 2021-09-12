@@ -345,14 +345,14 @@ sub run_all_checks {
 }
 
 
-=head2 final_checks
+=head2 run_final_checks
 
 Runs the final checks method for all loaded Checks, giving them a chance to
 do their checks after having seen all Comics.
 
 =cut
 
-sub final_checks {
+sub run_final_checks {
     my ($self) = @ARG;
 
     my %called;

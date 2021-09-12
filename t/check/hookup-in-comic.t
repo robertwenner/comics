@@ -172,7 +172,7 @@ sub runs_global_final_checks : Tests {
     my $comics = Comics->new();
     my $check = DummyCheck->new();
     push @{$comics->{checks}}, $check;
-    $comics->final_checks();
+    $comics->run_final_checks();
     is(1, $check->{calls}{"final_check"});
 }
 
@@ -184,7 +184,7 @@ sub runs_per_comic_final_checks : Tests {
     push @{$comic->{checks}}, $check;
     push @{$comics->{comics}}, $comic;
 
-    $comics->final_checks();
+    $comics->run_final_checks();
     is(1, $check->{calls}{"final_check"});
 }
 
@@ -199,7 +199,7 @@ sub runs_each_final_check_only_once : Tests {
     push @{$comics->{checks}}, $global_check;
     push @{$comics->{comics}}, $comic;
 
-    $comics->final_checks();
+    $comics->run_final_checks();
     is(1, $global_check->{calls}{"final_check"}, 'should have called global only once');
     is(1, $local_check->{calls}{"final_check"}, 'should have called local only once');
 }
