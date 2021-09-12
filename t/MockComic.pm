@@ -85,7 +85,6 @@ my %defaultArgs = (
 sub set_up {
     %file_written = ();
     @made_dirs = ();
-    Comic::reset_statics();
     mock_methods();
 }
 

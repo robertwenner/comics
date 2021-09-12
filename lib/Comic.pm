@@ -74,8 +74,6 @@ Readonly my $UNPUBLISHED => '3000-01-01';
 Readonly my $TEMPDIR => 'tmp';
 
 
-# @todo get rid of %counts
-my %counts;
 my %language_code_cache;
 
 
@@ -340,11 +338,8 @@ sub _load {
         $self->{titleUrlEncoded}{$language} = uri_encode($self->{meta_data}->{title}->{$language}, %uri_encoding_options);
         $self->{dirName}{$language} = make_dir($base);
         $self->{baseName}{$language} = $self->_normalized_title($language);
-
-        $counts{'comics'}{$language}++;
     }
 
-    $self->_count_tags();
     return;
 }
 
@@ -635,30 +630,6 @@ sub _framesort {
         return $xa <=> $xb;
     }
     return $ya <=> $yb;
-}
-
-
-sub _count_tags {
-    my ($self) = @ARG;
-
-    foreach my $what ('tags', 'who') {
-        next unless ($self->{meta_data}->{$what});
-        foreach my $language (keys %{$self->{meta_data}->{$what}}) {
-            foreach my $val (@{$self->{meta_data}->{$what}->{$language}}) {
-                $val = _normalize_whitespace($val);
-                $counts{$what}{$language}{$val}++;
-            }
-        }
-    }
-    return;
-}
-
-
-sub _normalize_whitespace {
-    my ($val) = @ARG;
-    $val = trim($val);
-    $val =~ s/\s+/ /g;
-    return $val;
 }
 
 
@@ -1148,46 +1119,6 @@ sub from_oldest_to_latest($$) {
     my $pub_a = $_[0]->{meta_data}->{published}{when} || $UNPUBLISHED;
     my $pub_b = $_[1]->{meta_data}->{published}{when} || $UNPUBLISHED;
     return $pub_a cmp $pub_b;
-}
-
-
-=head2 reset_statics
-
-Helper to allow tests to clear internal static state.
-
-=cut
-
-sub reset_statics {
-    %counts = ();
-    return;
-}
-
-
-=head2 counts_of_in
-
-Returns the counts of all 'what' in the given language.
-This can be used for a tag cloud.
-
-Parameters:
-
-=over 4
-
-=item * B<$what> what counts to get, e.g., "tags" or "who".
-
-=item * B<$language> for what language, e.g., "English".
-
-=back
-
-Returned data depends on what was asked for. If asked for tags or people,
-the result will be a hash of tag and person's name, respectively, to counts.
-If asked for 'comics', it will return a single number (the number of comics
-in that language).
-
-=cut
-
-sub counts_of_in {
-    my ($what, $language) = @ARG;
-    return $counts{$what}{$language};
 }
 
 
