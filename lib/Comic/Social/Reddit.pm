@@ -100,19 +100,27 @@ sub new {
 
     @{$self->{settings}->{default_subreddit}} = ();
     my $def_srs = $settings->{'Reddit'}->{'default_subreddit'};
-    if ($def_srs) {
-        if (ref $def_srs eq '') {
-            push @{$self->{settings}->{'default_subreddit'}}, $def_srs;
-        }
-        elsif (ref $def_srs eq 'ARRAY') {
-            push @{$self->{settings}->{'default_subreddit'}}, @{$def_srs};
-        }
-        else {
-            croak('Reddit.default_subreddit must be scalar or array');
-        }
-    }
+    push @{$self->{settings}->{'default_subreddit'}}, _subreddits('Reddit.default_subreddit', $def_srs);
 
     return $self;
+}
+
+
+sub _subreddits {
+    my ($what, $subreddits) = @ARG;
+
+    if ($subreddits) {
+        if (ref $subreddits eq '') {
+            return $subreddits;
+        }
+        elsif (ref $subreddits eq 'ARRAY') {
+            return @{$subreddits};
+        }
+        else {
+            croak("$what must be scalar or array");
+        }
+    }
+    return ();
 }
 
 
@@ -207,17 +215,7 @@ sub _subreddits_from_comic_meta_data {
 
     my @subreddits;
     my $json = $comic->{meta_data}->{reddit}->{$language}->{subreddit};
-    if (defined $json) {
-        if (ref($json) eq 'ARRAY') {
-            push @subreddits, @{$json};
-        }
-        elsif (ref($json) eq '') {
-            push @subreddits, $json;
-        }
-        else {
-            $comic->croak('Cannot handle ' . ref($json) . " in $language Reddit meta data");
-        }
-    }
+    push @subreddits, _subreddits("$language Reddit meta data", $json);
     return @subreddits;
 }
 
