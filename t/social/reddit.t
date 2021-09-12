@@ -220,6 +220,22 @@ JSON
 }
 
 
+sub subreddit_from_meta_data_scalar : Tests {
+    my $json = <<'JSON';
+            "reddit": {
+                "use-default": false,
+                "English": {
+                    "subreddit": "foo"
+                }
+            }
+JSON
+    my $comic = MockComic::make_comic($MockComic::JSON => $json);
+
+	is_deeply([], [$reddit->_get_subreddits($comic, 'Deutsch')]);
+	is_deeply(['foo'], [$reddit->_get_subreddits($comic, 'English')]);
+}
+
+
 sub subreddit_from_meta_data_array : Tests {
     my $json = <<'JSON';
             "reddit": {
@@ -380,10 +396,17 @@ sub wait_for_limit_already_submitted : Tests {
 
 sub wait_for_limit_unknown_error : Tests {
     my $comic = MockComic::make_comic();
-    eval {
-        Comic::Social::Reddit::_wait_for_reddit_limit($comic, "500 internal server error");
-        fail("Should have croaked");
-    };
-    like($@, qr{\bdon't know\b}i, "Error message missing");
-    like($@, qr{\b500 internal server error\b}, "original error message missing");
+
+    my $message = Comic::Social::Reddit::_wait_for_reddit_limit($comic, "500 internal server error");
+
+    like($message, qr{\bdon't know\b}i, "Error message missing");
+    like($message, qr{\b500 internal server error\b}, "original error message missing");
+}
+
+
+sub wait_for_limit_no_error : Tests {
+    my $comic = MockComic::make_comic();
+
+    my $message = Comic::Social::Reddit::_wait_for_reddit_limit($comic, "");
+    is($message, "");
 }

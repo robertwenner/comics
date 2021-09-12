@@ -226,7 +226,6 @@ sub _post {
     my $title = "[OC] $comic->{meta_data}->{title}{$language}";
     $subreddit = _normalize_subreddit($subreddit);
 
-    my $message;
     my $full_name = 0;
     while (!$full_name) {
         eval {
@@ -237,20 +236,15 @@ sub _post {
             );
         }
         or do {
-            $message = _wait_for_reddit_limit($comic, $EVAL_ERROR);
-            last if ($message);
+            my $error = _wait_for_reddit_limit($comic, $EVAL_ERROR);
+            if ($error) {
+                return "$language: /r/$subreddit: $error";
+            }
         }
     }
 
-    if ($message) {
-        return "$language: /r/$subreddit: $message";
-    }
-
-    $message = "Posted '$title' ($comic->{url}{$language}) to $subreddit";
-    if ($full_name) {
-        $message .= " ($full_name) at " . $self->{reddit}->get_link($full_name)->{permalink};
-    }
-    return $message;
+    return "Posted '$title' ($comic->{url}{$language}) to $subreddit ($full_name) at "
+        . $self->{reddit}->get_link($full_name)->{permalink};
 }
 
 
@@ -281,7 +275,7 @@ sub _wait_for_reddit_limit {
         return $error;
     }
     elsif ($error) {
-        $comic->keel_over("Don't know what reddit complains about: '$error'");
+        return "Don't know what reddit complains about: '$error'";
     }
 
     return '';
