@@ -188,7 +188,7 @@ sub post {
                 push @result, "Twitter error: $err->code $err->message ($err->error)";
             }
             else {
-                push @result, "Twitter error: $err (" . ref($err) .")";
+                push @result, "Twitter error: $err (" . ref($err) .')';
             }
         };
     }
