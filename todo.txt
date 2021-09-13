@@ -9,7 +9,8 @@
 - backlog: list comics under series headings (hideable?)
 
 - don't post to reddit / don't tweet a link, if the link is dead (slow
-  web server?)
+  web server?), or have uploading code try to make sure the upload worked
+  (link check)
 
 - define comic order by refering the previous or next comic, instead of
   having a date, so that inserting one for current events doesn't ripple
@@ -205,3 +206,10 @@
   one language has 2 lines of text under the comic and the other three
 
 - feature: Comic::Social::Twitter needs a svg mode
+
+- performance: write everything needed to publish to a cache file so that
+  publishing code doesn´t need to scan all comics again (may be tricky with
+  generating pages for archive, tags, etc)
+
+- feature: see meta data should try to resolve path relative to current
+  comic
