@@ -2,6 +2,7 @@ package Comic;
 
 use strict;
 use warnings;
+use autodie;
 
 use Readonly;
 use English '-no_match_vars';
@@ -743,7 +744,7 @@ sub make_dir {
 
     $dir = "generated/$dir" if ($dir !~ m{^generated/});
     unless (-d $dir) {
-        File::Path::make_path($dir) or croak("Cannot mkdir $dir: $OS_ERROR");
+        File::Path::make_path($dir);
     }
     return $dir;
 }
@@ -1090,12 +1091,13 @@ Parameters:
 =cut
 
 sub write_file {
-    my ($file_name, $contents) = @ARG;
+    # uncoverable subroutine
+    my ($file_name, $contents) = @ARG; # uncoverable statement
 
-    open my $F, '>', $file_name or croak "Cannot open $file_name: $OS_ERROR";
-    print {$F} $contents or croak "Cannot write to $file_name: $OS_ERROR";
-    close $F or croak "Cannot close $file_name: $OS_ERROR";
-    return;
+    open my $F, '>', $file_name; # uncoverable statement
+    print {$F} $contents or croak("Cannot write to $file_name: $OS_ERROR"); # uncoverable statement
+    close $F; # uncoverable statement
+    return; # uncoverable statement
 }
 
 
