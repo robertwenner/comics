@@ -10,7 +10,7 @@ Checks, define an empty "Checks":
 
 ```json
 {
-    "Checks": {}
+    "Checks": []
 }
 ```
 
@@ -19,6 +19,10 @@ starts with `Comic::Check`.
 
 Each comic can override the globally configured checks; see the
 [Comic](comic.md) documentation.
+
+When a comic is checked, each Check can report problems to that particular
+comic, which can then print them and / or store them and make them available
+to templates.
 
 
 ## `Comic::Check::Actors`

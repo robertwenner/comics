@@ -35,11 +35,28 @@ generates web pages for these.
     # Detailled:
     my $comics = Comics->new();
     $comics->load_settings("my-settings.json");
-    $comics->load_comics("/path/to/comics/svg/");
-    $comics->export_all();
+    $comics->collect_files("/path/to/comics/svg/");
+    $comics->load_checks();
+    $comics->run_all_checks();
+    $comics->load_generators();
+    $comics->generate_all();
+    if ($want_to_upload) {
+        $comics->load_uploaders();
+        $comics->upload_all_comics();
+        if ($wants_to_post_todays_comic_to_social_media) {
+            $comics->load_social_media_posters();
+            $comics->post_todays_comic_to_social_media();
+        }
+    }
 
-    # Lazy cronjob:
-    Comics::publish("/path/to/comics/svg/");
+    # Simple command to check comics and generate output:
+    Comics::generate("config.json", "comics/");
+
+    # Simple command to sync local comics to a web server:
+    Comics::upload("config.json", "comics/");
+
+    # Cronjob to publish comics:
+    Comics::post_todays_comic("/path/to/config.json", "/path/to/comics/svg/");
 
 =head1 DESCRIPTION
 
@@ -56,13 +73,14 @@ having a main configuration, generating pngs and web pages.
 Generate all files for all comics.
 
 This is meant for to be a single method call to produce web pages from
-comics, usable during development.
+comics during development, e.g., to quickly run the checks on a comic in
+progress and see its web page.
 
     perl -MComics -e 'Comics::generate("settings.json", "comics/");'
 
-It will load the configuration from the given configuration file, collect the
-comics in the passed directories, check them, export them as png, and generate
-the web pages. It will not upload comics or post to social media.
+It will load the configuration from the given configuration file, collect
+the comics in the passed directories, run all configured checks on them, and
+run all configured output generators on them.
 
 Arguments:
 
@@ -83,6 +101,10 @@ sub generate {
     $comics->load_settings($config);
 
     my @files = $comics->collect_files(@dirs);
+    unless (@files) {
+        croak('No comics found; looked in ' . join ', ', @dirs);
+    }
+
     foreach my $file (@files) {
         my $comic = Comic->new($comics->{settings}->clone()->{settings});
         $comic->load($file);
@@ -90,7 +112,7 @@ sub generate {
     }
 
     $comics->load_checks();
-    $comics->check_all();
+    $comics->run_all_checks();
 
     $comics->load_generators();
     $comics->generate_all();
@@ -99,18 +121,13 @@ sub generate {
 }
 
 
-=head2 publish
+=head2 upload
 
-Publishes latest comic and any updates to previous comics.
+Uploads all comics.
 
-This is meant as a single method to call to do everything needed to publish
-a web comic, e.g. in a cronjob.
+This is meant as a single method to sync the local comics with a web server.
 
-    perl -MComics -e 'Comics::publish("/home/robert/comics/bier/config.json", "/home/robert/comics/bier/comics/web");'
-
-It loads the configuration from the given configuration file, collects the
-comics in the passed directories, checks them, exports them as png, generates
-the web pages, uploads the comics, and posts the latest comic on social media.
+It calls the C<generate> function, then runs the configured uploaders.
 
 Arguments:
 
@@ -124,15 +141,64 @@ Arguments:
 
 =cut
 
-sub publish {
+sub upload {
     my ($config, @dirs) = @ARG;
 
-    my $comics = generate(@dirs);
+    my $comics = generate($config, @dirs);
+    $comics->load_uploaders();
+#    unless (@{$comics->{uploaders}}) {
+#        croak("No uploaders configured");
+#    }
+    $comics->upload_all_comics();
 
-#    $comics->load_uploaders();
-#    $comics->upload();
+    return $comics;
+}
+
+
+=head2 post_todays_comic
+
+Generates all comics, uploads them, and posts today's comic(s) to social
+media.
+
+This is meant as a single method to call to do everything needed to publish
+a new comic and post it to social media, e.g. in a cronjob.
+
+    perl -MComics -e 'Comics::publish("/home/robert/comics/bier/config.json", "/home/robert/comics/bier/comics/web");'
+
+This function will print any output from the social media posting plugins to
+stdout. Cron should pick that up and email it to the owner.
+
+This module does not know whether a comic was already posted. As a simple
+check, it won't post if the comic was not released today.
+
+Arguments:
+
+=over 4
+
+=item * B<$config> path to the configuration file.
+
+=item * B<@dirs> directories from which to collect comics.
+
+=back
+
+=cut
+
+sub post_todays_comic {
+    my ($config, @dirs) = @ARG;
+
+    my $comics = upload($config, @dirs);
     $comics->load_social_media_posters();
-    $comics->post_altest_comic_to_social_media();
+    unless (@{$comics->{social_media_posters}}) {
+        croak('No social media posters configured');
+    }
+
+    my @output = $comics->post_todays_comic_to_social_media();
+    foreach my $line (@output) {
+        # It's probably safe to print to stdout...
+        ## no critic(InputOutput::RequireCheckedSyscalls)
+        print "$line\n";
+        ## use critic
+    }
 
     return;
 }
@@ -150,6 +216,7 @@ sub new {
     $self->{settings} = Comic::Settings->new();
     $self->{checks} = [];
     $self->{generators} = [];
+    $self->{uploaders} = [];
     $self->{social_media_posters} = [];
     $self->{comics} = [];
     return $self;
@@ -401,13 +468,13 @@ sub generate_all {
 }
 
 
-=head2 upload
+=head2 upload_all_comics
 
 Run all the configured uploaders to upload generated content somewhere.
 
 =cut
 
-sub upload {
+sub upload_all_comics {
     my ($self) = @ARG;
     return;
 }

@@ -168,6 +168,7 @@ sub comic_check_unknown_command : Tests {
     like($@, qr{\bremove\b}i);
 }
 
+
 sub runs_global_final_checks : Tests {
     my $comics = Comics->new();
     my $check = DummyCheck->new();
@@ -195,8 +196,8 @@ sub runs_each_final_check_only_once : Tests {
     my $global_check = DummyCheck->new();
     my $local_check = DummyCheck->new();
 
-    push @{$comic->{checks}}, $global_check, $local_check;;
-    push @{$comics->{checks}}, $global_check;
+    push @{$comic->{checks}}, $global_check, $local_check, $local_check;
+    push @{$comics->{checks}}, $global_check, $global_check;
     push @{$comics->{comics}}, $comic;
 
     $comics->run_final_checks();
