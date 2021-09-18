@@ -12,6 +12,7 @@ use lib 't';
 use MockComic;
 use lib 't/check';  # so that it finds the dummies
 use lib 't/out';
+use lib 't/upload';
 use lib 't/social';
 
 
@@ -30,12 +31,11 @@ my $DUMMY_GENERATOR = <<"GENERATORS";
 GENERATORS
 
 my $NO_UPLOADERS = "\"$Comic::Settings::UPLOADERS\": {}";
-my $DUMMY_UPLOADER = $NO_UPLOADERS;
-# my $DUMMY_UPLOADER = <<"UPLOADERS";
-#    "$Comic::Settings::UPLOADERS": {
-#        "DummyUploader": []
-#     }
-# UPLOADERS
+my $DUMMY_UPLOADER = <<"UPLOADERS";
+    "$Comic::Settings::UPLOADERS": {
+        "DummyUploader": []
+    }
+UPLOADERS
 
 my $NO_SOCIAL_MEDIA = "\"$Comic::Settings::SOCIAL_MEDIA_POSTERS\": {}";
 my $DUMMY_POSTER = <<"POSTERS";
@@ -75,7 +75,7 @@ CONFIG
     is(1, @{$comics->{checks}}, 'should have one check');
     is(1, @{$comics->{generators}}, 'should have one output generator');
     is(0, @{$comics->{uploaders}}, 'should not have uploaders');
-   is(0, @{$comics->{social_media_posters}}, 'should not have social media posters');
+    is(0, @{$comics->{social_media_posters}}, 'should not have social media posters');
 
     is(1, @{$comics->{comics}}, 'should have one comic');
 }
@@ -103,32 +103,34 @@ CONFIG
 }
 
 
-# sub upload_ok : Tests {
-#     my $config = <<"CONFIG";
-# {
-#     $DUMMY_CHECK,
-#     $DUMMY_GENERATOR,
-#     $DUMMY_UPLOADER,
-# }
-# CONFIG
-#     my $comics = Comics::upload("config.json", "comics/");
-#
-#     is(1, @{$comics->{uploaders}}, 'should have one uploader');
-# }
-#
-#
-# sub upload_error_if_no_uploaders : Tests  {
-#     my $config = <<"CONFIG";
-# {
-#     $DUMMY_CHECK,
-#     $DUMMY_GENERATOR
-# }
-# CONFIG
-#     eval {
-#         Comics::upload("config.json", "comics/");
-#     };
-#     like($@, qr{no uploaders}i);
-# }
+sub upload_ok : Tests {
+    my $config = <<"CONFIG";
+{
+    $DUMMY_CHECK,
+    $DUMMY_GENERATOR,
+    $DUMMY_UPLOADER,
+}
+CONFIG
+    MockComic::fake_file("config.json", $config);
+    my $comics = Comics::upload("config.json", "comics/");
+
+    is(1, @{$comics->{uploaders}}, 'should have one uploader');
+}
+
+
+sub upload_error_if_no_uploaders : Tests  {
+    my $config = <<"CONFIG";
+{
+    $DUMMY_CHECK,
+    $DUMMY_GENERATOR
+}
+CONFIG
+    MockComic::fake_file("config.json", $config);
+    eval {
+        Comics::upload("config.json", "comics/");
+    };
+    like($@, qr{no uploaders}i);
+}
 
 
 sub post_to_social_media_ok : Tests {

@@ -17,7 +17,7 @@ use version; our $VERSION = qv('0.0.3');
 # settings for pluggable modules.
 Readonly our $CHECKS => 'Checks';
 Readonly our $GENERATORS => 'Out';
-Readonly our $UPLOADERS => 'Uploaders';
+Readonly our $UPLOADERS => 'Uploader';
 Readonly our $SOCIAL_MEDIA_POSTERS => 'Social';
 
 

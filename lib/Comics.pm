@@ -15,12 +15,13 @@ use Comic;
 use Comic::Settings;
 use Comic::Check::Check;
 use Comic::Out::Generator;
+use Comic::Upload::Uploader;
 use Comic::Social::Social;
 
 
 use version; our $VERSION = qv('0.0.3');
 
-=for stopwords html Inkscape JSON merchantability perlartistic png submodules Wenner cronjob pngs uploader uploaders
+=for stopwords html Inkscape JSON merchantability perlartistic png submodules Wenner cron cronjob pngs uploader uploaders
 
 
 =head1 NAME
@@ -146,9 +147,9 @@ sub upload {
 
     my $comics = generate($config, @dirs);
     $comics->load_uploaders();
-#    unless (@{$comics->{uploaders}}) {
-#        croak("No uploaders configured");
-#    }
+    unless (@{$comics->{uploaders}}) {
+        croak('No uploaders configured');
+    }
     $comics->upload_all_comics();
 
     return $comics;
@@ -166,7 +167,7 @@ a new comic and post it to social media, e.g. in a cronjob.
     perl -MComics -e 'Comics::publish("/home/robert/comics/bier/config.json", "/home/robert/comics/bier/comics/web");'
 
 This function will print any output from the social media posting plugins to
-stdout. Cron should pick that up and email it to the owner.
+standard out. The cron daemon should pick that up and email it to the owner.
 
 This module does not know whether a comic was already posted. As a simple
 check, it won't post if the comic was not released today.
@@ -476,6 +477,11 @@ Run all the configured uploaders to upload generated content somewhere.
 
 sub upload_all_comics {
     my ($self) = @ARG;
+
+    foreach my $uploader (@{$self->{uploaders}}) {
+        $uploader->upload();
+    }
+
     return;
 }
 
