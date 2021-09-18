@@ -213,3 +213,6 @@
 
 - feature: see meta data should try to resolve path relative to current
   comic
+
+- feature: allow copying static files and pipe them through a Template to
+  modify bits in mostly static files, like a copyright year in an index.html

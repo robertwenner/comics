@@ -2,8 +2,8 @@
 
 ## File name
 
-When a file is written, the file name is derived from the comic's title in
-the given language.
+When a file for a comic is written, the file name is derived from the comic's
+title for each language.
 
 These file names are stripped of certain characters that could cause
 problems in URLs and file names: any characters that are not letters,
@@ -30,8 +30,14 @@ notice.
 
 ## Output Organization
 
-All generated files are placed under the directory configured as the main
-output directory.
+I recommend having separate directory trees (folders) for input files and
+output files. That makes it easier to not edit a generated file (and have
+the changes overwritten next time output is generated) and to not delete a
+not-generated file by accident. (I also recommend a version control system
+and regular backups.)
+
+Hence all generated files are placed under the directory configured as the
+main output directory.
 
 ```json
 {
@@ -234,6 +240,52 @@ The `Comic::Out::Feed` module defines some variables for use in the template:
 
 * `updated`: current time stamp, in [RFC 3339](https://tools.ietf.org/html/rfc3339)
   format (needed in Atom format).
+
+
+## `Comic::Out::FileCopy`
+
+Copies files. This is meant for static files of a web page, like CSS or
+static HTML content.
+
+Having this functionality within the Comic modules makes it easy to call the
+whole tool chain from the command line or cron jobs without having to add
+e.g., `cp -r static/all/* generated/web/` after processing the comics and
+before uploading the web page.
+
+Does not copy files that have not been modified (according to the file
+system). This is so that upload tools (e.g., `rsync` without `--checksum`
+option) that work on file system time stamp can decide to also not upload
+unchanged files again.
+
+The configuration looks like this:
+
+```
+{
+    "Out": {
+        "FileCopy": {
+            "outdir": "generated/web",
+            "from-all": ["web/all", "misc/all"],
+            "from-lamguage": "web/"
+        }
+    }
+}
+```
+
+Output files will be copied from the `from-all` directory and the language
+specific `from-language` directories into the given `outdir` plus the
+language name (lower cased).
+
+For example, for the configuration above, files for English and German
+comics will be copied from `web/english` and `web/german` to
+`generated/web/english/` and `generated/web/deutsch/` respectively. Files
+from `web/all` will be copied to both `generated/web/english` and
+`generated/web/deutsch`.
+
+This module does *not* support modifying copied files on the fly, e.g., to
+update a published date or copyright year in an otherwise static HTML pages.
+
+This module is just a wrapper around the Linux `cp` command, so you'll
+probably need to install Cygwin tools on Windows.
 
 
 ## `Comic::Out::HtmlArchivePage`
