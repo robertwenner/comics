@@ -199,7 +199,8 @@ sub make_comic {
     $mtime = $args{$MTIME};
     fake_file($args{$IN_FILE}, fake_comic(%args));
 
-    my $comic = new Comic($args{$IN_FILE}, $args{$SETTINGS});
+    my $comic = new Comic($args{$SETTINGS});
+    $comic->load($args{$IN_FILE});
     $comic->{height} = $args{$HEIGHT};
     $comic->{width} = $args{$WIDTH};
     my %uri_encoding_options = (encode_reserved => 1);

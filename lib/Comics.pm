@@ -82,7 +82,8 @@ sub generate {
 
     my @files = $comics->collect_files(@dirs);
     foreach my $file (@files) {
-        my $comic = Comic->new($file, $comics->{settings}->clone()->{settings});
+        my $comic = Comic->new($comics->{settings}->clone()->{settings});
+        $comic->load($file);
         push @{$comics->{comics}}, $comic;
     }
 

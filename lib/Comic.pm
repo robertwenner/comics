@@ -71,7 +71,7 @@ Readonly my $DEFAULT_NAMESPACE => 'defNs';
 Readonly my $UNPUBLISHED => '3000-01-01';
 
 # Temp dir for caches, per-langugage svg exports, etc.
-Readonly my $TEMPDIR => 'tmp';
+Readonly my $CACHE_DIR => 'tmp';
 
 
 my %language_code_cache;
@@ -81,13 +81,11 @@ my %language_code_cache;
 
 =head2 new
 
-Creates a new Comic from an Inkscape SVG file.
+Creates a new Comic.
 
 Parameters:
 
 =over 4
-
-=item * B<$path/file> path and file name to the SVG input file.
 
 =item * B<$settings> Comic::Settings object with settings for all comics.
 
@@ -96,28 +94,140 @@ Parameters:
 =cut
 
 sub new {
-    my ($class, $file, $settings) = @ARG;
+    my ($class, $settings) = @ARG;
     my $self = bless{}, $class;
 
     $self->{settings} = $settings;
-    if ($settings->{$Comic::Settings::CHECKS}) {
-        @{$self->{checks}} = @{$settings->{$Comic::Settings::CHECKS}};
+
+    return $self;
+}
+
+
+=head2 load
+
+Loads a comic from a given Inkscape F<.svg> file.
+
+Parameters:
+
+=over 4
+
+=item * B<$file> from which file to load.
+
+=back
+
+=cut
+
+sub load {
+    my ($self, $file) = @ARG;
+
+    $self->{srcFile} = $file;
+    $self->{warnings} = [];
+
+    my $meta_data;
+    my $meta_cache = _meta_cache_for($self->{srcFile});
+    $self->{use_meta_data_cache} = up_to_date($self->{srcFile}, $meta_cache);
+    if ($self->{use_meta_data_cache}) {
+        $meta_data = File::Slurper::read_text($meta_cache);
+    }
+    else {
+        $self->{dom} = _parse_xml(File::Slurper::read_text($file));
+        $self->{xpath} = XML::LibXML::XPathContext->new($self->{dom});
+        $self->{xpath}->registerNs($DEFAULT_NAMESPACE, 'http://www.w3.org/2000/svg');
+        my $meta_xpath = _build_xpath('metadata/rdf:RDF/cc:Work/dc:description/text()');
+        $meta_data = _unhtml(join ' ', $self->{xpath}->findnodes($meta_xpath));
+    }
+    eval {
+        $self->{meta_data} = from_json($meta_data);
+    } or $self->keel_over("Error in JSON for: $EVAL_ERROR");
+    if (!$self->{use_meta_data_cache}) {
+        write_file($meta_cache, $meta_data);
+    }
+
+    my $modified = DateTime->from_epoch(epoch => _mtime($file));
+    $modified->set_time_zone(_get_tz());
+    $self->{modified} = $modified->ymd;
+    # $self->{rfc3339Modified} = DateTime::Format::RFC3339->new()->format_datetime($modified);
+    my $pub = trim($self->{meta_data}->{published}->{when});
+    if ($pub) {
+        my $published = DateTime::Format::ISO8601->parse_datetime($pub);
+        $published->set_time_zone(_get_tz());
+        # DateTime::Format::Mail does RFC822 dates, but uses spaces instead of
+        # zeros for single digit numbers. The W3C validator complains about
+        # these, saying they're not strictly illegal, but may be a compatibiliy
+        # issue.
+        $self->{rfc822pubDate} = $published->strftime('%a, %d %b %Y %H:%M:%S %z');
+        $self->{rfc3339pubDate} = DateTime::Format::RFC3339->new()->format_datetime($published);
+    }
+
+    my %uri_encoding_options = (encode_reserved => 1);
+    foreach my $language ($self->languages()) {
+        my $domain = ${$self->{settings}->{Domains}}{$language};
+        $self->keel_over("No domain for $language") unless ($domain);
+
+        $self->{backlogPath}{$language} = 'generated/backlog/' . lc $language;
+        my $base;
+        if ($self->not_yet_published()) {
+            $base = $self->{backlogPath}{$language};
+        }
+        else {
+            $base = 'web/' . lc $language . '/comics';
+        }
+
+        $self->{titleUrlEncoded}{$language} = uri_encode($self->{meta_data}->{title}->{$language}, %uri_encoding_options);
+        $self->{dirName}{$language} = make_dir($base);
+        $self->{baseName}{$language} = $self->_normalized_title($language);
+    }
+
+    if ($self->{settings}->{$Comic::Settings::CHECKS}) {
+        @{$self->{checks}} = @{$self->{settings}->{$Comic::Settings::CHECKS}};
     }
     else {
         @{$self->{checks}} = ();
     }
-
-    if ($settings->{$Comic::Settings::GENERATORS}) {
-        @{$self->{generators}} = @{$settings->{$Comic::Settings::GENERATORS}};
-    }
-    else {
-        @{$self->{generators}} = ();
-    }
-
-    $self->_load($file);
     $self->_adjust_checks($self->{meta_data}->{$Comic::Settings::CHECKS});
 
-    return $self;
+    return;
+}
+
+
+sub _meta_cache_for {
+    my ($svg_file) = @ARG;
+    return _cache_file_for($svg_file, 'meta', 'json');
+}
+
+
+sub _transcript_cache_for {
+    my ($svg_file, $language) = @ARG;
+    return _cache_file_for("$language/$svg_file", 'transcript', 'txt');
+}
+
+
+sub _cache_file_for {
+    my ($svg_file, $dir, $ext) = @ARG;
+
+    my ($filename, $dirs, $suffix) = fileparse($svg_file);
+    if ($dirs eq q{./}) { # no path
+        $dirs = '';
+    }
+    $filename =~ s/\.svg$//;
+    return make_dir($CACHE_DIR . "/$dir/$dirs") . "$filename.$ext";
+}
+
+
+sub _parse_xml {
+    my ($xml) = @ARG;
+    my $parser = XML::LibXML->new();
+    $parser->set_option(huge => 1);
+    return $parser->load_xml(string => $xml);
+}
+
+
+sub _unhtml {
+    # Inkscape is XML, so it uses &lt;, &gt;, &amp;, and &quot; in it's meta
+    # data. This is convenient for the HTML export, but not for adding meta
+    # data to the .png file.
+    my ($text) = @ARG;
+    return decode_entities($text);
 }
 
 
@@ -276,112 +386,6 @@ sub _remove_checks {
     }
 
     return;
-}
-
-
-sub _load {
-    my ($self, $file) = @ARG;
-
-    $self->{srcFile} = $file;
-    $self->{warnings} = [];
-
-    my $meta_data;
-    my $meta_cache = _meta_cache_for($self->{srcFile});
-    $self->{use_meta_data_cache} = up_to_date($self->{srcFile}, $meta_cache);
-    if ($self->{use_meta_data_cache}) {
-        $meta_data = File::Slurper::read_text($meta_cache);
-    }
-    else {
-        $self->{dom} = _parse_xml(File::Slurper::read_text($file));
-        $self->{xpath} = XML::LibXML::XPathContext->new($self->{dom});
-        $self->{xpath}->registerNs($DEFAULT_NAMESPACE, 'http://www.w3.org/2000/svg');
-        my $meta_xpath = _build_xpath('metadata/rdf:RDF/cc:Work/dc:description/text()');
-        $meta_data = _unhtml(join ' ', $self->{xpath}->findnodes($meta_xpath));
-    }
-    eval {
-        $self->{meta_data} = from_json($meta_data);
-    } or $self->keel_over("Error in JSON for: $EVAL_ERROR");
-    if (!$self->{use_meta_data_cache}) {
-        write_file($meta_cache, $meta_data);
-    }
-
-    my $modified = DateTime->from_epoch(epoch => _mtime($file));
-    $modified->set_time_zone(_get_tz());
-    $self->{modified} = $modified->ymd;
-    # $self->{rfc3339Modified} = DateTime::Format::RFC3339->new()->format_datetime($modified);
-    my $pub = trim($self->{meta_data}->{published}->{when});
-    if ($pub) {
-        my $published = DateTime::Format::ISO8601->parse_datetime($pub);
-        $published->set_time_zone(_get_tz());
-        # DateTime::Format::Mail does RFC822 dates, but uses spaces instead of
-        # zeros for single digit numbers. The W3C validator complains about
-        # these, saying they're not strictly illegal, but may be a compatibiliy
-        # issue.
-        $self->{rfc822pubDate} = $published->strftime('%a, %d %b %Y %H:%M:%S %z');
-        $self->{rfc3339pubDate} = DateTime::Format::RFC3339->new()->format_datetime($published);
-    }
-
-    my %uri_encoding_options = (encode_reserved => 1);
-    foreach my $language ($self->languages()) {
-        my $domain = ${$self->{settings}->{Domains}}{$language};
-        $self->keel_over("No domain for $language") unless ($domain);
-
-        $self->{backlogPath}{$language} = 'generated/backlog/' . lc $language;
-        my $base;
-        if ($self->not_yet_published()) {
-            $base = $self->{backlogPath}{$language};
-        }
-        else {
-            $base = 'web/' . lc $language . '/comics';
-        }
-
-        $self->{titleUrlEncoded}{$language} = uri_encode($self->{meta_data}->{title}->{$language}, %uri_encoding_options);
-        $self->{dirName}{$language} = make_dir($base);
-        $self->{baseName}{$language} = $self->_normalized_title($language);
-    }
-
-    return;
-}
-
-
-sub _meta_cache_for {
-    my ($svg_file) = @ARG;
-    return _cache_file_for($svg_file, 'meta', 'json');
-}
-
-
-sub _transcript_cache_for {
-    my ($svg_file, $language) = @ARG;
-    return _cache_file_for("$language/$svg_file", 'transcript', 'txt');
-}
-
-
-sub _cache_file_for {
-    my ($svg_file, $dir, $ext) = @ARG;
-
-    my ($filename, $dirs, $suffix) = fileparse($svg_file);
-    if ($dirs eq q{./}) { # no path
-        $dirs = '';
-    }
-    $filename =~ s/\.svg$//;
-    return make_dir($TEMPDIR . "/$dir/$dirs") . "$filename.$ext";
-}
-
-
-sub _parse_xml {
-    my ($xml) = @ARG;
-    my $parser = XML::LibXML->new();
-    $parser->set_option(huge => 1);
-    return $parser->load_xml(string => $xml);
-}
-
-
-sub _unhtml {
-    # Inkscape is XML, so it uses &lt;, &gt;, &amp;, and &quot; in it's meta
-    # data. This is convenient for the HTML export, but not for adding meta
-    # data to the .png file.
-    my ($text) = @ARG;
-    return decode_entities($text);
 }
 
 
