@@ -23,7 +23,7 @@ sub no_actors_meta_data : Tests {
         $MockComic::PUBLISHED_WHEN => '3016-01-01',
         $MockComic::TITLE => {$MockComic::ENGLISH => 'Beer'});
     $check->check($comic);
-    is_deeply($comic->{warnings}, ["No $MockComic::ENGLISH actors metadata at all"]);
+    is_deeply($comic->{warnings}, ["Comic::Check::Actors: No $MockComic::ENGLISH actors metadata at all"]);
 }
 
 
@@ -43,7 +43,7 @@ sub empty_name : Tests {
         $MockComic::TITLE => {$MockComic::ENGLISH => 'Beer'},
         $MockComic::WHO => {$MockComic::ENGLISH => [' ']});
     $check->check($comic);
-    is_deeply($comic->{warnings}, ['Empty actor name in English']);
+    is_deeply($comic->{warnings}, ['Comic::Check::Actors: Empty actor name in English']);
 }
 
 
@@ -67,7 +67,7 @@ sub different_number_of_actors : Tests {
         });
     $check->check($comic);
     is_deeply($comic->{warnings},
-        ["Different number of actors in $MockComic::DEUTSCH and $MockComic::ENGLISH"]);
+        ["Comic::Check::Actors: Different number of actors in $MockComic::DEUTSCH and $MockComic::ENGLISH"]);
 }
 
 

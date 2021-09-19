@@ -25,7 +25,7 @@ sub no_tags : Tests {
         $MockComic::TAGS => {},
         $MockComic::PUBLISHED_WHEN => '3016-01-01');
     $check->check($comic);
-    is_deeply($comic->{warnings}, ["No English tags"]);
+    is_deeply($comic->{warnings}, ["Comic::Check::Tag: No English tags"]);
 }
 
 
@@ -35,7 +35,7 @@ sub empty_tags_array : Tests {
         $MockComic::PUBLISHED_WHEN => '3016-01-01',
         $MockComic::TAGS => {$MockComic::ENGLISH => []});
     $check->check($comic);
-    is_deeply($comic->{warnings}, ["No English tags"]);
+    is_deeply($comic->{warnings}, ["Comic::Check::Tag: No English tags"]);
 }
 
 
@@ -45,7 +45,7 @@ sub empty_tags_text : Tests {
         $MockComic::PUBLISHED_WHEN => '3016-01-01',
         $MockComic::TAGS => {$MockComic::ENGLISH => [""]});
     $check->check($comic);
-    is_deeply($comic->{warnings}, ["Empty English tags"]);
+    is_deeply($comic->{warnings}, ["Comic::Check::Tag: Empty English tags"]);
 }
 
 
@@ -75,7 +75,7 @@ sub tag_case_differences : Tests {
         $MockComic::TAGS => {$MockComic::ENGLISH => ['Tag1']});
     $check->notify($comic1);
     $check->check($comic2);
-    is_deeply($comic2->{warnings}, ["tags 'Tag1' and 'tag1' from some_comic.svg only differ in case"]);
+    is_deeply($comic2->{warnings}, ["Comic::Check::Tag: tags 'Tag1' and 'tag1' from some_comic.svg only differ in case"]);
 }
 
 
@@ -90,7 +90,7 @@ sub tag_whitespace_differences : Tests {
         $MockComic::TAGS => {$MockComic::ENGLISH => ['tag1\t']});
     $check->notify($comic1);
     $check->check($comic2);
-    is_deeply($comic2->{warnings}, ["tags 'tag1\t' and ' tag 1' from some_comic.svg only differ in white space"]);
+    is_deeply($comic2->{warnings}, ["Comic::Check::Tag: tags 'tag1\t' and ' tag 1' from some_comic.svg only differ in white space"]);
 }
 
 
@@ -106,5 +106,5 @@ sub multiple_tags : Tests {
     $check = Comic::Check::Tag->new('tags', 'who');
     $check->notify($comic1);
     $check->check($comic2);
-    is_deeply($comic2->{warnings}, ["who 'tag1' and 'tag 1' from some_comic.svg only differ in white space"]);
+    is_deeply($comic2->{warnings}, ["Comic::Check::Tag: who 'tag1' and 'tag 1' from some_comic.svg only differ in white space"]);
 }

@@ -34,7 +34,9 @@ sub collision : Test {
         $check->check(MockComic::make_comic(
             $MockComic::PUBLISHED_WHEN => '2016-01-01', $MockComic::IN_FILE => 'three.svg'));
     };
-    like($@, qr{three\.svg : duplicated date .+ one\.svg});
+    like($@, qr{duplicated date}i, 'should give reason');
+    like($@, qr{three\.svg}, 'should mention files');
+    like($@, qr{three\.svg}, 'should mention files');
 }
 
 
@@ -47,7 +49,7 @@ sub collision_ignores_whitespace : Test {
         $check->check( MockComic::make_comic(
             $MockComic::PUBLISHED_WHEN => ' 2016-01-01', $MockComic::IN_FILE => 'three.svg'));
     };
-    like($@, qr{three\.svg : duplicated date .+ one\.svg});
+    like($@, qr{duplicated date}i, 'should give reason');
 }
 
 

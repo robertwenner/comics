@@ -61,7 +61,7 @@ sub warns_if_unique_series : Tests {
     $check->notify($comic);
     $check->final_check();
     is_deeply([@{$comic->{warnings}}], [
-        'Deutsch has only one comic in the \'Buckimude\' series',
+        'Comic::Check::Series: Deutsch has only one comic in the \'Buckimude\' series',
     ]);
 }
 
@@ -112,9 +112,9 @@ sub complains_if_unique_series_per_language : Tests {
     $check->notify($en);
     $check->final_check();
     is_deeply([@{$de->{warnings}}],
-        ['Deutsch has only one comic in the \'oops\' series']);
+        ['Comic::Check::Series: Deutsch has only one comic in the \'oops\' series']);
     is_deeply([@{$en->{warnings}}],
-        ['English has only one comic in the \'oops\' series']);
+        ['Comic::Check::Series: English has only one comic in the \'oops\' series']);
 }
 
 
@@ -127,7 +127,7 @@ sub series_not_in_all_languages : Tests {
     );
     $check->check($comic);
     is_deeply([@{$comic->{warnings}}],
-        ['No series tag for English but for Deutsch']);
+        ['Comic::Check::Series: No series tag for English but for Deutsch']);
 }
 
 
@@ -141,7 +141,8 @@ sub series_not_in_all_languages_empty : Tests {
     );
     $check->check($comic);
     is_deeply([@{$comic->{warnings}}],
-        ['No series tag for English but for Deutsch', 'Empty series for English']);
+        ['Comic::Check::Series: No series tag for English but for Deutsch',
+        'Comic::Check::Series: Empty series for English']);
 }
 
 
@@ -155,8 +156,8 @@ sub different_language_same_series : Tests {
     );
     $check->check($comic);
     is_deeply([@{$comic->{warnings}}],
-        ["Duplicated series tag 'Buckimude' for English and Deutsch",
-         "Duplicated series tag 'Buckimude' for Deutsch and English"]);
+        ["Comic::Check::Series: Duplicated series tag 'Buckimude' for English and Deutsch",
+         "Comic::Check::Series: Duplicated series tag 'Buckimude' for Deutsch and English"]);
 }
 
 
@@ -175,5 +176,5 @@ sub duplicate_series_does_not_hide_later_error : Tests {
     );
     $check->check($comic);
     my %warned = map { $_ => 1 } @{$comic->{warnings}};
-    ok($warned{"No series tag for Español but for Deutsch"});
+    ok($warned{"Comic::Check::Series: No series tag for Español but for Deutsch"});
 }

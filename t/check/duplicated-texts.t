@@ -28,10 +28,11 @@ sub duplicated_text_in_other_language : Tests {
     eval {
         $check->check($comic);
     };
-    like($@, qr{^some_comic.svg}, 'should include file name');
-    like($@, qr{duplicated text}, 'wrong error message');
+    like($@, qr{some_comic.svg}, 'should include file name');
+    like($@, qr{duplicated text}i, 'wrong error message');
     like($@, qr{'Paul shows Max his bym\.'}, 'should mention duplicated text');
-    like($@, qr{Deutsch and English}, 'should mention offending languages');
+    like($@, qr{Deutsch}, 'should mention offending languages');
+    like($@, qr{English}, 'should mention offending languages');
 }
 
 
@@ -44,7 +45,7 @@ sub duplicated_text_in_other_language_ignores_text_order : Test {
     eval {
         $check->check($comic);
     };
-    like($@, qr{duplicated text});
+    like($@, qr{duplicated text}i);
 }
 
 
@@ -87,7 +88,7 @@ sub duplicated_word_parts : Tests {
     eval {
         $check->check($comic);
     };
-    like($@, qr{duplicated text});
+    like($@, qr{duplicated text}i);
 }
 
 
@@ -107,7 +108,7 @@ XML
     eval {
         $check->check($comic);
     };
-    like($@, qr{duplicated text});
+    like($@, qr{duplicated text}i);
 }
 
 
@@ -129,7 +130,7 @@ XML
     eval {
         $check->check($comic);
     };
-    like($@, qr{duplicated text});
+    like($@, qr{duplicated text}i);
 }
 
 

@@ -71,7 +71,7 @@ sub web_comic_scheduled_for_saturday : Tests {
         $check->check($comic);
     };
     is($@, '');
-    is_deeply($comic->{warnings}, ['scheduled for Saturday']);
+    is_deeply($comic->{warnings}, ['Comic::Check::Weekday: Scheduled for Saturday']);
 }
 
 
@@ -81,7 +81,7 @@ sub web_comic_scheduled_for_thursday : Tests {
         $check->check($comic);
     };
     is($@, '');
-    is_deeply($comic->{warnings}, ['scheduled for Thursday']);
+    is_deeply($comic->{warnings}, ['Comic::Check::Weekday: Scheduled for Thursday']);
 }
 
 
@@ -93,5 +93,5 @@ sub web_comic_scheduled_for_today_thursday : Tests {
     };
     # Need to check an error, not just a warning, like in the other tests, cause
     # the comic is already (being) published.
-    like($@, qr/scheduled for Thursday/);
+    like($@, qr/scheduled for Thursday/i);
 }

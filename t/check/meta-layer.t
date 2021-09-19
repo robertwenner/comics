@@ -52,8 +52,8 @@ sub no_meta_layer_checks_other_languages : Test {
     );
     $check->check($comic);
     is_deeply($comic->{warnings}, [
-        "No MetaDeutsch layer",
-        "No MetaEnglish layer",
+        "Comic::Check::MetaLayer: No MetaDeutsch layer",
+        "Comic::Check::MetaLayer: No MetaEnglish layer",
     ]);
 }
 

@@ -101,7 +101,7 @@ sub check {
             next if (defined $allow_duplicated{$text});
             next if ($text =~ m/:$/);
             if (defined $seen{$text}) {
-                $comic->keel_over("duplicated text '$text' in $seen{$text} and $language");
+                $self->warning($comic, "Duplicated text '$text' in $seen{$text} and $language");
             }
             $seen{$text} = $language;
         }

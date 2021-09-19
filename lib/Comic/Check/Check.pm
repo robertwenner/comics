@@ -119,6 +119,31 @@ sub find_all {
 }
 
 
+=head2 warning
+
+Puts a warning on the given comic.
+
+Parameters:
+
+=over 4
+
+=item * B<self> Check instance.
+
+=item * B<comic> Comic to add the warning to.
+
+=item * B<message> Warning message text.
+
+=back
+
+=cut
+
+sub warning {
+    my ($self, $comic, $message) = @ARG;
+    $comic->warning(ref($self) . ': ' . $message);
+    return;
+}
+
+
 =for stopwords html Wenner merchantability perlartistic
 
 

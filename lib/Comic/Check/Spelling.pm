@@ -119,7 +119,7 @@ sub check {
             $self->_check_layers($comic, $language);
         }
         else {
-            $comic->warning("No $language ($code) aspell dictionary installed, skipping spell check");
+            $self->warning($comic, "No $language ($code) aspell dictionary installed, skipping spell check");
         }
     }
     return;
@@ -208,7 +208,7 @@ sub _check_text {
     foreach my $word (_cut_into_words($text)) {
         next if (defined ($self->{ignore}{$language}{lc $word}));
         unless ($dictionary->check($word)) {
-            $comic->warning("Misspelled in $where: '$word'?");
+            $self->warning($comic, "Misspelled in $where: '$word'?");
         }
     }
     return;

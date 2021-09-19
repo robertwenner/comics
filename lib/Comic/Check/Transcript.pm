@@ -79,14 +79,14 @@ sub check {
         foreach my $t ($comic->texts_in_language($language)) {
             $trace .= "[$t]";
             if (_both_names($previous, $t)) {
-                $comic->keel_over("transcript mixed up in $language: $trace");
+                $comic->keel_over(ref($self) . ": Transcript mixed up in $language: $trace");
             }
             $previous = $t;
         }
 
         # Check that the comic does not end with a speaker indicator.
         if (trim($previous) =~ m{:$}) {
-            $comic->keel_over("speaker's text missing after '$previous', trace is $trace");
+            $comic->keel_over(ref($self) . ": Speaker's text missing after '$previous', trace is $trace");
         }
     }
 

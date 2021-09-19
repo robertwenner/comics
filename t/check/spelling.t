@@ -97,7 +97,7 @@ sub checks_metadata_text : Tests {
     );
     $comic->{meta_data}->{allow_duplicated} = [];
     $check->check($comic);
-    is_deeply($comic->{warnings}, ["Misspelled in English metadata 'title': 'Typpo'?"]);
+    is_deeply($comic->{warnings}, ["Comic::Check::Spelling: Misspelled in English metadata 'title': 'Typpo'?"]);
 }
 
 
@@ -113,7 +113,8 @@ sub checks_metadata_array : Tests {
     );
     $check->check($comic);
     is_deeply($comic->{warnings},
-        ["Misspelled in English metadata 'tags': 'typpo'?", "Misspelled in English metadata 'tags': 'Typpo'?"]);
+        ["Comic::Check::Spelling: Misspelled in English metadata 'tags': 'typpo'?",
+        "Comic::Check::Spelling: Misspelled in English metadata 'tags': 'Typpo'?"]);
 }
 
 
@@ -128,7 +129,7 @@ sub checks_metadata_hash : Tests {
         $MockComic::PUBLISHED_WHEN => "3000-01-01",
     );
     $check->check($comic);
-    is_deeply($comic->{warnings}, ["Misspelled in English metadata 'see': 'typpo'?"]);
+    is_deeply($comic->{warnings}, ["Comic::Check::Spelling: Misspelled in English metadata 'see': 'typpo'?"]);
 }
 
 
@@ -169,8 +170,8 @@ sub checks_metadata_per_language_typos : Tests {
     );
     $check->check($comic);
     is_deeply($comic->{warnings}, [
-        "Misspelled in Deutsch metadata 'title': 'Tüppfehler'?",
-        "Misspelled in English metadata 'title': 'typpo'?",
+        "Comic::Check::Spelling: Misspelled in Deutsch metadata 'title': 'Tüppfehler'?",
+        "Comic::Check::Spelling: Misspelled in English metadata 'title': 'typpo'?",
     ]);
 }
 
@@ -188,7 +189,7 @@ sub complains_if_no_dictionary_installed_for_language : Tests {
         $MockComic::PUBLISHED_WHEN => "3000-01-01",
     );
     $check->check($comic);
-    is_deeply($comic->{warnings}, ["No Hungarian (hu) aspell dictionary installed, skipping spell check"]);
+    is_deeply($comic->{warnings}, ["Comic::Check::Spelling: No Hungarian (hu) aspell dictionary installed, skipping spell check"]);
 }
 
 
@@ -207,7 +208,7 @@ sub checks_text_layers_typo : Tests {
         $MockComic::TEXTS => {$MockComic::ENGLISH => ['no typpo here!']},
         $MockComic::PUBLISHED_WHEN => "3000-01-01");
     $check->check($comic);
-    is_deeply($comic->{warnings}, ["Misspelled in layer English: 'typpo'?"]);
+    is_deeply($comic->{warnings}, ["Comic::Check::Spelling: Misspelled in layer English: 'typpo'?"]);
 }
 
 
@@ -236,10 +237,10 @@ XML
     );
     $check->check($comic);
     is_deeply($comic->{warnings}, [
-        "Misspelled in layer Deutsch: 'Tüppfehler'?",
-        "Misspelled in layer HintergrundDeutsch: 'tüppfehler'?",
-        "Misspelled in layer English: 'typpo'?",
-        "Misspelled in layer MetaEnglish: 'typpo'?",
+        "Comic::Check::Spelling: Misspelled in layer Deutsch: 'Tüppfehler'?",
+        "Comic::Check::Spelling: Misspelled in layer HintergrundDeutsch: 'tüppfehler'?",
+        "Comic::Check::Spelling: Misspelled in layer English: 'typpo'?",
+        "Comic::Check::Spelling: Misspelled in layer MetaEnglish: 'typpo'?",
     ]);
 }
 

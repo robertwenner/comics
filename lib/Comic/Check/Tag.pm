@@ -94,11 +94,11 @@ sub check {
         foreach my $language ($comic->languages()) {
             my $tag_values = $comic->{meta_data}->{$tag}->{$language};
             if (!defined $tag_values || @{$tag_values} == 0) {
-                $comic->warning("No $language $tag");
+                $self->warning($comic, "No $language $tag");
             }
 
             foreach my $tag_value (@{$tag_values}) {
-                $comic->warning("Empty $language $tag") if ($tag_value =~ m/^\s*$/);
+                $self->warning($comic, "Empty $language $tag") if ($tag_value =~ m/^\s*$/);
             }
 
             $self->_check_against($comic, $tag, $language);
@@ -119,13 +119,13 @@ sub _check_against {
                 my $location = "$tag '$newtag' and '$oldtag' from $oldcomic->{srcFile}";
 
                 if (lc $oldtag eq lc $newtag) {
-                    $comic->warning("$location only differ in case");
+                    $self->warning($comic, "$location only differ in case");
                 }
 
                 $oldtag =~ s/\s+//g;
                 $newtag =~ s/\s+//g;
                 if ($oldtag eq $newtag) {
-                    $comic->warning("$location only differ in white space");
+                    $self->warning($comic, "$location only differ in white space");
                 }
             }
         }

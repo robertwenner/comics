@@ -99,7 +99,7 @@ sub last_text_is_speaker_indicator : Tests {
     eval {
         $check->check($comic);
     };
-    like($@, qr{speaker's text missing after 'Paul:'});
+    like($@, qr{speaker's text missing after 'Paul:'}i);
 }
 
 
