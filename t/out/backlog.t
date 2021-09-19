@@ -27,7 +27,7 @@ sub set_up : Test(setup) {
 TEMPL
 
     $backlog = Comic::Out::Backlog->new({
-        'Backlog' => {
+        'Comic::Out::Backlog' => {
             'template' => 'backlog.templ',
             'outfile' => 'generated/backlog.html',
             'collect' => ['tags', 'series', 'who'],
@@ -82,7 +82,7 @@ sub constructor_arguments : Tests {
 
     eval {
         $backlog = Comic::Out::Backlog->new({
-            'Backlog' => {
+            'Comic::Out::Backlog' => {
             },
         });
     };
@@ -90,7 +90,7 @@ sub constructor_arguments : Tests {
 
     eval {
         $backlog = Comic::Out::Backlog->new({
-            'Backlog' => {
+            'Comic::Out::Backlog' => {
                 'outfile' => '...',
             },
         });
@@ -99,7 +99,7 @@ sub constructor_arguments : Tests {
 
     eval {
         $backlog = Comic::Out::Backlog->new({
-            'Backlog' => {
+            'Comic::Out::Backlog' => {
                 'template' => '...',
             },
         });
@@ -108,7 +108,7 @@ sub constructor_arguments : Tests {
 
     eval {
         $backlog = Comic::Out::Backlog->new({
-            'Backlog' => {
+            'Comic::Out::Backlog' => {
                 'template' => '...',
                 'outfile' => '...',
                 'collect' => {
@@ -145,7 +145,7 @@ sub publishers_no_top_location_no_backlog : Tests {
 
 sub publishers_top_location_no_backlog : Tests {
     $backlog = Comic::Out::Backlog->new({
-        'Backlog' => {
+        'Comic::Out::Backlog' => {
             'template' => 'backlog.templ',
             'outfile' => 'generated/backlog.html',
             'toplocation' => 'web',
@@ -164,7 +164,7 @@ sub publishers_order_top_location : Tests {
         make_comic('5', 'English', '3016-01-01', 'Web'),
     );
     $backlog = Comic::Out::Backlog->new({
-        'Backlog' => {
+        'Comic::Out::Backlog' => {
             'template' => 'backlog.templ',
             'outfile' => 'generated/backlog.html',
             'toplocation' => 'web',
@@ -208,7 +208,7 @@ sub populates_fields_collect_array_one_comic_in_backlog : Tests {
     my $comic = make_comic('eins', 'Deutsch', '3016-01-01');
 
     $backlog = Comic::Out::Backlog->new({
-        'Backlog' => {
+        'Comic::Out::Backlog' => {
             'template' => 'backlog.templ',
             'outfile' => 'generated/backlog.html',
             'collect' => ['tags', 'series', 'who'],
@@ -232,7 +232,7 @@ sub populates_fields_collect_scalar_one_comic_in_backlog : Tests {
     my $comic = make_comic('eins', 'Deutsch', '3016-01-01');
 
     $backlog = Comic::Out::Backlog->new({
-        'Backlog' => {
+        'Comic::Out::Backlog' => {
             'template' => 'backlog.templ',
             'outfile' => 'generated/backlog.html',
             'collect' => 'tags',
@@ -254,7 +254,7 @@ sub populates_fields_no_collect_one_comic_in_backlog : Tests {
     my $comic = make_comic('eins', 'Deutsch', '3016-01-01');
 
     $backlog = Comic::Out::Backlog->new({
-        'Backlog' => {
+        'Comic::Out::Backlog' => {
             'template' => 'backlog.templ',
             'outfile' => 'generated/backlog.html',
         },

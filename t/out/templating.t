@@ -291,7 +291,7 @@ Keywords: [% comic.meta_data.tags.$Language.join(',') %]
 Transript: [% comic.transcript.$Language.join(' ') %]
 TEMPLATE
     my $hcp = Comic::Out::HtmlComicPage->new({
-        'HtmlComicPage' => {
+        'Comic::Out::HtmlComicPage' => {
             'outdir' => 'generated/',
             'Templates' => {
                 'Deutsch' => 'templates/deutsch/comic-page.templ',

@@ -42,15 +42,6 @@ Generates a size map page for all comics, using a Perl L<Template> Toolkit
 template. This is for the backlog or informational purposes, like when
 figuring out which image size is frequently used.
 
-    {
-        "Out": {
-            "Sizemap": {
-                "template": "templates/sizemap.templ",
-                "output": "generated/sizemap.html"
-            }
-        }
-    }
-
 =cut
 
 
@@ -75,7 +66,7 @@ For example:
 
     my $settings = {
         'Out' => {
-            'Sizemap' => {
+            'Comic::Out::Sizemap' => {
                 'template' => 'templates/sizemap.templ',
                 'output' => 'generated/sizemap.html',
             },
@@ -104,15 +95,15 @@ sub new {
     my ($class, $settings) = @ARG;
     my $self = $class->SUPER::new();
 
-    croak('No Sizemap configuration') unless ($settings->{Sizemap});
-    %{$self->{settings}} = %{$settings->{Sizemap}};
+    croak('No Comic::Out::Sizemap configuration') unless ($settings->{'Comic::Out::Sizemap'});
+    %{$self->{settings}} = %{$settings->{'Comic::Out::Sizemap'}};
 
-    croak('Must specify Sizemap.template') unless ($self->{settings}->{template});
-    croak('Must specify Sizemap.output') unless ($self->{settings}->{output});
+    croak('Must specify Comic::Out::Sizemap.template') unless ($self->{settings}->{template});
+    croak('Must specify Comic::Out::Sizemap.output') unless ($self->{settings}->{output});
     # Devel::Cover does not see that $SCALE is an always set const:
     # uncoverable condition false
     $self->{settings}->{scale} ||= $SCALE;
-    croak('Sizemap.scale must be numeric') unless (looks_like_number($self->{settings}->{scale}));
+    croak('Comic:Out::Sizemap.scale must be numeric') unless (looks_like_number($self->{settings}->{scale}));
     # Devel::Cover does not see that $PUBLISHED_COLOR is an always set const:
     # uncoverable condition false
     $self->{settings}->{published_color} ||= $PUBLISHED_COLOR;

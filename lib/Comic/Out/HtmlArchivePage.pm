@@ -54,17 +54,17 @@ output files, both per language.
 For example:
 
     my $settings = {
-        'Out' => {
-            'HtmlArchivePage' => {
-                'template' => {
-                    'English' => 'templates/archive-en.templ',
-                },
-                'outfile' => {
-                    'English' => 'generated/web/english/archive.html',
-                },
-            }
-        }
-    }
+        'Comic::Out::HtmlArchivePage' => {
+            'template' => {
+                'English' => 'templates/archive-en.templ',
+                'Deutsch' => 'templates/archive-de.templ',
+            },
+            'outfile' => {
+                'English' => 'generated/web/english/archive.html',
+                'Deutsch' => 'generated/web/deutsch/archiv.html',
+            },
+        },
+    };
     my $archive = Comic::Out::HtmlArchivePage($settings);
 
 The C<template> defines the L<Toolkit> template to use.
@@ -77,21 +77,21 @@ sub new {
     my ($class, $settings) = @ARG;
     my $self = $class->SUPER::new();
 
-    croak('No HtmlArchivePage configuration') unless ($settings->{HtmlArchivePage});
-    %{$self->{settings}} = %{$settings->{HtmlArchivePage}};
+    croak('No Comic::Out::HtmlArchivePage configuration') unless ($settings->{'Comic::Out::HtmlArchivePage'});
+    %{$self->{settings}} = %{$settings->{'Comic::Out::HtmlArchivePage'}};
 
-    croak('Must specify HtmlArchivePage.template') unless ($self->{settings}->{template});
-    croak('HtmlArchivePage.template must be an object') unless (ref $self->{settings}->{template} eq 'HASH');
-    croak('Must specify languages in HtmlArchivePage.template') unless(keys %{$self->{settings}->{template}});
+    croak('Must specify Comic::Out::HtmlArchivePage.template') unless ($self->{settings}->{template});
+    croak('Comic::Out::HtmlArchivePage.template must be an object') unless (ref $self->{settings}->{template} eq 'HASH');
+    croak('Must specify languages in Comic::Out::HtmlArchivePage.template') unless(keys %{$self->{settings}->{template}});
 
-    croak('Must specify HtmlArchivePage.outfile') unless ($self->{settings}->{outfile});
-    croak('HtmlArchivePage.outfile must be an object') unless (ref $self->{settings}->{outfile} eq 'HASH');
+    croak('Must specify Comic::Out::HtmlArchivePage.outfile') unless ($self->{settings}->{outfile});
+    croak('Comic::Out::HtmlArchivePage.outfile must be an object') unless (ref $self->{settings}->{outfile} eq 'HASH');
 
     foreach my $language (keys %{$self->{settings}->{template}}) {
-        croak "HtmlArchivePage $language in template but not in outfile" unless ($self->{settings}->{outfile}{$language});
+        croak "Comic::Out::HtmlArchivePage $language in template but not in outfile" unless ($self->{settings}->{outfile}{$language});
     }
     foreach my $language (keys %{$self->{settings}->{outfile}}) {
-        croak "HtmlArchivePage $language in outfile but not in template" unless ($self->{settings}->{template}{$language});
+        croak "Comic::Out::HtmlArchivePage $language in outfile but not in template" unless ($self->{settings}->{template}{$language});
     }
 
     return $self;

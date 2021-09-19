@@ -35,24 +35,6 @@ Generates an html page for a comic, using a Perl L<Template> Toolkit template.
 Generates an F<index.html> page for the latest comic, using the same template,
 at the parent of C<outdir>.
 
-The template file name must be given in the configuration for each language
-like this:
-
-    {
-        "Out": {
-            "HtmlComicPage": {
-                "outdir": "generated/web/comics",
-                "Templates": {
-                    "English": "templates/comic-page.templ",
-                    "Deutsch": "templates/comic-page.templ"
-                }
-            }
-        }
-    }
-
-The html page will be placed in the given C<outdir>. The name is derived
-from each Comic's title.
-
 =cut
 
 
@@ -78,30 +60,33 @@ For example:
 
     my $settings = {
         'Out' => {
-            'HtmlComicPage' => {
+            'Comic::Out::HtmlComicPage' => {
                 'outdir' => 'generated',
                 'Templates' => {
-                    'English' => 'path/to/template-file',
+                    'English' => 'path/to/english/template',
+                    'Deutsch' => 'path/to/german/template',
                 },
             },
         },
     }
     my $hcp = Comic::Out::HtmlComicPage($settings);
 
-=cut
+The html page will be placed in the given C<outdir>. The file name is
+derived from each Comic's title.
 
+=cut
 
 sub new {
     my ($class, $settings) = @ARG;
     my $self = $class->SUPER::new();
 
-    croak('No HtmlComicPage configuration') unless ($settings->{HtmlComicPage});
-    %{$self->{settings}} = %{$settings->{HtmlComicPage}};
+    croak('No Comic::Out::HtmlComicPage configuration') unless ($settings->{'Comic::Out::HtmlComicPage'});
+    %{$self->{settings}} = %{$settings->{'Comic::Out::HtmlComicPage'}};
 
-    croak('Must specify HtmlComicPage.outdir output directory') unless ($self->{settings}->{outdir});
+    croak('Must specify Comic::Out::HtmlComicPage.outdir output directory') unless ($self->{settings}->{outdir});
     $self->{settings}->{outdir} .= q{/} unless ($self->{settings}->{outdir} =~ m{/$});
 
-    croak('Must specify HtmlComicPage.Templates') unless ($self->{settings}->{Templates});
+    croak('Must specify Comic::Out::HtmlComicPage.Templates') unless ($self->{settings}->{Templates});
 
     return $self;
 }
@@ -183,7 +168,7 @@ sub generate_all {
             # The actual export
             my %templates = %{$self->{settings}->{Templates}};
             my $template = $templates{$language};
-            $comic->keel_over("No $language template") unless ($template);
+            $comic->keel_over("Comic::Out::HtmlComicPage: No $language template") unless ($template);
             $self->_export_language_html($comic, $language, $template);
         }
     }

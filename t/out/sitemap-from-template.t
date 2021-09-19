@@ -45,7 +45,7 @@ SITEMAP
     [% END %]
 SITEMAP
     $sitemap = Comic::Out::Sitemap->new({
-        'Sitemap' => {
+        'Comic::Out::Sitemap' => {
             'Templates' => {
                 'English' => 'templates/english/sitemap-xml.templ',
                 'Deutsch' => 'templates/deutsch/sitemap-xml.templ',
@@ -101,12 +101,12 @@ sub fails_on_missing_configuration : Tests {
     eval {
         Comic::Out::Sitemap->new({});
     };
-    like($@, qr{\bSitemap\b}, 'should mention module');
+    like($@, qr{\bComic::Out::Sitemap\b}, 'should mention module');
     like($@, qr{\bconfiguration\b}i, 'should mention what is missing');
 
     eval {
         Comic::Out::Sitemap->new({
-            'Sitemap' => {
+            'Comic::Out::Sitemap' => {
                 'Templates' => {},
             },
         });
@@ -116,7 +116,7 @@ sub fails_on_missing_configuration : Tests {
 
     eval {
         Comic::Out::Sitemap->new({
-            'Sitemap' => {
+            'Comic::Out::Sitemap' => {
                 'output' => {},
             }
         });
@@ -128,7 +128,7 @@ sub fails_on_missing_configuration : Tests {
 
 sub fails_on_missing_template_for_language_configuration : Tests {
     $sitemap = Comic::Out::Sitemap->new({
-        'Sitemap' => {
+        'Comic::Out::Sitemap' => {
             'Templates' => {},
             'output' => {
                 'English' => 'generated/english/web/sitemap.xml',
@@ -145,7 +145,7 @@ sub fails_on_missing_template_for_language_configuration : Tests {
 
 sub fails_on_missing_output_for_language_configuration : Tests {
     $sitemap = Comic::Out::Sitemap->new({
-        'Sitemap' => {
+        'Comic::Out::Sitemap' => {
             'Templates' => {
                 'English' => 'templates/english/sitemap-xml.templ',
             },

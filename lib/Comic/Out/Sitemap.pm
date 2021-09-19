@@ -33,24 +33,6 @@ Generates a sitemap page for all comics, using a Perl L<Template> Toolkit
 template. A sitemap can be used to point search engines to pages they should
 crawl; see L<https://en.wikipedia.org/wiki/Sitemaps>.
 
-The template file name and output file must be given in the configuration
-for each language like this:
-
-    {
-        "Out": {
-            "Sitemap": {
-                "output": {
-                    "English": "generated/web/english/sitemap.xml",
-                    "Deutsch": "generated/web/deutsch/sitemap.xml"
-                },
-                "Templates": {
-                    "English": "templates/comic-page.templ",
-                    "Deutsch": "templates/comic-page.templ"
-                }
-            }
-        }
-    }
-
 =cut
 
 
@@ -74,7 +56,7 @@ For example:
 
     my $settings = {
         'Out' => {
-            'Sitemap' => {
+            'Comic::Out::Sitemap' => {
                 'output' => {
                     'English' => 'generated/web/english/sitemap.xml',
                 },
@@ -93,11 +75,11 @@ sub new {
     my ($class, $settings) = @ARG;
     my $self = $class->SUPER::new();
 
-    croak('No Sitemap configuration') unless ($settings->{Sitemap});
-    %{$self->{settings}} = %{$settings->{Sitemap}};
+    croak('No Comic::Out::Sitemap configuration') unless ($settings->{'Comic::Out::Sitemap'});
+    %{$self->{settings}} = %{$settings->{'Comic::Out::Sitemap'}};
 
-    croak('Must specify Sitemap.Templates') unless ($self->{settings}->{Templates});
-    croak('Must specify Sitemap.output') unless ($self->{settings}->{output});
+    croak('Must specify Comic::Out::Sitemap.Templates') unless ($self->{settings}->{Templates});
+    croak('Must specify Comic::Out::Sitemap.output') unless ($self->{settings}->{output});
 
     return $self;
 }
@@ -130,12 +112,12 @@ sub generate_all {
 
     foreach my $language (_all_comic_languages(@sorted)) {
         my $templ = $site_map_templates{$language};
-        croak("No $language template configured") unless ($templ);
+        croak("Comic::Out::Sitemap: No $language template configured") unless ($templ);
 
         my $xml = Comic::Out::Template::templatize('(none)', $templ, $language, %vars);
 
         my $output = $outputs{$language};
-        croak("No $language output file configured") unless ($output);
+        croak("Comic::Out::Sitemap: No $language output file configured") unless ($output);
         Comic::write_file($output, $xml);
     }
 

@@ -36,9 +36,9 @@ This module works on the generated F<.svg> file for each language.
 The note to add is given in the configuration like this:
 
     {
-        "Out": {
-            "Copyright": {
-                "Text": {
+        "Out" => {
+            "Comic::Out::Copyright" => {
+                "Text" => {
                     "English": "beercomics.com -- CC BY-NC-SA 4.0"
                 },
                 "style": "font-family: sans-serif; font-size: 10px"
@@ -70,9 +70,9 @@ sub new {
     my ($class, $settings) = @ARG;
     my $self = $class->SUPER::new();
 
-    croak('No Copyright configuration') unless ($settings->{Copyright});
-    %{$self->{settings}} = %{$settings->{Copyright}};
-    croak('No Text in Copyright configuration') unless ($self->{settings}->{Text});
+    croak('No Comic::Out::Copyright configuration') unless ($settings->{'Comic::Out::Copyright'});
+    %{$self->{settings}} = %{$settings->{'Comic::Out::Copyright'}};
+    croak('No Text in Comic::Out::Copyright configuration') unless ($self->{settings}->{Text});
     # Devel::Cover does not see that $STYLE is an always set const:
     # uncoverable condition false
     $self->{settings}->{style} ||= $STYLE;
@@ -104,7 +104,7 @@ sub generate {
         my $svg = $comic->{dom};
 
         unless ($self->{settings}->{Text}->{$language}) {
-            croak("No $language Out.Copyright text configured");
+            croak("No $language Comic::Out::Copyright text configured");
         }
         my $payload = XML::LibXML::Text->new($self->{settings}->{Text}->{$language});
 

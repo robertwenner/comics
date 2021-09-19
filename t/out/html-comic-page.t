@@ -33,7 +33,7 @@ sub make_comic {
 sub make_generator {
     my %templates = @_;
     my %options = (
-        'HtmlComicPage' => {
+        'Comic::Out::HtmlComicPage' => {
             'outdir' => 'generated/web/',
             'Templates' => {
                 'English' => 'en-comic.templ',
@@ -41,7 +41,7 @@ sub make_generator {
         },
     );
     foreach my $key (keys %templates) {
-        $options{'HtmlComicPage'}{'Templates'}{$key} = $templates{$key};
+        $options{'Comic::Out::HtmlComicPage'}{'Templates'}{$key} = $templates{$key};
     }
     return Comic::Out::HtmlComicPage->new(\%options);
 }
@@ -51,34 +51,34 @@ sub fails_on_missing_configuration : Tests {
     eval {
         Comic::Out::HtmlComicPage->new({});
     };
-    like($@, qr{\bHtmlComicPage\b});
+    like($@, qr{\bComic::Out::HtmlComicPage\b});
     like($@, qr{\bconfiguration\b}i);
 
     eval {
         Comic::Out::HtmlComicPage->new({
-            'HtmlComicPage' => {
+            'Comic::Out::HtmlComicPage' => {
                 'Templates' => {},
             },
         });
     };
-    like($@, qr{\bHtmlComicPage\.outdir\b});
+    like($@, qr{\bComic::Out::HtmlComicPage\.outdir\b});
     like($@, qr{\boutput directory\b}i);
 
     eval {
         Comic::Out::HtmlComicPage->new({
-            'HtmlComicPage' => {
+            'Comic::Out::HtmlComicPage' => {
                 'outdir' => '/tmp',
             },
         });
     };
-    like($@, qr{\bHtmlComicPage\.Templates\b});
+    like($@, qr{\bComic::Out::HtmlComicPage\.Templates\b});
 }
 
 
 sub fails_if_no_template_for_language : Tests {
     my $comic = make_comic('English', 'Beer brewing', '2016-01-01');
     my $hcp = Comic::Out::HtmlComicPage->new({
-        'HtmlComicPage' => {
+        'Comic::Out::HtmlComicPage' => {
             'outdir' => 'generated/web',
             'Templates' => {},
         },
@@ -90,7 +90,7 @@ sub fails_if_no_template_for_language : Tests {
     like($@, qr{\bEnglish\b});
 
     $hcp = Comic::Out::HtmlComicPage->new({
-        'HtmlComicPage' => {
+        'Comic::Out::HtmlComicPage' => {
             'outdir' => 'generated/web',
             'Templates' => {
                 'English' => '',

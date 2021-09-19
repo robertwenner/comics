@@ -35,24 +35,6 @@ convert to other image formats per language.
 
 =head1 DESCRIPTION
 
-The output directory can be given in the configuration like this:
-
-    {
-        "Out": {
-            "SvgPerLanguage": {
-                "outdir": "generated/web/comics"
-            }
-        }
-    }
-
-The F<.svg>s will be placed in language-specific directories under the given
-C<outdir>. The names are derived from the Comic's titles in the respective
-languages.
-
-The final file names will be placed in the Comic as a C<SvgPerLanguage> hash
-with language names (e.g., "English") as keys and F<.svg> file's path
-(starting with C<outdir>) and name as value.
-
 =cut
 
 
@@ -76,22 +58,29 @@ For example:
 
     my $settings = {
         'Out' => {
-            'SvgPerLanguage' => {
+            'Comic::Out::SvgPerLanguage' => {
                 'outdir' => 'generated/tmp/svg',
-            }
-        }
-    }
+            },
+        },
+    };
     my $svg = Comic::Out::SvgPerLanguage($settings);
 
-=cut
+The F<.svg>s will be placed in language-specific directories under the given
+C<outdir>. The names are derived from the Comic's titles in the respective
+languages.
 
+The final file names will be placed in the Comic as a C<SvgPerLanguage> hash
+with language names (e.g., "English") as keys and F<.svg> file's path
+(starting with C<outdir>) and name as value.
+
+=cut
 
 sub new {
     my ($class, $settings) = @ARG;
     my $self = $class->SUPER::new();
 
-    croak('No SvgPerLanguage configuration') unless ($settings->{SvgPerLanguage});
-    %{$self->{settings}} = %{$settings->{SvgPerLanguage}};
+    croak('No Comic::Out::SvgPerLanguage configuration') unless ($settings->{'Comic::Out::SvgPerLanguage'});
+    %{$self->{settings}} = %{$settings->{'Comic::Out::SvgPerLanguage'}};
 
     # Devel::Cover does not see that $SVGDIR is an always set const:
     # uncoverable condition false
@@ -161,7 +150,7 @@ sub _flip_language_layers {
         }
     }
     unless ($had_lang) {
-        $comic->keel_over("no $language layer");
+        $comic->keel_over("Comic::Out::SvgPerLanguage: No $language layer");
     }
     return;
 }

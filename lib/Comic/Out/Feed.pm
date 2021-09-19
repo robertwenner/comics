@@ -66,18 +66,16 @@ output file name.
 
 For example:
 
-    "Out": {
-        "Feed": {
-            "outdir": "generated",
-            "RSS": {
-                "max": 10,
-                "template": "templates/rss.templ",
-                "output": "rss.xml"
-            },
-            "Atom": {
-                "template": "templates/atom.xml",
-            }
-        }
+    "Feed" => {
+        "outdir" => "generated",
+        "RSS" => {
+            "max" => 10,
+            "template" => "templates/rss.templ",
+            "output" => "rss.xml",
+        },
+        "Atom" => {
+            "template" => "templates/atom.xml",
+        },
     }
 
 This will generate both a RSS and an Atom feed, each showing the 10 latest
@@ -96,15 +94,14 @@ F<generated/web/english/rss.xml> and F<generated/web/deutsch/rss.xml>.
 
 =cut
 
-
 sub new {
     my ($class, $settings) = @ARG;
     my $self = $class->SUPER::new();
 
-    croak('No Feed configuration') unless ($settings->{Feed});
-    %{$self->{settings}} = %{$settings->{Feed}};
+    croak('No Comic::Out::Feed configuration') unless ($settings->{'Comic::Out::Feed'});
+    %{$self->{settings}} = %{$settings->{'Comic::Out::Feed'}};
 
-    croak('Must specify Feed.outdir output directory') unless ($self->{settings}->{outdir});
+    croak('Must specify Comic::Out:Feed.outdir output directory') unless ($self->{settings}->{outdir});
     $self->{settings}->{outdir} .= q{/} unless ($self->{settings}->{outdir} =~ m{/$});
 
     return $self;
@@ -198,10 +195,10 @@ sub _get_template {
     }
 
     if (!defined $template) {
-        croak "No $type template$for_language";
+        croak "Comic::Out::Feed: No $type template$for_language";
     }
     elsif (ref $template ne ref $language) {
-        croak("Bad $type template$for_language, must be file name or hash of language to file name");
+        croak("Comic::Out::Feed: Bad $type template$for_language, must be file name or hash of language to file name");
     }
 
     return $template;

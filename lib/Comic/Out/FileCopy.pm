@@ -95,28 +95,28 @@ sub new {
     my ($class, $settings) = @ARG;
     my $self = $class->SUPER::new();
 
-    croak('No FileCopy configuration') unless ($settings->{FileCopy});
-    %{$self->{settings}} = %{$settings->{FileCopy}};
+    croak('No Comic::Out::FileCopy configuration') unless ($settings->{'Comic::Out::FileCopy'});
+    %{$self->{settings}} = %{$settings->{'Comic::Out::FileCopy'}};
 
-    croak('Must specify FileCopy.outdir output directory') unless ($self->{settings}->{outdir});
+    croak('Must specify Comic::Out::FileCopy.outdir output directory') unless ($self->{settings}->{outdir});
     $self->{settings}->{outdir} .= q{/} unless ($self->{settings}->{outdir} =~ m{/$}x);
 
     if (!$self->{settings}->{'from-all'} && !$self->{settings}->{'from-language'}) {
-        croak('Must specify at least one of from-all and from-language');
+        croak('Comic::Out::FileCopy: Must specify at least one of from-all and from-language');
     }
 
     foreach my $from (qw(from-all from-language)) {
         $self->{settings}->{$from} = [];
-        next unless ($settings->{FileCopy}->{$from});
+        next unless ($settings->{'Comic::Out::FileCopy'}->{$from});
 
-        if (ref $settings->{FileCopy}->{$from} eq '') {
-            push @{$self->{settings}->{$from}}, $settings->{FileCopy}->{$from};
+        if (ref $settings->{'Comic::Out::FileCopy'}->{$from} eq '') {
+            push @{$self->{settings}->{$from}}, $settings->{'Comic::Out::FileCopy'}->{$from};
         }
-        elsif (ref $settings->{FileCopy}->{$from} eq 'ARRAY') {
-            push @{$self->{settings}->{$from}}, @{$settings->{FileCopy}->{$from}};
+        elsif (ref $settings->{'Comic::Out::FileCopy'}->{$from} eq 'ARRAY') {
+            push @{$self->{settings}->{$from}}, @{$settings->{'Comic::Out::FileCopy'}->{$from}};
         }
         else {
-            croak("FileCopy.$from needs to be scalar or array");
+            croak("Comic::Out::FileCopy.$from needs to be scalar or array");
         }
     }
 

@@ -19,7 +19,7 @@ my $sizemap;
 sub set_up : Test(setup) {
     MockComic::set_up();
     $sizemap = Comic::Out::Sizemap->new({
-        'Sizemap' => {
+        'Comic::Out::Sizemap' => {
             'template' => 'sizemap.templ',
             'output' => 'sizemap.html',
         },
@@ -41,12 +41,12 @@ sub fails_on_missing_configuration : Tests {
     eval {
         Comic::Out::Sizemap->new({});
     };
-    like($@, qr{\bSizemap\b}, 'should mention module');
+    like($@, qr{\bComic::Out::Sizemap\b}, 'should mention module');
     like($@, qr{\bconfiguration\b}i, 'should mention what is missing');
 
     eval {
         Comic::Out::Sizemap->new({
-            'Sizemap' => {
+            'Comic::Out::Sizemap' => {
                 'template' => '...',
             },
         });
@@ -56,7 +56,7 @@ sub fails_on_missing_configuration : Tests {
 
     eval {
         Comic::Out::Sizemap->new({
-            'Sizemap' => {
+            'Comic::Out::Sizemap' => {
                 'output' => {},
             }
         });
@@ -149,7 +149,7 @@ sub aggregate_none : Tests {
 
 sub configure_scale : Tests {
     $sizemap = Comic::Out::Sizemap->new({
-        'Sizemap' => {
+        'Comic::Out::Sizemap' => {
             'template' => 'sizemap.templ',
             'output' => 'sizemap.html',
             'scale' => 2.0,
@@ -173,7 +173,7 @@ sub configure_scale : Tests {
 sub fails_if_configured_scale_is_not_numeric : Tests {
     eval {
         $sizemap = Comic::Out::Sizemap->new({
-            'Sizemap' => {
+            'Comic::Out::Sizemap' => {
                 'template' => 'sizemap.templ',
                 'output' => 'sizemap.html',
                 'scale' => 'whatever',
@@ -187,7 +187,7 @@ sub fails_if_configured_scale_is_not_numeric : Tests {
 
 sub configure_published_color : Tests {
     $sizemap = Comic::Out::Sizemap->new({
-        'Sizemap' => {
+        'Comic::Out::Sizemap' => {
             'template' => 'sizemap.templ',
             'output' => 'sizemap.html',
             'published_color' => 'red',
@@ -201,7 +201,7 @@ sub configure_published_color : Tests {
 
 sub configure_unpublished_color : Tests {
     $sizemap = Comic::Out::Sizemap->new({
-        'Sizemap' => {
+        'Comic::Out::Sizemap' => {
             'template' => 'sizemap.templ',
             'output' => 'sizemap.html',
             'unpublished_color' => 'pink',
@@ -218,7 +218,7 @@ sub generate_all : Tests {
     MockComic::fake_file('sizemap.templ', '[% svg %]');
 
     $sizemap = Comic::Out::Sizemap->new({
-        'Sizemap' => {
+        'Comic::Out::Sizemap' => {
             'template' => 'sizemap.templ',
             'output' => 'sizemap.html',
         },

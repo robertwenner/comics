@@ -64,7 +64,7 @@ For example:
 
     my $settings = {
         'Out' => {
-            'Backlog' => {
+            'Comic::Out::Backlog' => {
                 'outfile' => 'generated/backlog.html',
                 'template' => 'templates/backlog.templ',
                 'toplocation' => 'web',
@@ -92,10 +92,10 @@ sub new {
     my ($class, $settings) = @ARG;
     my $self = $class->SUPER::new();
 
-    croak('No Backlog configuration') unless ($settings->{Backlog});
-    %{$self->{settings}} = %{$settings->{Backlog}};
-    croak('Must specify Backlog.template') unless ($self->{settings}->{template});
-    croak('Must specify Backlog.outfile') unless ($self->{settings}->{outfile});
+    croak('No Comic::Out::Backlog configuration') unless ($settings->{'Comic::Out::Backlog'});
+    %{$self->{settings}} = %{$settings->{'Comic::Out::Backlog'}};
+    croak('Must specify Comic::Out::Backlog.template') unless ($self->{settings}->{template});
+    croak('Must specify Comic::Out::Backlog.outfile') unless ($self->{settings}->{outfile});
 
 	if ($self->{settings}->{collect}) {
 		if (ref $self->{settings}->{collect} eq '') {
@@ -103,7 +103,7 @@ sub new {
 			$self->{settings}->{collect} = [ $self->{settings}->{collect} ];
 		}
 		if (ref $self->{settings}->{collect} ne 'ARRAY') {
-			croak('Backlog.collect must be array or single value');
+			croak('Comic::Out::Backlog.collect must be array or single value');
 		}
 	}
 	else {
@@ -137,7 +137,7 @@ sub generate_all {
     my $page = $self->{settings}->{outfile};
     my $templ_file = $self->{settings}->{template};
     my %vars = $self->_populate_vars(@comics);
-    Comic::write_file($page, Comic::Out::Template::templatize('backlog', $templ_file, '', %vars));
+    Comic::write_file($page, Comic::Out::Template::templatize('Comic::Out::Backlog', $templ_file, '', %vars));
 
     return;
 }
@@ -188,7 +188,7 @@ sub _populate_vars {
                     }
                 }
                 else {
-                    croak("Cannot handle $want: must be array or single value, but got " . ref $per_language);
+                    croak("Comic::Out::Backlog: Cannot handle $want: must be array or single value, but got " . ref $per_language);
                 }
             }
         }

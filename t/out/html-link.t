@@ -17,7 +17,7 @@ my $htmllink;
 
 sub set_up : Test(setup) {
     MockComic::set_up();
-    $htmllink = Comic::Out::HtmlLink->new();
+    $htmllink = Comic::Out::HtmlLink->new({'Comic::Out::HtmlLink' => {}});
 }
 
 

@@ -62,7 +62,7 @@ comic to look up what keywords (tags) other comics used.
 ```json
 {
     "Out": {
-        "Backlog": {
+        "Comic::Out::Backlog": {
             "template": "templates/backlog.templ",
             "outfile": "generated/backlog.html",
             "toplocation": "web",
@@ -145,7 +145,7 @@ Places a copyright or license or URL note on the per-language `.svg` comic
 ```json
 {
     "Out": {
-        "Copyright": {
+        "Comic::Out::Copyright": {
             "Text": {
                 "English": "beercomics.com -- CC BY-NC-SA 4.0"
             },
@@ -185,7 +185,7 @@ comic on Facebook.
 ```json
 {
     "Out": {
-        "Feed": {
+        "Comic::Out::Feed": {
             "RSS": {
                 "template": "path/to/rss.template"
             },
@@ -262,7 +262,7 @@ The configuration looks like this:
 ```
 {
     "Out": {
-        "FileCopy": {
+        "Comic::Out::FileCopy": {
             "outdir": "generated/web",
             "from-all": ["web/all", "misc/all"],
             "from-lamguage": "web/"
@@ -297,12 +297,14 @@ The configuration takes a template and an output file for each language:
 
 ```json
 {
-    "HtmlArchivePage": {
-        "template": {
-            "English": "templates/archive-en.templ"
-        },
-        "outfile": {
-            "English": "generated/web/English/archive.html"
+    "Out":
+        "Comic::Out::HtmlArchivePage": {
+            "template": {
+                "English": "templates/archive-en.templ"
+            },
+            "outfile": {
+                "English": "generated/web/English/archive.html"
+            }
         }
     }
 }
@@ -333,7 +335,7 @@ The configuration needs to be like this:
 ```json
 {
     "Out": {
-        "HtmlComicPage": {
+        "Comic::Out::HtmlComicPage": {
             "outdir": "generated/web",
             "Templates": {
                 "English": "templ/comic-page.templ"
@@ -406,7 +408,7 @@ The configuration looks like this:
 ```json
 {
     "Out": {
-        "Png": {
+        "Comic::Out::Png": {
             "outdir": "generated/web"
         }
     }
@@ -467,7 +469,7 @@ Sitemaps can tell search engines which pages they should crawl.
 ```json
 {
     "Out": {
-        "Sitemap": {
+        "Comic::Out::Sitemap": {
             "Templates": {
                 "English": "templates/sitemap-en.xml",
                 "Deutsch": "templates/sitemap-de.xml",
@@ -499,7 +501,7 @@ The size map is configured like this:
 ```json
 {
     "Out": {
-        "Sizemap": {
+        "Comic::Out::Sizemap": {
             "template": "templates/sizemap.templ",
             "output": "generated/sizemap.html",
             "scale": 0.3,
@@ -553,3 +555,19 @@ meta data in the "Description" field in Inkscape; see
 
 The `.svg` file names will be saved in the comic as `svgFile` so that later
 code or templates can use them.
+
+This is configured like this:
+
+```json
+{
+    "Out": {
+        "Comic::Out::SvgPerLanguage": {
+            "outdir" => "generated/svgs"
+        }
+    }
+}
+```
+
+The `outdir` specifies where the generated `.svg` files should go; default
+is `tmp/svg`. This module will create a directory per language in the given
+output directory.

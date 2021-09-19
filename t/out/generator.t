@@ -72,7 +72,7 @@ sub loads_generators : Tests {
     $faked_files{'config.json'} = <<'JSON';
 {
     "Out": {
-        "DummyGenerator": {},
+        "DummyGenerator": []
     }
 }
 JSON

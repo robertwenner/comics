@@ -4,7 +4,6 @@ use strict;
 use warnings;
 use utf8;
 use English '-no_match_vars';
-use Hash::Merge;
 use Imager::QRCode;
 
 use Comic::Out::Generator;
@@ -15,12 +14,10 @@ use version; our $VERSION = qv('0.0.3');
 
 
 use Readonly;
-Readonly::Hash my %DEFAULT_SETTINGS => {
-    'outdir' => 'qr/',
-    'Imager::QRCode' => {
-        'casesensitive' => 1,   # URLs are case sensitive
-        'mode' => '8-bit',      # URLs may have non-ascii characters
-    }
+Readonly my $OUTDIR => 'qr/';
+Readonly::Hash my %IMAGER_DEFAULT_SETTINGS => {
+    'casesensitive' => 1,   # URLs are case sensitive
+    'mode' => '8-bit',      # URLs may have non-ascii characters
 };
 
 
@@ -59,38 +56,33 @@ Parameters:
 
 The passed settings must be a structure like this:
 
-    "Out" => {
-        "QrCode" => {
-            # outdir defines the directory to place generated QR code images in.
-            # This directory will be created depending on where each Comic for
-            # each language wants its output.
-            # See Output Organization in the documentation.
-            "outdir" => "qr/"
-            # Any option under Imager::QRCode is passed to the Imager::QRCode module.
-            # See L<Imager::QRCode>. Below are the defaults: 8-bit mode because
-            # generated URLs can contain non-ASCII characters, and case sensitive
-            # codes cause paths are case-sensitive.
-            "Imager::QRCode" => {
-                "mode" => "8-bit",
-                "casesensitive" => 1
-            }
-        }
+    "Comic::Out::QrCode" => {
+        "outdir" => "qr/"
+        "Imager::QRCode" => {
+            "mode" => "8-bit",
+            "casesensitive" => 1,
+        },
     }
 
-=cut
+The C<outdir> defines the directory to place generated QR code images in.
+This directory will be created depending on where each Comic for each
+language wants its output. See Output Organization in the documentation.
 
+Any option under Imager::QRCode is passed to the Imager::QRCode module. See
+L<Imager::QRCode>. These are the defaults: 8-bit mode because generated URLs
+can contain non-ASCII characters, and case sensitive codes cause paths are
+case-sensitive.
+
+=cut
 
 sub new {
     my ($class, $settings) = @ARG;
     my $self = $class->SUPER::new();
 
-    if ($settings && $settings->{Out} && $settings->{Out}->{QrCode}) {
-        my $merger = Hash::Merge->new('RIGHT_PRECEDENT');
-        %{$self->{settings}} = %{ $merger->merge(\%DEFAULT_SETTINGS, $settings->{Out}->{QrCode}) };
-    }
-    else {
-        %{$self->{settings}} = %DEFAULT_SETTINGS;
-    }
+    croak('No Comic::Out::QrCode configuration') unless ($settings->{'Comic::Out::QrCode'});
+    %{$self->{settings}} = %{$settings->{'Comic::Out::QrCode'}};
+
+    $self->{settings}->{outdir} ||= $OUTDIR;
     $self->{settings}->{outdir} .= q{/} unless ($self->{settings}->{outdir} =~ m{/$});
 
     return $self;
@@ -118,9 +110,16 @@ comic's languages as keys pointing to the generated QR code image file name
 sub generate {
     my ($self, @comics) = @ARG;
 
+    my %imager_settings = %IMAGER_DEFAULT_SETTINGS;
+    if ($self->{settings}->{'Imager::QrCode'}) {
+        foreach my $key (keys %{$self->{settings}->{'Imager::QrCode'}}) {
+            $imager_settings{$key} = $self->{settings}->{'Imager::QrCode'}{$key};
+        }
+    }
+
     foreach my $comic (@comics) {
         foreach my $language ($comic->languages()) {
-            my $qrcode = Imager::QRCode::plot_qrcode($comic->{url}{$language}, $self->{settings}->{'Imager::QRCode'});
+            my $qrcode = Imager::QRCode::plot_qrcode($comic->{url}{$language}, \%imager_settings);
 
             my $dir = $comic->outdir($language);
             my $qrdir = $dir . $self->{settings}->{outdir};

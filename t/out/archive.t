@@ -41,7 +41,7 @@ sub make_comic {
 sub generate {
     my @comics = @_;
     my $archive = Comic::Out::HtmlArchivePage->new({
-        'HtmlArchivePage' => {
+        'Comic::Out::HtmlArchivePage' => {
             'template' => {
                 'Deutsch' => 'templates/deutsch/archiv.templ',
             },
@@ -63,29 +63,29 @@ sub ctor_complains_about_missing_config : Tests {
 
     eval {
         Comic::Out::HtmlArchivePage->new({
-            'HtmlArchivePage' => {
+            'Comic::Out::HtmlArchivePage' => {
                 'template' => {
                     'English' => '...',
                 }
             },
         });
     };
-    like($@, qr{HtmlArchivePage\.outfile}, 'should say what is missing');
+    like($@, qr{Comic::Out::HtmlArchivePage\.outfile}, 'should say what is missing');
 
     eval {
         Comic::Out::HtmlArchivePage->new({
-            'HtmlArchivePage' => {
+            'Comic::Out::HtmlArchivePage' => {
                 'outfile' => {
                     'English' => '...',
                 }
             },
         });
     };
-    like($@, qr{HtmlArchivePage\.template}, 'should say what is missing');
+    like($@, qr{Comic::Out::HtmlArchivePage\.template}, 'should say what is missing');
 
     eval {
         Comic::Out::HtmlArchivePage->new({
-            'HtmlArchivePage' => {
+            'Comic::Out::HtmlArchivePage' => {
                 'template' => '...',
                 'outfile' => {
                     'English' => '...',
@@ -93,12 +93,12 @@ sub ctor_complains_about_missing_config : Tests {
             },
         });
     };
-    like($@, qr{HtmlArchivePage\.template}, 'should say where it is wrong');
+    like($@, qr{Comic::Out::HtmlArchivePage\.template}, 'should say where it is wrong');
     like($@, qr{\bobject\b}, 'should say what is wrong');
 
     eval {
         Comic::Out::HtmlArchivePage->new({
-            'HtmlArchivePage' => {
+            'Comic::Out::HtmlArchivePage' => {
                 'template' => {
                     'English' => '...',
                 },
@@ -106,12 +106,12 @@ sub ctor_complains_about_missing_config : Tests {
             },
         });
     };
-    like($@, qr{HtmlArchivePage\.outfile}, 'should say where it is wrong');
+    like($@, qr{Comic::Out::HtmlArchivePage\.outfile}, 'should say where it is wrong');
     like($@, qr{\bobject\b}, 'should say what is wrong');
 
     eval {
         Comic::Out::HtmlArchivePage->new({
-            'HtmlArchivePage' => {
+            'Comic::Out::HtmlArchivePage' => {
                 'template' => {
                 },
                 'outfile' => {
@@ -120,12 +120,12 @@ sub ctor_complains_about_missing_config : Tests {
             },
         });
     };
-    like($@, qr{HtmlArchivePage\.template}, 'should say where it is missing');
+    like($@, qr{Comic::Out::HtmlArchivePage\.template}, 'should say where it is missing');
     like($@, qr{language}, 'should say what is missing');
 
     eval {
         Comic::Out::HtmlArchivePage->new({
-            'HtmlArchivePage' => {
+            'Comic::Out::HtmlArchivePage' => {
                 'template' => {
                     'Deutsch' => '...',
                 },
@@ -135,12 +135,12 @@ sub ctor_complains_about_missing_config : Tests {
             },
         });
     };
-    like($@, qr{HtmlArchivePage}, 'should say where it is missing');
-    like($@, qr{Deutsch}, 'what is missing');
+    like($@, qr{Comic::Out::HtmlArchivePage}, 'should mention module');
+    like($@, qr{Deutsch}, 'should mention language');
 
     eval {
         Comic::Out::HtmlArchivePage->new({
-            'HtmlArchivePage' => {
+            'Comic::Out::HtmlArchivePage' => {
                 'template' => {
                     'Deutsch' => 'templates/deutsch/archiv.templ',
                 },
@@ -148,12 +148,12 @@ sub ctor_complains_about_missing_config : Tests {
             },
         });
     };
-    like($@, qr{HtmlArchivePage}, 'should mention module');
+    like($@, qr{Comic::Out::HtmlArchivePage}, 'should mention module');
     like($@, qr{Deutsch}, 'should mention language');
 
     eval {
         Comic::Out::HtmlArchivePage->new({
-            'HtmlArchivePage' => {
+            'Comic::Out::HtmlArchivePage' => {
                 'template' => {
                     'Deutsch' => 'templates/deutsch/archiv.templ',
                     'English' => 'templates/english/archive.templ',
@@ -164,12 +164,12 @@ sub ctor_complains_about_missing_config : Tests {
             },
         });
     };
-    like($@, qr{HtmlArchivePage}, 'should mention module');
+    like($@, qr{Comic::Out::HtmlArchivePage}, 'should mention module');
     like($@, qr{English}, 'should mention language');
 
     eval {
         Comic::Out::HtmlArchivePage->new({
-            'HtmlArchivePage' => {
+            'Comic::Out::HtmlArchivePage' => {
                 'template' => {
                     'Deutsch' => 'templates/deutsch/archiv.templ',
                 },
@@ -180,7 +180,7 @@ sub ctor_complains_about_missing_config : Tests {
             },
         });
     };
-    like($@, qr{HtmlArchivePage}, 'should mention module');
+    like($@, qr{Comic::Out::HtmlArchivePage}, 'should mention module');
     like($@, qr{English}, 'should mention language');
 }
 

@@ -68,7 +68,7 @@ sub set_up : Test(setup) {
     $write_info_exit_code = 1;
 
     $png = Comic::Out::Png->new({
-        'Png' => {
+        'Comic::Out::Png' => {
             'outdir' => 'generated',
         },
     });
@@ -79,10 +79,10 @@ sub ctor_complains_if_no_config : Tests {
     eval {
         Comic::Out::Png->new();
     };
-    like($@, qr{no png configuration}i);
+    like($@, qr{No Comic::Out::Png configuration}i);
     eval {
         Comic::Out::Png->new({
-            'Png' => {},
+            'Comic::Out::Png' => {},
         });
     };
     like($@, qr{\boutdir\b}i);
@@ -91,13 +91,13 @@ sub ctor_complains_if_no_config : Tests {
 
 sub ctor_adds_trailing_slash_to_outdir : Tests {
     $png = Comic::Out::Png->new({
-        'Png' => {
+        'Comic::Out::Png' => {
             'outdir' => 'generated/',
         },
     });
     is($png->{settings}->{outdir}, 'generated/');
     $png = Comic::Out::Png->new({
-        'Png' => {
+        'Comic::Out::Png' => {
             'outdir' => 'generated',
         },
     });
@@ -305,7 +305,7 @@ sub png_meta_write_reports_error : Tests {
     eval {
         $png->_svg_to_png($comic, $MockComic::ENGLISH, 'some-comic.svg', 'some-comic.png');
     };
-    like($@, qr{cannot write});
+    like($@, qr{cannot write}i);
     like($@, qr{some write error});
     is($asked_value, 'Error');
 }

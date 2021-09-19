@@ -19,7 +19,7 @@ my $copyright;
 sub set_up : Test(setup) {
     MockComic::set_up();
     $copyright = Comic::Out::Copyright->new({
-        'Copyright' => {
+        'Comic::Out::Copyright' => {
             'Text' =>  {
                 'English' => 'beercomics.com',
                 'Deutsch' => 'biercomics.de',
@@ -80,20 +80,20 @@ sub needs_configuration : Tests {
     eval {
         Comic::Out::Copyright->new();
     };
-    like($@, qr{copyright configuration}i);
+    like($@, qr{Comic::Out::Copyright configuration}i);
 
     eval {
         Comic::Out::Copyright->new({
-            'Copyright' => {
+            'Comic::Out::Copyright' => {
             },
         });
     };
-    like($@, qr{copyright configuration}i);
+    like($@, qr{Comic::Out::Copyright configuration}i);
     like($@, qr{\bText\b}i);
 
     eval {
         Comic::Out::Copyright->new({
-            'Copyright' => {
+            'Comic::Out::Copyright' => {
                 'Text' => {
                 },
             },
@@ -105,7 +105,7 @@ sub needs_configuration : Tests {
 
 sub configure_style : Tests {
     $copyright = Comic::Out::Copyright->new({
-        'Copyright' => {
+        'Comic::Out::Copyright' => {
             'Text' => {
                 'English' => 'beercomics.com',
                 'Deutsch' => 'biercomics.de',
@@ -122,7 +122,7 @@ sub configure_style : Tests {
 
 sub croaks_if_no_style : Tests {
     $copyright = Comic::Out::Copyright->new({
-        'Copyright' => {
+        'Comic::Out::Copyright' => {
             'Text' => {
                 'English' => 'beercomics.com',
             },
