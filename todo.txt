@@ -216,3 +216,5 @@
 
 - feature: allow copying static files and pipe them through a Template to
   modify bits in mostly static files, like a copyright year in an index.html
+
+- defect: copyright placement is way off if frames x is not around -206?
