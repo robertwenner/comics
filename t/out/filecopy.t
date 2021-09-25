@@ -35,13 +35,11 @@ sub mock_cp {
 sub make_copy {
     my ($from_all, $from_language) = @_;
 
-    return Comic::Out::FileCopy->new({
-        'Comic::Out::FileCopy' => {
-            'outdir' => 'generated/web',
-            'from-all' => $from_all,
-            'from-language' => $from_language,
-        },
-    });
+    return Comic::Out::FileCopy->new(
+        'outdir' => 'generated/web',
+        'from-all' => $from_all,
+        'from-language' => $from_language,
+    );
 }
 
 
@@ -52,27 +50,16 @@ sub consructor_complains_about_missing_configuration : Tests {
     like($@, qr{\bComic::Out::FileCopy\b}, 'should mention module');
 
     eval {
-        Comic::Out::FileCopy->new({'Comic::Out::FileCopy' => {}});
-    };
-    like($@, qr{output directory}i, 'should mention missing setting');
-
-    eval {
-        Comic::Out::FileCopy->new({
-            'Comic::Out::FileCopy' => {
-                'outdir' => 'generated/web/',
-            },
-        });
+        Comic::Out::FileCopy->new('outdir' => 'generated/web/');
     };
     like($@, qr{from-all}, 'should mention missing setting');
     like($@, qr{from-language}, 'should mention missing setting');
 
     eval {
-        Comic::Out::FileCopy->new({
-            'Comic::Out::FileCopy' => {
-                'outdir' => 'generated/web/',
-                'from-all' => {},
-            },
-        });
+        Comic::Out::FileCopy->new(
+            'outdir' => 'generated/web/',
+            'from-all' => {},
+        );
     };
     like($@, qr{from-all}, 'should mention bad setting');
     like($@, qr{\bscalar\b}, 'should mention it wants a scalar');

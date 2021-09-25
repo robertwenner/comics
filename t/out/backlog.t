@@ -26,13 +26,11 @@ sub set_up : Test(setup) {
 [% FOREACH t IN tagOrder %][% END %]
 TEMPL
 
-    $backlog = Comic::Out::Backlog->new({
-        'Comic::Out::Backlog' => {
-            'template' => 'backlog.templ',
-            'outfile' => 'generated/backlog.html',
-            'collect' => ['tags', 'series', 'who'],
-        },
-    });
+    $backlog = Comic::Out::Backlog->new(
+        'template' => 'backlog.templ',
+        'outfile' => 'generated/backlog.html',
+        'collect' => ['tags', 'series', 'who'],
+    );
 }
 
 
@@ -76,46 +74,23 @@ sub make_comic_with_series {
 
 sub constructor_arguments : Tests {
     eval {
-        $backlog = Comic::Out::Backlog->new();
-    };
-    like($@, qr{configuration});
-
-    eval {
-        $backlog = Comic::Out::Backlog->new({
-            'Comic::Out::Backlog' => {
-            },
-        });
-    };
-    like($@, qr{\bBacklog\.template\b});
-
-    eval {
-        $backlog = Comic::Out::Backlog->new({
-            'Comic::Out::Backlog' => {
-                'outfile' => '...',
-            },
-        });
+        $backlog = Comic::Out::Backlog->new('outfile' => '...');
     };
     like($@, qr{\btemplate\b});
 
     eval {
-        $backlog = Comic::Out::Backlog->new({
-            'Comic::Out::Backlog' => {
-                'template' => '...',
-            },
-        });
+        $backlog = Comic::Out::Backlog->new('template' => '...');
     };
     like($@, qr{\boutfile\b});
 
     eval {
-        $backlog = Comic::Out::Backlog->new({
-            'Comic::Out::Backlog' => {
-                'template' => '...',
-                'outfile' => '...',
-                'collect' => {
-                    "me" => 1,
-                },
+        $backlog = Comic::Out::Backlog->new(
+            'template' => '...',
+            'outfile' => '...',
+            'collect' => {
+                "me" => 1,
             },
-        });
+        );
     };
     like($@, qr{\bcollect\b});
     like($@, qr{\barray\b});
@@ -144,13 +119,11 @@ sub publishers_no_top_location_no_backlog : Tests {
 
 
 sub publishers_top_location_no_backlog : Tests {
-    $backlog = Comic::Out::Backlog->new({
-        'Comic::Out::Backlog' => {
-            'template' => 'backlog.templ',
-            'outfile' => 'generated/backlog.html',
-            'toplocation' => 'web',
-        },
-    });
+    $backlog = Comic::Out::Backlog->new(
+        'template' => 'backlog.templ',
+        'outfile' => 'generated/backlog.html',
+        'toplocation' => 'web',
+    );
     is_deeply($backlog->_publishers(), ['web']);
 }
 
@@ -163,13 +136,11 @@ sub publishers_order_top_location : Tests {
         make_comic('4', 'English', '3016-01-01', 'web'),
         make_comic('5', 'English', '3016-01-01', 'Web'),
     );
-    $backlog = Comic::Out::Backlog->new({
-        'Comic::Out::Backlog' => {
-            'template' => 'backlog.templ',
-            'outfile' => 'generated/backlog.html',
-            'toplocation' => 'web',
-        },
-    });
+    $backlog = Comic::Out::Backlog->new(
+        'template' => 'backlog.templ',
+        'outfile' => 'generated/backlog.html',
+        'toplocation' => 'web',
+    );
     is_deeply($backlog->_publishers(@comics),
        ['web', 'austin beer guide', 'braumagazin.de', 'cbb']);
 }
@@ -207,13 +178,11 @@ sub populates_fields_empty_backlog : Tests {
 sub populates_fields_collect_array_one_comic_in_backlog : Tests {
     my $comic = make_comic('eins', 'Deutsch', '3016-01-01');
 
-    $backlog = Comic::Out::Backlog->new({
-        'Comic::Out::Backlog' => {
-            'template' => 'backlog.templ',
-            'outfile' => 'generated/backlog.html',
-            'collect' => ['tags', 'series', 'who'],
-        },
-    });
+    $backlog = Comic::Out::Backlog->new(
+        'template' => 'backlog.templ',
+        'outfile' => 'generated/backlog.html',
+        'collect' => ['tags', 'series', 'who'],
+    );
     my %vars = $backlog->_populate_vars($comic);
 
     is_deeply($vars{publishers}, ['web']);
@@ -231,13 +200,11 @@ sub populates_fields_collect_array_one_comic_in_backlog : Tests {
 sub populates_fields_collect_scalar_one_comic_in_backlog : Tests {
     my $comic = make_comic('eins', 'Deutsch', '3016-01-01');
 
-    $backlog = Comic::Out::Backlog->new({
-        'Comic::Out::Backlog' => {
-            'template' => 'backlog.templ',
-            'outfile' => 'generated/backlog.html',
-            'collect' => 'tags',
-        },
-    });
+    $backlog = Comic::Out::Backlog->new(
+        'template' => 'backlog.templ',
+        'outfile' => 'generated/backlog.html',
+        'collect' => 'tags',
+    );
     my %vars = $backlog->_populate_vars($comic);
 
     is_deeply($vars{publishers}, ['web']);
@@ -253,12 +220,10 @@ sub populates_fields_collect_scalar_one_comic_in_backlog : Tests {
 sub populates_fields_no_collect_one_comic_in_backlog : Tests {
     my $comic = make_comic('eins', 'Deutsch', '3016-01-01');
 
-    $backlog = Comic::Out::Backlog->new({
-        'Comic::Out::Backlog' => {
-            'template' => 'backlog.templ',
-            'outfile' => 'generated/backlog.html',
-        },
-    });
+    $backlog = Comic::Out::Backlog->new(
+        'template' => 'backlog.templ',
+        'outfile' => 'generated/backlog.html',
+    );
     my %vars = $backlog->_populate_vars($comic);
 
     is_deeply($vars{publishers}, ['web']);

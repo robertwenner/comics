@@ -40,16 +40,14 @@ sub make_comic {
 
 sub generate {
     my @comics = @_;
-    my $archive = Comic::Out::HtmlArchivePage->new({
-        'Comic::Out::HtmlArchivePage' => {
-            'template' => {
-                'Deutsch' => 'templates/deutsch/archiv.templ',
-            },
-            'outfile' => {
-                'Deutsch' => 'generated/web/deutsch/archiv.html',
-            },
+    my $archive = Comic::Out::HtmlArchivePage->new(
+        'template' => {
+            'Deutsch' => 'templates/deutsch/archiv.templ',
         },
-    });
+        'outfile' => {
+            'Deutsch' => 'generated/web/deutsch/archiv.html',
+        },
+    );
     $archive->generate_all(@comics);
 }
 
@@ -59,126 +57,107 @@ sub ctor_complains_about_missing_config : Tests {
         Comic::Out::HtmlArchivePage->new();
     };
     like($@, qr{HtmlArchivePage}, 'should mention module');
-    like($@, qr{configuration}, 'should say what is missing');
 
     eval {
-        Comic::Out::HtmlArchivePage->new({
-            'Comic::Out::HtmlArchivePage' => {
-                'template' => {
-                    'English' => '...',
-                }
+        Comic::Out::HtmlArchivePage->new(
+            'template' => {
+                'English' => '...',
             },
-        });
+        );
     };
     like($@, qr{Comic::Out::HtmlArchivePage\.outfile}, 'should say what is missing');
 
     eval {
-        Comic::Out::HtmlArchivePage->new({
-            'Comic::Out::HtmlArchivePage' => {
-                'outfile' => {
-                    'English' => '...',
-                }
+        Comic::Out::HtmlArchivePage->new(
+            'outfile' => {
+                'English' => '...',
             },
-        });
+        );
     };
     like($@, qr{Comic::Out::HtmlArchivePage\.template}, 'should say what is missing');
 
     eval {
-        Comic::Out::HtmlArchivePage->new({
-            'Comic::Out::HtmlArchivePage' => {
-                'template' => '...',
-                'outfile' => {
-                    'English' => '...',
-                },
+        Comic::Out::HtmlArchivePage->new(
+            'template' => '...',
+            'outfile' => {
+                'English' => '...',
             },
-        });
+        );
     };
     like($@, qr{Comic::Out::HtmlArchivePage\.template}, 'should say where it is wrong');
     like($@, qr{\bobject\b}, 'should say what is wrong');
 
     eval {
-        Comic::Out::HtmlArchivePage->new({
-            'Comic::Out::HtmlArchivePage' => {
-                'template' => {
-                    'English' => '...',
-                },
-                'outfile' => '...',
+        Comic::Out::HtmlArchivePage->new(
+            'template' => {
+                'English' => '...',
             },
-        });
+            'outfile' => '...',
+        );
     };
     like($@, qr{Comic::Out::HtmlArchivePage\.outfile}, 'should say where it is wrong');
     like($@, qr{\bobject\b}, 'should say what is wrong');
 
     eval {
-        Comic::Out::HtmlArchivePage->new({
-            'Comic::Out::HtmlArchivePage' => {
-                'template' => {
-                },
-                'outfile' => {
-                    'English' => '...',
-                },
+        Comic::Out::HtmlArchivePage->new(
+            'template' => {
             },
-        });
+            'outfile' => {
+                'English' => '...',
+            },
+        );
     };
     like($@, qr{Comic::Out::HtmlArchivePage\.template}, 'should say where it is missing');
     like($@, qr{language}, 'should say what is missing');
 
     eval {
-        Comic::Out::HtmlArchivePage->new({
-            'Comic::Out::HtmlArchivePage' => {
-                'template' => {
-                    'Deutsch' => '...',
-                },
-                'outfile' => {
-                    'English' => '...',
-                }
+        Comic::Out::HtmlArchivePage->new(
+            'template' => {
+                'Deutsch' => '...',
             },
-        });
+            'outfile' => {
+                'English' => '...',
+            }
+        );
     };
     like($@, qr{Comic::Out::HtmlArchivePage}, 'should mention module');
     like($@, qr{Deutsch}, 'should mention language');
 
     eval {
-        Comic::Out::HtmlArchivePage->new({
-            'Comic::Out::HtmlArchivePage' => {
-                'template' => {
-                    'Deutsch' => 'templates/deutsch/archiv.templ',
-                },
-                'outfile' => {},
+        Comic::Out::HtmlArchivePage->new(
+            'template' => {
+                'Deutsch' => 'templates/deutsch/archiv.templ',
             },
-        });
+            'outfile' => {},
+        );
     };
     like($@, qr{Comic::Out::HtmlArchivePage}, 'should mention module');
     like($@, qr{Deutsch}, 'should mention language');
 
     eval {
-        Comic::Out::HtmlArchivePage->new({
-            'Comic::Out::HtmlArchivePage' => {
-                'template' => {
-                    'Deutsch' => 'templates/deutsch/archiv.templ',
-                    'English' => 'templates/english/archive.templ',
-                },
-                'outfile' => {
-                    'Deutsch' => 'generated/web/deutsch/archiv.templ',
-                },
+        Comic::Out::HtmlArchivePage->new(
+            'template' => {
+                'Deutsch' => 'templates/deutsch/archiv.templ',
+                'English' => 'templates/english/archive.templ',
             },
-        });
+            'outfile' => {
+                'Deutsch' => 'generated/web/deutsch/archiv.templ',
+            },
+        );
     };
     like($@, qr{Comic::Out::HtmlArchivePage}, 'should mention module');
     like($@, qr{English}, 'should mention language');
 
     eval {
-        Comic::Out::HtmlArchivePage->new({
-            'Comic::Out::HtmlArchivePage' => {
-                'template' => {
-                    'Deutsch' => 'templates/deutsch/archiv.templ',
-                },
-                'outfile' => {
-                    'Deutsch' => 'generated/web/deutsch/archiv.html',
-                    'English' => 'generated/web/english/archive.html',
-                },
+        Comic::Out::HtmlArchivePage->new(
+            'template' => {
+                'Deutsch' => 'templates/deutsch/archiv.templ',
             },
-        });
+            'outfile' => {
+                'Deutsch' => 'generated/web/deutsch/archiv.html',
+                'English' => 'generated/web/english/archive.html',
+            },
+        );
     };
     like($@, qr{Comic::Out::HtmlArchivePage}, 'should mention module');
     like($@, qr{English}, 'should mention language');

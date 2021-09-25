@@ -26,7 +26,7 @@ Comic::Out::FileCopy - Copies files.
 
 =head1 SYNOPSIS
 
-    my $feed = Comic::Out::FileCopy->new(\%settings);
+    my $feed = Comic::Out::FileCopy->new(%settings);
     $feed->generate_all(@comics);
 
 =head1 DESCRIPTION
@@ -57,7 +57,7 @@ Parameters are taken from the C<Out.FileCopy> configuration:
 
 =over 4
 
-=item * B<$settings> Hash reference to settings.
+=item * B<$settings> Settings hash.
 
 =back
 
@@ -65,13 +65,11 @@ The passed settings need to have output directory (outdir) and
 
 For example:
 
-    "Out" => {
-        "FileCopy" => {
-            "outdir" => "generated/web",
-            "from-all" => ["web/all"],
-            "from-lamguage" => ["web/"],
-        },
-    }
+    my $filecopy = Comic::Out::FileCopy->new(
+        "outdir" => "generated/web",
+        "from-all" => ["web/all"],
+        "from-lamguage" => ["web/"],
+    );
 
 Output files will be copied from the C<from-all> directory and the language
 specific C<from-language> directories into the given C<outdir> plus the
@@ -92,28 +90,29 @@ install Cygwin tools on Windows.
 =cut
 
 sub new {
-    my ($class, $settings) = @ARG;
+    my ($class, %settings) = @ARG;
     my $self = $class->SUPER::new();
 
-    croak('No Comic::Out::FileCopy configuration') unless ($settings->{'Comic::Out::FileCopy'});
-    %{$self->{settings}} = %{$settings->{'Comic::Out::FileCopy'}};
+    %{$self->{settings}} = ();
 
-    croak('Must specify Comic::Out::FileCopy.outdir output directory') unless ($self->{settings}->{outdir});
-    $self->{settings}->{outdir} .= q{/} unless ($self->{settings}->{outdir} =~ m{/$}x);
+    my $outdir = $settings{outdir};
+    croak('Must specify Comic::Out::FileCopy.outdir output directory') unless ($outdir);
+    $outdir .= q{/} unless ($outdir =~ m{/$}x);
+    $self->{settings}->{outdir} = $outdir;
 
-    if (!$self->{settings}->{'from-all'} && !$self->{settings}->{'from-language'}) {
+    if (!$settings{'from-all'} && !$settings{'from-language'}) {
         croak('Comic::Out::FileCopy: Must specify at least one of from-all and from-language');
     }
 
     foreach my $from (qw(from-all from-language)) {
         $self->{settings}->{$from} = [];
-        next unless ($settings->{'Comic::Out::FileCopy'}->{$from});
+        next unless ($settings{$from});
 
-        if (ref $settings->{'Comic::Out::FileCopy'}->{$from} eq '') {
-            push @{$self->{settings}->{$from}}, $settings->{'Comic::Out::FileCopy'}->{$from};
+        if (ref $settings{$from} eq '') {
+            push @{$self->{settings}->{$from}}, $settings{$from};
         }
-        elsif (ref $settings->{'Comic::Out::FileCopy'}->{$from} eq 'ARRAY') {
-            push @{$self->{settings}->{$from}}, @{$settings->{'Comic::Out::FileCopy'}->{$from}};
+        elsif (ref $settings{$from} eq 'ARRAY') {
+            push @{$self->{settings}->{$from}}, @{$settings{$from}};
         }
         else {
             croak("Comic::Out::FileCopy.$from needs to be scalar or array");

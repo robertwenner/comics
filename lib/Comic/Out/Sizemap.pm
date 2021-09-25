@@ -33,7 +33,7 @@ Comic::Out::Sizemap - Generates a map of different comic image sizes used.
 
 =head1 SYNOPSIS
 
-    my $sizemap = Comic::Out::Sizemap->new(\%settings);
+    my $sizemap = Comic::Out::Sizemap->new(%settings);
     $sizemap->generate_all(@comics);
 
 =head1 DESCRIPTION
@@ -55,7 +55,7 @@ Parameters:
 
 =over 4
 
-=item * B<$settings> Hash reference to settings.
+=item * B<%settings> Hash of settings.
 
 =back
 
@@ -64,15 +64,11 @@ The size map is language-independent, i.e., all languages end up in the same map
 
 For example:
 
-    my $settings = {
-        'Out' => {
-            'Comic::Out::Sizemap' => {
-                'template' => 'templates/sizemap.templ',
-                'output' => 'generated/sizemap.html',
-            },
-        },
-    }
-    my $sitemap = Comic::Out::Sizemap($settings);
+    my %settings = (
+        'template' => 'templates/sizemap.templ',
+        'output' => 'generated/sizemap.html',
+    );
+    my $sitemap = Comic::Out::Sizemap(%settings);
 
 Other supported settings are:
 
@@ -92,11 +88,10 @@ Other supported settings are:
 =cut
 
 sub new {
-    my ($class, $settings) = @ARG;
+    my ($class, %settings) = @ARG;
     my $self = $class->SUPER::new();
 
-    croak('No Comic::Out::Sizemap configuration') unless ($settings->{'Comic::Out::Sizemap'});
-    %{$self->{settings}} = %{$settings->{'Comic::Out::Sizemap'}};
+    %{$self->{settings}} = %settings;
 
     croak('Must specify Comic::Out::Sizemap.template') unless ($self->{settings}->{template});
     croak('Must specify Comic::Out::Sizemap.output') unless ($self->{settings}->{output});

@@ -26,7 +26,7 @@ index page for the last.
 
 =head1 SYNOPSIS
 
-    my $html = Comic::Out::HtmlComicPage->new(\%settings);
+    my $html = Comic::Out::HtmlComicPage->new(%settings);
     $html->generate_all(@comics);
 
 =head1 DESCRIPTION
@@ -48,7 +48,7 @@ Parameters:
 
 =over 4
 
-=item * B<$settings> Hash reference to settings.
+=item * B<%settings> Hash of settings.
 
 =back
 
@@ -58,18 +58,14 @@ per-language templates for the comic pages (C<Settings>) and the domains
 
 For example:
 
-    my $settings = {
-        'Out' => {
-            'Comic::Out::HtmlComicPage' => {
-                'outdir' => 'generated',
-                'Templates' => {
-                    'English' => 'path/to/english/template',
-                    'Deutsch' => 'path/to/german/template',
-                },
-            },
+    my %settings = (
+        'outdir' => 'generated',
+        'Templates' => {
+            'English' => 'path/to/english/template',
+            'Deutsch' => 'path/to/german/template',
         },
-    }
-    my $hcp = Comic::Out::HtmlComicPage($settings);
+    );
+    my $hcp = Comic::Out::HtmlComicPage(%settings);
 
 The html page will be placed in the given C<outdir>. The file name is
 derived from each Comic's title.
@@ -77,16 +73,15 @@ derived from each Comic's title.
 =cut
 
 sub new {
-    my ($class, $settings) = @ARG;
+    my ($class, %settings) = @ARG;
     my $self = $class->SUPER::new();
 
-    croak('No Comic::Out::HtmlComicPage configuration') unless ($settings->{'Comic::Out::HtmlComicPage'});
-    %{$self->{settings}} = %{$settings->{'Comic::Out::HtmlComicPage'}};
+    %{$self->{settings}} = %settings;
 
-    croak('Must specify Comic::Out::HtmlComicPage.outdir output directory') unless ($self->{settings}->{outdir});
+    croak('Must specify Comic::Out::HtmlComicPage.outdir output directory') unless ($settings{outdir});
     $self->{settings}->{outdir} .= q{/} unless ($self->{settings}->{outdir} =~ m{/$});
 
-    croak('Must specify Comic::Out::HtmlComicPage.Templates') unless ($self->{settings}->{Templates});
+    croak('Must specify Comic::Out::HtmlComicPage.Templates') unless ($settings{Templates});
 
     return $self;
 }

@@ -33,43 +33,36 @@ sub make_comic {
 sub make_generator {
     my %templates = @_;
     my %options = (
-        'Comic::Out::HtmlComicPage' => {
-            'outdir' => 'generated/web/',
-            'Templates' => {
-                'English' => 'en-comic.templ',
-            },
+        'outdir' => 'generated/web/',
+        'Templates' => {
+            'English' => 'en-comic.templ',
         },
     );
     foreach my $key (keys %templates) {
-        $options{'Comic::Out::HtmlComicPage'}{'Templates'}{$key} = $templates{$key};
+        $options{'Templates'}{$key} = $templates{$key};
     }
-    return Comic::Out::HtmlComicPage->new(\%options);
+    return Comic::Out::HtmlComicPage->new(%options);
 }
 
 
 sub fails_on_missing_configuration : Tests {
     eval {
-        Comic::Out::HtmlComicPage->new({});
+        Comic::Out::HtmlComicPage->new();
     };
     like($@, qr{\bComic::Out::HtmlComicPage\b});
-    like($@, qr{\bconfiguration\b}i);
 
     eval {
-        Comic::Out::HtmlComicPage->new({
-            'Comic::Out::HtmlComicPage' => {
-                'Templates' => {},
-            },
-        });
+        Comic::Out::HtmlComicPage->new(
+            'Templates' => {},
+        );
     };
     like($@, qr{\bComic::Out::HtmlComicPage\.outdir\b});
     like($@, qr{\boutput directory\b}i);
 
     eval {
-        Comic::Out::HtmlComicPage->new({
-            'Comic::Out::HtmlComicPage' => {
-                'outdir' => '/tmp',
-            },
-        });
+        Comic::Out::HtmlComicPage->new(
+            'outdir' => '/tmp',
+        );
     };
     like($@, qr{\bComic::Out::HtmlComicPage\.Templates\b});
 }
@@ -77,26 +70,22 @@ sub fails_on_missing_configuration : Tests {
 
 sub fails_if_no_template_for_language : Tests {
     my $comic = make_comic('English', 'Beer brewing', '2016-01-01');
-    my $hcp = Comic::Out::HtmlComicPage->new({
-        'Comic::Out::HtmlComicPage' => {
-            'outdir' => 'generated/web',
-            'Templates' => {},
-        },
-    });
+    my $hcp = Comic::Out::HtmlComicPage->new(
+        'outdir' => 'generated/web',
+        'Templates' => {},
+    );
     eval {
         $hcp->generate_all($comic);
     };
     like($@, qr{\btemplate\b});
     like($@, qr{\bEnglish\b});
 
-    $hcp = Comic::Out::HtmlComicPage->new({
-        'Comic::Out::HtmlComicPage' => {
-            'outdir' => 'generated/web',
-            'Templates' => {
-                'English' => '',
-            },
+    $hcp = Comic::Out::HtmlComicPage->new(
+        'outdir' => 'generated/web',
+        'Templates' => {
+            'English' => '',
         },
-    });
+    );
     eval {
         $hcp->generate_all($comic);
     };

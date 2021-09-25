@@ -30,7 +30,7 @@ convert to other image formats per language.
 
 =head1 SYNOPSIS
 
-    my $svg = Comic::Out::SvgPerLanguage->new(\%settings);
+    my $svg = Comic::Out::SvgPerLanguage->new(%settings);
     $svg->generate($comic);
 
 =head1 DESCRIPTION
@@ -48,7 +48,7 @@ Parameters:
 
 =over 4
 
-=item * B<$settings> Hash reference to settings.
+=item * B<%settings> Hash reference to settings.
 
 =back
 
@@ -56,14 +56,10 @@ The passed settings can specify the output directory (C<outdir>).
 
 For example:
 
-    my $settings = {
-        'Out' => {
-            'Comic::Out::SvgPerLanguage' => {
-                'outdir' => 'generated/tmp/svg',
-            },
-        },
-    };
-    my $svg = Comic::Out::SvgPerLanguage($settings);
+    my %settings = (
+        'outdir' => 'generated/tmp/svg',
+    );
+    my $svg = Comic::Out::SvgPerLanguage(%settings);
 
 The F<.svg>s will be placed in language-specific directories under the given
 C<outdir>. The names are derived from the Comic's titles in the respective
@@ -76,11 +72,10 @@ with language names (e.g., "English") as keys and F<.svg> file's path
 =cut
 
 sub new {
-    my ($class, $settings) = @ARG;
+    my ($class, %settings) = @ARG;
     my $self = $class->SUPER::new();
 
-    croak('No Comic::Out::SvgPerLanguage configuration') unless ($settings->{'Comic::Out::SvgPerLanguage'});
-    %{$self->{settings}} = %{$settings->{'Comic::Out::SvgPerLanguage'}};
+    %{$self->{settings}} = %settings;
 
     # Devel::Cover does not see that $SVGDIR is an always set const:
     # uncoverable condition false

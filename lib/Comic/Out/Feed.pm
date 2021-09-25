@@ -28,7 +28,7 @@ Comic::Out::Feed - Generates feeds. Meant for RSS or Atom feeds.
 
 =head1 SYNOPSIS
 
-    my $feed = Comic::Out::Feed->new(\%settings);
+    my $feed = Comic::Out::Feed->new(%settings);
     $feed->generate_all(@comics);
 
 =head1 DESCRIPTION
@@ -55,7 +55,7 @@ Parameters are taken from the C<Out.Feed> configuration:
 
 =over 4
 
-=item * B<$settings> Hash reference to settings.
+=item * B<%settings> Hash of settings, see below.
 
 =back
 
@@ -66,16 +66,14 @@ output file name.
 
 For example:
 
-    "Feed" => {
-        "outdir" => "generated",
-        "RSS" => {
-            "max" => 10,
-            "template" => "templates/rss.templ",
-            "output" => "rss.xml",
-        },
-        "Atom" => {
-            "template" => "templates/atom.xml",
-        },
+    "outdir" => "generated",
+    "RSS" => {
+        "max" => 10,
+        "template" => "templates/rss.templ",
+        "output" => "rss.xml",
+    },
+    "Atom" => {
+        "template" => "templates/atom.xml",
     }
 
 This will generate both a RSS and an Atom feed, each showing the 10 latest
@@ -95,14 +93,13 @@ F<generated/web/english/rss.xml> and F<generated/web/deutsch/rss.xml>.
 =cut
 
 sub new {
-    my ($class, $settings) = @ARG;
+    my ($class, %settings) = @ARG;
     my $self = $class->SUPER::new();
 
-    croak('No Comic::Out::Feed configuration') unless ($settings->{'Comic::Out::Feed'});
-    %{$self->{settings}} = %{$settings->{'Comic::Out::Feed'}};
+    %{$self->{settings}} = %settings;
 
-    croak('Must specify Comic::Out:Feed.outdir output directory') unless ($self->{settings}->{outdir});
-    $self->{settings}->{outdir} .= q{/} unless ($self->{settings}->{outdir} =~ m{/$});
+    croak('Must specify Comic::Out::Feed.outdir output directory') unless (${$self->{settings}}{outdir});
+    ${$self->{settings}}{outdir} .= q{/} unless (${$self->{settings}}{outdir} =~ m{/$});
 
     return $self;
 }

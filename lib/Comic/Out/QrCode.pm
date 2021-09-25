@@ -50,37 +50,34 @@ Parameters:
 
 =over 4
 
-=item * B<$settings> Optional hash reference with settings, as below.
+=item * B<%settings> Optional hash with settings, as below.
 
 =back
 
 The passed settings must be a structure like this:
 
-    "Comic::Out::QrCode" => {
-        "outdir" => "qr/"
-        "Imager::QRCode" => {
-            "mode" => "8-bit",
-            "casesensitive" => 1,
-        },
+    "outdir" => "qr/"
+    "Imager::QRCode" => {
+        "mode" => "8-bit",
+        "casesensitive" => 1,
     }
 
 The C<outdir> defines the directory to place generated QR code images in.
 This directory will be created depending on where each Comic for each
 language wants its output. See Output Organization in the documentation.
 
-Any option under Imager::QRCode is passed to the Imager::QRCode module. See
-L<Imager::QRCode>. These are the defaults: 8-bit mode because generated URLs
-can contain non-ASCII characters, and case sensitive codes cause paths are
-case-sensitive.
+Any option under Imager::QRCode (optional) is passed to the Imager::QRCode
+module. See L<Imager::QRCode>. These are the defaults: 8-bit mode because
+generated URLs can contain non-ASCII characters, and case sensitive codes
+cause paths are case-sensitive.
 
 =cut
 
 sub new {
-    my ($class, $settings) = @ARG;
+    my ($class, %settings) = @ARG;
     my $self = $class->SUPER::new();
 
-    croak('No Comic::Out::QrCode configuration') unless ($settings->{'Comic::Out::QrCode'});
-    %{$self->{settings}} = %{$settings->{'Comic::Out::QrCode'}};
+    %{$self->{settings}} = %settings;
 
     $self->{settings}->{outdir} ||= $OUTDIR;
     $self->{settings}->{outdir} .= q{/} unless ($self->{settings}->{outdir} =~ m{/$});

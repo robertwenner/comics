@@ -29,13 +29,15 @@ order they are defined in.
 
 A generator can use one or both methods of generating output:
 
-\over 4
+=over 4
 
-\item * for each comic (in the C<generate> method), like generating a PNG
+=item * for each comic (in the C<generate> method), like generating a PNG
 image or HTML page for the comic
 
-\item * for all comics together (C<generate_all> method), like an overview
+=item * for all comics together (C<generate_all> method), like an overview
 page
+
+=back
 
 Generators may ignore either of these methods; the default implementation
 does nothing. (Of course, if you don't override at least one of these

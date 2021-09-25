@@ -290,17 +290,15 @@ Copyright year: [% year %]
 Keywords: [% comic.meta_data.tags.$Language.join(',') %]
 Transript: [% comic.transcript.$Language.join(' ') %]
 TEMPLATE
-    my $hcp = Comic::Out::HtmlComicPage->new({
-        'Comic::Out::HtmlComicPage' => {
-            'outdir' => 'generated/',
-            'Templates' => {
-                'Deutsch' => 'templates/deutsch/comic-page.templ',
-            },
-            'Domains' => {
-                'Deutsch' => 'biercomics.de',
-            },
+    my $hcp = Comic::Out::HtmlComicPage->new(
+        'outdir' => 'generated/',
+        'Templates' => {
+            'Deutsch' => 'templates/deutsch/comic-page.templ',
         },
-    });
+        'Domains' => {
+            'Deutsch' => 'biercomics.de',
+        },
+    );
     $comic->{pngFile}{'Deutsch'} = 'bier-trinken.png';
     $hcp->generate_all($comic);
     my $wrote = $hcp->_do_export_html($comic, "Deutsch", 'templates/deutsch/comic-page.templ');

@@ -24,7 +24,7 @@ Comic::Out::Sitemap - Generates a sitemap for web sites.
 
 =head1 SYNOPSIS
 
-    my $sitemap = Comic::Out::Sitemap->new(\%settings);
+    my $sitemap = Comic::Out::Sitemap->new(%settings);
     $sitemap->generate_all(@comics);
 
 =head1 DESCRIPTION
@@ -46,7 +46,7 @@ Parameters:
 
 =over 4
 
-=item * B<$settings> Hash reference to settings.
+=item * B<%settings> Hash of settings.
 
 =back
 
@@ -54,29 +54,24 @@ The passed settings need to have the C<Template> and C<output> hashes.
 
 For example:
 
-    my $settings = {
-        'Out' => {
-            'Comic::Out::Sitemap' => {
-                'output' => {
-                    'English' => 'generated/web/english/sitemap.xml',
-                },
-                'Templates' => {
-                    'English' => 'templates/sitemap.templ',
-                },
-            },
+    my %settings = (
+        'output' => {
+            'English' => 'generated/web/english/sitemap.xml',
         },
-    }
-    my $sitemap = Comic::Out::Sitemap($settings);
+        'Templates' => {
+            'English' => 'templates/sitemap.templ',
+        },
+    );
+    my $sitemap = Comic::Out::Sitemap(%settings);
 
 =cut
 
 
 sub new {
-    my ($class, $settings) = @ARG;
+    my ($class, %settings) = @ARG;
     my $self = $class->SUPER::new();
 
-    croak('No Comic::Out::Sitemap configuration') unless ($settings->{'Comic::Out::Sitemap'});
-    %{$self->{settings}} = %{$settings->{'Comic::Out::Sitemap'}};
+    %{$self->{settings}} = %settings;
 
     croak('Must specify Comic::Out::Sitemap.Templates') unless ($self->{settings}->{Templates});
     croak('Must specify Comic::Out::Sitemap.output') unless ($self->{settings}->{output});

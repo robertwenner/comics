@@ -28,23 +28,10 @@ This module works on the generated F<.svg> file for each language.
 
 =head1 SYNOPSIS
 
-    my $svg = Comic::Out::Copyright->new(\%settings);
+    my $svg = Comic::Out::Copyright->new(%settings);
     $svg->generate($comic);
 
 =head1 DESCRIPTION
-
-The note to add is given in the configuration like this:
-
-    {
-        "Out" => {
-            "Comic::Out::Copyright" => {
-                "Text" => {
-                    "English": "beercomics.com -- CC BY-NC-SA 4.0"
-                },
-                "style": "font-family: sans-serif; font-size: 10px"
-            }
-        }
-    }
 
 =cut
 
@@ -59,19 +46,28 @@ Parameters:
 
 =over 4
 
-=item * B<$settings> Hash reference to settings.
+=item * B<%settings> settings hash.
 
 =back
+
+The note to add is given in the configuration like this:
+
+    "Text" => {
+        "English": "beercomics.com -- CC BY-NC-SA 4.0"
+    },
+    "style": "font-family: sans-serif; font-size: 10px",
+
+where C<Text> is the actual text to display, and C<style> is the style
+attribute for that text. Anything legal in SVG is fair game.
 
 =cut
 
 
 sub new {
-    my ($class, $settings) = @ARG;
+    my ($class, %settings) = @ARG;
     my $self = $class->SUPER::new();
 
-    croak('No Comic::Out::Copyright configuration') unless ($settings->{'Comic::Out::Copyright'});
-    %{$self->{settings}} = %{$settings->{'Comic::Out::Copyright'}};
+    %{$self->{settings}} = %settings;
     croak('No Text in Comic::Out::Copyright configuration') unless ($self->{settings}->{Text});
     # Devel::Cover does not see that $STYLE is an always set const:
     # uncoverable condition false

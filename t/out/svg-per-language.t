@@ -27,43 +27,26 @@ sub set_up : Test(setup) {
     };
     use warnings;
 
-    $spl = Comic::Out::SvgPerLanguage->new({
-        'Comic::Out::SvgPerLanguage' => {
-            'outdir' => 'generated',
-        },
-    });
-}
-
-
-sub ctor_complains_if_no_config : Tests {
-    eval {
-        Comic::Out::SvgPerLanguage->new();
-    };
-    like($@, qr{no Comic::Out::SvgPerLanguage configuration}i);
+    $spl = Comic::Out::SvgPerLanguage->new(
+        'outdir' => 'generated',
+    );
 }
 
 
 sub ctor_uses_default_outdir : Tests {
-    $spl = Comic::Out::SvgPerLanguage->new({
-        'Comic::Out::SvgPerLanguage' => {
-        },
-    });
+    $spl = Comic::Out::SvgPerLanguage->new();
     like($spl->{settings}->{outdir}, qr{^[\w/]+}, 'should have something that looks like a path');
 }
 
 
 sub ctor_adds_trailing_slash_to_outdir : Tests {
-    $spl = Comic::Out::SvgPerLanguage->new({
-        'Comic::Out::SvgPerLanguage' => {
-            'outdir' => 'generated/',
-        },
-    });
+    $spl = Comic::Out::SvgPerLanguage->new(
+        'outdir' => 'generated/',
+    );
     is($spl->{settings}->{outdir}, 'generated/');
-    $spl = Comic::Out::SvgPerLanguage->new({
-        'Comic::Out::SvgPerLanguage' => {
-            'outdir' => 'generated',
-        },
-    });
+    $spl = Comic::Out::SvgPerLanguage->new(
+        'outdir' => 'generated',
+    );
     is($spl->{settings}->{outdir}, 'generated/');
 }
 

@@ -24,10 +24,10 @@ the given Comic in each of the Comic's languages.
 
 =head1 SYNOPSIS
 
-    my $settings = {
+    my %settings = (
         # ...
-    };
-    my $png = Comic::Out::Png->new($settings);
+    );
+    my $png = Comic::Out::Png->new(%settings);
     $png->generate($comic);
 
 =head1 DESCRIPTION
@@ -52,7 +52,7 @@ Parameters:
 
 =over 4
 
-=item * B<$settings> Hash reference to settings.
+=item * B<%settings> Hash of settings; see below.
 
 =back
 
@@ -60,24 +60,18 @@ The passed settings need to specify the output directory (C<outdir>).
 
 For example:
 
-    my $settings = {
-        'Out' => {
-            'Png' => {
-                'outdir' => 'generated/web/'
-            }
-        }
-    }
-    my $png = Comic::Out::Png($settings);
+    my %settings = (
+        'outdir' => 'generated/web/'
+    )
+    my $png = Comic::Out::Png(%settings);
 
 =cut
 
-
 sub new {
-    my ($class, $settings) = @ARG;
+    my ($class, %settings) = @ARG;
     my $self = $class->SUPER::new();
 
-    croak('No Comic::Out::Png configuration') unless ($settings->{'Comic::Out::Png'});
-    %{$self->{settings}} = %{$settings->{'Comic::Out::Png'}};
+    %{$self->{settings}} = %settings;
 
     croak('Must specify Comic::Out::Png.outdir output directory') unless ($self->{settings}->{outdir});
     $self->{settings}->{outdir} .= q{/} unless ($self->{settings}->{outdir} =~ m{/$});

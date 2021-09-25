@@ -24,10 +24,10 @@ comic meta data.
 
 =head1 SYNOPSIS
 
-    my $settings = {
+    my %settings = {
         # ...
     };
-    my $png = Comic::Out::Backlog->new($settings);
+    my $png = Comic::Out::Backlog->new(%settings);
     $png->generate_all(@comics);
 
 =head1 DESCRIPTION
@@ -53,7 +53,7 @@ Parameters:
 
 =over 4
 
-=item * B<$settings> Hash reference to settings.
+=item * B<$settings> Hash of settings; see below.
 
 =back
 
@@ -62,17 +62,13 @@ L<Toolkit> template to use.
 
 For example:
 
-    my $settings = {
-        'Out' => {
-            'Comic::Out::Backlog' => {
-                'outfile' => 'generated/backlog.html',
-                'template' => 'templates/backlog.templ',
-                'toplocation' => 'web',
-				'collect' => ['tags', 'series', 'who'],
-            }
-        }
-    }
-    my $backlog = Comic::Out::Backlog($settings);
+    my %settings = (
+        'outfile' => 'generated/backlog.html',
+        'template' => 'templates/backlog.templ',
+        'toplocation' => 'web',
+		'collect' => ['tags', 'series', 'who'],
+    );
+    my $backlog = Comic::Out::Backlog(%settings);
 
 The C<template> defines the L<Toolkit> template to use.
 
@@ -89,11 +85,10 @@ overview.
 
 
 sub new {
-    my ($class, $settings) = @ARG;
+    my ($class, %settings) = @ARG;
     my $self = $class->SUPER::new();
 
-    croak('No Comic::Out::Backlog configuration') unless ($settings->{'Comic::Out::Backlog'});
-    %{$self->{settings}} = %{$settings->{'Comic::Out::Backlog'}};
+    %{$self->{settings}} = %settings;
     croak('Must specify Comic::Out::Backlog.template') unless ($self->{settings}->{template});
     croak('Must specify Comic::Out::Backlog.outfile') unless ($self->{settings}->{outfile});
 

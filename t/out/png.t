@@ -67,40 +67,29 @@ sub set_up : Test(setup) {
     $get_value = undef;
     $write_info_exit_code = 1;
 
-    $png = Comic::Out::Png->new({
-        'Comic::Out::Png' => {
-            'outdir' => 'generated',
-        },
-    });
+    $png = Comic::Out::Png->new(
+        'outdir' => 'generated',
+    );
 }
 
 
-sub ctor_complains_if_no_config : Tests {
+sub ctor_complains_if_no_outdir_configured : Tests {
     eval {
         Comic::Out::Png->new();
     };
-    like($@, qr{No Comic::Out::Png configuration}i);
-    eval {
-        Comic::Out::Png->new({
-            'Comic::Out::Png' => {},
-        });
-    };
-    like($@, qr{\boutdir\b}i);
+    like($@, qr{Comic::Out::Png}i, 'should mention module');
+    like($@, qr{\boutdir\b}i, 'should mention setting');
 }
 
 
 sub ctor_adds_trailing_slash_to_outdir : Tests {
-    $png = Comic::Out::Png->new({
-        'Comic::Out::Png' => {
-            'outdir' => 'generated/',
-        },
-    });
+    $png = Comic::Out::Png->new(
+        'outdir' => 'generated/',
+    );
     is($png->{settings}->{outdir}, 'generated/');
-    $png = Comic::Out::Png->new({
-        'Comic::Out::Png' => {
-            'outdir' => 'generated',
-        },
-    });
+    $png = Comic::Out::Png->new(
+        'outdir' => 'generated',
+    );
     is($png->{settings}->{outdir}, 'generated/');
 }
 

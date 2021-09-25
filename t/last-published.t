@@ -19,21 +19,19 @@ my $hcp;
 sub set_up : Test(setup) {
     MockComic::set_up();
     MockComic::fake_file("comic-page.templ",'');
-    $hcp = Comic::Out::HtmlComicPage->new({
-        'Comic::Out::HtmlComicPage' => {
-            'outdir' => 'generated',
-            'Templates' => {
-                $MockComic::ENGLISH => 'comic-page.templ',
-                $MockComic::DEUTSCH => 'comic-page.templ',
-                "$MockComic::ESPAÑOL" => 'comic-page.templ',
-            },
-            'Domains' => {
-                $MockComic::ENGLISH => 'beercomics.com',
-                $MockComic::DEUTSCH => 'biercomics.de',
-                "$MockComic::ESPAÑOL" => 'cervezacomics.es',
-            },
+    $hcp = Comic::Out::HtmlComicPage->new(
+        'outdir' => 'generated',
+        'Templates' => {
+            $MockComic::ENGLISH => 'comic-page.templ',
+            $MockComic::DEUTSCH => 'comic-page.templ',
+            "$MockComic::ESPAÑOL" => 'comic-page.templ',
         },
-    });
+        'Domains' => {
+            $MockComic::ENGLISH => 'beercomics.com',
+            $MockComic::DEUTSCH => 'biercomics.de',
+            "$MockComic::ESPAÑOL" => 'cervezacomics.es',
+        },
+    );
 }
 
 

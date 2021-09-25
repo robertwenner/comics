@@ -34,9 +34,7 @@ sub setup : Test(setup) {
     };
     use warnings;
 
-    $qrcode = Comic::Out::QrCode->new({
-        'Comic::Out::QrCode' => {},
-    });
+    $qrcode = Comic::Out::QrCode->new();
 }
 
 
@@ -50,13 +48,11 @@ sub passes_default_options_to_imager_qr_code : Tests {
 
 sub imager_qrcode_options_override_defaults : Tests {
     my $comic = MockComic::make_comic();
-    $qrcode = Comic::Out::QrCode->new({
-        'Comic::Out::QrCode' => {
-            'Imager::QrCode' => {
-                'mode' => 'ascii',
-            },
+    $qrcode = Comic::Out::QrCode->new(
+        'Imager::QrCode' => {
+            'mode' => 'ascii',
         },
-    });
+    );
     $qrcode->generate($comic);
     ok(${$plot_args}{casesensitive}, 'should have default case-sensitivity flag');
     is(${$plot_args}{mode}, 'ascii', 'should have passed overridden mode flag');
@@ -65,7 +61,7 @@ sub imager_qrcode_options_override_defaults : Tests {
 
 sub empty_options_uses_defaults : Tests {
     my $comic = MockComic::make_comic();
-    $qrcode = Comic::Out::QrCode->new({'Comic::Out::QrCode' => {}});
+    $qrcode = Comic::Out::QrCode->new();
     $qrcode->generate($comic);
     ok(${$plot_args}{casesensitive}, 'should have default case-sensitivity flag');
     is(${$plot_args}{mode}, '8-bit', 'should have default mode flag');
@@ -74,11 +70,9 @@ sub empty_options_uses_defaults : Tests {
 
 sub uses_outdir_option : Tests {
     my $comic = MockComic::make_comic();
-    $qrcode = Comic::Out::QrCode->new({
-        'Comic::Out::QrCode' => {
-            'outdir' => 'my-qr-codes-dir',
-        },
-    });
+    $qrcode = Comic::Out::QrCode->new(
+        'outdir' => 'my-qr-codes-dir',
+    );
     $qrcode->generate($comic);
     is($comic->{qrcode}{$MockComic::ENGLISH}, 'my-qr-codes-dir/drinking-beer.png', 'Wrong QR image file');
 }

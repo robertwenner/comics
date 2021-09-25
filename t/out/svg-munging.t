@@ -18,14 +18,12 @@ my $copyright;
 
 sub set_up : Test(setup) {
     MockComic::set_up();
-    $copyright = Comic::Out::Copyright->new({
-        'Comic::Out::Copyright' => {
-            'Text' =>  {
-                'English' => 'beercomics.com',
-                'Deutsch' => 'biercomics.de',
-            },
+    $copyright = Comic::Out::Copyright->new(
+        'Text' =>  {
+            'English' => 'beercomics.com',
+            'Deutsch' => 'biercomics.de',
         },
-    });
+    );
 }
 
 
@@ -81,38 +79,26 @@ sub needs_configuration : Tests {
         Comic::Out::Copyright->new();
     };
     like($@, qr{Comic::Out::Copyright configuration}i);
-
-    eval {
-        Comic::Out::Copyright->new({
-            'Comic::Out::Copyright' => {
-            },
-        });
-    };
-    like($@, qr{Comic::Out::Copyright configuration}i);
     like($@, qr{\bText\b}i);
 
     eval {
-        Comic::Out::Copyright->new({
-            'Comic::Out::Copyright' => {
-                'Text' => {
-                },
+        Comic::Out::Copyright->new(
+            'Text' => {
             },
-        });
+        );
     };
     is($@, '');
 }
 
 
 sub configure_style : Tests {
-    $copyright = Comic::Out::Copyright->new({
-        'Comic::Out::Copyright' => {
-            'Text' => {
-                'English' => 'beercomics.com',
-                'Deutsch' => 'biercomics.de',
-            },
-            'style' => 'my great style',
+    $copyright = Comic::Out::Copyright->new(
+        'Text' => {
+            'English' => 'beercomics.com',
+            'Deutsch' => 'biercomics.de',
         },
-    });
+        'style' => 'my great style',
+    );
     my $comic = make_comic();
     $copyright->generate($comic);
     my $text = get_layer($comic->{dom}, 'CopyrightDeutsch')->getFirstChild();
@@ -121,14 +107,12 @@ sub configure_style : Tests {
 
 
 sub croaks_if_no_style : Tests {
-    $copyright = Comic::Out::Copyright->new({
-        'Comic::Out::Copyright' => {
-            'Text' => {
-                'English' => 'beercomics.com',
-            },
-            'style' => 'my great style',
+    $copyright = Comic::Out::Copyright->new(
+        'Text' => {
+            'English' => 'beercomics.com',
         },
-    });
+        'style' => 'my great style',
+    );
     my $comic = make_comic();
     eval {
         $copyright->generate($comic);
