@@ -14,7 +14,6 @@ use version; our $VERSION = qv('0.0.3');
 
 
 use Readonly;
-Readonly my $OUTDIR => 'qr/';
 Readonly::Hash my %IMAGER_DEFAULT_SETTINGS => {
     'casesensitive' => 1,   # URLs are case sensitive
     'mode' => '8-bit',      # URLs may have non-ascii characters
@@ -77,8 +76,7 @@ sub new {
     my ($class, %settings) = @ARG;
     my $self = $class->SUPER::new(%settings);
 
-    $self->{settings}->{outdir} ||= $OUTDIR;
-    $self->{settings}->{outdir} .= q{/} unless ($self->{settings}->{outdir} =~ m{/$});
+    $self->needs('outdir', 'directory');
 
     return $self;
 }

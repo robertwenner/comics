@@ -13,9 +13,6 @@ use base('Comic::Out::Generator');
 
 use version; our $VERSION = qv('0.0.3');
 
-# Output dir for per-langugage svg exports.
-Readonly my $SVGDIR => 'tmp/svg/';
-
 
 =for stopwords Wenner merchantability perlartistic MetaEnglish Scalable
 
@@ -75,10 +72,7 @@ sub new {
     my ($class, %settings) = @ARG;
     my $self = $class->SUPER::new(%settings);
 
-    # Devel::Cover does not see that $SVGDIR is an always set const:
-    # uncoverable condition false
-    $self->{settings}->{outdir} ||= $SVGDIR;
-    $self->{settings}->{outdir} .= q{/} unless ($self->{settings}->{outdir} =~ m{/$});
+    $self->needs('outdir', 'directory');
 
     return $self;
 }

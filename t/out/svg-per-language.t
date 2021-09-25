@@ -34,7 +34,7 @@ sub set_up : Test(setup) {
 
 
 sub ctor_uses_default_outdir : Tests {
-    $spl = Comic::Out::SvgPerLanguage->new();
+    $spl = Comic::Out::SvgPerLanguage->new('outdir' => 'generated');
     like($spl->{settings}->{outdir}, qr{^[\w/]+}, 'should have something that looks like a path');
 }
 

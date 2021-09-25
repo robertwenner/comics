@@ -34,7 +34,9 @@ sub setup : Test(setup) {
     };
     use warnings;
 
-    $qrcode = Comic::Out::QrCode->new();
+    $qrcode = Comic::Out::QrCode->new(
+        'outdir' => 'qr/',
+    );
 }
 
 
@@ -49,6 +51,7 @@ sub passes_default_options_to_imager_qr_code : Tests {
 sub imager_qrcode_options_override_defaults : Tests {
     my $comic = MockComic::make_comic();
     $qrcode = Comic::Out::QrCode->new(
+        'outdir' => 'qr',
         'Imager::QrCode' => {
             'mode' => 'ascii',
         },
@@ -61,7 +64,7 @@ sub imager_qrcode_options_override_defaults : Tests {
 
 sub empty_options_uses_defaults : Tests {
     my $comic = MockComic::make_comic();
-    $qrcode = Comic::Out::QrCode->new();
+    $qrcode = Comic::Out::QrCode->new('outdir' => 'qr');
     $qrcode->generate($comic);
     ok(${$plot_args}{casesensitive}, 'should have default case-sensitivity flag');
     is(${$plot_args}{mode}, '8-bit', 'should have default mode flag');
