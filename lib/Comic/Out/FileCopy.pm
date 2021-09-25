@@ -91,14 +91,9 @@ install Cygwin tools on Windows.
 
 sub new {
     my ($class, %settings) = @ARG;
-    my $self = $class->SUPER::new();
+    my $self = $class->SUPER::new(%settings);
 
-    %{$self->{settings}} = ();
-
-    my $outdir = $settings{outdir};
-    croak('Must specify Comic::Out::FileCopy.outdir output directory') unless ($outdir);
-    $outdir .= q{/} unless ($outdir =~ m{/$}x);
-    $self->{settings}->{outdir} = $outdir;
+    $self->needs('outdir', 'directory');
 
     if (!$settings{'from-all'} && !$settings{'from-language'}) {
         croak('Comic::Out::FileCopy: Must specify at least one of from-all and from-language');

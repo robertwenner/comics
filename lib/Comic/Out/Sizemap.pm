@@ -89,12 +89,11 @@ Other supported settings are:
 
 sub new {
     my ($class, %settings) = @ARG;
-    my $self = $class->SUPER::new();
+    my $self = $class->SUPER::new(%settings);
 
-    %{$self->{settings}} = %settings;
+    $self->needs('template', '');
+    $self->needs('output', '');
 
-    croak('Must specify Comic::Out::Sizemap.template') unless ($self->{settings}->{template});
-    croak('Must specify Comic::Out::Sizemap.output') unless ($self->{settings}->{output});
     # Devel::Cover does not see that $SCALE is an always set const:
     # uncoverable condition false
     $self->{settings}->{scale} ||= $SCALE;

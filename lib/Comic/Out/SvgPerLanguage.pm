@@ -73,9 +73,7 @@ with language names (e.g., "English") as keys and F<.svg> file's path
 
 sub new {
     my ($class, %settings) = @ARG;
-    my $self = $class->SUPER::new();
-
-    %{$self->{settings}} = %settings;
+    my $self = $class->SUPER::new(%settings);
 
     # Devel::Cover does not see that $SVGDIR is an always set const:
     # uncoverable condition false

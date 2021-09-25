@@ -69,13 +69,9 @@ For example:
 
 sub new {
     my ($class, %settings) = @ARG;
-    my $self = $class->SUPER::new();
+    my $self = $class->SUPER::new(%settings);
 
-    %{$self->{settings}} = %settings;
-
-    croak('Must specify Comic::Out::Png.outdir output directory') unless ($self->{settings}->{outdir});
-    $self->{settings}->{outdir} .= q{/} unless ($self->{settings}->{outdir} =~ m{/$});
-
+    $self->needs('outdir', 'directory');
     $self->{inkscape_version} = undef;
 
     return $self;

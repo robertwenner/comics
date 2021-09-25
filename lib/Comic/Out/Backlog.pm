@@ -86,11 +86,10 @@ overview.
 
 sub new {
     my ($class, %settings) = @ARG;
-    my $self = $class->SUPER::new();
+    my $self = $class->SUPER::new(%settings);
 
-    %{$self->{settings}} = %settings;
-    croak('Must specify Comic::Out::Backlog.template') unless ($self->{settings}->{template});
-    croak('Must specify Comic::Out::Backlog.outfile') unless ($self->{settings}->{outfile});
+    $self->needs('template', '');
+    $self->needs('outfile', '');
 
 	if ($self->{settings}->{collect}) {
 		if (ref $self->{settings}->{collect} eq '') {

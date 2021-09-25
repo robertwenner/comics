@@ -94,12 +94,9 @@ F<generated/web/english/rss.xml> and F<generated/web/deutsch/rss.xml>.
 
 sub new {
     my ($class, %settings) = @ARG;
-    my $self = $class->SUPER::new();
+    my $self = $class->SUPER::new(%settings);
 
-    %{$self->{settings}} = %settings;
-
-    croak('Must specify Comic::Out::Feed.outdir output directory') unless (${$self->{settings}}{outdir});
-    ${$self->{settings}}{outdir} .= q{/} unless (${$self->{settings}}{outdir} =~ m{/$});
+    $self->needs('outdir', 'directory');
 
     return $self;
 }

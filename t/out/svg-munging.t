@@ -78,7 +78,7 @@ sub needs_configuration : Tests {
     eval {
         Comic::Out::Copyright->new();
     };
-    like($@, qr{Comic::Out::Copyright configuration}i);
+    like($@, qr{Comic::Out::Copyright}i);
     like($@, qr{\bText\b}i);
 
     eval {

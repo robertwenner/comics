@@ -6,8 +6,8 @@ use Comic::Out::Generator;
 use base('Comic::Out::Generator');
 
 sub new {
-    my ($class) = @_;
-    my $self = $class->SUPER::new();
+    my ($class, %settings) = @_;
+    my $self = $class->SUPER::new(%settings);
     @{$self->{called}} = ();
     return $self;
 }

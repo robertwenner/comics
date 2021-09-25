@@ -63,9 +63,58 @@ Creates a new Comic::Out::Generator.
 
 
 sub new {
-    my ($class) = @ARG;
+    my ($class, %settings) = @ARG;
     my $self = bless{}, $class;
+    %{$self->{settings}} = %settings;
     return $self;
+}
+
+
+=head2 needs
+
+Checks whether the passed settings have the given key and it refers to the
+given type.
+
+Parameters:
+
+=over 4
+
+=item B<$name> expected setting name.
+
+=item B<$type> expected type. Pass '' for scalars, 'ARRAY' for arrays, or
+    'HASH' for hashes. If the type is 'directory', this function makes sure
+    it has a trailing slash for easy concatenation.
+
+=back
+
+=cut
+
+sub needs {
+    my ($self, $name, $type) = @ARG;
+
+    my $me = ref $self;
+    croak("Must specify $me.$name") unless (exists $self->{settings}->{$name});
+    my $value = $self->{settings}->{$name};
+
+    my $expected_type = _type_name($type);
+    my $actual_type = _type_name(ref $value);
+    croak("$me.$name must be $expected_type but is $actual_type") unless ($expected_type eq $actual_type);
+
+    if ($type eq 'directory') {
+        ${$self->{settings}}{$name} .= q{/} unless (${$self->{settings}}{$name} =~ m{/$});
+    }
+
+    return;
+}
+
+
+sub _type_name {
+    my ($type) = @ARG;
+
+    return 'scalar' if ($type eq '' || $type eq 'directory');
+    return 'array' if ($type eq 'ARRAY');
+    return 'object' if ($type eq 'HASH');
+    return $type;
 }
 
 

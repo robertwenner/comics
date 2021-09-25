@@ -21,7 +21,7 @@ sub set_up : Test(setup) {
 
 
 sub generator_base_class_does_nothing : Tests {
-    my $gen = Comic::Out::Generator->new({'Comic::Out::Generator' => {}});
+    my $gen = Comic::Out::Generator->new();
     $gen->generate();
     $gen->generate_all();
     ok(1);
@@ -30,7 +30,7 @@ sub generator_base_class_does_nothing : Tests {
 
 sub runs_output_generators_in_stages : Tests {
     my $comics = Comics->new();
-    my $gen = DummyGenerator->new({'DummyGenerator' => {}});
+    my $gen = DummyGenerator->new();
     @{$comics->{generators}} = ($gen, $gen);
     @{$comics->{comics}} = (MockComic::make_comic());
 

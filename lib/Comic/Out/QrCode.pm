@@ -75,9 +75,7 @@ cause paths are case-sensitive.
 
 sub new {
     my ($class, %settings) = @ARG;
-    my $self = $class->SUPER::new();
-
-    %{$self->{settings}} = %settings;
+    my $self = $class->SUPER::new(%settings);
 
     $self->{settings}->{outdir} ||= $OUTDIR;
     $self->{settings}->{outdir} .= q{/} unless ($self->{settings}->{outdir} =~ m{/$});

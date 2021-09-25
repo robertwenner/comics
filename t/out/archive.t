@@ -107,8 +107,10 @@ sub ctor_complains_about_missing_config : Tests {
             },
         );
     };
-    like($@, qr{Comic::Out::HtmlArchivePage\.template}, 'should say where it is missing');
-    like($@, qr{language}, 'should say what is missing');
+    like($@, qr{Comic::Out::HtmlArchivePage}, 'should mention module');
+    like($@, qr{\btemplate\b}, 'should say where it is missing');
+    like($@, qr{\boutfile\b}, 'should say where it has the value');
+    like($@, qr{English}, 'should say what language is  missing');
 
     eval {
         Comic::Out::HtmlArchivePage->new(

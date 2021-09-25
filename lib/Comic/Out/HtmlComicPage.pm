@@ -74,14 +74,10 @@ derived from each Comic's title.
 
 sub new {
     my ($class, %settings) = @ARG;
-    my $self = $class->SUPER::new();
+    my $self = $class->SUPER::new(%settings);
 
-    %{$self->{settings}} = %settings;
-
-    croak('Must specify Comic::Out::HtmlComicPage.outdir output directory') unless ($settings{outdir});
-    $self->{settings}->{outdir} .= q{/} unless ($self->{settings}->{outdir} =~ m{/$});
-
-    croak('Must specify Comic::Out::HtmlComicPage.Templates') unless ($settings{Templates});
+    $self->needs('outdir', 'directory');
+    $self->needs('Templates', 'HASH');
 
     return $self;
 }

@@ -69,12 +69,10 @@ For example:
 
 sub new {
     my ($class, %settings) = @ARG;
-    my $self = $class->SUPER::new();
+    my $self = $class->SUPER::new(%settings);
 
-    %{$self->{settings}} = %settings;
-
-    croak('Must specify Comic::Out::Sitemap.Templates') unless ($self->{settings}->{Templates});
-    croak('Must specify Comic::Out::Sitemap.output') unless ($self->{settings}->{output});
+    $self->needs('Templates', 'HASH');
+    $self->needs('output', 'HASH');
 
     return $self;
 }

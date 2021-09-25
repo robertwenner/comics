@@ -65,10 +65,9 @@ attribute for that text. Anything legal in SVG is fair game.
 
 sub new {
     my ($class, %settings) = @ARG;
-    my $self = $class->SUPER::new();
+    my $self = $class->SUPER::new(%settings);
 
-    %{$self->{settings}} = %settings;
-    croak('No Text in Comic::Out::Copyright configuration') unless ($self->{settings}->{Text});
+    $self->needs('Text', 'HASH');
     # Devel::Cover does not see that $STYLE is an always set const:
     # uncoverable condition false
     $self->{settings}->{style} ||= $STYLE;

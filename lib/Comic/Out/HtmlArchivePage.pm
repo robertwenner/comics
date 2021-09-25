@@ -69,23 +69,16 @@ The C<outfile> where the output should go.
 
 sub new {
     my ($class, %settings) = @ARG;
-    my $self = $class->SUPER::new();
+    my $self = $class->SUPER::new(%settings);
 
-    croak('Must specify Comic::Out::HtmlArchivePage.template') unless (exists $settings{template});
-    croak('Comic::Out::HtmlArchivePage.template must be an object') unless (ref $settings{template} eq 'HASH');
-    croak('Must specify languages in Comic::Out::HtmlArchivePage.template') unless(keys %{$settings{template}});
-
-    croak('Must specify Comic::Out::HtmlArchivePage.outfile') unless (exists $settings{outfile});
-    croak('Comic::Out::HtmlArchivePage.outfile must be an object') unless (ref $settings{outfile} eq 'HASH');
-
+    $self->needs('template', 'HASH');
+    $self->needs('outfile', 'HASH');
     foreach my $language (keys %{$settings{template}}) {
         croak "Comic::Out::HtmlArchivePage $language in template but not in outfile" unless ($settings{outfile}{$language});
     }
     foreach my $language (keys %{$settings{outfile}}) {
         croak "Comic::Out::HtmlArchivePage $language in outfile but not in template" unless ($settings{template}{$language});
     }
-
-    %{$self->{settings}} = %settings;
 
     return $self;
 }

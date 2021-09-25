@@ -57,7 +57,6 @@ sub fails_on_missing_configuration : Tests {
         );
     };
     like($@, qr{\bComic::Out::HtmlComicPage\.outdir\b});
-    like($@, qr{\boutput directory\b}i);
 
     eval {
         Comic::Out::HtmlComicPage->new(
