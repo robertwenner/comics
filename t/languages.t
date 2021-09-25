@@ -17,7 +17,7 @@ sub setup : Test(setup) {
 }
 
 
-sub language_code_de : Test {
+sub language_code_de : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
             $MockComic::DEUTSCH => 'Bier trinken'
@@ -26,7 +26,7 @@ sub language_code_de : Test {
 }
 
 
-sub language_code_en : Test {
+sub language_code_en : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
             $MockComic::ENGLISH => 'Drinking beer',
@@ -35,7 +35,7 @@ sub language_code_en : Test {
 }
 
 
-sub language_code_es : Test {
+sub language_code_es : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
             'Español' => 'Tomando cerveza',
@@ -44,7 +44,7 @@ sub language_code_es : Test {
 }
 
 
-sub language_code_unknown : Test {
+sub language_code_unknown : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
             'Pimperanto' => 'WTF?!',
@@ -62,7 +62,7 @@ sub language_code_unknown : Test {
 }
 
 
-sub language_code_for_all_languages_in_comic : Test {
+sub language_code_for_all_languages_in_comic : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
             'Español' => 'Cerveza',
@@ -80,7 +80,7 @@ sub language_code_for_all_languages_in_comic : Test {
 }
 
 
-sub croaks_on_language_without_domain : Test {
+sub croaks_on_language_without_domain : Tests {
     eval {
         MockComic::make_comic(
             $MockComic::TITLE => {

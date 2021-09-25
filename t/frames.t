@@ -38,19 +38,19 @@ sub assert_frames_xy {
 }
 
 
-sub no_frame : Test {
+sub no_frame : Tests {
     is_deeply([], make_frames());
 }
 
 
-sub single_frame : Test {
+sub single_frame : Tests {
     is_deeply([0], make_frames(
         # height, width, x, y
         0, 0, 0, 0));
 }
 
 
-sub frames_same_height : Test {
+sub frames_same_height : Tests {
     is_deeply([0], make_frames(
         # height, width, x, y
         0, 0, 0, 0,
@@ -58,7 +58,7 @@ sub frames_same_height : Test {
 }
 
 
-sub frames_almost_same_height : Test {
+sub frames_almost_same_height : Tests {
     is_deeply([0], make_frames(
         # height, width, x, y
         0, 0, 0, 0,
@@ -67,7 +67,7 @@ sub frames_almost_same_height : Test {
 }
 
 
-sub two_rows_of_frames : Test {
+sub two_rows_of_frames : Tests {
     is_deeply([0, 100], make_frames(
         # height, width, x, y
         0, 0, 0, 0,
@@ -77,7 +77,7 @@ sub two_rows_of_frames : Test {
 }
 
 
-sub three_rows_of_frames : Test {
+sub three_rows_of_frames : Tests {
     is_deeply([0, 100, 200], make_frames(
         # height, width, x, y
         0, 0, 0, 0,

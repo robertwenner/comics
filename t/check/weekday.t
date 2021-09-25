@@ -48,7 +48,7 @@ sub good_weekday_in_ctor : Tests {
 }
 
 
-sub no_date : Test {
+sub no_date : Tests {
     my $comic = MockComic::make_comic($MockComic::PUBLISHED_WHEN => undef);
     $check->check($comic);
     ok(1);

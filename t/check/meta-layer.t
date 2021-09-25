@@ -36,7 +36,7 @@ XML
 }
 
 
-sub no_meta_layer : Test {
+sub no_meta_layer : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => "funny comic" });
     eval {
@@ -46,7 +46,7 @@ sub no_meta_layer : Test {
 }
 
 
-sub no_meta_layer_checks_other_languages : Test {
+sub no_meta_layer_checks_other_languages : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::PUBLISHED_WHEN => '3000-01-01',
     );
@@ -58,7 +58,7 @@ sub no_meta_layer_checks_other_languages : Test {
 }
 
 
-sub no_text_in_meta_layer : Test {
+sub no_text_in_meta_layer : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => "funny comic" },
         $MockComic::XML => <<'XML',
@@ -74,7 +74,7 @@ XML
 }
 
 
-sub first_text_must_be_from_meta_layer : Test {
+sub first_text_must_be_from_meta_layer : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => "funny comic" },
         $MockComic::FRAMES => [0, 0, 100, -100],
@@ -147,7 +147,7 @@ XML
 }
 
 
-sub all_good : Test {
+sub all_good : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => "funny comic" },
         $MockComic::FRAMES => [0, 0, 100, 100],

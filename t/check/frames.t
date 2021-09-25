@@ -41,14 +41,14 @@ sub try_comic {
 }
 
 
-sub width_ok : Test {
+sub width_ok : Tests {
     my $comic = MockComic::make_comic($MockComic::FRAMEWIDTH => 1.25);
     $check->check($comic);
     ok(1);
 }
 
 
-sub width_too_narrow : Test {
+sub width_too_narrow : Tests {
     my $comic = MockComic::make_comic($MockComic::FRAMEWIDTH => 0.99);
     eval {
         $check->check($comic);
@@ -57,7 +57,7 @@ sub width_too_narrow : Test {
 }
 
 
-sub width_too_wide : Test {
+sub width_too_wide : Tests {
     my $comic = MockComic::make_comic($MockComic::FRAMEWIDTH => 1.51);
     eval {
         $check->check($comic);
@@ -66,14 +66,14 @@ sub width_too_wide : Test {
 }
 
 
-sub aligned_no_frame : Test {
+sub aligned_no_frame : Tests {
     my $comic = MockComic::make_comic();
     $check->check($comic);
     ok(1);
 }
 
 
-sub aligned_single_frame : Test {
+sub aligned_single_frame : Tests {
     assert_ok(100, 100, 0, 0);
 }
 
@@ -85,7 +85,7 @@ sub misaligned_top : Tests {
 }
 
 
-sub misaligned_top_ok_different_row : Test {
+sub misaligned_top_ok_different_row : Tests {
     assert_ok(
         100, 100, 0, 0,
         100, 100, 0, -110);
@@ -106,7 +106,7 @@ sub aligned_left_same_row : Tests {
 }
 
 
-sub aligned_right_same_row : Test {
+sub aligned_right_same_row : Tests {
     assert_ok(
         100, 100,   0, 0,
         100, 100, 110, 0,

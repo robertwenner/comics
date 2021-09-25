@@ -16,7 +16,7 @@ sub set_up : Test(setup) {
 }
 
 
-sub one_language : Test {
+sub one_language : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { 'English' => 'Drinking beer' }
     );
@@ -24,7 +24,7 @@ sub one_language : Test {
 }
 
 
-sub many_languages : Test {
+sub many_languages : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
             'English' => 'Drinking beer',

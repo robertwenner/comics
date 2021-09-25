@@ -27,7 +27,7 @@ sub make_comic {
 }
 
 
-sub sort_equals : Test {
+sub sort_equals : Tests {
     my $today = make_comic("2016-04-17");
     ok(Comic::from_oldest_to_latest($today, $today) == 0);
 }
@@ -49,7 +49,7 @@ sub sort_by_undefined_published_date : Tests {
 }
 
 
-sub sort_array : Test {
+sub sort_array : Tests {
     my $jan = make_comic("2016-01-01");
     my $feb = make_comic("2016-02-01");
     my $mar = make_comic("2016-03-01");

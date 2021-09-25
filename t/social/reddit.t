@@ -94,7 +94,7 @@ sub fails_if_missing_configuration : Tests {
 }
 
 
-sub passes_options_to_reddit_client : Test {
+sub passes_options_to_reddit_client : Tests {
 	my %passed;
 
 	no warnings qw/redefine/;

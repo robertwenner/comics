@@ -154,7 +154,7 @@ sub one_comic : Tests {
 }
 
 
-sub published_only : Test {
+sub published_only : Tests {
     my @comics = (
         make_comic('one', '3016-01-01'),
         make_comic('two', '2016-01-02'),
@@ -166,7 +166,7 @@ sub published_only : Test {
 }
 
 
-sub orders_from_latest_to_oldest : Test {
+sub orders_from_latest_to_oldest : Tests {
     my @comics = (
         make_comic('one', '2016-01-01'),
         make_comic('two', '2016-01-02'),
@@ -212,7 +212,7 @@ TEMPL
 }
 
 
-sub provides_not_for_function : Test {
+sub provides_not_for_function : Tests {
     my $templ = << 'TEMPL';
 [% FOREACH c IN comics %]
     [% IF NOT notFor(c, "English") %]

@@ -36,7 +36,7 @@ sub duplicated_text_in_other_language : Tests {
 }
 
 
-sub duplicated_text_in_other_language_ignores_text_order : Test {
+sub duplicated_text_in_other_language_ignores_text_order : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => {
             $MockComic::DEUTSCH => ['a', 'b', 'c'],
@@ -49,7 +49,7 @@ sub duplicated_text_in_other_language_ignores_text_order : Test {
 }
 
 
-sub duplicated_text_in_other_language_ignores_names : Test {
+sub duplicated_text_in_other_language_ignores_names : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => {
             $MockComic::DEUTSCH => ['Max:', 'guck mal', ' Paul:', 'was?'],

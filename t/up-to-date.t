@@ -10,7 +10,7 @@ use Comic;
 __PACKAGE__->runtests() unless caller;
 
 
-sub no_png : Test {
+sub no_png : Tests {
     local *Comic::_exists = sub {
         return 0;
     };
@@ -18,7 +18,7 @@ sub no_png : Test {
 }
 
 
-sub svg_older : Test {
+sub svg_older : Tests {
     local *Comic::_exists = sub {
         return 1;
     };
@@ -34,7 +34,7 @@ sub svg_older : Test {
 }
 
 
-sub svg_newer : Test {
+sub svg_newer : Tests {
     local *Comic::_exists = sub {
         return 1;
     };

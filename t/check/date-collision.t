@@ -18,14 +18,14 @@ sub set_up : Test(setup) {
 }
 
 
-sub no_dates : Test {
+sub no_dates : Tests {
     my $comic = MockComic::make_comic($MockComic::PUBLISHED_WHEN => undef);
     $check->check($comic);
     ok(1);
 }
 
 
-sub collision : Test {
+sub collision : Tests {
     $check->notify(MockComic::make_comic(
         $MockComic::PUBLISHED_WHEN => '2016-01-01', $MockComic::IN_FILE => 'one.svg'));
     $check->notify(MockComic::make_comic(
@@ -40,7 +40,7 @@ sub collision : Test {
 }
 
 
-sub collision_ignores_whitespace : Test {
+sub collision_ignores_whitespace : Tests {
     $check->notify(MockComic::make_comic(
         $MockComic::PUBLISHED_WHEN => '2016-01-01 ', $MockComic::IN_FILE => 'one.svg'));
     $check->notify(MockComic::make_comic(
@@ -53,7 +53,7 @@ sub collision_ignores_whitespace : Test {
 }
 
 
-sub no_collision_different_languages : Test {
+sub no_collision_different_languages : Tests {
     $check->notify(MockComic::make_comic(
         $MockComic::TITLE => {
             $MockComic::ENGLISH => 'not funny in German',

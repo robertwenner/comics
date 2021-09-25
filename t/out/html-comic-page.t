@@ -183,7 +183,7 @@ sub skips_comic_without_that_language : Tests {
 }
 
 
-sub skips_comic_without_published_date : Test {
+sub skips_comic_without_published_date : Tests {
     my $comic = make_comic('English', 'not yet', '');
     my $hcp = make_generator();
     $hcp->generate_all($comic);

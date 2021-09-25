@@ -55,31 +55,31 @@ TEXT
 }
 
 
-sub one_text : Test {
+sub one_text : Tests {
     is_deeply([make_texts(0, 0)->texts_in_language("Deutsch")],
         ["Text 0 / 0"]);
 }
 
 
-sub different_x : Test {
+sub different_x : Tests {
     is_deeply([make_texts(0, 0, 10, 0)->texts_in_language("Deutsch")],
         ["Text 0 / 0", "Text 10 / 0"]);
 }
 
 
-sub different_y : Test {
+sub different_y : Tests {
     is_deeply([make_texts(0, 0, 0, 10)->texts_in_language("Deutsch")],
         ["Text 0 / 0", "Text 0 / 10"]);
 }
 
 
-sub different_x_and_y : Test {
+sub different_x_and_y : Tests {
     is_deeply([make_texts(0, 0, 10, 10)->texts_in_language("Deutsch")],
         ["Text 0 / 0", "Text 10 / 10"]);
 }
 
 
-sub different_frames : Test {
+sub different_frames : Tests {
     is_deeply([make_texts(0, 110, 10, 10)->texts_in_language("Deutsch")],
         ["Text 10 / 10", "Text 0 / 110"]);
 }

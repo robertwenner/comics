@@ -83,7 +83,7 @@ sub english_only : Tests {
 }
 
 
-sub fails_on_unknown_language : Test {
+sub fails_on_unknown_language : Tests {
     setup();
     eval {
         Comic::Out::SvgPerLanguage::_flip_language_layers($comic, "Pimperanto");

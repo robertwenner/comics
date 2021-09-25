@@ -19,7 +19,7 @@ sub set_up : Test(setup) {
 }
 
 
-sub non_empty_text_is_ok : Test {
+sub non_empty_text_is_ok : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => {$MockComic::DEUTSCH => ['not empty']});
     $check->check($comic);
@@ -27,7 +27,7 @@ sub non_empty_text_is_ok : Test {
 }
 
 
-sub empty_text_found : Test {
+sub empty_text_found : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => {$MockComic::DEUTSCH => ['']});
     eval {
@@ -37,7 +37,7 @@ sub empty_text_found : Test {
 }
 
 
-sub whitespace_only_text_found : Test {
+sub whitespace_only_text_found : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => {$MockComic::DEUTSCH => [' ']});
     eval {

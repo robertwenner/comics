@@ -21,7 +21,7 @@ sub set_up : Test(setup) {
 }
 
 
-sub in_json_hash : Test {
+sub in_json_hash : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::PUBLISHED_WHEN => '2016-01-01',
         $MockComic::TITLE => {
@@ -35,7 +35,7 @@ sub in_json_hash : Test {
 }
 
 
-sub in_json_array : Test {
+sub in_json_array : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::PUBLISHED_WHEN => '2016-01-01',
         $MockComic::WHO => {
@@ -47,7 +47,7 @@ sub in_json_array : Test {
 }
 
 
-sub in_json_top_level_element : Test {
+sub in_json_top_level_element : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::PUBLISHED_WHEN => '2016-01-01',
         $MockComic::JSON => '&quot;foo&quot;: &quot;DONT_PUBLISH top level&quot;');
@@ -58,7 +58,7 @@ sub in_json_top_level_element : Test {
 }
 
 
-sub in_text_in_inkscape_layer : Test {
+sub in_text_in_inkscape_layer : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::PUBLISHED_WHEN => '2016-01-01',
         $MockComic::TEXTS => {$MockComic::DEUTSCH =>
@@ -70,7 +70,7 @@ sub in_text_in_inkscape_layer : Test {
 }
 
 
-sub silent_if_not_yet_published : Test {
+sub silent_if_not_yet_published : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::PUBLISHED_WHEN => '3016-01-01',
         $MockComic::TEXTS => {$MockComic::DEUTSCH =>
@@ -82,7 +82,7 @@ sub silent_if_not_yet_published : Test {
 }
 
 
-sub silent_if_no_published_date : Test {
+sub silent_if_no_published_date : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::PUBLISHED_WHEN => '',
         $MockComic::TEXTS => {$MockComic::DEUTSCH =>
@@ -94,7 +94,7 @@ sub silent_if_no_published_date : Test {
 }
 
 
-sub in_text_layer_without_label : Test {
+sub in_text_layer_without_label : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::PUBLISHED_WHEN => '2016-01-01',
         $MockComic::TEXTS => {undef =>
@@ -106,7 +106,7 @@ sub in_text_layer_without_label : Test {
 }
 
 
-sub multiple_markers_json : Test {
+sub multiple_markers_json : Tests {
     $check = Comic::Check::DontPublish->new('FOO', 'DONT', 'PUBLISH');
     my $comic = MockComic::make_comic(
         $MockComic::PUBLISHED_WHEN => '2016-01-01',
@@ -119,7 +119,7 @@ sub multiple_markers_json : Test {
 }
 
 
-sub multiple_markers_text : Test {
+sub multiple_markers_text : Tests {
     $check = Comic::Check::DontPublish->new('FOO', 'DONT', 'PUBLISH');
     my $comic = MockComic::make_comic(
         $MockComic::PUBLISHED_WHEN => '2016-01-01',

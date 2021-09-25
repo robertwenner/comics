@@ -152,7 +152,7 @@ sub hash_all_elements_with_order : Tests {
 }
 
 
-sub hash_of_hashes: Test {
+sub hash_of_hashes: Tests {
     my %languages = (
         "de" => { "1" => "eins", "2" => "zwei" },
         "en" => { "1" => "one", "2" => "two" },

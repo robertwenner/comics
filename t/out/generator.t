@@ -43,7 +43,7 @@ sub croaks_if_no_configuration : Tests {
 }
 
 
-sub croaks_if_no_out_configuration : Test {
+sub croaks_if_no_out_configuration : Tests {
     $faked_files{'config.json'} = '{}';
     $comics->load_settings('config.json');
     eval {

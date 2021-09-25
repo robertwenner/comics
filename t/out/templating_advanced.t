@@ -93,7 +93,7 @@ sub contributor_credit_en_many : Tests {
 }
 
 
-sub contributor_credit_de_none : Test {
+sub contributor_credit_de_none : Tests {
     like(templatize($template_de),
          qr{\A\s*\z}xim);
 }
@@ -105,19 +105,19 @@ sub contributor_credit_de_empty : Tests {
 }
 
 
-sub contributor_credit_de_one : Test {
+sub contributor_credit_de_one : Tests {
     like(templatize($template_de, 'contrib' => ["Mark D"]),
          qr{Mit\s+Ideen\s+von\s+Mark\s+D}xim);
 }
 
 
-sub contributor_credit_de_two : Test {
+sub contributor_credit_de_two : Tests {
     like(templatize($template_de, 'contrib' => ['Mark D', 'Mike K']),
         qr{Mit\s+Ideen\s+von\s+Mark\s+D\s+und\s+Mike\s+K}xim);
 }
 
 
-sub contributor_credit_de_many : Test {
+sub contributor_credit_de_many : Tests {
     like(templatize($template_de, 'contrib' => ['Mark D', 'Mike K', 'mir']),
         qr{Mit\s+Ideen\s+von\s+Mark\sD,\s+Mike\s+K\s+und\s+mir}xim);
 }

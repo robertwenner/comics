@@ -32,7 +32,7 @@ sub set_up : Test(setup) {
 # else would be there?
 
 
-sub includes_file_name() : Test {
+sub includes_file_name() : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::IN_FILE => 'filename.svg',
         $MockComic::TEXTS => {'MetaDeutsch' => ['Paul:', 'Paul']});
@@ -43,7 +43,7 @@ sub includes_file_name() : Test {
 }
 
 
-sub includes_language() : Test {
+sub includes_language() : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => {'MetaDeutsch' => ['Max:', 'Max:']});
     eval {
@@ -53,7 +53,7 @@ sub includes_language() : Test {
 }
 
 
-sub same_name_no_content() : Test {
+sub same_name_no_content() : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => {'MetaDeutsch' => ['Max:', 'Max:']});
     eval {
@@ -63,7 +63,7 @@ sub same_name_no_content() : Test {
 }
 
 
-sub different_names_no_content() : Test {
+sub different_names_no_content() : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => {'MetaDeutsch' => ['Max:', 'Paul:']});
     eval {
@@ -73,7 +73,7 @@ sub different_names_no_content() : Test {
 }
 
 
-sub description_with_colon_speaker() : Test {
+sub description_with_colon_speaker() : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => {'MetaDeutsch' => ['Es war einmal ein Bier...', 'Paul:', '...']});
     $check->check($comic);
@@ -81,7 +81,7 @@ sub description_with_colon_speaker() : Test {
 }
 
 
-sub same_name_colon_missing() : Test {
+sub same_name_colon_missing() : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => {'MetaDeutsch' => ['Paul:', 'Paul']});
     eval {
@@ -103,7 +103,7 @@ sub last_text_is_speaker_indicator : Tests {
 }
 
 
-sub full_context() : Test {
+sub full_context() : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => {'MetaDeutsch' =>
             ['one', 'two', 'three', 'Paul:', 'Paul:', 'ignore']});
@@ -114,7 +114,7 @@ sub full_context() : Test {
 }
 
 
-sub container_layer() : Test {
+sub container_layer() : Tests {
     my $comic = MockComic::make_comic($MockComic::XML => <<XML);
     <g inkscape:groupmode="layer" id="layer18" inkscape:label="ContainerDeutsch">
         <g inkscape:groupmode="layer" id="layer20" inkscape:label="MetaDeutsch">
@@ -130,7 +130,7 @@ XML
 }
 
 
-sub layer_with_noise() : Test {
+sub layer_with_noise() : Tests {
     my $comic = MockComic::make_comic($MockComic::XML => <<XML);
     <g inkscape:groupmode="layer" id="layer18" inkscape:label="Deutsch">
         <a transform="translate(0, 4)">
