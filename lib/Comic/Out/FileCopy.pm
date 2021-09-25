@@ -15,8 +15,6 @@ use version; our $VERSION = qv('0.0.3');
 use Comic::Out::Generator;
 use base('Comic::Out::Generator');
 
-use Readonly;
-
 
 =for stopwords Wenner merchantability perlartistic outdir cron Cygwin
 
