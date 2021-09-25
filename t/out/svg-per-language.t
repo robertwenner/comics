@@ -39,18 +39,6 @@ sub ctor_uses_default_outdir : Tests {
 }
 
 
-sub ctor_adds_trailing_slash_to_outdir : Tests {
-    $spl = Comic::Out::SvgPerLanguage->new(
-        'outdir' => 'generated/',
-    );
-    is($spl->{settings}->{outdir}, 'generated/');
-    $spl = Comic::Out::SvgPerLanguage->new(
-        'outdir' => 'generated',
-    );
-    is($spl->{settings}->{outdir}, 'generated/');
-}
-
-
 sub generate_ok : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },

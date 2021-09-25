@@ -82,18 +82,6 @@ sub ctor_complains_if_no_outdir_configured : Tests {
 }
 
 
-sub ctor_adds_trailing_slash_to_outdir : Tests {
-    $png = Comic::Out::Png->new(
-        'outdir' => 'generated/',
-    );
-    is($png->{settings}->{outdir}, 'generated/');
-    $png = Comic::Out::Png->new(
-        'outdir' => 'generated',
-    );
-    is($png->{settings}->{outdir}, 'generated/');
-}
-
-
 sub parses_inkscape_version : Tests {
     my $comic = MockComic::make_comic();
     is(Comic::Out::Png::_parse_inkscape_version($comic, "Inkscape 0.92.5 (2060ec1f9f, 2020-04-08)\n"), "0.9");

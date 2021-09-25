@@ -80,3 +80,91 @@ JSON
     $comics->load_generators();
     ok($comics->{settings}->get()->{Out});  # not empty
 }
+
+
+sub needs_not_given : Tests {
+    my $gen = Comic::Out::Generator->new();
+    eval {
+        $gen->needs('oops', '');
+    };
+    like($@, qr{Comic::Out::Generator}, 'should mention module');
+    like($@, qr{\boops\b}i, 'should say what key is missing');
+    like($@, qr{must specify}i, 'should say what is wrong');
+}
+
+
+sub needs_scalar : Tests {
+    my $gen = Comic::Out::Generator->new('key' => 1);
+
+    is($gen->{settings}->{'key'}, 1);
+    $gen->needs('key', '');  # would croak if it failed
+
+    eval {
+        $gen->needs('key', 'hash');
+    };
+    like($@, qr{Comic::Out::Generator}, 'should mention module');
+    like($@, qr{key}, 'should mention key');
+    like($@, qr{hash}i, 'should mention expected type');
+
+    eval {
+        $gen->needs('key', 'array');
+    };
+    like($@, qr{Comic::Out::Generator}, 'should mention module');
+    like($@, qr{key}, 'should mention key');
+    like($@, qr{array}i, 'should mention expected type');
+}
+
+
+sub needs_hash : Tests {
+    my $gen = Comic::Out::Generator->new('key' => {'a' => 1});
+
+    is_deeply($gen->{settings}->{'key'}, {'a' => 1});
+
+    $gen->needs('key', 'HASH');  # would croak if it failed
+    eval {
+        $gen->needs('key', 'ARRAY');
+    };
+    like($@, qr{Comic::Out::Generator}, 'should mention module');
+    like($@, qr{\bmust be array\b}i, 'should say what was expected');
+    like($@, qr{\bis hash\b}i, 'should say what it got');
+}
+
+
+sub needs_array : Tests {
+    my $gen = Comic::Out::Generator->new('key' => [1, 2, 3]);
+
+    is_deeply($gen->{settings}->{'key'}, [1, 2, 3]);
+
+    $gen->needs('key', 'ARRAY');  # would croak if it failed
+    eval {
+        $gen->needs('key', '');
+    };
+    like($@, qr{Comic::Out::Generator}, 'should mention module');
+    like($@, qr{\bmust be scalar\b}i, 'should say what was expected');
+    like($@, qr{\bis array\b}i, 'should say what it got');
+}
+
+
+sub needs_directory_no_trailing_slash : Tests {
+    my $gen = Comic::Out::Generator->new('key' => 'dir');
+
+    $gen->needs('key', 'directory');  # would croak if it failed
+    is($gen->{settings}->{'key'}, 'dir/');
+}
+
+
+sub needs_directory_with_trailing_slash : Tests {
+    my $gen = Comic::Out::Generator->new('key' => 'dir/');
+
+    $gen->needs('key', 'directory');  # would croak if it failed
+    is($gen->{settings}->{'key'}, 'dir/');
+}
+
+
+sub needs_something_else : Tests {
+    my $obj = Comic::Out::Generator->new();
+    my $gen = Comic::Out::Generator->new('key' => $obj);
+
+    $gen->needs('key', 'Comic::Out::Generator');  # would croak if it failed
+    is_deeply($gen->{settings}->{'key'}, $obj);
+}

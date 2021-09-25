@@ -113,7 +113,7 @@ sub _type_name {
 
     return 'scalar' if ($type eq '' || $type eq 'directory');
     return 'array' if ($type eq 'ARRAY');
-    return 'object' if ($type eq 'HASH');
+    return 'hash' if ($type eq 'HASH');
     return $type;
 }
 

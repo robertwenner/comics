@@ -85,7 +85,7 @@ sub ctor_complains_about_missing_config : Tests {
         );
     };
     like($@, qr{Comic::Out::HtmlArchivePage\.template}, 'should say where it is wrong');
-    like($@, qr{\bobject\b}, 'should say what is wrong');
+    like($@, qr{\bmust be hash\b}, 'should say what is wrong');
 
     eval {
         Comic::Out::HtmlArchivePage->new(
@@ -96,7 +96,7 @@ sub ctor_complains_about_missing_config : Tests {
         );
     };
     like($@, qr{Comic::Out::HtmlArchivePage\.outfile}, 'should say where it is wrong');
-    like($@, qr{\bobject\b}, 'should say what is wrong');
+    like($@, qr{\bmust be hash\b}, 'should say what is wrong');
 
     eval {
         Comic::Out::HtmlArchivePage->new(
