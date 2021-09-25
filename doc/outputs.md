@@ -146,7 +146,7 @@ Places a copyright or license or URL note on the per-language `.svg` comic
 {
     "Out": {
         "Comic::Out::Copyright": {
-            "Text": {
+            "text": {
                 "English": "beercomics.com -- CC BY-NC-SA 4.0"
             },
             "style": "font-family: sans-serif; font-size: 10px"
@@ -337,7 +337,7 @@ The configuration needs to be like this:
     "Out": {
         "Comic::Out::HtmlComicPage": {
             "outdir": "generated/web",
-            "Templates": {
+            "templates": {
                 "English": "templ/comic-page.templ"
             }
         }
@@ -349,7 +349,7 @@ The `outdir` specifies the main output directory; the actual files will be
 generated underneath, in a directory for each language, with the HTML file
 name derived from the comic's title.
 
-The `Templates` refers to a Perl Toolkit template per language that will be
+The `templates` refers to a Perl Toolkit template per language that will be
 used to generate the page.
 
 This module defines these variables in each comic, that the templates can
@@ -492,7 +492,7 @@ Sitemaps can tell search engines which pages they should crawl.
 {
     "Out": {
         "Comic::Out::Sitemap": {
-            "Templates": {
+            "templates": {
                 "English": "templates/sitemap-en.xml",
                 "Deutsch": "templates/sitemap-de.xml",
             },
@@ -504,6 +504,13 @@ Sitemaps can tell search engines which pages they should crawl.
     }
 }
 ```
+
+The module accepts these options:
+
+* `templates`: object of languages to Perl Toolkit template files to use for
+  that language.
+
+* `output`: object with language to output file.
 
 The module makes these variables available in the template:
 

@@ -60,7 +60,7 @@ For example:
 
     my %settings = (
         'outdir' => 'generated',
-        'Templates' => {
+        'templates' => {
             'English' => 'path/to/english/template',
             'Deutsch' => 'path/to/german/template',
         },
@@ -77,7 +77,7 @@ sub new {
     my $self = $class->SUPER::new(%settings);
 
     $self->needs('outdir', 'directory');
-    $self->needs('Templates', 'HASH');
+    $self->needs('templates', 'HASH');
 
     return $self;
 }
@@ -157,7 +157,7 @@ sub generate_all {
             Comic::make_dir($self->{settings}->{outdir} . lc $language);
 
             # The actual export
-            my %templates = %{$self->{settings}->{Templates}};
+            my %templates = %{$self->{settings}->{templates}};
             my $template = $templates{$language};
             $comic->keel_over("Comic::Out::HtmlComicPage: No $language template") unless ($template);
             $self->_export_language_html($comic, $language, $template);
@@ -289,7 +289,7 @@ sub export_index {
     # it should!).
     my ($self, @comics) = @ARG;
 
-    my %templates = %{$self->{settings}->{Templates}};
+    my %templates = %{$self->{settings}->{templates}};
     my %latest_published = $self->_find_latest_published(@comics);
     foreach my $language (sort keys %latest_published) {
         my $dir = $self->{settings}->{outdir} . lc $language;
@@ -332,7 +332,7 @@ sub _find_latest_published {
     my ($self, @comics) = @ARG;
 
     my %latest_published;
-    my %templates = %{$self->{settings}->{Templates}};
+    my %templates = %{$self->{settings}->{templates}};
     foreach my $language (keys %templates) {
         my @sorted = (sort Comic::from_oldest_to_latest grep {
             !$_->not_yet_published($_) && $_->_is_for($language)

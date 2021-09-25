@@ -21,15 +21,10 @@ sub set_up : Test(setup) {
     MockComic::fake_file("comic-page.templ",'');
     $hcp = Comic::Out::HtmlComicPage->new(
         'outdir' => 'generated',
-        'Templates' => {
+        'templates' => {
             $MockComic::ENGLISH => 'comic-page.templ',
             $MockComic::DEUTSCH => 'comic-page.templ',
             "$MockComic::ESPAÑOL" => 'comic-page.templ',
-        },
-        'Domains' => {
-            $MockComic::ENGLISH => 'beercomics.com',
-            $MockComic::DEUTSCH => 'biercomics.de',
-            "$MockComic::ESPAÑOL" => 'cervezacomics.es',
         },
     );
 }

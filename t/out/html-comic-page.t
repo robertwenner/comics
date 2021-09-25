@@ -34,12 +34,12 @@ sub make_generator {
     my %templates = @_;
     my %options = (
         'outdir' => 'generated/web/',
-        'Templates' => {
+        'templates' => {
             'English' => 'en-comic.templ',
         },
     );
     foreach my $key (keys %templates) {
-        $options{'Templates'}{$key} = $templates{$key};
+        $options{'templates'}{$key} = $templates{$key};
     }
     return Comic::Out::HtmlComicPage->new(%options);
 }
@@ -53,7 +53,7 @@ sub fails_on_missing_configuration : Tests {
 
     eval {
         Comic::Out::HtmlComicPage->new(
-            'Templates' => {},
+            'templates' => {},
         );
     };
     like($@, qr{\bComic::Out::HtmlComicPage\.outdir\b});
@@ -63,7 +63,7 @@ sub fails_on_missing_configuration : Tests {
             'outdir' => '/tmp',
         );
     };
-    like($@, qr{\bComic::Out::HtmlComicPage\.Templates\b});
+    like($@, qr{\bComic::Out::HtmlComicPage\.templates\b});
 }
 
 
@@ -71,7 +71,7 @@ sub fails_if_no_template_for_language : Tests {
     my $comic = make_comic('English', 'Beer brewing', '2016-01-01');
     my $hcp = Comic::Out::HtmlComicPage->new(
         'outdir' => 'generated/web',
-        'Templates' => {},
+        'templates' => {},
     );
     eval {
         $hcp->generate_all($comic);
@@ -81,7 +81,7 @@ sub fails_if_no_template_for_language : Tests {
 
     $hcp = Comic::Out::HtmlComicPage->new(
         'outdir' => 'generated/web',
-        'Templates' => {
+        'templates' => {
             'English' => '',
         },
     );

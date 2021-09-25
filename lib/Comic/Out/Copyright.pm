@@ -52,12 +52,12 @@ Parameters:
 
 The note to add is given in the configuration like this:
 
-    "Text" => {
+    "text" => {
         "English": "beercomics.com -- CC BY-NC-SA 4.0"
     },
     "style": "font-family: sans-serif; font-size: 10px",
 
-where C<Text> is the actual text to display, and C<style> is the style
+where C<text> is the actual text to display, and C<style> is the style
 attribute for that text. Anything legal in SVG is fair game.
 
 =cut
@@ -67,7 +67,7 @@ sub new {
     my ($class, %settings) = @ARG;
     my $self = $class->SUPER::new(%settings);
 
-    $self->needs('Text', 'HASH');
+    $self->needs('text', 'HASH');
     # Devel::Cover does not see that $STYLE is an always set const:
     # uncoverable condition false
     $self->{settings}->{style} ||= $STYLE;
@@ -98,10 +98,10 @@ sub generate {
     foreach my $language ($comic->languages()) {
         my $svg = $comic->{dom};
 
-        unless ($self->{settings}->{Text}->{$language}) {
+        unless ($self->{settings}->{text}->{$language}) {
             croak("No $language Comic::Out::Copyright text configured");
         }
-        my $payload = XML::LibXML::Text->new($self->{settings}->{Text}->{$language});
+        my $payload = XML::LibXML::Text->new($self->{settings}->{text}->{$language});
 
         my $tspan = XML::LibXML::Element->new('tspan');
         $tspan->setAttribute('sodipodi:role', 'line');

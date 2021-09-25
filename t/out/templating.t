@@ -292,11 +292,8 @@ Transript: [% comic.transcript.$Language.join(' ') %]
 TEMPLATE
     my $hcp = Comic::Out::HtmlComicPage->new(
         'outdir' => 'generated/',
-        'Templates' => {
+        'templates' => {
             'Deutsch' => 'templates/deutsch/comic-page.templ',
-        },
-        'Domains' => {
-            'Deutsch' => 'biercomics.de',
         },
     );
     $comic->{pngFile}{'Deutsch'} = 'bier-trinken.png';

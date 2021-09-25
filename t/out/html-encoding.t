@@ -26,12 +26,12 @@ sub make_generator {
     my %templates = @_;
     my %options = (
         'outdir' => 'generated/web/',
-        'Templates' => {
+        'templates' => {
             'English' => 'en-comic.templ',
         },
     );
     foreach my $key (keys %templates) {
-        $options{'Comic::Out::HtmlComicPage'}{'Templates'}{$key} = $templates{$key};
+        $options{'Comic::Out::HtmlComicPage'}{'templates'}{$key} = $templates{$key};
     }
     return Comic::Out::HtmlComicPage->new(%options);
 }

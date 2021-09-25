@@ -50,7 +50,7 @@ Parameters:
 
 =back
 
-The passed settings need to have the C<Template> and C<output> hashes.
+The passed settings need to have the C<template> and C<output> hashes.
 
 For example:
 
@@ -58,7 +58,7 @@ For example:
         'output' => {
             'English' => 'generated/web/english/sitemap.xml',
         },
-        'Templates' => {
+        'templates' => {
             'English' => 'templates/sitemap.templ',
         },
     );
@@ -71,7 +71,7 @@ sub new {
     my ($class, %settings) = @ARG;
     my $self = $class->SUPER::new(%settings);
 
-    $self->needs('Templates', 'HASH');
+    $self->needs('templates', 'HASH');
     $self->needs('output', 'HASH');
 
     return $self;
@@ -95,7 +95,7 @@ Parameters:
 sub generate_all {
     my ($self, @comics) = @ARG;
 
-    my %site_map_templates = %{$self->{settings}->{Templates}};
+    my %site_map_templates = %{$self->{settings}->{templates}};
     my %outputs = %{$self->{settings}->{output}};
     my @sorted = sort Comic::from_oldest_to_latest @comics;
 
