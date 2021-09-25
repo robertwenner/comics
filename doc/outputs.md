@@ -461,6 +461,28 @@ Height and width are not per-language, assuming a comic has the same size in
 each language.
 
 
+### `Comic::Out::QrCode`
+
+Generates a [QR code](https://en.wikipedia.org/wiki/Qr_code) with the comic
+page's URL for each comic in each language. You can then include this in the
+page's print version so that people can easily go from a printed comic to
+the web version.
+
+```json
+{
+    "Out": {
+        "Comic::Out::QrCode": {
+            "outdir": "generated/qr/"
+        }
+    }
+}
+```
+
+The QR code image file name will be derived from the comic's title in the
+respective languages. It will be stored in the comic in a `qrcode` hash with
+the languages as keys, for use in templates or other code.
+
+
 ### `Comic::Out::Sitemap`
 
 Generates a [sitemap](https://en.wikipedia.org/wiki/Sitemaps) per language.
@@ -562,7 +584,7 @@ This is configured like this:
 {
     "Out": {
         "Comic::Out::SvgPerLanguage": {
-            "outdir" => "generated/svgs"
+            "outdir": "generated/svgs"
         }
     }
 }
