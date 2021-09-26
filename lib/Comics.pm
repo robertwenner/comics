@@ -407,9 +407,9 @@ sub run_all_checks {
     my ($self) = @ARG;
 
     foreach my $comic (@{$self->{comics}}) {
-        foreach my $check (@{$self->{checks}}) {
-            $check->check($comic);
-        }
+        # Ask each comic to run its checks, which may be the ones configured
+        # globally or overridden in the comic.
+        $comic->check();
     }
 
     return;

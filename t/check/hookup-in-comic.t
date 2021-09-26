@@ -204,3 +204,25 @@ sub runs_each_final_check_only_once : Tests {
     is(1, $global_check->{calls}{"final_check"}, 'should have called global only once');
     is(1, $local_check->{calls}{"final_check"}, 'should have called local only once');
 }
+
+
+sub run_all_checks_runs_only_checks_for_comic : Tests {
+    my $comics = Comics->new();
+    my $global_check = DummyCheck->new();
+    push @{$comics->{checks}}, $global_check;
+
+    my $called_comic_check = 0;
+    no warnings qw/redefine/;
+    local *Comic::check = sub {
+        $called_comic_check++;
+    };
+    use warnings;
+
+    my $comic = MockComic::make_comic();
+    push @{$comics->{comics}}, $comic;
+
+    $comics->run_all_checks();
+
+    is($global_check->{calls}{"final_check"}, undef, 'should not have called global');
+    is($called_comic_check, 1, 'should have called Comic::check');
+}
