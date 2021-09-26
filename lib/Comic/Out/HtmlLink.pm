@@ -42,10 +42,11 @@ Actual linking is triggered by comic meta data within a C<see> object. This
 is language specific, so it needs a nested language object with a link text
 as key and a svg file as value.
 
-    "see":
+    "see": {
         "English": {
             "First reopening": "comics/web/beergarden-reopened.svg"
         }
+    }
 
 Link targets are given as svg source file names so that a referrer does not
 depend on the actual title (and hence URL) of the linked comic.

@@ -325,6 +325,32 @@ While processing the templates, these variables are available:
    want just one template for all languages.
 
 
+## `Comic::Out::HtmlLink`
+
+Generates a reference ("see that other comic") from comic metadata.
+
+Actual linking is triggered by comic meta data within a `see` object. This
+is language specific, so it needs a nested language object with a link text
+as key and a `.svg` file as value.
+
+```
+{
+    "see": {
+        "English": {
+            "First reopening": "comics/web/beergarden-reopened.svg"
+        }
+    }
+}
+```
+
+Link targets are given as `.svg` source file names so that a referrer does
+not depend on the actual title (and hence URL) of the linked comic. Also,
+other forms of linking (e.g., to a page in a book) may not even have meta
+data like an `.html` output file, but all comics do have a title.
+
+Links are per-language cause the link text varies by language.
+
+
 ## `Comic::Out::HtmlComicPage`
 
 This is the main output generator for web comics. It generates a HTML page
