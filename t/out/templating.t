@@ -292,7 +292,7 @@ Transript: [% comic.transcript.$Language.join(' ') %]
 TEMPLATE
     my $hcp = Comic::Out::HtmlComicPage->new(
         'outdir' => 'generated/',
-        'templates' => {
+        'template' => {
             'Deutsch' => 'templates/deutsch/comic-page.templ',
         },
     );

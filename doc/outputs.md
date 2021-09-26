@@ -186,6 +186,7 @@ comic on Facebook.
 {
     "Out": {
         "Comic::Out::Feed": {
+            "outdir": "generated/web",
             "RSS": {
                 "template": "path/to/rss.template"
             },
@@ -205,22 +206,24 @@ comic on Facebook.
 The above example configures two feeds, one in RSS and one in Atom format.
 Each feed configuration can take these arguments:
 
-* template (mandatory): either the template file, if all languages use the
+* `outdir` (mandatory): base output directory.
+
+* `template` (mandatory): either the template file, if all languages use the
   same template, or an object of languages to template path for different
   templates for each language. If all languages use the same template file,
   that file needs to either be language independent or check the `language`
   variable for language dependent output.
 
-* max: how many comics to include at most in the feed. This value is
+* `max`: how many comics to include at most in the feed. This value is
   passed to the template as `max`. Defaults to 10.
 
-* output: the path and file name of the output file. This will always be
-  within the output directory (passed in code), plus a language specific
-  directory (the language name in lower case), e.g.,
-  `generated/web/english/atom.xml` for the atom example above.
-  Defaults to the lower-case feed name plus an `.xml` extension.
+* `output`: the file name of the output file. This will always be within the
+  `outdir` output directory, plus a language specific directory (the
+  language name in lower case), e.g., `generated/web/english/atom.xml` for
+  the atom example above. Defaults to the lower-case feed name plus an
+  `.xml` extension.
 
-The `Comic::Out::Feed` module defines some variables for use in the template:
+The `Comic::Out::Feed` module defines these variables for use in the template:
 
 * `comics`: all comics, sorted from latest to oldest. All comic meta
   information is available. All comics are passed so that the template can
@@ -363,7 +366,7 @@ The configuration needs to be like this:
     "Out": {
         "Comic::Out::HtmlComicPage": {
             "outdir": "generated/web",
-            "templates": {
+            "template": {
                 "English": "templ/comic-page.templ"
             }
         }
@@ -375,7 +378,7 @@ The `outdir` specifies the main output directory; the actual files will be
 generated underneath, in a directory for each language, with the HTML file
 name derived from the comic's title.
 
-The `templates` refers to a Perl Toolkit template per language that will be
+The `template` refers to a Perl Toolkit template per language that will be
 used to generate the page.
 
 This module defines these variables in each comic, that the templates can
@@ -518,7 +521,7 @@ Sitemaps can tell search engines which pages they should crawl.
 {
     "Out": {
         "Comic::Out::Sitemap": {
-            "templates": {
+            "template": {
                 "English": "templates/sitemap-en.xml",
                 "Deutsch": "templates/sitemap-de.xml",
             },
@@ -533,7 +536,7 @@ Sitemaps can tell search engines which pages they should crawl.
 
 The module accepts these options:
 
-* `templates`: object of languages to Perl Toolkit template files to use for
+* `template`: object of languages to Perl Toolkit template files to use for
   that language.
 
 * `output`: object with language to output file.

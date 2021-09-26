@@ -218,3 +218,6 @@
   modify bits in mostly static files, like a copyright year in an index.html
 
 - defect: copyright placement is way off if frames x is not around -206?
+
+- feature: generators should accept a single template for all languages in
+  addition to a hash of languages to templates

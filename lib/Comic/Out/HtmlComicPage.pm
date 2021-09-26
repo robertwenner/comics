@@ -60,7 +60,7 @@ For example:
 
     my %settings = (
         'outdir' => 'generated',
-        'templates' => {
+        'template' => {
             'English' => 'path/to/english/template',
             'Deutsch' => 'path/to/german/template',
         },
@@ -77,7 +77,7 @@ sub new {
     my $self = $class->SUPER::new(%settings);
 
     $self->needs('outdir', 'directory');
-    $self->needs('templates', 'HASH');
+    $self->needs('template', 'HASH');
 
     return $self;
 }
@@ -157,8 +157,8 @@ sub generate_all {
             Comic::make_dir($self->{settings}->{outdir} . lc $language);
 
             # The actual export
-            my %templates = %{$self->{settings}->{templates}};
-            my $template = $templates{$language};
+            my %template = %{$self->{settings}->{template}};
+            my $template = $template{$language};
             $comic->keel_over("Comic::Out::HtmlComicPage: No $language template") unless ($template);
             $self->_export_language_html($comic, $language, $template);
         }
@@ -289,13 +289,13 @@ sub export_index {
     # it should!).
     my ($self, @comics) = @ARG;
 
-    my %templates = %{$self->{settings}->{templates}};
+    my %template = %{$self->{settings}->{template}};
     my %latest_published = $self->_find_latest_published(@comics);
     foreach my $language (sort keys %latest_published) {
         my $dir = $self->{settings}->{outdir} . lc $language;
         my $page = "$dir/index.html";
         my $last_pub = $latest_published{$language};
-        my $html = $self->_do_export_html($last_pub, $language, $templates{$language});
+        my $html = $self->_do_export_html($last_pub, $language, $template{$language});
         Comic::write_file($page, $html);
     }
     return;
@@ -332,8 +332,8 @@ sub _find_latest_published {
     my ($self, @comics) = @ARG;
 
     my %latest_published;
-    my %templates = %{$self->{settings}->{templates}};
-    foreach my $language (keys %templates) {
+    my %template = %{$self->{settings}->{template}};
+    foreach my $language (keys %template) {
         my @sorted = (sort Comic::from_oldest_to_latest grep {
             !$_->not_yet_published($_) && $_->_is_for($language)
         } @comics);

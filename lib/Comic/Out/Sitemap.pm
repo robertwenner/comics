@@ -58,7 +58,7 @@ For example:
         'output' => {
             'English' => 'generated/web/english/sitemap.xml',
         },
-        'templates' => {
+        'template' => {
             'English' => 'templates/sitemap.templ',
         },
     );
@@ -71,7 +71,7 @@ sub new {
     my ($class, %settings) = @ARG;
     my $self = $class->SUPER::new(%settings);
 
-    $self->needs('templates', 'HASH');
+    $self->needs('template', 'HASH');
     $self->needs('output', 'HASH');
 
     return $self;
@@ -95,7 +95,7 @@ Parameters:
 sub generate_all {
     my ($self, @comics) = @ARG;
 
-    my %site_map_templates = %{$self->{settings}->{templates}};
+    my %site_map_templates = %{$self->{settings}->{template}};
     my %outputs = %{$self->{settings}->{output}};
     my @sorted = sort Comic::from_oldest_to_latest @comics;
 
