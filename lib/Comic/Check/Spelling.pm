@@ -220,7 +220,7 @@ sub _cut_into_words {
 
     my @words;
     foreach my $text (@texts) {
-        foreach my $word (split /\P{alpha}/, $text) {
+        foreach my $word (split /[^\p{alpha}']/, $text) {
             $word = trim($word);
             push @words, $word if ($word);
         }

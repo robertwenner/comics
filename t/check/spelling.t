@@ -46,6 +46,9 @@ sub cut_into_words : Tests {
     is_deeply([Comic::Check::Spelling::_cut_into_words("dos\r\nline break")], ["dos", "line", "break"]);
     is_deeply([Comic::Check::Spelling::_cut_into_words("1, 2, 3, go!")], ["go"]);
     is_deeply([Comic::Check::Spelling::_cut_into_words(" äh, Jüngchen...")], ["äh", "Jüngchen"]);
+    is_deeply([Comic::Check::Spelling::_cut_into_words("this isn't good")], ["this", "isn't", "good"]);
+    is_deeply([Comic::Check::Spelling::_cut_into_words("rock'n'roll")], ["rock'n'roll"]);
+    is_deeply([Comic::Check::Spelling::_cut_into_words("'nen Bier")], ["'nen", "Bier"]);
 }
 
 
