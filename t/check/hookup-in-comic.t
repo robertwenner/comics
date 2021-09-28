@@ -84,8 +84,8 @@ sub comic_adds_main_config_checks_as_object : Tests {
                 $MockComic::DEUTSCH => "biercomics.de",
                 $MockComic::ENGLISH => "beercomics.com",
             },
-            $Comic::Settings::CHECKS => [ Comic::Check::Actors->new() ],
         },
+        $MockComic::CHECKS => [ Comic::Check::Actors->new() ],
         $MockComic::JSON => '"Checks": { "add": { "DummyCheck": ["from comic"] } }',
     );
     is(@{$comic->{checks}}, 2, 'should have two checks');
@@ -98,12 +98,12 @@ sub comic_adds_main_config_checks_as_object : Tests {
 sub comic_adds_to_main_config_as_array : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::SETTINGS => {
-            $Comic::Settings::CHECKS => [ Comic::Check::Actors->new() ],
             $MockComic::DOMAINS => {
                 $MockComic::DEUTSCH => "biercomics.de",
                 $MockComic::ENGLISH => "beercomics.com",
             },
         },
+        $MockComic::CHECKS => [ Comic::Check::Actors->new() ],
         $MockComic::JSON => '"Checks": { "add": [ "DummyCheck" ] }',
     );
     is(@{$comic->{checks}}, 2, 'should have two checks');
@@ -116,12 +116,12 @@ sub comic_adds_to_main_config_as_array : Tests {
 sub comic_add_same_type_check_replaces_original : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::SETTINGS => {
-            $Comic::Settings::CHECKS => [ Comic::Check::Weekday->new(1) ],
             $MockComic::DOMAINS => {
                 $MockComic::DEUTSCH => "biercomics.de",
                 $MockComic::ENGLISH => "beercomics.com",
             },
         },
+        $MockComic::CHECKS => [ Comic::Check::Weekday->new(1) ],
         $MockComic::JSON => '"Checks": { "add": { "Comic::Check::Weekday": [2] } }',
     );
     is(@{$comic->{checks}}, 1, 'should have one check');
@@ -133,12 +133,12 @@ sub comic_add_same_type_check_replaces_original : Tests {
 sub comic_remove_from_config : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::SETTINGS => {
-            $Comic::Settings::CHECKS => [ Comic::Check::Weekday->new(1) ],
             $MockComic::DOMAINS => {
                 $MockComic::DEUTSCH => "biercomics.de",
                 $MockComic::ENGLISH => "beercomics.com",
             },
         },
+        $MockComic::CHECKS => [ Comic::Check::Weekday->new(1) ],
         $MockComic::JSON => '"Checks": { "remove": [ "Comic/Check/Weekday.pm" ] }',
     );
     is(@{$comic->{checks}}, 0, 'should have no checks');

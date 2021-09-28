@@ -46,6 +46,7 @@ our Readonly $SEE = 'see';
 our Readonly $NAMESPACE_DECLARATION = 'namespace_declaration';
 our Readonly $TWITTER = 'twitter';
 our Readonly $SETTINGS = "settings";
+our Readonly $CHECKS = 'checks';
 
 
 my %files_read;
@@ -199,7 +200,8 @@ sub make_comic {
     $mtime = $args{$MTIME};
     fake_file($args{$IN_FILE}, fake_comic(%args));
 
-    my $comic = new Comic($args{$SETTINGS});
+    my $checks = $args{$CHECKS} || [];
+    my $comic = Comic->new($args{$SETTINGS}, $checks);
     $comic->load($args{$IN_FILE});
     $comic->{height} = $args{$HEIGHT};
     $comic->{width} = $args{$WIDTH};

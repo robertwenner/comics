@@ -81,6 +81,41 @@ CONFIG
 }
 
 
+sub generate_passes_configured_checks_to_comic : Tests {
+    my $config = <<"CONFIG";
+{
+    $DUMMY_CHECK,
+    $DUMMY_GENERATOR
+}
+CONFIG
+    MockComic::fake_file("config.json", $config);
+
+    my $comics = Comics::generate('config.json', 'comics/');
+    my $comic = ${$comics->{comics}}[0];
+    is(ref $comic->{checks}[0], 'DummyCheck');
+}
+
+
+sub generate_passes_empty_checks_to_comic_if_none_configured : Tests {
+    my $config = <<"CONFIG";
+{
+    $DUMMY_GENERATOR
+}
+CONFIG
+    MockComic::fake_file("config.json", $config);
+    no warnings qw/redefine/;
+    local *Comics::load_checks = sub {
+        # Don't use defaults if no checks are configured.
+        return;
+    };
+    use warnings;
+
+    my $comics = Comics::generate('config.json', 'comics/');
+    my $comic = ${$comics->{comics}}[0];
+    is_deeply($comic->{checks}, [], 'should have no checks');
+}
+
+
 sub generate_error_if_no_comics : Tests {
     no warnings qw/redefine/;
     local *Comics::collect_files = sub {

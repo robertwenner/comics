@@ -106,13 +106,19 @@ sub generate {
         croak('No comics found; looked in ' . join ', ', @dirs);
     }
 
+    # load_settings above loaded the config file(s), so it knows here which
+    # check modules it should eventually load with which parameters, but it
+    # hasn't even tried loading them yet. Now load the actual check modules
+    # and pass them to each Comic so that the Comic can copy and adjust them
+    # based on its meta data.
+    $comics->load_checks();
+
     foreach my $file (@files) {
-        my $comic = Comic->new($comics->{settings}->clone()->{settings});
+        my $comic = Comic->new($comics->{settings}->clone()->{settings}, $comics->{checks});
         $comic->load($file);
         push @{$comics->{comics}}, $comic;
     }
 
-    $comics->load_checks();
     $comics->run_all_checks();
 
     $comics->load_generators();

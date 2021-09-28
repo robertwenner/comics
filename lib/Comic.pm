@@ -90,15 +90,19 @@ Parameters:
 
 =item * B<$settings> Comic::Settings object with settings for all comics.
 
+=item * B<$checks> Array reference of globally configured and loaded checks.
+    These are actual C<Comic::Check::Check> instances.
+
 =back
 
 =cut
 
 sub new {
-    my ($class, $settings) = @ARG;
+    my ($class, $settings, $checks) = @ARG;
     my $self = bless{}, $class;
 
     $self->{settings} = $settings;
+    $self->{checks} = [@$checks];
 
     return $self;
 }
@@ -179,12 +183,6 @@ sub load {
         $self->{baseName}{$language} = $self->_normalized_title($language);
     }
 
-    if ($self->{settings}->{$Comic::Settings::CHECKS}) {
-        @{$self->{checks}} = @{$self->{settings}->{$Comic::Settings::CHECKS}};
-    }
-    else {
-        @{$self->{checks}} = ();
-    }
     $self->_adjust_checks($self->{meta_data}->{$Comic::Settings::CHECKS});
 
     return;
@@ -235,11 +233,11 @@ sub _unhtml {
 =head2 _adjust_checks
 
 Adjusts the checks on a per-comic basis. Each comic will normally use the
-default checks. Comics can modify these defaults by defining a C<Checks>
-entry in their metadata.
+default checks passed in the constructor. Comics can modify these defaults
+by defining a C<Checks> entry in their metadata.
 
-That C<Checks> needs to be a JSON array containing any of these keywords as
-objects (case-sensitive):
+That C<Checks> meta data needs to be a JSON array containing any of these
+keywords as objects (case-sensitive):
 
 =over 4
 
