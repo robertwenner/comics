@@ -4,29 +4,24 @@
     - "*"
   error: true
 
-#- name: My path
-#  pattern: "/home/robert"
-#  filename:
-#      - "*"
-#
-#- name: My email
-#  pattern: "robert\.wenner@"
-#  filename:
-#      - "*"
-
 - name: Perl printf debugger
   pattern: "^print STDERR"
   filename:
      - "*.pl"
      - "*.pm"
      - "*.t"
+  error: true
 
-- name: Java printf debugger
-  pattern: "^System.(out|err).println\\("
+- name: Perl Data::Dumper debugging
+  pattern: "use Data::Dumper;"
   filename:
-     - "*.java"
+     - "*.pl"
+     - "*.pm"
+     - "*.t"
+  error: true
 
-- name: Java IDE comments
-  pattern: "// IDE generated stub"
+- name: POD in markdown
+  pattern: '\n=\w+'
   filename:
-     - "*.java"
+    - "*.md"
+  error: true
