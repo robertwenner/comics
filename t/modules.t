@@ -3,6 +3,7 @@ use warnings;
 
 use base 'Test::Class';
 use Test::More;
+use Test::Output;
 use lib 't/check';
 
 use Comics;
@@ -161,4 +162,11 @@ sub croaks_on_wrong_config_syntax_modules_not_object : Tests {
         $comics->load_checks();
     };
     like($@, qr{must be a json object}i);
+}
+
+
+sub logs_loaded_modules : Tests {
+    $faked_files{"settings.json"} = '{ "Checks": { "Comic::Check::Actors": [] } }';
+    $comics->load_settings("settings.json");
+    stdout_like { $comics->load_checks(); } qr/^Checks modules loaded: Comic::Check::Actors\s*$/m;
 }

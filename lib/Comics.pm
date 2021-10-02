@@ -381,7 +381,7 @@ sub _load_modules {
         croak($error_if_no_modules);
     }
 
-    _log("$type modules loaded: ", _pretty_refs(@{$self->{social_media_posters}}));
+    _log("$type modules loaded: ", _pretty_refs(@loaded));
     return @loaded;
 }
 
