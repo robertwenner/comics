@@ -99,9 +99,11 @@ Defines these variables in the passed Comic:
 
 =over 4
 
+=item * B<%htmlFile> hash of language to the html file name (without path).
+
 =item * B<%href> hash of language to its relative URL from the server root.
 
-=item * B<%htmlFile> hash of language to the html file name (without path).
+=item * B<%url> hash of language to full URL of the comic's HTML page.
 
 =back
 
@@ -111,8 +113,11 @@ sub generate {
     my ($self, $comic) = @ARG;
 
     foreach my $language ($comic->languages()) {
-        $comic->{htmlFile}{$language} = "$comic->{baseName}{$language}.html";
-        $comic->{href}{$language} = 'comics/' . $comic->{htmlFile}{$language};
+        my $html_file = "$comic->{baseName}{$language}.html";
+        $comic->{htmlFile}{$language} = $html_file;
+        $comic->{href}{$language} = 'comics/' . $html_file;
+        my $domain = $comic->{settings}->{'Domains'}{$language};
+        $comic->{url}{$language} = "https://$domain/$comic->{href}{$language}";
     }
     return;
 }

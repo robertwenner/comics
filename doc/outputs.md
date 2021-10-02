@@ -372,12 +372,15 @@ used to generate the page.
 This module defines these variables in each comic, that the templates can
 use:
 
-* `htmlFile` hash of language to file name of the generated HTML file,
+* `htmlFile`: hash of language to file name of the generated HTML file,
   derived from the comic's title, e.g., for a comic with an English title of
   "Beer brewing" this could be `beer-brewing.html`.
 
-* `href` the path to the comic's HTML file relative to the server root,
-  e.g., `comics/beer-brewing.html` for English.
+* `href`: hash of the path to the comic's HTML file relative to the server
+  root, er language, e.g., `comics/beer-brewing.html` for English.
+
+* `url`: full URL to the HTML file for the comic in each language, e.g.,
+  `https://beercomics.com/comics/beer-brewing.html` for English.
 
 * `first`, `prev`, `next`, `last` are the `htmlFile` values of the first,
   previous, next, and last comic in that language, respectively.
