@@ -38,3 +38,28 @@ sub runs_output_generators_in_stages : Tests {
 
     is_deeply($gen->{called}, ['generate', 'generate', 'generate_all', 'generate_all']);
 }
+
+
+sub generator_order_is_implicit : Tests {
+    MockComic::fake_file('config.json', <<"CONFIG");
+{
+    "$Comic::Settings::GENERATORS": {
+        "Comic::Out::Png": {
+            "outdir": "generated/png"
+        },
+        "Comic::Out::SvgPerLanguage": {
+            "outdir": "generated/svg"
+        },
+        "Comic::Out::HtmlLink": {}
+    }
+}
+CONFIG
+
+    my $comics = Comics->new();
+    $comics->load_settings('config.json');
+    $comics->load_generators();
+
+    is(
+        Comics::_pretty_refs(@{$comics->{generators}}),
+        'Comic::Out::SvgPerLanguage, Comic::Out::Png, Comic::Out::HtmlLink');
+}

@@ -248,6 +248,7 @@ sub load_settings {
     my ($self, @files) = @ARG;
 
     foreach my $file (@files) {
+        _log("loading settings from $file");
         if (_is_directory($file)) {
             croak("Cannot read directory $file");
         }
@@ -288,9 +289,40 @@ Loads all output generating modules configured in the current configuration.
 =cut
 
 sub load_generators {
+    # The configuration file uses a hash of module name to settings for
+    # modules. This makes for a nice way to configure the modules. A JSON
+    # hash is per definition unordered, but we need the modules in the right
+    # order as some depend on the output of others.
+    #
+    # There are two solutions to this problem: push it onto the user to now
+    # and define dependencies, or figure out the dependencies in code.
+    #
+    # Pushing it onto the user is certainly not terribly user-friendly. It
+    # also makes for ugly and clumsy configuration files. For example,
+    # changing the confguration to an array would have added another layer
+    # in the configuration file, making it ugly to edit. Adding an "order"
+    # member in each generator configuration makes it ahrd to insert modules
+    # (have to adjust all later numbers) and also pushes the need to know
+    # the module dependecies onto the user. Adding an extra array of the
+    # generator names just for ordering purposes separates order and actual
+    # settings of generators far away from each other.
+    #
+    # The current solution moves the knowledge or module ordering (not
+    # really dependencies) into Comic::Out::Generator. This has some
+    # limitations in that it requires changing Comic::Out::Generator way too
+    # often:
+    # - when hooking up a new (e.g., 3rd party) module
+    # - if you want to change the order for whatever reason
+    #
+    # With the limited amount of 3rd party modules, anything clever here is
+    # probably a YAGNI, hence stick with the simplest thing that could
+    # possibly work and doesn't force the user to deal with internals like
+    # generator dependencies.
     my ($self) = @ARG;
 
-    push @{$self->{generators}}, $self->_load_modules($Comic::Settings::GENERATORS, sub { return () }, 'No output generators configured');
+    my %order = Comic::Out::Generator::order();
+    my @generators = $self->_load_modules($Comic::Settings::GENERATORS, sub { return () }, 'No output generators configured');
+    @{$self->{generators}} = sort { $order{ref $a} <=> $order{ref $b} } @generators;
     return;
 }
 
@@ -349,7 +381,28 @@ sub _load_modules {
         croak($error_if_no_modules);
     }
 
+    _log("$type modules loaded: ", _pretty_refs(@{$self->{social_media_posters}}));
     return @loaded;
+}
+
+
+sub _pretty_refs {
+    # removes hash code from module, e.g., Comic::Out::QrCode(HASH=0x...) -> Comic::Out::QrCode
+    my (@things) = @ARG;
+
+    my @refs;
+    foreach my $thing (@things) {
+        push @refs, ref $thing;
+    }
+    return join ', ', @refs;
+}
+
+
+sub _log {
+    ## no critic(InputOutput::RequireCheckedSyscalls)
+    print @ARG, "\n";
+    ## use critic
+    return;
 }
 
 
@@ -381,6 +434,7 @@ sub collect_files {
 
     my @collection;
     foreach my $fod (@files_or_dirs) {
+        _log("loading comics from $fod");
         if (_is_directory($fod)) {
             File::Find::find(
                 sub {

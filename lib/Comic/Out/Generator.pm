@@ -55,12 +55,44 @@ per-comic html page generator created and stored in each Comic.
 
 =head1 SUBROUTINES/METHODS
 
+=head2 order
+
+Static method that returns a hash of generator module names to the order in
+which they should run.
+
+=cut
+
+sub order {
+    # Simple dependency description.
+    my @order = (
+        # Modules that work with the Inkscape source files.
+        'Comic::Out::SvgPerLanguage',
+        # Modules that work with SVG files per language and modify these.
+        'Comic::Out::Copyright',
+        # After modifications are done, convert to differnt image file formats.
+        'Comic::Out::Png',
+        # Once we have an output image, include / embed that somewhere.
+        'Comic::Out::HtmlComicPage',
+        # Work with whatever embedding output format we generated in the previous step.
+        'Comic::Out::HtmlLink',
+        'Comic::Out::HtmlArchivePage',
+        'Comic::Out::QrCode',
+        'Comic::Out::Feed',
+        'Comic::Out::Sitemap',
+        # Other generators, potentially independent of previous ones.
+        'Comic::Out::FileCopy',
+        'Comic::Out::Sizemap',
+        'Comic::Out::Backlog',
+    );
+    return map { +($order[$_] => $_) } 0 .. $#order;
+}
+
+
 =head2 new
 
 Creates a new Comic::Out::Generator.
 
 =cut
-
 
 sub new {
     my ($class, %settings) = @ARG;

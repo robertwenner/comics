@@ -8,24 +8,20 @@ title for each language.
 These file names are stripped of certain characters that could cause
 problems in URLs and file names: any characters that are not letters,
 numbers, or hyphens will be removed; blanks will be replaces with hyphens.
-For example, a title "Let's drink!" will be result in "lets-drink".
+For example, a title "Let's drink!" will use "lets-drink" as the (base) file
+name.
 
 
 ## Dependencies
 
-Order matters in the configuration file; if you rely on the output from a
-previous module, it needs to go before the module that requires the output.
+Some output modules depend on other output modules running first. For
+example, to export your comics as `.png`, you first need to export them as
+per-language `.svg`s, then the `Comic::Out::Png` module will work with the
+per-language `.svg`s.
 
-For example, the `Comic::Out::QrCode` module will create QR codes for comic
-pages and put the URL in the Comic. If the `Comic::Out::HtmlComicPage` module
-wants to include the QR code in the page, it must run after (that means:
-configured after) the `Comic::Out::QrCode` module.
-
-Most notably: To export your comics as `.png`, you first need to export them
-as per-language `.svg`s, then the `Png` module will work with the
-per-language `.svg`s. This also allows to put modules between the language
-splitting and `.png` conversion, for example a module to add a copyright
-notice.
+The code is smart enough to use the modules in the right order, but it
+cannot yet pull in missing modules. So to get `.png` output, you must
+configure the `Comic::Out::SvgPerLanguage` as well.
 
 
 ## Output Organization
@@ -35,17 +31,6 @@ output files. That makes it easier to not edit a generated file (and have
 the changes overwritten next time output is generated) and to not delete a
 not-generated file by accident. (I also recommend a version control system
 and regular backups.)
-
-Hence all generated files are placed under the directory configured as the
-main output directory.
-
-```json
-{
-    "Out": {
-        "outdir": "generated"
-    }
-}
-```
 
 Comics may have different ideas on where exactly they need to go, for example
 a German comic published on the web may go in `web/deutsch/comics/` while an
@@ -130,8 +115,6 @@ When the template is processed, these variables are available:
    comics. The template can iterate over these arrays and use the values as
    keys to the respective `x` hashes to print the them in order.
 
-=back
-
 Only `comics` is useful for showing how many comics are in the queue /
 backlog. The other variables are meant to show what tags, series, or
 characters already exist, to make it easy to align new comics with those.
@@ -139,8 +122,7 @@ characters already exist, to make it easy to align new comics with those.
 
 ## `Comic::Out::Copyright`
 
-Places a copyright or license or URL note on the per-language `.svg` comic
-(i.e., this module depends on `Comic::Out::SvgPerLanguage`).
+Places a copyright or license or URL note on the per-language `.svg` comic.
 
 ```json
 {
@@ -162,10 +144,11 @@ generation will fail with an error. If you want to not add a text for other
 languages, define an empty text (e.g., `"Deutsch": ""`).
 
 The style is optional. If not specified, it defaults to a black sans-serif
-font of size 10px. To pick a style, look at the XML of your comic texts
-(Inkscape menu Edit, then XML Editor...) and copy a `style=` description.
+font of size 10px. (This is without regard to frame spacing.) To pick a
+style, look at the XML of your comic texts (Inkscape menu Edit, then XML
+Editor...) and copy a `style=` description.
 
-The position for the Copyright note is picked automatically and depends on
+The position for the copyright note is picked automatically and depends on
 the frames in the comic. If there are rows of frames, the text will be
 placed between the last two rows. If all frames are in one row, the text
 will be turned 90 degrees and placed between frames. If there is only one
@@ -175,12 +158,12 @@ frame, the text will go in the bottom left corner of that frame.
 ## `Comic::Out::Feed`
 
 Generates website feeds (e.g., in [RSS](https://en.wikipedia.org/wiki/RSS)
-or [Atom](https://en.wikipedia.org/wiki/Atom_(Web_standard) format) from
+or [Atom](https://en.wikipedia.org/wiki/Atom_(Web_standard)) from
 provided Perl [Template Toolkit](http://template-toolkit.org/) templates.
 
 While not many people use RSS readers these days, feeds can be used to
-trigger an action with [Zapier](https://zapier.com) like uploading the new
-comic on Facebook.
+trigger an action with [Zapier](https://zapier.com), like uploading the new
+comic to Facebook.
 
 ```json
 {
@@ -204,9 +187,11 @@ comic on Facebook.
 ```
 
 The above example configures two feeds, one in RSS and one in Atom format.
-Each feed configuration can take these arguments:
+They share these options:
 
 * `outdir` (mandatory): base output directory.
+
+Each feed configuration can take these arguments:
 
 * `template` (mandatory): either the template file, if all languages use the
   same template, or an object of languages to template path for different
@@ -215,7 +200,8 @@ Each feed configuration can take these arguments:
   variable for language dependent output.
 
 * `max`: how many comics to include at most in the feed. This value is
-  passed to the template as `max`. Defaults to 10.
+  passed to the template as `max`. Defaults to 10, meaning the feed will
+  have the 10 latest comics.
 
 * `output`: the file name of the output file. This will always be within the
   `outdir` output directory, plus a language specific directory (the
@@ -331,6 +317,8 @@ While processing the templates, these variables are available:
 ## `Comic::Out::HtmlLink`
 
 Generates a reference ("see that other comic") from comic metadata.
+
+This module does not take any configuration.
 
 Actual linking is triggered by comic meta data within a `see` object. This
 is language specific, so it needs a nested language object with a link text
