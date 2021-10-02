@@ -8,6 +8,7 @@ use English '-no_match_vars';
 use Carp;
 use Readonly;
 use Clone qw(clone);
+use URI::Encode qw(uri_encode uri_decode);
 
 use Comic::Out::Template;
 use Comic::Out::Generator;
@@ -112,12 +113,14 @@ Defines these variables in the passed Comic:
 sub generate {
     my ($self, $comic) = @ARG;
 
+    my %uri_encoding_options = (encode_reserved => 1);
     foreach my $language ($comic->languages()) {
         my $html_file = "$comic->{baseName}{$language}.html";
         $comic->{htmlFile}{$language} = $html_file;
         $comic->{href}{$language} = 'comics/' . $html_file;
         my $domain = $comic->{settings}->{'Domains'}{$language};
         $comic->{url}{$language} = "https://$domain/$comic->{href}{$language}";
+        $comic->{urlUrlEncoded}{$language} = uri_encode($comic->{url}{$language}, %uri_encoding_options);
     }
     return;
 }
