@@ -458,6 +458,7 @@ sub index_html_does_not_break_perm_link : Tests {
     my $hcp = make_generator('Deutsch' => 'de-comic.templ');
     generate_everything($hcp, $comic);
     $hcp->_do_export_html($comic, 'English', 'comic.templ');
+
     is_deeply({
             'English' => 'https://beercomics.com/comics/beer.html',
             'Deutsch' => 'https://biercomics.de/comics/bier.html',
@@ -468,9 +469,32 @@ sub index_html_does_not_break_perm_link : Tests {
 
 sub index_html_hookup : Tests {
     my $comic = make_comic('English', 'Beer', '2016-01-01');
+
     my $hcp = make_generator();
     generate_everything($hcp, $comic);
+
     ok($comic->{isLatestPublished}, 'Should have exported index.html');
     MockComic::assert_wrote_file('generated/web/english/comics/beer.html', 'Beer');
     MockComic::assert_wrote_file('generated/web/english/index.html', 'Beer');
+}
+
+
+sub includes_references: Tests {
+    my $comic = make_comic('English', 'Beer', '2016-01-01');
+    $comic->{htmllink} = { 'English' => 'see.html' };
+
+    my $hcp = make_generator();
+    my %vars = $hcp->_set_vars($comic, 'English');
+
+    is_deeply($vars{'see'}, { 'English' => 'see.html' }, 'wrong see reference');
+}
+
+
+sub provides_empty_references_hash_if_no_real_references : Tests {
+    my $comic = make_comic('English', 'Beer', '2016-01-01');
+
+    my $hcp = make_generator();
+    my %vars = $hcp->_set_vars($comic, 'English');
+
+    is_deeply($vars{'see'}, {}, 'should set see to an empty hash');
 }

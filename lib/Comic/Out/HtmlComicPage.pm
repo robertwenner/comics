@@ -242,6 +242,7 @@ sub _set_vars {
     # By default, use normal path with comics in comics/
     $vars{'comicsPath'} = 'comics/';
     $vars{'indexAdjust'} = '';
+    $vars{'see'} = $comic->{'htmllink'} || {};
     my $path = '../';
     if ($comic->not_yet_published()) {
         # Adjust the path for backlog comics.
