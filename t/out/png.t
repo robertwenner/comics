@@ -330,6 +330,8 @@ sub moves_from_backlog : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
     );
+    $comic->{url}{$MockComic::ENGLISH} = 'https://...';
+
     $png->generate($comic);
 
     is($from, "generated/backlog/english/latest-comic.png", 'wrong move source');
@@ -352,6 +354,7 @@ sub moves_from_backlog_fails : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
     );
+
     eval {
         $png->generate($comic);
     };
@@ -377,11 +380,14 @@ sub does_not_generate_if_png_is_up_to_date : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
     );
+    $comic->{url}{'English'} = 'https://beercomics.com/comics/latest-comic.html';
     $comic->{svgFile}{'English'} = 'generated/tmp/svg/english/latest-comic.svg';
+
     $png->generate($comic); # would have thrown / failed if it tried to generate png
 
     is_deeply($comic->{pngSize}, {'English' => 'file size'}, 'wrong size');
     is_deeply($comic->{pngFile}, {'English' => 'latest-comic.png'}, 'wrong png file name');
+    is_deeply($comic->{imageUrl}, {'English' => 'https://beercomics.com/comics/latest-comic.png'}, 'wrong URL');
     is($comic->{height}, 'png height', 'wrong height');
     is($comic->{width}, 'png width', 'wrong width');
 }
@@ -405,6 +411,7 @@ sub generates_png_from_svn : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
     );
+    $comic->{url}{'English'} = 'https://beercomics.com/comics/latest-comic.html';
     $comic->{svgFile}{'English'} = 'generated/tmp/svg/english/latest-comic.svg';
     $png->generate($comic);
 
@@ -412,13 +419,7 @@ sub generates_png_from_svn : Tests {
     is($png_file, 'generated/web/english/comics/latest-comic.png', 'wrong png file');
     is_deeply($comic->{pngFile}, {'English' => 'latest-comic.png'}, 'wrong png file name');
     is_deeply($comic->{pngSize}, {'English' => 'file size'}, 'wrong size');
+    is_deeply($comic->{imageUrl}, {'English' => 'https://beercomics.com/comics/latest-comic.png'}, 'wrong URL');
     is($comic->{height}, 'png height', 'wrong height');
     is($comic->{width}, 'png width', 'wrong width');
-}
-
-
-__END__
-
-sub generate_for_backlog : Tests {
-    assert that it uses the right folder
 }

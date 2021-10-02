@@ -254,7 +254,7 @@ The configuration looks like this:
         "Comic::Out::FileCopy": {
             "outdir": "generated/web",
             "from-all": ["web/all", "misc/all"],
-            "from-lamguage": "web/"
+            "from-lanuage": "web/"
         }
     }
 }
@@ -471,7 +471,12 @@ Would set a field named "foo" to "bar".
 After writing, this Generator defines these values in the comic for use in
 templates or other generators:
 
-* `pngSize`: image size in bytes, per language
+* `pngName`: map of language to base name of the `.png` file, e.g.,
+  `drink-beer.png`.
+
+* `imageUrl`: map of language to complete URL of the `.png` file.
+
+* `pngSize`: map of image size in bytes, per language
 
 * `height`: height of the images in pixels
 

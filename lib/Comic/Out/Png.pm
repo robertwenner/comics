@@ -96,6 +96,23 @@ Parameters:
 
 =back
 
+This places these variables in the given comic:
+
+=over 4
+
+=item * B<%pngFile> hash of language to name (without path) of the generated
+    C<.png> file,
+
+=item * B<%imageUrl> hash of language to image URL.
+
+=item * B<$height> image height, same for all languages.
+
+=item * B<$width> image width, same for all languages.
+
+=item * B<%pngSize> hash of language to C<.png> file size in bytes.
+
+=back
+
 =cut
 
 sub generate {
@@ -194,7 +211,8 @@ sub _get_png_info {
     my $info = $tool->ImageInfo($png_file);
 
     $comic->{pngFile}{$language} = "$comic->{baseName}{$language}.png";
-    # TODO could height and width be different per language?
+    $comic->{imageUrl}{$language} = $comic->{url}{$language};
+    $comic->{imageUrl}{$language} =~ s/\.html$/.png/;
     $comic->{height} = $info->{'ImageHeight'};
     $comic->{width} = $info->{'ImageWidth'};
     # Can't use $info->{'ImageSize'} as it returns e.g., 26 KiB, and parsing
