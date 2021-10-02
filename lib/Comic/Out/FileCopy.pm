@@ -6,9 +6,7 @@ use utf8;
 use English '-no_match_vars';
 use Carp;
 use File::Path qw(make_path);
-# File::Copy does not support recursively copying directories.
-# File::Copy::Recursive doesn't copy file meta information (like timestamps) and ignoring
-# unchanged files.
+
 
 use version; our $VERSION = qv('0.0.3');
 
@@ -135,7 +133,13 @@ sub generate_all {
     foreach my $language (sort keys %languages) {
         my $lc_lang = lc $language;
         my $to_dir = $self->{settings}->{outdir} . $lc_lang;
-        File::Path::make_path($to_dir);
+        eval {
+            File::Path::make_path($to_dir);
+            1; # make_path does not seem to return an exit code
+        }
+        or do {
+            croak("Comic::Out::FileCopy: cannot mkdir $to_dir: $EVAL_ERROR");
+        };
 
         foreach my $from (@{$self->{settings}->{'from-all'}}) {
             _cp("$from/*", $to_dir);
@@ -151,7 +155,24 @@ sub generate_all {
 
 
 sub _cp {
-    return _system('cp', '--archive', '--recursive', '--update', @ARG);
+    # Would ne nice to do this in pure Perl, but...
+    # - File::Copy does not support recursively copying directories.
+    # - File::Copy::Recursive doesn't copy file meta information (like
+    #   timestamps) and doesn't support ignoring unchanged files.
+    # Maybe File::Rsync would work, but for now the shell command is the
+    # simplest thing that could possibly work.
+    my @cmd = qw(cp --archive --recursive --update);
+    push @cmd, @ARG;
+
+    # Pass args in one string so that system does involve a shell and
+    # globbing works.
+    my $cmd = join ' ', @cmd;
+    my $return_code = _system($cmd);
+
+    if ($return_code != 0) {
+        croak("Comic::Out::FileCopy: cannot copy files, return code $return_code from $cmd");
+    }
+    return;
 }
 
 

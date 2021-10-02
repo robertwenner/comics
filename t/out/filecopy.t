@@ -23,15 +23,11 @@ sub setup : Test(setup) {
 }
 
 
-sub mock_cp {
     no warnings qw/redefine/;
-    *Comic::Out::FileCopy::_cp = sub {
+    local *Comic::Out::FileCopy::_cp = sub {
         push @cp_args, (@_);
     };
     use warnings;
-}
-
-
 sub make_copy {
     my ($from_all, $from_language) = @_;
 
@@ -68,6 +64,12 @@ sub consructor_complains_about_missing_configuration : Tests {
 
 
 sub creates_output_directories : Tests {
+    no warnings qw/redefine/;
+    local *Comic::Out::FileCopy::_cp = sub {
+        push @cp_args, (@_);
+    };
+    use warnings;
+
     # Comic's constructor creates its meta directory, so mock mkdir only afterwards.
     # (Before this mock it's mocked by MockComic.)
     my $comic = MockComic::make_comic();
@@ -87,7 +89,12 @@ sub creates_output_directories : Tests {
 
 
 sub runs_cp_language_independent_scalar : Tests {
-    mock_cp();
+    no warnings qw/redefine/;
+    local *Comic::Out::FileCopy::_cp = sub {
+        push @cp_args, (@_);
+    };
+    use warnings;
+
     my $copy = make_copy('web/all');
     $copy->generate_all(MockComic::make_comic());
 
@@ -100,7 +107,12 @@ sub runs_cp_language_independent_scalar : Tests {
 
 
 sub runs_cp_language_independent_array : Tests {
-    mock_cp();
+    no warnings qw/redefine/;
+    local *Comic::Out::FileCopy::_cp = sub {
+        push @cp_args, (@_);
+    };
+    use warnings;
+
     my $copy = make_copy(['web/all', 'web/some', 'web/misc']);
     $copy->generate_all(MockComic::make_comic());
 
@@ -117,7 +129,12 @@ sub runs_cp_language_independent_array : Tests {
 
 
 sub runs_cp_per_language_scalar : Tests {
-    mock_cp();
+    no warnings qw/redefine/;
+    local *Comic::Out::FileCopy::_cp = sub {
+        push @cp_args, (@_);
+    };
+    use warnings;
+
     my $copy = make_copy(undef, 'web');
     $copy->generate_all(MockComic::make_comic());
 
@@ -130,7 +147,12 @@ sub runs_cp_per_language_scalar : Tests {
 
 
 sub runs_cp_per_language_array : Tests {
-    mock_cp();
+    no warnings qw/redefine/;
+    local *Comic::Out::FileCopy::_cp = sub {
+        push @cp_args, (@_);
+    };
+    use warnings;
+
     my $copy = make_copy(undef, ['web/langs', 'web/more']);
     $copy->generate_all(MockComic::make_comic());
 
@@ -146,17 +168,16 @@ sub runs_cp_per_language_array : Tests {
 
 sub cp_arguments : Tests {
     no warnings qw/redefine/;
-    *Comic::Out::FileCopy::_system = sub {
+    local *Comic::Out::FileCopy::_system = sub {
         push @ran, (@_);
+        return 0;
     };
     use warnings;
 
     Comic::Out::FileCopy::_cp("from1", "from2", "from3", "to");
 
-    my @expected = [
-        qw(cp --archive --recursive --update from1 from2 from3 to),
-    ];
-    is_deeply(\@ran, @expected);
+    my @expected = ('cp --archive --recursive --update from1 from2 from3 to');
+    is_deeply(\@ran, \@expected);
 }
 
 
@@ -173,14 +194,15 @@ sub reports_mkdir_errors : Tests {
     eval {
         $copy->generate_all($comic);
     };
-    like($@, qr{\bsomething went wrong\b});
+    like($@, qr{\bsomething went wrong\b}, 'should have error message');
+    like($@, qr{\bComic::Out::FileCopy\b}, 'should have module name');
 }
 
 
 sub reports_cp_errors : Tests {
     no warnings qw/redefine/;
     local *Comic::Out::FileCopy::_system = sub {
-        die "something went wrong";
+        return 123;
     };
     use warnings;
 
@@ -188,5 +210,7 @@ sub reports_cp_errors : Tests {
     eval {
         $copy->generate_all(MockComic::make_comic());
     };
-    like($@, qr{\bsomething went wrong\b});
+    like($@, qr{\bcannot copy\b}i, 'should have a message');
+    like($@, qr{\b123\b}i, 'should include exit code');
+    like($@, qr{\bComic::Out::FileCopy\b}i, 'should include module name');
 }
