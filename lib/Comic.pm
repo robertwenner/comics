@@ -102,7 +102,7 @@ sub new {
     my $self = bless{}, $class;
 
     $self->{settings} = $settings;
-    $self->{checks} = [@$checks];
+    $self->{checks} = [@{$checks}];
 
     return $self;
 }
