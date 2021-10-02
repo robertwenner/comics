@@ -74,6 +74,10 @@ Readonly my $UNPUBLISHED => '3000-01-01';
 # Temp dir for caches, per-langugage svg exports, etc.
 Readonly my $CACHE_DIR => 'tmp';
 
+# Enable workarounds for the old (pre-modules) code base, where lines
+# between modules were not clear cut (probably cause there were no modules.)
+Readonly my $OLD_CODE_WORKAROUND => 1;
+
 
 my %language_code_cache;
 
@@ -181,6 +185,16 @@ sub load {
         $self->{titleUrlEncoded}{$language} = uri_encode($self->{meta_data}->{title}->{$language}, %uri_encoding_options);
         $self->{dirName}{$language} = make_dir($base);
         $self->{baseName}{$language} = $self->_normalized_title($language);
+
+        if ($OLD_CODE_WORKAROUND) {
+            # Remove this when the templates don't use the whole value
+            # (e.g., URL), but piece it together from parts like domin,
+            # path, and file.
+            my $html_file = "$self->{baseName}{$language}.html";
+            $self->{htmlFile}{$language} = $html_file;
+            $self->{href}{$language} = 'comics/' . $html_file;
+            $self->{url}{$language} = "https://$domain/$self->{href}{$language}";
+        }
     }
 
     $self->_adjust_checks($self->{meta_data}->{$Comic::Settings::CHECKS});
