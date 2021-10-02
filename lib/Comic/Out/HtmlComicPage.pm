@@ -218,13 +218,21 @@ sub _do_export_html {
         }
     }
 
+    my %vars = $self->_set_vars($comic, $language);
+    return Comic::Out::Template::templatize($comic->{srcFile}, $template, $language, %vars);
+}
+
+
+sub _set_vars {
+    my ($self, $comic, $language) = @ARG;
+
     my %vars;
     $vars{'comic'} = $comic;
     $vars{'languages'} = [grep { $_ ne $language } $comic->languages()];
     $vars{'languagecodes'} = { $comic->language_codes() };
-    # Need clone the URLs so that there is no reference stored here, cause
-    # later code may change these vars when creating index.html, but if
-    # it's a reference, the actual URL values get changed, too, and that
+    # Need to clone the URLs so that there is no reference stored here,
+    # cause later code may change these vars when creating index.html, but
+    # if it's a reference, the actual URL values get changed, too, and that
     # leads to wrong links.
     $vars{'languageurls'} = clone($comic->{url});
     Readonly my $DIGITS_YEAR => 4;
@@ -263,7 +271,7 @@ sub _do_export_html {
         $vars{'root'} = $path;
     }
 
-    return Comic::Out::Template::templatize($comic->{srcFile}, $template, $language, %vars);
+    return %vars;
 }
 
 

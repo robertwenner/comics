@@ -4,6 +4,9 @@
 - rework variables available for templates: standardize names, pick decent
   names, DRY up them up, generate them in one place, document them
 
+- move move vars variables into the comics, for better scoping and to allow
+  multiple generators to contribute
+
 - twitter with @someone does not get tweeted for some reason
 
 - backlog: list comics under series headings (hideable?)
