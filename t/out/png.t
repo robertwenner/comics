@@ -199,7 +199,10 @@ sub png_meta_information : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
     );
+    $comic->{url}{$MockComic::ENGLISH} = 'https://beercomics.com/comics/latest-comic.html';
+
     $png->_svg_to_png($comic, $MockComic::ENGLISH, 'some-comic.svg', 'some-comic.png');
+
     is($png_meta{'Title'}, 'Latest comic', 'title');
     is($png_meta{'Description'}, '', 'description');
     like($png_meta{'CreationTime'}, qr{^\d{4}-\d{2}-\d{2}$}, 'creation time');

@@ -71,6 +71,7 @@ sub make_comic {
             year => 2016, month => 1, day => 1, time_zone => '-05:00')->epoch,
     );
     $comic->{pngFile}{$language} = "drinking-beer.png";
+    $comic->{htmlFile}{$language} = "drinking-beer.html";
     return $comic;
 }
 
@@ -200,6 +201,7 @@ sub encodes_xml_special_characters : Tests {
             'English' => '&lt;Ale &amp; Lager&gt;',
         },
     );
+    $comic->{htmlFile}{English} = "ale__lager.html";
     $comic->{pngFile}{English} = 'ale__lager.png';
     assert_wrote($comic, qr{<image:title>&lt;Ale &amp; Lager&gt;</image:title>}m);
 }

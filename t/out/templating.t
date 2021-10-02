@@ -297,6 +297,8 @@ TEMPLATE
         },
     );
     $comic->{pngFile}{'Deutsch'} = 'bier-trinken.png';
+    $comic->{imageUrl}{'Deutsch'} = 'https://biercomics.de/comics/bier-trinken.png';
+    $hcp->generate($comic);
     $hcp->generate_all($comic);
     my $wrote = $hcp->_do_export_html($comic, "Deutsch", 'templates/deutsch/comic-page.templ');
     like($wrote, qr/Bier trinken/m, "title");

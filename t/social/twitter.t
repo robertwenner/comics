@@ -78,7 +78,7 @@ sub tweet_html : Tests {
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
         $MockComic::DESCRIPTION => { $MockComic::ENGLISH => 'This is the latest beercomic!' },
     );
-    $comic->{pngFile}{'English'} = "latest-comic.png";
+    $comic->{url}{'English'} = "https://beercomics.com/comics/latest-comic.html";
     my $cs_twitter = Comic::Social::Twitter->new(mode => 'html');
     $cs_twitter->post($comic);
     is_deeply([@{$twitter_args{'update'}}], ['https://beercomics.com/comics/latest-comic.html']);

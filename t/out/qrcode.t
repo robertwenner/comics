@@ -83,6 +83,7 @@ sub uses_outdir_option : Tests {
 
 sub creates_qrcode_in_published_comic : Tests {
     my $comic = MockComic::make_comic();
+    $comic->{url}{English} = 'https://beercomics.com/comics/drinking-beer.html';
     $qrcode->generate($comic);
     is($text, 'https://beercomics.com/comics/drinking-beer.html', 'Wrong QR code target');
     is($comic->{qrcode}{$MockComic::ENGLISH}, 'qr/drinking-beer.png', 'Wrong QR image file');
@@ -93,6 +94,7 @@ sub creates_qr_code_in_not_yet_published_comic : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::PUBLISHED_WHEN => '3000-01-01',
         $MockComic::PUBLISHED_WHERE => 'web');
+    $comic->{url}{English} = 'https://beercomics.com/comics/drinking-beer.html';
     $qrcode->generate($comic);
     is($text, 'https://beercomics.com/comics/drinking-beer.html', 'Wrong QR code target');
     is($comic->{qrcode}{$MockComic::ENGLISH}, 'qr/drinking-beer.png', 'Wrong QR image file');
@@ -103,6 +105,7 @@ sub creates_qr_code_in_non_web_comic : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::PUBLISHED_WHEN => '2000-01-01',
         $MockComic::PUBLISHED_WHERE => 'braumagazin.de');
+    $comic->{url}{English} = 'https://beercomics.com/comics/drinking-beer.html';
     $qrcode->generate($comic);
     is($text, 'https://beercomics.com/comics/drinking-beer.html', 'Wrong QR code target');
     is($comic->{qrcode}{$MockComic::ENGLISH}, 'qr/drinking-beer.png', 'Wrong QR image file');

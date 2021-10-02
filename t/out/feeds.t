@@ -52,6 +52,9 @@ sub make_comic {
         },
         $MockComic::PUBLISHED_WHEN => $published
     );
+    $comic->{htmlFile}{$MockComic::ENGLISH} = "$title.html";
+    $comic->{url}{$MockComic::ENGLISH} = "https://beercomics.com/comics/$title.html";
+    $comic->{href}{$MockComic::ENGLISH} = "comics/$title.html";
     return $comic;
 }
 

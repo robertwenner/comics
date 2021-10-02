@@ -34,6 +34,8 @@ sub make_comic {
         $MockComic::PUBLISHED_WHERE => ($published_where || "web"));
     $comic->{'prev'}{$lang} = "prev.html";
     $comic->{'first'}{$lang} = "first.html";
+    $comic->{'href'}{$lang} = "comics/" . lc($title) . ".html";
+    $comic->{'url'}{$lang} = "https://...";
     return $comic;
 }
 

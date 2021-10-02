@@ -432,6 +432,7 @@ sub index_html_with_canonical_link : Tests {
         $MockComic::PUBLISHED_WHEN => '2016-01-01',
     );
     my $hcp = make_generator('English' => 'comic.templ');
+    $hcp->generate($comic);
     is($hcp->_do_export_html($comic, 'English', 'comic.templ'),
         'https://beercomics.com/comics/beer.html');
 

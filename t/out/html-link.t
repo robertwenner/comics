@@ -65,6 +65,7 @@ sub links_to_url : Tests {
         },
         $MockComic::IN_FILE => 'original.svg',
     );
+    $referenced->{url}{$MockComic::ENGLISH} = 'https://beercomics.com/comics/the-original.html';
     my $referrer = MockComic::make_comic(
         $MockComic::SEE => {
             $MockComic::ENGLISH => {

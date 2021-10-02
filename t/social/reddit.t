@@ -293,6 +293,7 @@ sub post : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => "make beer" }
     );
+    $comic->{url}{$MockComic::ENGLISH} = 'https://beercomics.com/comics/make-beer.html';
     my $message = $reddit->post($comic);
     is("Posted '[OC] make beer' (https://beercomics.com/comics/make-beer.html) to comics (redditID1234) at https://...",
         $message, "wrong message");
@@ -329,6 +330,7 @@ sub slows_down_posting : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => "make beer" }
     );
+    $comic->{url}{$MockComic::ENGLISH} = 'https://beercomics.com/comics/make-beer.html';
     my $message = $reddit->post($comic);
 
     is($slowed, 1, "should have slowed down");
