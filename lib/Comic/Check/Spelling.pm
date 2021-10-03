@@ -225,8 +225,9 @@ sub _cut_into_words {
 
     my @words;
     foreach my $text (@texts) {
-        foreach my $word (split /[^\p{alpha}']/, $text) {
+        foreach my $word (split qr{[,.;!:\s#"\?&%@\(\)\[\]\-/\d]}, $text) {
             $word = trim($word);
+            $word =~ s/^'(.+)'$/$1/;
             push @words, $word if ($word);
         }
     }

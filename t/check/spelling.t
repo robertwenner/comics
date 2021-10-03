@@ -49,7 +49,18 @@ sub cut_into_words : Tests {
     is_deeply([Comic::Check::Spelling::_cut_into_words("this isn't good")], ["this", "isn't", "good"]);
     is_deeply([Comic::Check::Spelling::_cut_into_words("rock'n'roll")], ["rock'n'roll"]);
     is_deeply([Comic::Check::Spelling::_cut_into_words("'nen Bier")], ["'nen", "Bier"]);
-    is_deeply([Comic::Check::Spelling::_cut_into_words("'quoted'")], ["'quoted'"]);
+    is_deeply([Comic::Check::Spelling::_cut_into_words("'quoted'")], ["quoted"]);
+    is_deeply([Comic::Check::Spelling::_cut_into_words('"quoted"')], ["quoted"]);
+    is_deeply([Comic::Check::Spelling::_cut_into_words("#hashtag")], ["hashtag"]);
+    is_deeply([Comic::Check::Spelling::_cut_into_words("questions?")], ["questions"]);
+    is_deeply([Comic::Check::Spelling::_cut_into_words("yes!")], ["yes"]);
+    is_deeply([Comic::Check::Spelling::_cut_into_words("me&you")], ["me", "you"]);
+    is_deeply([Comic::Check::Spelling::_cut_into_words("five%")], ["five"]);
+    is_deeply([Comic::Check::Spelling::_cut_into_words('@you')], ["you"]);
+    is_deeply([Comic::Check::Spelling::_cut_into_words('(light)beer')], ["light", "beer"]);
+    is_deeply([Comic::Check::Spelling::_cut_into_words('[light]beer')], ["light", "beer"]);
+    is_deeply([Comic::Check::Spelling::_cut_into_words('light-beer')], ["light", "beer"]);
+    is_deeply([Comic::Check::Spelling::_cut_into_words('lager/ale')], ["lager", "ale"]);
 }
 
 
