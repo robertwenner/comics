@@ -30,13 +30,15 @@ sub collision : Tests {
         $MockComic::PUBLISHED_WHEN => '2016-01-01', $MockComic::IN_FILE => 'one.svg'));
     $check->notify(MockComic::make_comic(
         $MockComic::PUBLISHED_WHEN => '2016-01-02', $MockComic::IN_FILE => 'two.svg'));
-    eval {
-        $check->check(MockComic::make_comic(
-            $MockComic::PUBLISHED_WHEN => '2016-01-01', $MockComic::IN_FILE => 'three.svg'));
-    };
-    like($@, qr{duplicated date}i, 'should give reason');
-    like($@, qr{three\.svg}, 'should mention files');
-    like($@, qr{three\.svg}, 'should mention files');
+    my $comic = MockComic::make_comic(
+        $MockComic::PUBLISHED_WHEN => '2016-01-01',
+        $MockComic::IN_FILE => 'three.svg',
+    );
+
+    $check->check($comic);
+
+    like(${$comic->{warnings}}[0], qr{duplicated date}i, 'should give reason');
+    like(${$comic->{warnings}}[0], qr{one\.svg}, 'should mention other file');
 }
 
 
@@ -45,11 +47,14 @@ sub collision_ignores_whitespace : Tests {
         $MockComic::PUBLISHED_WHEN => '2016-01-01 ', $MockComic::IN_FILE => 'one.svg'));
     $check->notify(MockComic::make_comic(
         $MockComic::PUBLISHED_WHEN => '2016-01-02', $MockComic::IN_FILE => 'two.svg'));
-    eval {
-        $check->check( MockComic::make_comic(
-            $MockComic::PUBLISHED_WHEN => ' 2016-01-01', $MockComic::IN_FILE => 'three.svg'));
-    };
-    like($@, qr{duplicated date}i, 'should give reason');
+    my $comic = MockComic::make_comic(
+        $MockComic::PUBLISHED_WHEN => ' 2016-01-01',
+        $MockComic::IN_FILE => 'three.svg',
+    );
+
+    $check->check($comic);
+
+    like(${$comic->{warnings}}[0], qr{duplicated date}i, 'should give reason');
 }
 
 
@@ -64,10 +69,10 @@ sub no_collision_different_languages : Tests {
             $MockComic::DEUTSCH => 'auf Englisch nicht lustig',
         },
         $MockComic::PUBLISHED_WHEN => '2016-01-01');
-    eval {
-        $check->check($comic);
-    };
-    is($@, '');
+
+    $check->check($comic);
+
+    is_deeply($comic->{warnings}, []);
 }
 
 
@@ -80,10 +85,10 @@ sub no_collision_published_elsewhere : Tests {
         $MockComic::PUBLISHED_WHEN => '2016-01-01',
         $MockComic::PUBLISHED_WHERE => 'offline',
         $MockComic::IN_FILE => 'other.svg');
-    eval {
-        $check->check($comic);
-    };
-    is($@, '');
+
+    $check->check($comic);
+
+    is_deeply($comic->{warnings}, []);
 }
 
 
@@ -96,10 +101,10 @@ sub no_collision_different_date : Tests {
         $MockComic::PUBLISHED_WHEN => '2016-01-02',
         $MockComic::PUBLISHED_WHERE => 'web',
         $MockComic::IN_FILE => 'other.svg');
-    eval {
-        $check->check($comic);
-    };
-    is($@, '');
+
+    $check->check($comic);
+
+    is_deeply($comic->{warnings}, []);
 }
 
 
@@ -117,7 +122,9 @@ sub no_collision_not_yet_published_empty: Tests {
 
     $check->check($comic1);
     $check->check($comic2);
-    ok(1);
+
+    is_deeply($comic1->{warnings}, []);
+    is_deeply($comic2->{warnings}, []);
 }
 
 
@@ -135,5 +142,7 @@ sub no_collision_not_yet_published_not_given: Tests {
 
     $check->check($comic1);
     $check->check($comic2);
-    ok(1);
+
+    is_deeply($comic1->{warnings}, []);
+    is_deeply($comic2->{warnings}, []);
 }

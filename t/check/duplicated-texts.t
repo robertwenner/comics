@@ -25,14 +25,13 @@ sub duplicated_text_in_other_language : Tests {
             $MockComic::DEUTSCH => [' Paul shows Max his bym.'],
             $MockComic::ENGLISH => ['Paul shows Max his bym. '],
     });
-    eval {
-        $check->check($comic);
-    };
-    like($@, qr{some_comic.svg}, 'should include file name');
-    like($@, qr{duplicated text}i, 'wrong error message');
-    like($@, qr{'Paul shows Max his bym\.'}, 'should mention duplicated text');
-    like($@, qr{Deutsch}, 'should mention offending languages');
-    like($@, qr{English}, 'should mention offending languages');
+
+    $check->check($comic);
+
+    like(${$comic->{warnings}}[0], qr{duplicated text}i, 'wrong error message');
+    like(${$comic->{warnings}}[0], qr{'Paul shows Max his bym\.'}, 'should mention duplicated text');
+    like(${$comic->{warnings}}[0], qr{Deutsch}, 'should mention offending languages');
+    like(${$comic->{warnings}}[0], qr{English}, 'should mention offending languages');
 }
 
 
@@ -42,10 +41,10 @@ sub duplicated_text_in_other_language_ignores_text_order : Tests {
             $MockComic::DEUTSCH => ['a', 'b', 'c'],
             $MockComic::ENGLISH => ['z', 'x', 'a'],
     });
-    eval {
-        $check->check($comic);
-    };
-    like($@, qr{duplicated text}i);
+
+    $check->check($comic);
+
+    like(${$comic->{warnings}}[0], qr{duplicated text}i);
 }
 
 
@@ -55,10 +54,10 @@ sub duplicated_text_in_other_language_ignores_names : Tests {
             $MockComic::DEUTSCH => ['Max:', 'guck mal', ' Paul:', 'was?'],
             $MockComic::ENGLISH => ['Max:', 'look at this', 'Paul: ', 'what?'],
         });
-    eval {
-        $check->check($comic);
-    };
-    is($@, '');
+
+    $check->check($comic);
+
+    is_deeply($comic->{warnings}, []);
 }
 
 
@@ -70,10 +69,10 @@ sub allowed_duplicated_words : Tests {
         },
         $MockComic::JSON => '"allow-duplicated": ["blah"]',
     );
-    eval {
-        $check->check($comic);
-    };
-    is($@, '');
+
+    $check->check($comic);
+
+    is_deeply($comic->{warnings}, []);
 }
 
 
@@ -85,10 +84,10 @@ sub duplicated_word_parts : Tests {
         },
         $MockComic::JSON => '"allow-duplicated": ["blah"]',
     );
-    eval {
-        $check->check($comic);
-    };
-    like($@, qr{duplicated text}i);
+
+    $check->check($comic);
+
+    like(${$comic->{warnings}}[0], qr{duplicated text}i);
 }
 
 
@@ -105,10 +104,10 @@ sub duplicated_in_container_layers : Tests {
         </g>
     </g>
 XML
-    eval {
-        $check->check($comic);
-    };
-    like($@, qr{duplicated text}i);
+
+    $check->check($comic);
+
+    like(${$comic->{warnings}}[0], qr{duplicated text}i);
 }
 
 
@@ -127,10 +126,10 @@ sub duplicated_multiline : Tests {
         </text>
     </g>
 XML
-    eval {
-        $check->check($comic);
-    };
-    like($@, qr{duplicated text}i);
+
+    $check->check($comic);
+
+    like(${$comic->{warnings}}[0], qr{duplicated text}i);
 }
 
 
@@ -150,8 +149,10 @@ sub duplicated_allowed_multiline_space_separated : Tests {
     </g>
 XML
     $MockComic::JSON => '"allow-duplicated": ["take that"]');
+
     $check->check($comic);
-    is($@, '');
+
+    is_deeply($comic->{warnings}, []);
 }
 
 
@@ -171,6 +172,8 @@ sub duplicated_allowed_multiline_newline_separated : Tests {
     </g>
 XML
     $MockComic::JSON => '"allow-duplicated": ["take\nthat"]');
+
     $check->check($comic);
-    is($@, '');
+
+    is_deeply($comic->{warnings}, []);
 }

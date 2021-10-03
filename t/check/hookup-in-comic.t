@@ -222,7 +222,34 @@ sub run_all_checks_runs_only_checks_for_comic : Tests {
     push @{$comics->{comics}}, $comic;
 
     $comics->run_all_checks();
-
     is($global_check->{calls}{"final_check"}, undef, 'should not have called global');
     is($called_comic_check, 1, 'should have called Comic::check');
+}
+
+
+sub collect_warnings_from_one_check : Tests {
+    my $comic = MockComic::make_comic();
+    my $check = DummyCheck->new("problem from check");
+    push @{$comic->{checks}}, $check;
+
+    eval {
+        $comic->check();
+    };
+    like($@, qr{1 problem}i);
+    is_deeply($comic->{warnings}, ["problem from check"]);
+}
+
+
+sub collect_warnings_from_all_checks : Tests {
+    my $comic = MockComic::make_comic();
+    for (my $i = 0; $i < 3; $i++) {
+        my $check = DummyCheck->new("problem from check $i");
+        push @{$comic->{checks}}, $check;
+    }
+
+    eval {
+        $comic->check();
+    };
+    like($@, qr{3 problems}i);
+    is_deeply($comic->{warnings}, ["problem from check 0", "problem from check 1", "problem from check 2"]);
 }

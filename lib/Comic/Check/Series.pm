@@ -131,7 +131,7 @@ sub final_check {
         foreach my $language (keys %{$comic->{meta_data}->{series}}) {
             foreach my $series ($comic->{meta_data}->{series}->{$language}) {
                 if ($series_count{$language}{$series} == 1) {
-                    $comic->_note(ref($self) . ": $language has only one comic in the '$series' series");
+                    $comic->warning(ref($self) . ": $language has only one comic in the '$series' series");
                 }
             }
         }

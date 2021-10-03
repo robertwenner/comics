@@ -22,26 +22,28 @@ sub set_up : Test(setup) {
 sub non_empty_text_is_ok : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => {$MockComic::DEUTSCH => ['not empty']});
+
     $check->check($comic);
-    ok(1);
+
+    is_deeply($comic->{warnings}, []);
 }
 
 
 sub empty_text_found : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => {$MockComic::DEUTSCH => ['']});
-    eval {
-        $check->check($comic);
-    };
-    like($@, qr{Empty text in Deutsch}i);
+
+    $check->check($comic);
+
+    like(${$comic->{warnings}}[0], qr{Empty text in Deutsch}i);
 }
 
 
 sub whitespace_only_text_found : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => {$MockComic::DEUTSCH => [' ']});
-    eval {
-        $check->check($comic);
-    };
-    like($@, qr{Empty text in Deutsch}i);
+
+    $check->check($comic);
+
+    like(${$comic->{warnings}}[0], qr{Empty text in Deutsch}i);
 }

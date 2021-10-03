@@ -99,8 +99,6 @@
   changed (only need this if the generated title / qr code file name has
   changed, but this is harder to detect)
 
-- don't bail out after the first check fails, report all problems
-
 - speed up with multiple threads for checking and converting svg files (1
   thread per comic, then wait till all are done; reuse threads for writing
   per-comic pages, when all next/prev links are known)

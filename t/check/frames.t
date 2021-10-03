@@ -20,56 +20,58 @@ sub set_up : Test(setup) {
 
 sub assert_bad {
     my $expected = shift;
-    my $err = try_comic(@_);
-    like($err, $expected);
-    like($err, qr{some_comic\.svg});
+    my $comic = try_comic(@_);
+    like(${$comic->{warnings}}[0], $expected);
 }
 
 
 sub assert_ok {
-    is(try_comic(@_), '');
+    my $comic = try_comic(@_);
+    is_deeply($comic->{warnings}, []);
 }
 
 
 sub try_comic {
     # params is a bunch of width height x y numbers
     my $comic = MockComic::make_comic($MockComic::FRAMES => [@_]);
-    eval {
-        $check->check($comic);
-    };
-    return $@;
+    $check->check($comic);
+    return $comic;
 }
 
 
 sub width_ok : Tests {
     my $comic = MockComic::make_comic($MockComic::FRAMEWIDTH => 1.25);
+
     $check->check($comic);
-    ok(1);
+
+    is_deeply($comic->{warnings}, []);
 }
 
 
 sub width_too_narrow : Tests {
     my $comic = MockComic::make_comic($MockComic::FRAMEWIDTH => 0.99);
-    eval {
-        $check->check($comic);
-    };
-    like($@, qr{too narrow}i);
+
+    $check->check($comic);
+
+    like(${$comic->{warnings}}[0], qr{too narrow}i);
 }
 
 
 sub width_too_wide : Tests {
     my $comic = MockComic::make_comic($MockComic::FRAMEWIDTH => 1.51);
-    eval {
-        $check->check($comic);
-    };
-    like($@, qr{too wide}i);
+
+    $check->check($comic);
+
+    like(${$comic->{warnings}}[0], qr{too wide}i);
 }
 
 
 sub aligned_no_frame : Tests {
     my $comic = MockComic::make_comic();
+
     $check->check($comic);
-    ok(1);
+
+    is_deeply($comic->{warnings}, []);
 }
 
 

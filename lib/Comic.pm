@@ -107,6 +107,7 @@ sub new {
 
     $self->{settings} = $settings;
     $self->{checks} = [@{$checks}];
+    $self->{warnings} = [];
 
     return $self;
 }
@@ -130,7 +131,6 @@ sub load {
     my ($self, $file) = @ARG;
 
     $self->{srcFile} = $file;
-    $self->{warnings} = [];
 
     my $meta_data;
     my $meta_cache = _meta_cache_for($self->{srcFile});
@@ -496,15 +496,15 @@ Finally L<Comic::Check::Frames> uses named parameters in an object. The
 names need to match what the module expects or they may be silently ignored.
 
     {
-        "Check": {
-            "Comic/Check/Transcript.pm": [],
-            "Comic/Check/Actors": [],
-            "Comic::Check::DontPublish": [ "DONT_PUBLISH", "FIXME" ],
-            "Comic::Check::Weekday.pm", [ 5 ],
-            "Comic::Check::Frames": {
-                "FRAME_ROW_HEIGHT": 1.25
-            }
-        }
+        "Check" => {
+            "Comic/Check/Transcript.pm" => {},
+            "Comic/Check/Actors" => [],
+            "Comic::Check::DontPublish" => [ "DONT_PUBLISH", "FIXME" ],
+            "Comic::Check::Weekday.pm" => [ 5 ],
+            "Comic::Check::Frames" => {
+                "FRAME_ROW_HEIGHT" => 1.25,
+            },
+        },
     }
 
 If no checks are configured, all available (installed) checks are used.
@@ -532,6 +532,22 @@ sub check {
         $check->check($self);
     }
 
+    my $warnings_count = scalar @{$self->{warnings}};
+    if ($warnings_count > 0) {
+        my $problems = 'problem';
+        $problems .= 's' if ($warnings_count > 1);
+
+        my $msg = "$warnings_count $problems in $self->{srcFile}";
+        if ($self->not_yet_published()) {
+            # PerlCritic wants me to check that I/O to the console worked.
+            ## no critic(InputOutput::RequireCheckedSyscalls)
+            print "$msg\n";
+            ## use critic
+        }
+        else {
+            croak($msg);
+        }
+    }
     return;
 }
 
@@ -1185,26 +1201,19 @@ Parameters:
 sub warning {
     my ($self, $msg) = @ARG;
 
-    $self->keel_over($msg) unless ($self->not_yet_published());
-    $self->_note($msg);
-    return;
-}
-
-
-sub _note {
-    my ($self, $msg) = @ARG;
-
     # Warnings can be duplicated if language-independent code is called in a
     # per-language loop for simplicity. Ignore those.
-    # PerlCritic doesn't see that the code below is array access.
     ## no critic(ValuesAndExpressions::ProhibitMagicNumbers)
-    return if (@{$self->{warnings}} && ${$self->{warnings}}[-1] eq $msg);
+    return if (@{$self->{warnings}} > 0 && ${$self->{warnings}}[-1] eq $msg);
     ## use critic
+
     push @{$self->{warnings}}, $msg;
+
     # PerlCritic wants me to check that I/O to the console worked.
     ## no critic(InputOutput::RequireCheckedSyscalls)
     print {*STDOUT} "$self->{srcFile} : $msg\n";
     ## use critic
+
     return;
 }
 

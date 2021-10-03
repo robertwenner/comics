@@ -16,31 +16,53 @@ sub set_up : Test(setup) {
 }
 
 
-sub no_duplicate_warnings_general : Tests {
+sub reports_problem_if_not_yet_published : Tests {
     my $comic = MockComic::make_comic($MockComic::PUBLISHED_WHEN => '3016-01-01');
-    stdout_like {
-        $comic->warning("a");
-        $comic->warning("a");
-        $comic->warning("b");
-        $comic->warning("c");
-        $comic->warning("b");
-        $comic->warning("b");
-    }
-    qr{some_comic.svg : a\r?\nsome_comic.svg : b\r?\nsome_comic.svg : c\r?\nsome_comic.svg : b\r?\n};
+    $comic->warning("oops");
+    like(${$comic->{warnings}}[0], qr{\boops\b});
+}
+
+
+sub suppresses_duplicate_warnings : Tests {
+    my $comic = MockComic::make_comic($MockComic::PUBLISHED_WHEN => '3016-01-01');
+    $comic->warning("a");
+    $comic->warning("a");
+    $comic->warning("b");
+    $comic->warning("c");
+    $comic->warning("b");
+    $comic->warning("b");
     is_deeply($comic->{warnings}, ['a', 'b', 'c', 'b']);
 }
 
 
-sub warn_croaks_on_published : Tests {
-    my $comic = MockComic::make_comic($MockComic::PUBLISHED_WHEN => '2016-01-01');
-    eval {
-        $comic->warning("a");
-    };
-    like($@, qr{some_comic\.svg : a\b.*}i);
+sub reports_problem_if_no_published_date : Tests {
+    my $comic = MockComic::make_comic($MockComic::PUBLISHED_WHEN => '');
+    $comic->warning("oops");
+    like(${$comic->{warnings}}[0], qr{\boops\b});
 }
 
 
-sub warning_includes_source_file_name : Tests {
+sub checks_croaks_on_published : Tests {
+    my $comic = MockComic::make_comic($MockComic::PUBLISHED_WHEN => '2016-01-01');
+    $comic->warning("oops");
+    eval {
+        $comic->check();
+    };
+    like($@, qr{1 problem}, 'should have an error message');
+}
+
+
+sub writes_warnings_to_stdout : Tests {
+    my $comic = MockComic::make_comic($MockComic::PUBLISHED_WHEN => '2016-01-01');
+    stdout_like {
+        $comic->warning("oops");
+    } qr{\boops\b}i;
+}
+
+
+sub warning_on_stdout_includes_source_file_name : Tests {
     my $comic = MockComic::make_comic($MockComic::PUBLISHED_WHEN => '3016-01-01');
-    stdout_like { $comic->warning("oops"); } qr{some_comic\.svg : oops\b.*}i;
+    stdout_like {
+        $comic->warning("oops");
+    } qr{\bsome_comic\.svg\b};
 }

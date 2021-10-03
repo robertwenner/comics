@@ -29,20 +29,20 @@ sub accepts_meta_prefix : Tests {
 XML
     );
     $check = Comic::Check::MetaLayer->new('HyperMega');
-    eval {
-        $check->check($comic);
-    };
-    like($@, qr{No texts in HyperMegaEnglish layer}i);
+
+    $check->check($comic);
+
+    like(${$comic->{warnings}}[0], qr{No texts in HyperMegaEnglish layer}i);
 }
 
 
 sub no_meta_layer : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => "funny comic" });
-    eval {
-        $check->check($comic);
-    };
-    like($@, qr{No MetaEnglish layer}i);
+
+    $check->check($comic);
+
+    like(${$comic->{warnings}}[0], qr{No MetaEnglish layer}i);
 }
 
 
@@ -50,7 +50,9 @@ sub no_meta_layer_checks_other_languages : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::PUBLISHED_WHEN => '3000-01-01',
     );
+
     $check->check($comic);
+
     is_deeply($comic->{warnings}, [
         "Comic::Check::MetaLayer: No MetaDeutsch layer",
         "Comic::Check::MetaLayer: No MetaEnglish layer",
@@ -67,10 +69,10 @@ sub no_text_in_meta_layer : Tests {
         inkscape:label="MetaEnglish"/>
 XML
     );
-    eval {
-        $check->check($comic);
-    };
-    like($@, qr{No texts in MetaEnglish layer}i);
+
+    $check->check($comic);
+
+    like(${$comic->{warnings}}[0], qr{No texts in MetaEnglish layer}i);
 }
 
 
@@ -95,10 +97,10 @@ sub first_text_must_be_from_meta_layer : Tests {
     </g>
 XML
     );
-    eval {
-        $check->check($comic);
-    };
-    like($@, qr{First text must be from MetaEnglish}i);
+
+    $check->check($comic);
+
+    like(${$comic->{warnings}}[0], qr{First text must be from MetaEnglish}i);
 }
 
 
@@ -111,10 +113,10 @@ sub first_text_must_be_from_meta_layer_no_texts : Tests {
     <g inkscape:groupmode="layer" inkscape:label="MetaEnglish"/>
 XML
     );
-    eval {
-        $check->check($comic);
-    };
-    like($@, qr{No texts in MetaEnglish layer});
+
+    $check->check($comic);
+
+    like(${$comic->{warnings}}[0], qr{No texts in MetaEnglish layer});
 }
 
 
@@ -139,11 +141,11 @@ sub does_not_rely_on_order_in_xml : Tests {
     </g>
 XML
     );
-    eval {
-        $check->check($comic);
-    };
-    like($@, qr{First text must be from MetaEnglish}i);
-    like($@, qr{'down' from layer English});
+
+    $check->check($comic);
+
+    like(${$comic->{warnings}}[0], qr{First text must be from MetaEnglish}i);
+    like(${$comic->{warnings}}[0], qr{'down' from layer English});
 }
 
 
@@ -161,8 +163,8 @@ sub all_good : Tests {
     </g>
 XML
     );
-    eval {
-        $check->check($comic);
-    };
-    is($@, '');
+
+    $check->check($comic);
+
+    is_deeply($comic->{warnings}, []);
 }
