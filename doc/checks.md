@@ -263,6 +263,21 @@ sudo apt-get install aspell libaspell-dev aspell-en aspell-de
 
 Add additional languages (like `aspell-de` above for German) as needed.
 
+The `Comic::Check::Spelling` only reports unknown words. It's not
+interactive: you cannot add unknown words and you cannot enter corrections.
+To do the later, edit your comic in Inkscape. To do the former, either add
+the word to the comic's ignore list as described above, or add them to the
+global (per-user) word list:
+
+```shell
+echo word > en.txt
+aspell --lang en check en.txt
+# accept words manually
+rm en.txt
+```
+
+Repeat for other languages using the language's code.
+
 
 ## `Comic::Check::Tag`
 
