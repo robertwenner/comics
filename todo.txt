@@ -226,8 +226,5 @@
 - feature: deduct output path from fragments, like outdir / base dir plus
   language placeholders, for less repetitive configuration files
 
-- feature: spell check: only report each misspelled word only once per
-  language per comic, to also avoid reporting typos twice when there
-  is a per language container layer and the layer collecting code pick both
-  actual language and container layer, but the container layer contains the
-  actual language layer
+- feature: spellcheck containers inside other containers first, to provide a
+  more accurate location of misspelled words (English vs ContainerEnglish)

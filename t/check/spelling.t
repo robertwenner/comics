@@ -49,6 +49,7 @@ sub cut_into_words : Tests {
     is_deeply([Comic::Check::Spelling::_cut_into_words("this isn't good")], ["this", "isn't", "good"]);
     is_deeply([Comic::Check::Spelling::_cut_into_words("rock'n'roll")], ["rock'n'roll"]);
     is_deeply([Comic::Check::Spelling::_cut_into_words("'nen Bier")], ["'nen", "Bier"]);
+    is_deeply([Comic::Check::Spelling::_cut_into_words("'quoted'")], ["'quoted'"]);
 }
 
 
@@ -243,7 +244,6 @@ XML
         "Comic::Check::Spelling: Misspelled in layer Deutsch: 'Tüppfehler'?",
         "Comic::Check::Spelling: Misspelled in layer HintergrundDeutsch: 'tüppfehler'?",
         "Comic::Check::Spelling: Misspelled in layer English: 'typpo'?",
-        "Comic::Check::Spelling: Misspelled in layer MetaEnglish: 'typpo'?",
     ]);
 }
 
@@ -305,4 +305,69 @@ JSON
     my $comic = MockComic::make_comic($MockComic::JSON => $json);
     $comic->{checks}[0]->check($comic);
     is_deeply($comic->{warnings}, []);
+}
+
+
+sub reports_word_in_nested_layers_only_once : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => "Beer!",
+        },
+        $MockComic::XML => <<'XML',
+    <g inkscape:groupmode="layer" inkscape:label="ContainerEnglish">
+        <g inkscape:groupmode="layer" inkscape:label="MetaEnglish">
+            <text x="0" y="0"><tspan>typpo</tspan></text>
+        </g>
+        <g inkscape:groupmode="layer" inkscape:label="English">
+            <text x="0" y="0"><tspan>typpo</tspan></text>
+        </g>
+        <g inkscape:groupmode="layer" inkscape:label="HintergrundEnglish">
+            <text x="0" y="0"><tspan>typpo</tspan></text>
+        </g>
+        <text x="0" y="0"><tspan>typpo</tspan></text>
+    </g>
+XML
+    );
+
+    $check->check($comic);
+
+    is_deeply($comic->{warnings}, [
+        "Comic::Check::Spelling: Misspelled in layer ContainerEnglish: 'typpo'?",
+    ]);
+}
+
+
+sub reports_words_in_title_only_once : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => "typpo, typpo, typpo",
+        },
+    );
+
+    $check->check($comic);
+
+    is_deeply($comic->{warnings}, [
+        "Comic::Check::Spelling: Misspelled in English metadata 'title': 'typpo'?",
+    ]);
+}
+
+
+sub resets_reported_words_between_comics : Tests {
+    my $comic1 = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => "typpo, typpo, typpo",
+        },
+    );
+    my $comic2 = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => "typpo, typpo, typpo",
+        },
+    );
+
+    $check->check($comic1);
+    $check->check($comic2);
+
+    is_deeply($comic2->{warnings}, [
+        "Comic::Check::Spelling: Misspelled in English metadata 'title': 'typpo'?",
+    ]);
 }

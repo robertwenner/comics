@@ -112,6 +112,7 @@ sub check {
     my ($self, $comic) = @ARG;
 
     my %codes = $comic->language_codes();
+    $self->{complained_about} = {};
     foreach my $language ($comic->languages()) {
         my $code = $codes{$language};
         if ($self->_has_dictionary($code)) {
@@ -207,8 +208,12 @@ sub _check_text {
 
     foreach my $word (_cut_into_words($text)) {
         next if (defined ($self->{ignore}{$language}{lc $word}));
+
         unless ($dictionary->check($word)) {
-            $self->warning($comic, "Misspelled in $where: '$word'?");
+            unless (${$self->{complained_about}}{$word}) {
+                $self->warning($comic, "Misspelled in $where: '$word'?");
+                ${$self->{complained_about}}{$word}++;
+            }
         }
     }
     return;
