@@ -206,6 +206,8 @@ sub _check_text {
     my $code = $codes{$language};
     my $dictionary = ${$self->{dictionaries}}{$code};
 
+    $text =~ s{https?://\S+}{}mg;
+
     foreach my $word (_cut_into_words($text)) {
         next if (defined ($self->{ignore}{$language}{lc $word}));
 

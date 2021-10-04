@@ -382,3 +382,20 @@ sub resets_reported_words_between_comics : Tests {
         "Comic::Check::Spelling: Misspelled in English metadata 'title': 'typpo'?",
     ]);
 }
+
+
+sub ignores_https_urls : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::XML => <<'XML',
+    <g inkscape:groupmode="layer" inkscape:label="English">
+        <text x="0" y="0"><tspan>https://typpo.example.com/some-secure-web-site</tspan></text>
+        <text x="0" y="0"><tspan>http://typppo.example.com/some-not-so-secure-web-site</tspan></text>
+        <text x="0" y="0"><tspan>https://example.com/some/long/path/with/typpppo</tspan></text>
+        <text x="0" y="0"><tspan>https://example.com/some/path?with=query-params&amp;one=typppppo</tspan></text>
+    </g>
+XML
+    );
+
+    $check->check($comic);
+    is_deeply($comic->{warnings}, []);
+}
