@@ -56,11 +56,12 @@ sub cut_into_words : Tests {
     is_deeply([Comic::Check::Spelling::_cut_into_words("yes!")], ["yes"]);
     is_deeply([Comic::Check::Spelling::_cut_into_words("me&you")], ["me", "you"]);
     is_deeply([Comic::Check::Spelling::_cut_into_words("five%")], ["five"]);
-    is_deeply([Comic::Check::Spelling::_cut_into_words('@you')], ["you"]);
+    is_deeply([Comic::Check::Spelling::_cut_into_words('@you')], ['@you']);
     is_deeply([Comic::Check::Spelling::_cut_into_words('(light)beer')], ["light", "beer"]);
     is_deeply([Comic::Check::Spelling::_cut_into_words('[light]beer')], ["light", "beer"]);
-    is_deeply([Comic::Check::Spelling::_cut_into_words('light-beer')], ["light", "beer"]);
     is_deeply([Comic::Check::Spelling::_cut_into_words('lager/ale')], ["lager", "ale"]);
+    is_deeply([Comic::Check::Spelling::_cut_into_words('test-driven')], ["test", "driven"]);
+    is_deeply([Comic::Check::Spelling::_cut_into_words('5G')], ["G"]);
 }
 
 
