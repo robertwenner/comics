@@ -229,8 +229,7 @@
 - feature: spellcheck containers inside other containers first, to provide a
   more accurate location of misspelled words (English vs ContainerEnglish)
 
-- feature: spellcheck: smarter... better handling of single quotes / word
-  splitting, specify a comics specific word list, allow ignoring
+- feature: spellcheck: specify a comics specific word list, allow ignoring
   #hashtags, allow ignoring words with non-letters, ignoring case, passing
   hypenated German words as one word.
 

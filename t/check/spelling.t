@@ -50,8 +50,23 @@ sub ignores_meta_data_scalar : Tests {
             $MockComic::ENGLISH => "Beer title"
         },
         $MockComic::TAGS => {},
-        'foo' => 'bar',
     );
+    $comic->{meta_data}->{Author} = "me, and don't spell check me";
+
+    $check->check($comic);
+
+    is_deeply(\@asked_to_check, ["Beer title"]);
+}
+
+
+sub ignores_meta_data_array : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => "Beer title"
+        },
+        $MockComic::TAGS => {},
+    );
+    $comic->{meta_data}->{'allow-duplicated'} = ['do not spellcheck me'];
 
     $check->check($comic);
 
@@ -329,7 +344,10 @@ XML
         "typpo container", "typpo meta", "typpo normal", "typpo bg",  # layers in the container
     ]);
     is_deeply($comic->{warnings}, [
-        "Comic::Check::Spelling: Misspelled in layer ContainerEnglish: 'typpo'?",
+        "Comic::Check::Spelling: Misspelled in layer ContainerEnglish: 'typpo'? (4 times)",
+        "Comic::Check::Spelling: Misspelled in layer English: 'typpo'?",
+        "Comic::Check::Spelling: Misspelled in layer HintergrundEnglish: 'typpo'?",
+        "Comic::Check::Spelling: Misspelled in layer MetaEnglish: 'typpo'?",
     ]);
 }
 
@@ -355,6 +373,32 @@ sub reports_words_in_meta_data_only_once : Tests {
         ['tags here', 'title here']);
     is_deeply($comic->{warnings}, [
         "Comic::Check::Spelling: Misspelled in English metadata 'tags': 'typpo'?",
+        "Comic::Check::Spelling: Misspelled in English metadata 'title': 'typpo'?",
+    ]);
+}
+
+
+sub reports_same_typo_in_different_languages : Tests {
+    %typos = (
+        'title en' => 'typo',
+        'title de' => 'typo',
+    );
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => "title en",
+            $MockComic::DEUTSCH => "title de",
+        },
+        $MockComic::TAGS => {}
+    );
+
+    $check->check($comic);
+
+    is_deeply(
+        \@asked_to_check,
+        ['title de', 'title en']);
+    is_deeply($comic->{warnings}, [
+        "Comic::Check::Spelling: Misspelled in Deutsch metadata 'title': 'typo'?",
+        "Comic::Check::Spelling: Misspelled in English metadata 'title': 'typo'?",
     ]);
 }
 

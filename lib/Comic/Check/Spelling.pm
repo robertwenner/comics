@@ -115,10 +115,16 @@ sub check {
     my ($self, $comic) = @ARG;
 
     my %codes = $comic->language_codes();
-    $self->{complained_about} = {};
     foreach my $language ($comic->languages()) {
+        $self->{complained_about} = {};
         $self->_check_metadata($comic, $language);
         $self->_check_layers($comic, $language);
+
+        foreach my $msg (sort keys %{$self->{complained_about}}) {
+            my $count = $self->{complained_about}{$msg};
+            $msg .= " ($count times)" if ($count > 1);
+            $self->warning($comic, $msg);
+        }
     }
     return;
 }
@@ -131,9 +137,8 @@ sub _check_metadata {
         # Look at the comic's meta data top level keys, and if they are
         # hashes (e.g., date and author are not), look for language keys
         # right underneath. This assumes that languages always appear at
-        # that level. If thsis is not the case (e.g., for allow-duplicated,
-        # ignore the key as we wouldn't know in which language to
-        # spell-check it anyway.
+        # that level. If this is is not the case, ignore the key as we
+        # wouldn't know in which language to spell-check it anyway.
         next unless (ref ${$comic->{meta_data}}{$key} eq 'HASH');
 
         my $value = $comic->{meta_data}{$key}{$language};
@@ -192,10 +197,7 @@ sub _check_text {
     while (my $word = $checker->next_word()) {
         next if (defined ($self->{ignore}{$language}{lc $word}));
 
-        unless (${$self->{complained_about}}{$word}) {
-            $self->warning($comic, "Misspelled in $where: '$word'?");
-            ${$self->{complained_about}}{$word}++;
-        }
+        ${$self->{complained_about}}{"Misspelled in $where: '$word'?"}++;
     }
     return;
 }
