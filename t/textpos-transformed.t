@@ -17,9 +17,7 @@ sub before : Test(setup) {
 
 sub assert_order {
     my ($svg, $expected) = @_;
-    my $comic = MockComic::make_comic(
-        $MockComic::NAMESPACE_DECLARATION => 'xmlns:xlink="http://www.w3.org/1999/xlink"',
-        $MockComic::XML => $svg);
+    my $comic = MockComic::make_comic($MockComic::XML => $svg);
     my $is = join "", $comic->texts_in_language('English');
     is($is, $expected);
 }
@@ -119,9 +117,7 @@ sub text_on_path_simple : Tests {
     </text>
     <path d="M 100 100 L 300 100 L 200 300 z" id="dreieck"/>
 SVG
-    my $comic = MockComic::make_comic(
-        $MockComic::NAMESPACE_DECLARATION => 'xmlns:xlink="http://www.w3.org/1999/xlink"',
-        $MockComic::XML => $svg);
+    my $comic = MockComic::make_comic($MockComic::XML => $svg);
     # this fucking sucks if I need to write code for each possible path and shape
     # for the off-chance I might actually eventually use it.
     my @texts = $comic->{xpath}->findnodes(Comic::_build_xpath('text'));
@@ -140,9 +136,7 @@ sub text_on_path_ellipse : Tests {
     </text>
     <ellipse id="path" cx="267.1633" cy="932.95453" rx="34.891293" ry="38.88921"/>
 SVG
-    my $comic = MockComic::make_comic(
-        $MockComic::NAMESPACE_DECLARATION => 'xmlns:xlink="http://www.w3.org/1999/xlink"',
-        $MockComic::XML => $svg);
+    my $comic = MockComic::make_comic($MockComic::XML => $svg);
     my @texts = $comic->{xpath}->findnodes(Comic::_build_xpath('text'));
     my ($x, $y) = $comic->_transformed($texts[0]);
     is($x, 100, 'wrong x');

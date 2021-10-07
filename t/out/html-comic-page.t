@@ -384,6 +384,7 @@ sub fb_open_graph : Tests {
         $MockComic::DESCRIPTION => {
             'Deutsch' => 'Paul und Max \"gehen\" Bier trinken.',
         },
+        $MockComic::TAGS => { 'Deutsch'  => ['Bier', 'Craft'] },
     );
     MockComic::fake_file('de-comic.templ', <<'XML');
 <meta property="og:url" content="[% comic.url.$Language %]"/>

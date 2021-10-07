@@ -37,6 +37,9 @@ sub many_languages : Tests {
 
 
 sub no_languages : Tests {
-    my $comic = MockComic::make_comic($MockComic::TITLE => {});
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {},
+        $MockComic::TAGS => { $MockComic::ENGLISH => [], },
+    );
     is_deeply([sort $comic->languages()], []);
 }

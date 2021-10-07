@@ -2,14 +2,12 @@ package MockComic;
 
 use strict;
 use warnings;
-no warnings qw/redefine/;
 use utf8;
 use Readonly;
 use Test::More;
 use Test::Deep;
 use Comic;
 use Comic::Settings;
-use Carp;
 use JSON;
 
 # Constants to catch typos when defining meta data.
@@ -42,7 +40,6 @@ our Readonly $HEIGHT = 'height';
 our Readonly $WIDTH = 'width';
 our Readonly $DOMAINS = 'Domains';
 our Readonly $SEE = 'see';
-our Readonly $NAMESPACE_DECLARATION = 'namespace_declaration';
 our Readonly $TWITTER = 'twitter';
 our Readonly $SETTINGS = "settings";
 our Readonly $CHECKS = 'checks';
@@ -60,10 +57,6 @@ my %defaultArgs = (
         $ENGLISH => 'Drinking beer',
         $DEUTSCH => 'Bier trinken',
     },
-    $TAGS => {
-        $ENGLISH => ['beer', 'craft'],
-        $DEUTSCH => ['Bier', 'Craft'],
-    },
     $SETTINGS => {
         $DOMAINS => {
             $ENGLISH => 'beercomics.com',
@@ -78,7 +71,6 @@ my %defaultArgs = (
     $WIDTH => 600,
     $PUBLISHED_WHEN => '2016-08-01',
     $PUBLISHED_WHERE => 'web',
-    $NAMESPACE_DECLARATION => '',
 );
 
 
@@ -90,6 +82,7 @@ sub set_up {
 
 
 sub mock_methods {
+    no warnings qw/redefine/;
     *Comic::_exists = sub {
         my ($name) = @_;
         return exists $files_read{$name} && defined($files_read{$name});;
@@ -129,22 +122,7 @@ sub mock_methods {
         # Most tests use XML, so tell them to not use the cache.
         return 0;
     };
-
-    *Comic::_get_tz = sub {
-        return '-0500';
-    };
-
-    *Comic::_file_size = sub {
-        return 1024;
-    };
-
-    *Imager::QRCode::plot_qrcode = sub {
-        return Imager->new;
-    };
-
-    *Imager::write = sub {
-        return 1;
-    }
+    use warnings;
 }
 
 
@@ -163,7 +141,6 @@ sub fake_comic {
     my %args = @_;
 
     my $json = _build_json(%args);
-    my $namespace = ${args}{$NAMESPACE_DECLARATION};
     my $xml = <<"HEADER";
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
@@ -172,9 +149,9 @@ sub fake_comic {
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   $namespace
-   xmlns="http://www.w3.org/2000/svg">
-  <metadata id="metadata7">
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink">
+   <metadata id="metadata7">
     <rdf:RDF>
       <cc:Work rdf:about="">
         <dc:description>{$json}</dc:description>

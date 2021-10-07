@@ -176,7 +176,7 @@ sub populates_fields_empty_backlog : Tests {
 
 
 sub populates_fields_collect_array_one_comic_in_backlog : Tests {
-    my $comic = make_comic('eins', 'Deutsch', '3016-01-01');
+    my $comic = make_comic_with_tags('Bier', 'Craft');
 
     $backlog = Comic::Out::Backlog->new(
         'template' => 'backlog.templ',
@@ -198,7 +198,7 @@ sub populates_fields_collect_array_one_comic_in_backlog : Tests {
 
 
 sub populates_fields_collect_scalar_one_comic_in_backlog : Tests {
-    my $comic = make_comic('eins', 'Deutsch', '3016-01-01');
+    my $comic = make_comic_with_tags('Bier', 'Craft');
 
     $backlog = Comic::Out::Backlog->new(
         'template' => 'backlog.templ',

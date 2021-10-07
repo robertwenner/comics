@@ -74,7 +74,12 @@ JSON
 
 
 sub writes_json_cache_if_stale : Tests {
-    MockComic::make_comic();
+    MockComic::make_comic(
+        $MockComic::TAGS => {
+            $MockComic::ENGLISH => ['beer', 'craft'],
+            $MockComic::DEUTSCH => ['Bier', 'Craft'],
+        },
+    );
     my $json = JSON::from_json(<<'JSON');
 {
     "title": {

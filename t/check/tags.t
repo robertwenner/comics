@@ -98,10 +98,12 @@ sub multiple_tags : Tests {
     my $comic1 = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => "a comic" },
         $MockComic::PUBLISHED_WHEN => '3016-01-01',
+        $MockComic::TAGS => { $MockComic::ENGLISH => ['beer', 'craft'] },
         $MockComic::WHO => {$MockComic::ENGLISH => ['tag 1']});
     my $comic2 = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => "a comic" },
         $MockComic::PUBLISHED_WHEN => '3016-01-02',
+        $MockComic::TAGS => { $MockComic::ENGLISH => ['beer', 'craft'] },
         $MockComic::WHO => {$MockComic::ENGLISH => ['tag1']});
     $check = Comic::Check::Tag->new('tags', 'who');
     $check->notify($comic1);
