@@ -6,7 +6,7 @@ use utf8;
 use Carp;
 use English '-no_match_vars';
 use String::Util 'trim';
-use Text::Aspell;
+use Text::SpellChecker;
 
 use Comic::Check::Check;
 use base('Comic::Check::Check');
@@ -98,6 +98,9 @@ in lower case. For example, when checking english spelling, this Check will
 look at layers named "English", "MetaEnglish", and "EnglishBackground", but
 not "englishtest" or "ENGLISH".
 
+If the dictionaries for a language are not installed, all words will be
+flagged as typos.
+
 Parameters:
 
 =over 4
@@ -114,47 +117,24 @@ sub check {
     my %codes = $comic->language_codes();
     $self->{complained_about} = {};
     foreach my $language ($comic->languages()) {
-        my $code = $codes{$language};
-        if ($self->_has_dictionary($code)) {
-            $self->_check_metadata($comic, $language);
-            $self->_check_layers($comic, $language);
-        }
-        else {
-            $self->warning($comic, "No $language ($code) aspell dictionary installed, skipping spell check");
-        }
+        $self->_check_metadata($comic, $language);
+        $self->_check_layers($comic, $language);
     }
     return;
-}
-
-
-sub _has_dictionary {
-    my ($self, $code) = @ARG;
-
-    if (!$self->{dictionaries}) {
-        my $aspell = Text::Aspell->new();
-        foreach my $line ($aspell->list_dictionaries()) {
-            my @fields = split /:/, $line;
-            my $found = $fields[0];
-            if (length($found) == 2) {
-                my $dictionary = Text::Aspell->new();
-                $dictionary->set_option('lang', $found);
-                ${$self->{dictionaries}}{$found} = $dictionary;
-            }
-        }
-    }
-
-    return defined ${$self->{dictionaries}}{$code};
 }
 
 
 sub _check_metadata {
     my ($self, $comic, $language) = @ARG;
 
-    # Look at the comic's meta data top level keys, and if they are hashes (e.g.,
-    # date and author are not), look for language keys right underneath.
-    # This assumes that languages always appear at that level.
     foreach my $key (sort keys %{$comic->{meta_data}}) {
-        next unless (ref $comic->{meta_data}{$key} eq ref {});
+        # Look at the comic's meta data top level keys, and if they are
+        # hashes (e.g., date and author are not), look for language keys
+        # right underneath. This assumes that languages always appear at
+        # that level. If thsis is not the case (e.g., for allow-duplicated,
+        # ignore the key as we wouldn't know in which language to
+        # spell-check it anyway.
+        next unless (ref ${$comic->{meta_data}}{$key} eq 'HASH');
 
         my $value = $comic->{meta_data}{$key}{$language};
         next unless $value;
@@ -204,36 +184,20 @@ sub _check_text {
 
     my %codes = $comic->language_codes();
     my $code = $codes{$language};
-    my $dictionary = ${$self->{dictionaries}}{$code};
 
-    $text =~ s{https?://\S+}{}mg;
+    # remove URLs, no point in spellchecking them
+    $text =~ s{https?://\S+}{}mgi;
 
-    foreach my $word (_cut_into_words($text)) {
+    my $checker = Text::SpellChecker->new(lang => $code, text => $text);
+    while (my $word = $checker->next_word()) {
         next if (defined ($self->{ignore}{$language}{lc $word}));
 
-        unless ($dictionary->check($word)) {
-            unless (${$self->{complained_about}}{$word}) {
-                $self->warning($comic, "Misspelled in $where: '$word'?");
-                ${$self->{complained_about}}{$word}++;
-            }
+        unless (${$self->{complained_about}}{$word}) {
+            $self->warning($comic, "Misspelled in $where: '$word'?");
+            ${$self->{complained_about}}{$word}++;
         }
     }
     return;
-}
-
-
-sub _cut_into_words {
-    my @texts = @ARG;
-
-    my @words;
-    foreach my $text (@texts) {
-        foreach my $word (split qr{[\s+.,!#%;:\?&\(\)"\/\[\]\d-]}, $text) {
-            $word = trim($word);
-            $word =~ s/^'(.+)'$/$1/;
-            push @words, $word if ($word);
-        }
-    }
-    return @words;
 }
 
 

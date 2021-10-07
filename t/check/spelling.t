@@ -8,227 +8,186 @@ use lib 't';
 use MockComic;
 use Comic::Check::Spelling;
 
+
 __PACKAGE__->runtests() unless caller;
 
+
 my $check;
+my %typos;
+my @asked_to_check;
 
 
 sub set_up : Test(setup) {
     MockComic::set_up();
 
     no warnings qw/redefine/;
-    *Text::Aspell::list_dictionaries = sub {
-        return ("en:...", "de:...");
-    };
-    *Text::Aspell::check = sub {
-        my ($self, $word) = @_;
-        if ($self->get_option("lang") eq "en") {
-            return lc $word ne "typpo";
+    *Text::SpellChecker::next_word = sub {
+        my ($checker) = @_;
+        # Code under tests keeps asking for the next unknown word, but the
+        # Text::SpellChecker::text always returns the whole text that was
+        # initially passed. Only remember it when it's different from what
+        # it was last time. That way tests need to pass different texts for
+        # each comic text they want to check, but don't get confusingly
+        # duplicated texts.
+        my $text = $checker->text();
+        if (@asked_to_check == 0 || $asked_to_check[-1] ne $text) {
+            push @asked_to_check, $text;
+            return $typos{$text};
         }
-        if ($self->get_option("lang") eq "de") {
-            return lc $word ne "tüppfehler";
-        }
-        return 1;
+        return undef;
     };
     use warnings;
 
+    %typos = ();
+    @asked_to_check = ();
     $check = Comic::Check::Spelling->new();
 }
 
 
-sub cut_into_words : Tests {
-    is_deeply([Comic::Check::Spelling::_cut_into_words()], []);
-    is_deeply([Comic::Check::Spelling::_cut_into_words("")], []);
-    is_deeply([Comic::Check::Spelling::_cut_into_words("one")], ["one"]);
-    is_deeply([Comic::Check::Spelling::_cut_into_words("two words")], ["two", "words"]);
-    is_deeply([Comic::Check::Spelling::_cut_into_words("words,and punctuation!")], ["words", "and", "punctuation"]);
-    is_deeply([Comic::Check::Spelling::_cut_into_words("  totally\nspaced \t out  ")], ["totally", "spaced", "out"]);
-    is_deeply([Comic::Check::Spelling::_cut_into_words("dos\r\nline break")], ["dos", "line", "break"]);
-    is_deeply([Comic::Check::Spelling::_cut_into_words("1, 2, 3, go!")], ["go"]);
-    is_deeply([Comic::Check::Spelling::_cut_into_words(" äh, Jüngchen...")], ["äh", "Jüngchen"]);
-    is_deeply([Comic::Check::Spelling::_cut_into_words("this isn't good")], ["this", "isn't", "good"]);
-    is_deeply([Comic::Check::Spelling::_cut_into_words("rock'n'roll")], ["rock'n'roll"]);
-    is_deeply([Comic::Check::Spelling::_cut_into_words("'nen Bier")], ["'nen", "Bier"]);
-    is_deeply([Comic::Check::Spelling::_cut_into_words("'quoted'")], ["quoted"]);
-    is_deeply([Comic::Check::Spelling::_cut_into_words('"quoted"')], ["quoted"]);
-    is_deeply([Comic::Check::Spelling::_cut_into_words("#hashtag")], ["hashtag"]);
-    is_deeply([Comic::Check::Spelling::_cut_into_words("questions?")], ["questions"]);
-    is_deeply([Comic::Check::Spelling::_cut_into_words("yes!")], ["yes"]);
-    is_deeply([Comic::Check::Spelling::_cut_into_words("me&you")], ["me", "you"]);
-    is_deeply([Comic::Check::Spelling::_cut_into_words("five%")], ["five"]);
-    is_deeply([Comic::Check::Spelling::_cut_into_words('@you')], ['@you']);
-    is_deeply([Comic::Check::Spelling::_cut_into_words('(light)beer')], ["light", "beer"]);
-    is_deeply([Comic::Check::Spelling::_cut_into_words('[light]beer')], ["light", "beer"]);
-    is_deeply([Comic::Check::Spelling::_cut_into_words('lager/ale')], ["lager", "ale"]);
-    is_deeply([Comic::Check::Spelling::_cut_into_words('test-driven')], ["test", "driven"]);
-    is_deeply([Comic::Check::Spelling::_cut_into_words('5G')], ["G"]);
-}
-
-
-sub has_dictionary_installed : Tests {
-    no warnings qw/redefine/;
-    local *Text::Aspell::list_dictionaries = sub {
-        return (
-            "de:de::60:default",
-            "de-neu:de:neu:60:default",
-            "de_AT:de_AT::60:default",
-            "de_CH:de_CH::60:default",
-            "de_DE:de_DE::60:default",
-            "de_DE:de_DE::60:default",
-            "de_DE-neu:de_DE:neu:60:default",
-            "en:en::60:default",
-            "en-variant_0:en:variant_0:60:default",
-            "en-w_accents:en:w_accents:60:default",
-            "en-wo_accents:en:wo_accents:60:default",
-            "en_US:en_US::60:default",
-            "en_US-variant_0:en_US:variant_0:60:default",
-            "es:es::60:default");
-    };
-    use warnings;
-
-    ok($check->_has_dictionary("de"));
-    ok($check->_has_dictionary("en"));
-    ok($check->_has_dictionary("es"));
-    ok(!$check->_has_dictionary("whatever"));
-}
-
-
-sub title_only_no_errors : Tests {
+sub ignores_meta_data_scalar : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
-            $MockComic::ENGLISH => "Drinking beer"
-        }
-    );
-    $check->check($comic);
-    ok(1);
-}
-
-
-sub checks_metadata_text : Tests {
-    my $comic = MockComic::make_comic(
-        $MockComic::TITLE => {
-            $MockComic::ENGLISH => "Typpo"
+            $MockComic::ENGLISH => "Beer title"
         },
-        $MockComic::PUBLISHED_WHEN => "3000-01-01",
+        $MockComic::TAGS => {},
+        'foo' => 'bar',
     );
-    $comic->{meta_data}->{allow_duplicated} = [];
+
     $check->check($comic);
-    is_deeply($comic->{warnings}, ["Comic::Check::Spelling: Misspelled in English metadata 'title': 'Typpo'?"]);
+
+    is_deeply(\@asked_to_check, ["Beer title"]);
 }
 
 
-sub checks_metadata_array : Tests {
+sub checks_meta_data_array : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
-            $MockComic::ENGLISH => "Beer"
+            $MockComic::ENGLISH => "Beer title"
+        },
+        $MockComic::TAGS => {},
+        'allow-duplicated' => ['blah'],
+    );
+
+    $check->check($comic);
+
+    is_deeply(\@asked_to_check, ["Beer title"]);
+}
+
+
+sub checks_meta_data_per_language_scalar : Tests {
+    %typos = ('Beer typo' => 'typo');
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => "Beer typo"
+        },
+        $MockComic::TAGS => {},
+    );
+
+    $check->check($comic);
+
+    is_deeply(\@asked_to_check, ["Beer typo"]);
+    is_deeply(
+        $comic->{warnings},
+        ["Comic::Check::Spelling: Misspelled in English metadata 'title': 'typo'?"]);
+}
+
+
+sub checks_metadata_per_language_array : Tests {
+    %typos = ('typpo' => "typpo");
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => "Title beer"
         },
         $MockComic::TAGS => {
-            $MockComic::ENGLISH => [ "one", "two", "typpo", "three", "Typpo" ]
+            $MockComic::ENGLISH => [ "one", "two", "typpo", "three" ]
         },
-        $MockComic::PUBLISHED_WHEN => "3000-01-01",
     );
+
     $check->check($comic);
-    is_deeply($comic->{warnings},
-        ["Comic::Check::Spelling: Misspelled in English metadata 'tags': 'typpo'?",
-        "Comic::Check::Spelling: Misspelled in English metadata 'tags': 'Typpo'?"]);
+
+    is_deeply([@asked_to_check], ["one", "two", "typpo", "three", "Title beer"]);
+    is_deeply(
+        $comic->{warnings},
+        ["Comic::Check::Spelling: Misspelled in English metadata 'tags': 'typpo'?"]);
 }
 
 
-sub checks_metadata_hash : Tests {
+sub checks_metadata_per_language_hash : Tests {
+    %typos = ('typpo' => 'typpo');
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
-            $MockComic::ENGLISH => "Beer"
+            $MockComic::ENGLISH => "Title"
         },
+        $MockComic::TAGS => {},
         $MockComic::SEE => {
             $MockComic::ENGLISH => { "bym", "typpo" }
         },
-        $MockComic::PUBLISHED_WHEN => "3000-01-01",
     );
+
     $check->check($comic);
-    is_deeply($comic->{warnings}, ["Comic::Check::Spelling: Misspelled in English metadata 'see': 'typpo'?"]);
+
+    is_deeply([@asked_to_check], ["bym", "typpo", "Title"]);
+    is_deeply(
+        $comic->{warnings},
+        ["Comic::Check::Spelling: Misspelled in English metadata 'see': 'typpo'?"]);
 }
 
 
 sub bails_out_on_objects_in_meta_data : Tests {
-    my $comic = MockComic::make_comic(
-        $MockComic::TAGS => {}
-    );
+    my $comic = MockComic::make_comic();
     $comic->{meta_data}->{"foo"}->{"English"} = $check;
+
     eval {
         $check->check($comic);
     };
+
     like($@, qr/Cannot spell check a Comic::Check::Spelling/);
 }
 
 
-sub checks_metadata_per_language_ok : Tests {
+sub checks_metadata_per_language : Tests {
+    %typos = ('Titel Tippfehler' => 'Tippfehler', 'title typo' => 'typo');
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
-            $MockComic::DEUTSCH => "Kein Tippfehler",
-            $MockComic::ENGLISH => "No typo",
+            $MockComic::DEUTSCH => "Titel Tippfehler",
+            $MockComic::ENGLISH => "title typo",
         },
-        $MockComic::PUBLISHED_WHEN => "3000-01-01",
         $MockComic::TAGS => {},
     );
+
     $check->check($comic);
-    is_deeply($comic->{warnings}, []);
+
+    is_deeply([@asked_to_check], ["Titel Tippfehler", "title typo"]);
+    is_deeply(
+        $comic->{warnings},
+        ["Comic::Check::Spelling: Misspelled in Deutsch metadata 'title': 'Tippfehler'?",
+         "Comic::Check::Spelling: Misspelled in English metadata 'title': 'typo'?"]);
 }
 
 
-sub checks_metadata_per_language_typos : Tests {
+sub checks_text_layers : Tests {
+    %typos = ('no typos here!' => 'typo');
     my $comic = MockComic::make_comic(
-        $MockComic::TITLE => {
-            $MockComic::DEUTSCH => "Ein Tüppfehler",
-            $MockComic::ENGLISH => "A typpo",
-        },
-        $MockComic::PUBLISHED_WHEN => "3000-01-01",
+        $MockComic::TITLE => {$MockComic::ENGLISH => "Beer!"},
+        $MockComic::TEXTS => {$MockComic::ENGLISH => ['no typos here!']},
         $MockComic::TAGS => {},
     );
+
     $check->check($comic);
+
+    is_deeply([@asked_to_check], ['Beer!', 'no typos here!']);
     is_deeply($comic->{warnings}, [
-        "Comic::Check::Spelling: Misspelled in Deutsch metadata 'title': 'Tüppfehler'?",
-        "Comic::Check::Spelling: Misspelled in English metadata 'title': 'typpo'?",
+        "Comic::Check::Spelling: Misspelled in layer English: 'typo'?",
     ]);
 }
 
 
-sub complains_if_no_dictionary_installed_for_language : Tests {
-    my $comic = MockComic::make_comic(
-        $MockComic::TITLE => {
-            "Hungarian" => "Sör"
-        },
-        $MockComic::SETTINGS => {
-            $MockComic::DOMAINS => {
-                "Hungarian" => "sör-képregény.hu"
-            }
-        },
-        $MockComic::PUBLISHED_WHEN => "3000-01-01",
-    );
-    $check->check($comic);
-    is_deeply($comic->{warnings}, ["Comic::Check::Spelling: No Hungarian (hu) aspell dictionary installed, skipping spell check"]);
-}
-
-
-sub checks_text_layers_no_typo : Tests {
-    my $comic = MockComic::make_comic(
-        $MockComic::TITLE => {$MockComic::ENGLISH => "Beer!"},
-        $MockComic::TEXTS => {$MockComic::ENGLISH => ['no typos here!']});
-    $check->check($comic);
-    is_deeply($comic->{warnings}, []);
-}
-
-
-sub checks_text_layers_typo : Tests {
-    my $comic = MockComic::make_comic(
-        $MockComic::TITLE => {$MockComic::ENGLISH => "Beer!"},
-        $MockComic::TEXTS => {$MockComic::ENGLISH => ['no typpo here!']},
-        $MockComic::PUBLISHED_WHEN => "3000-01-01");
-    $check->check($comic);
-    is_deeply($comic->{warnings}, ["Comic::Check::Spelling: Misspelled in layer English: 'typpo'?"]);
-}
-
-
 sub checks_text_layers_per_language : Tests {
+    %typos = (
+        'no typpo here' => 'typpo',
+        'Tüppfehler' => 'Tüppfehler',
+        'meta tüppfehler' => 'tüppfehler',
+    );
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
             $MockComic::ENGLISH => "Beer!",
@@ -251,7 +210,12 @@ sub checks_text_layers_per_language : Tests {
     </g>
 XML
     );
+
     $check->check($comic);
+
+    is_deeply(
+        \@asked_to_check,
+        ['Bier!', 'Tüppfehler', 'meta tüppfehler', 'Beer!', 'no typpo here', 'no meta typpo']);
     is_deeply($comic->{warnings}, [
         "Comic::Check::Spelling: Misspelled in layer Deutsch: 'Tüppfehler'?",
         "Comic::Check::Spelling: Misspelled in layer HintergrundDeutsch: 'tüppfehler'?",
@@ -261,10 +225,11 @@ XML
 
 
 sub ignore_words_case_insensitive : Tests {
+    %typos = ('Typpo' => 'Typpo', 'Passtscho' => 'Passtscho');
     $check = Comic::Check::Spelling->new(
         "ignore" => {
             "English" => ["typpo"],
-            "Deutsch" => "Passtscho"
+            "Deutsch" => "passtscho"
         });
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
@@ -274,7 +239,12 @@ sub ignore_words_case_insensitive : Tests {
         $MockComic::TAGS => {},
         $MockComic::PUBLISHED_WHEN => "3000-01-01",
     );
+
     $check->check($comic);
+
+    is_deeply(
+        \@asked_to_check,
+        ['Passtscho', 'Typpo']);
     is_deeply($comic->{warnings}, []);
 }
 
@@ -295,6 +265,7 @@ sub ignore_words_malformed : Tests {
 
 
 sub ignore_words_from_comic_meta_data : Tests {
+    %typos = ("typpo" => "typpo");
     my $json = <<'JSON';
     "title": {
         "English": "typpo"
@@ -315,64 +286,92 @@ sub ignore_words_from_comic_meta_data : Tests {
     "tags": {}
 JSON
     my $comic = MockComic::make_comic($MockComic::JSON => $json);
+
     $comic->{checks}[0]->check($comic);
+
+    is_deeply(\@asked_to_check, ["typpo"]);
     is_deeply($comic->{warnings}, []);
 }
 
 
 sub reports_word_in_nested_layers_only_once : Tests {
+    %typos = (
+        'typpo meta' => 'typpo',
+        'typpo normal' => 'typpo',
+        'typpo bg' => 'typpo',
+        'typpo container' => 'typpo',
+    );
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
             $MockComic::ENGLISH => "Beer!",
         },
+        $MockComic::TAGS => {},
         $MockComic::XML => <<'XML',
     <g inkscape:groupmode="layer" inkscape:label="ContainerEnglish">
         <g inkscape:groupmode="layer" inkscape:label="MetaEnglish">
-            <text x="0" y="0"><tspan>typpo</tspan></text>
+            <text x="0" y="0"><tspan>typpo meta</tspan></text>
         </g>
         <g inkscape:groupmode="layer" inkscape:label="English">
-            <text x="0" y="0"><tspan>typpo</tspan></text>
+            <text x="0" y="0"><tspan>typpo normal</tspan></text>
         </g>
         <g inkscape:groupmode="layer" inkscape:label="HintergrundEnglish">
-            <text x="0" y="0"><tspan>typpo</tspan></text>
+            <text x="0" y="0"><tspan>typpo bg</tspan></text>
         </g>
-        <text x="0" y="0"><tspan>typpo</tspan></text>
+        <text x="0" y="0"><tspan>typpo container</tspan></text>
     </g>
 XML
     );
 
     $check->check($comic);
 
+    is_deeply(\@asked_to_check, ["Beer!",
+        "typpo meta", "typpo normal", "typpo bg", # layers directly picked
+        "typpo container", "typpo meta", "typpo normal", "typpo bg",  # layers in the container
+    ]);
     is_deeply($comic->{warnings}, [
         "Comic::Check::Spelling: Misspelled in layer ContainerEnglish: 'typpo'?",
     ]);
 }
 
 
-sub reports_words_in_title_only_once : Tests {
+sub reports_words_in_meta_data_only_once : Tests {
+    %typos = (
+        'title here' => 'typpo',
+        'tags here' => 'typpo',
+    );
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
-            $MockComic::ENGLISH => "typpo, typpo, typpo",
+            $MockComic::ENGLISH => "title here",
+        },
+        $MockComic::TAGS => {
+            $MockComic::ENGLISH => [ "tags here" ],
         },
     );
 
     $check->check($comic);
 
+    is_deeply(
+        \@asked_to_check,
+        ['tags here', 'title here']);
     is_deeply($comic->{warnings}, [
-        "Comic::Check::Spelling: Misspelled in English metadata 'title': 'typpo'?",
+        "Comic::Check::Spelling: Misspelled in English metadata 'tags': 'typpo'?",
     ]);
 }
 
 
 sub resets_reported_words_between_comics : Tests {
+    %typos = (
+        'title1' => 'typpo',
+        'title2' => 'typpo',
+    );
     my $comic1 = MockComic::make_comic(
         $MockComic::TITLE => {
-            $MockComic::ENGLISH => "typpo, typpo, typpo",
+            $MockComic::ENGLISH => "title1",
         },
     );
     my $comic2 = MockComic::make_comic(
         $MockComic::TITLE => {
-            $MockComic::ENGLISH => "typpo, typpo, typpo",
+            $MockComic::ENGLISH => "title2",
         },
     );
 
@@ -387,16 +386,23 @@ sub resets_reported_words_between_comics : Tests {
 
 sub ignores_https_urls : Tests {
     my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => 'Title at www.example.org',
+        },
+        $MockComic::TAGS => {},
         $MockComic::XML => <<'XML',
     <g inkscape:groupmode="layer" inkscape:label="English">
-        <text x="0" y="0"><tspan>https://typpo.example.com/some-secure-web-site</tspan></text>
-        <text x="0" y="0"><tspan>http://typppo.example.com/some-not-so-secure-web-site</tspan></text>
-        <text x="0" y="0"><tspan>https://example.com/some/long/path/with/typpppo</tspan></text>
-        <text x="0" y="0"><tspan>https://example.com/some/path?with=query-params&amp;one=typppppo</tspan></text>
+        <text x="0" y="0"><tspan>secure https://typpo.example.com/some-secure-web-site</tspan></text>
+        <text x="0" y="0"><tspan>plain http://typppo.example.com/some-not-so-secure-web-site</tspan></text>
+        <text x="0" y="0"><tspan>path HTTPS://example.com/some/long/path/with/typo</tspan></text>
+        <text x="0" y="0"><tspan>query https://example.com/some/path?with=query-params&amp;one=typppppo</tspan></text>
     </g>
 XML
     );
 
     $check->check($comic);
-    is_deeply($comic->{warnings}, []);
+
+    is_deeply(
+        \@asked_to_check,
+        ['Title at www.example.org', 'secure ', 'plain ', 'path ', 'query ']);
 }

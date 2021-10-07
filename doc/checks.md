@@ -239,8 +239,10 @@ Spellchecks the given comic. Inkscape has built-in spell checking, but
 doesn't know which texts are in which language. Inkscape also doesn't check
 comic meta data. Hence this check.
 
-You can configure words to be ignored either in the main configuration file
-or in the comic:
+You can configure words to be ignored either in the spell checker (so that
+they are ignored whenever you spellcheck anything; see below), in the main
+configuration file (to always ignore them when checking your comics), or in
+the comic (to only ignore them in that particular comic):
 
 ```json
 {
@@ -254,20 +256,24 @@ or in the comic:
 }
 ```
 
-Spellchecking requires the GNU aspell program. You can install it on Ubuntu
-with
+Spellchecking requires either `hunspell` or GNU `aspell`. You need to
+install one of them plus its development dependencies in the operating
+system, e.g., for aspell on Ubuntu use
 
 ```shell
 sudo apt-get install aspell libaspell-dev aspell-en aspell-de
 ```
 
 Add additional languages (like `aspell-de` above for German) as needed.
+If you don't install a needed language, all words will be flagged as typos
+when trying to spellcheck that language.
 
-The `Comic::Check::Spelling` only reports unknown words. It's not
+The `Comic::Check::Spelling` only *reports* unknown words. It's not
 interactive: you cannot add unknown words and you cannot enter corrections.
-To do the later, edit your comic in Inkscape. To do the former, either add
-the word to the comic's ignore list as described above, or add them to the
-global (per-user) word list:
+To do the later, edit your comic in Inkscape (or in an XML editor if you're
+brave or hate the tiny input dialog in Inkscape; `.svg` is XML after all).
+To do the former, either add the word to the comic's ignore list as
+described above, or add them to the global (per-user) word list:
 
 ```shell
 echo word > en.txt
