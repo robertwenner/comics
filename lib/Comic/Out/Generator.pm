@@ -9,7 +9,7 @@ use Comic::Modules;
 use version; our $VERSION = qv('0.0.3');
 
 
-=for stopwords html Wenner merchantability perlartistic png html
+=for stopwords html Wenner merchantability perlartistic png html svg acyclic yaml toml ebook
 
 
 =head1 NAME
@@ -59,6 +59,162 @@ per-comic html page generator created and stored in each Comic.
 
 Static method that returns a hash of generator module names to the order in
 which they should run.
+
+Background: Generators are given as a JSON object in the configuration file.
+A JSON object is a like a hash, unordered by definition (see
+L<RFC8250|https://datatracker.ietf.org/doc/html/rfc8259>, section 4). But
+generators may depend on the output of other generators. For example,
+L<Comic::Out::QrCode> needs to know what URL to encode.
+
+How to get around this?
+
+
+=head3 Tie::IxHash
+
+Try to force an ordered hash for the generators.
+
+This makes it easy to use for comic authors: they just order the hash as
+needed.
+
+It also is a bad hack, messing with the internals of probably JSON parsing,
+and anybody who knows JSON would be surprised of this behavior.
+
+
+=head3 Array of objects
+
+Instead of using a hash in the configuration file, use an array instead,
+which is always ordered.
+
+    "Out": [
+        {
+            "Comic::Out::...": {
+                ...
+            }
+        },
+        ...
+
+On the plus side, this easy to understand for comic authors and easy to
+parse in the code.
+
+But it introduces an extra level in he configuration file, which may not be
+very intuitive to people not used to JSON. It would also be inconsistent
+compared to the C<Commic::Checks::Check> configuration (array vs object).
+
+
+=head3 Order implicitly defined
+
+This is the current approach: define the order of generators in the code.
+This way comic authors don't need to know about such details. The drawback
+is that you cannot hook in new modules without changing the code in this
+C<order> function. This could be fixed by allowing people to override the
+order in the configuration file.
+
+
+=head3 Order explicitly configured
+
+Put a new key, e.g., C<position>, in each generator configuration that
+defines its position in the order.
+
+    "Out": {
+        "Comic::Out::...": {
+            "position": 1,
+            ...
+        },
+        ...
+
+Pros: easy to code, somewhat easy to configure (until you have to insert a
+module and move all others one down). Still forces comic authors to know
+which generator depends on which other generators. If a generator has no
+position or if two generators share a position, C<croak>.
+
+
+=head3 Objects plus an ordering array
+
+Keep the objects for each generator, and add an array that defines the order.
+
+    "Out": {
+        "order": ["Comic::Out::Foo", "Comic::Out::Bar"],
+
+        "Comic::Out::Foo": {
+            ...
+        },
+        "Comic::Out::Bar": {
+            ...
+        },
+        ...
+
+This should make for simple code, but comic authors may have to scroll a lot
+between order and actual generator definition. This also looks clumsy. Comic
+authors still need to know ordering details. This could be made easier by
+providing a default order in the code an let the user override it if he
+needs to (i.e., when hooking in non-standard modules).
+
+
+=head3 Explicit dependencies
+
+Each generator defines what other generator's output it needs instead of a
+fixed position number.
+
+    "Out": {
+        "Comic::Out::Foo": {
+            "after": "Comic::Out::Bar",
+            ...
+        },
+        ...
+
+Problems: where do generators without an C<after> go? In the end? In the
+beginning? Could be hard to configure, and the code has to build a direct
+acyclic graph like a build tool --- more complexity than I want here.
+
+This gets more complicated with multiple dependencies: if both
+L<Comic::Out::Png> and L<Comic::Out::QrCode> depend on
+L<Comic::Out::SvgPerLanguage> which should go first? Does it matter? The
+other way around: Should L<Comic::Out::Png> depend on
+L<Comic::Out::SvgPerLanguage> or L<Comic::Out::Copyright>? Clearly if
+L<Comic::Out::Copyright> is requested, <Comic::Out::Png> needs to depend on
+that, otherwise on L<Comic::Out::SvgPerLanguage>.
+
+
+=head3 Implicit dependency groups
+
+Each generator belongs to a dependency group. The order of groups is
+hard-coded. All generators in a group need to run before the next group can
+start. Order within a group does not matter.
+
+Groups could be:
+
+=over 4
+
+=item B<1)> group "from source": works with the original C<.svg> file (i.e.,
+    L<Comic::Out::SvgPerLanguage>).
+
+=item B<2)> group "svg modifier": modify the per-language C<.svg> files,
+    e.g., L<Comic::Out::Copyright>) or a future watermarking module.
+
+=item B<3)> group "graphic format": converts to another graphic format like
+    C<.png> or C<.pdf>, or optimize existing images.
+
+=item B<4)> group "basic context", provides the context in which to view the
+    comics, like a web page, or a C<.pdf>, or an <.epub>.
+
+=item B<5)> group "advanced context" for additional output like an archive
+    web page, tag clouds, a PDF index, a RSS feed, and so on.
+
+=item B<6)> group "everything else": stuff like L<Comic::Out::Sizemap> and
+    L<Comic::Out::Backlog> that depends only on the "graphic format" group.
+
+=back
+
+Could be hard to insert new groups. Sounds like reinventing Gradle.
+
+
+=head3 Different configuration file format
+
+Throw out JSON... it's ugly anyway. But then again, YAML (white space based
+format is hard to enter in Inkscape's proportional font input dialog) and TOML
+(fancy C<.ini> files) are not much better. It would also be inconsistent to use
+JSON in the Inkscape meta data and something else for the main configuration
+file.
 
 =cut
 
