@@ -246,3 +246,29 @@ sub ignores_comics_not_published_on_my_page : Tests {
     generate($comic);
     MockComic::assert_didnt_write_in_file('generated/web/deutsch/archiv.html');
 }
+
+
+sub passes_language_to_templatize : Tests {
+    my $comic = make_comic("eins", 'Deutsch', "2016-01-01");
+    $comic->{modified} = 'right now';
+
+    no warnings qw/redefine/;
+    local *Comic::Out::Template::templatize = sub {
+        my ($description, $template_file, $language, %vars) = @_;
+
+        is($language, 'Deutsch', 'wrong language');
+        is($description, 'archive', 'wrong description');
+        is($template_file, 'templates/deutsch/archiv.templ', 'wrong template file');
+        is_deeply(\%vars, {
+            'comics' => [$comic],
+            'modified' => 'right now',
+            'notFor' => \&Comic::not_for,
+            'root' => '',
+        }, 'wrong vars');
+    };
+    use warnings;
+
+    generate($comic);
+
+    # would have failed in the mocked method
+}
