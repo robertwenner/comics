@@ -25,6 +25,10 @@ sub setup : Test(setup) {
     *Comic::Out::Feed::_get_tz = sub {
         return "-0400";
     };
+    *Comic::_get_tz = sub {
+        return '-0500';
+    };
+
     use warnings;
 
     my $SIMPLE_TEMPLATE = <<'TEMPL';
