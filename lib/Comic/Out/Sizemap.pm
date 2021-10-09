@@ -92,7 +92,7 @@ sub new {
     my $self = $class->SUPER::new(%settings);
 
     $self->needs('template', '');
-    $self->needs('output', '');
+    $self->needs('outfile', '');
 
     # Devel::Cover does not see that $SCALE is an always set const:
     # uncoverable condition false
@@ -126,7 +126,7 @@ Parameters:
 sub generate_all {
     my ($self, @comics) = @ARG;
 
-    my $output = $self->{settings}->{output};
+    my $output = $self->{settings}->{outfile};
     my $template = $self->{settings}->{template};
     my %vars = $self->_aggregate(@comics);
     Comic::write_file($output, Comic::Out::Template::templatize('size map', $template, '', %vars));

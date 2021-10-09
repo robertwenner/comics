@@ -50,12 +50,12 @@ Parameters:
 
 =back
 
-The passed settings need to have the C<template> and C<output> hashes.
+The passed settings need to have the C<template> and C<outfile> hashes.
 
 For example:
 
     my %settings = (
-        'output' => {
+        'outfile' => {
             'English' => 'generated/web/english/sitemap.xml',
         },
         'template' => {
@@ -72,7 +72,7 @@ sub new {
     my $self = $class->SUPER::new(%settings);
 
     $self->needs('template', 'HASH');
-    $self->needs('output', 'HASH');
+    $self->needs('outfile', 'HASH');
 
     return $self;
 }
@@ -96,7 +96,7 @@ sub generate_all {
     my ($self, @comics) = @ARG;
 
     my %site_map_templates = %{$self->{settings}->{template}};
-    my %outputs = %{$self->{settings}->{output}};
+    my %outfiles = %{$self->{settings}->{outfile}};
     my @sorted = sort Comic::from_oldest_to_latest @comics;
 
     my %vars;
@@ -109,9 +109,9 @@ sub generate_all {
 
         my $xml = Comic::Out::Template::templatize('(none)', $templ, $language, %vars);
 
-        my $output = $outputs{$language};
-        croak("Comic::Out::Sitemap: No $language output file configured") unless ($output);
-        Comic::write_file($output, $xml);
+        my $outfile = $outfiles{$language};
+        croak("Comic::Out::Sitemap: No $language output file configured") unless ($outfile);
+        Comic::write_file($outfile, $xml);
     }
 
     return;

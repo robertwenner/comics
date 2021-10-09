@@ -49,7 +49,7 @@ SITEMAP
             'English' => 'templates/english/sitemap-xml.templ',
             'Deutsch' => 'templates/deutsch/sitemap-xml.templ',
         },
-        'output' => {
+        'outfile' => {
             'English' => 'generated/english/web/sitemap.xml',
             'Deutsch' => 'generated/deutsch/web/sitemap.xml',
         },
@@ -103,11 +103,11 @@ sub fails_on_missing_configuration : Tests {
         );
     };
     like($@, qr{\bSitemap\b}, 'should mention module');
-    like($@, qr{\boutput\b}i, 'should mention what is missing');
+    like($@, qr{\boutfile\b}i, 'should mention what is missing');
 
     eval {
         Comic::Out::Sitemap->new(
-            'output' => {},
+            'outfile' => {},
         );
     };
     like($@, qr{\bComic::Out::Sitemap\b}, 'should mention module');
@@ -118,8 +118,8 @@ sub fails_on_missing_configuration : Tests {
 sub fails_on_missing_template_for_language_configuration : Tests {
     $sitemap = Comic::Out::Sitemap->new(
         'template' => {},
-        'output' => {
-            'English' => 'generated/english/web/sitemap.xml',
+        'outfile' => {
+            'English' => 'web',
         },
     );
     eval {
@@ -130,12 +130,12 @@ sub fails_on_missing_template_for_language_configuration : Tests {
 }
 
 
-sub fails_on_missing_output_for_language_configuration : Tests {
+sub fails_on_missing_outfile_for_language_configuration : Tests {
     $sitemap = Comic::Out::Sitemap->new(
         'template' => {
             'English' => 'templates/english/sitemap-xml.templ',
         },
-        'output' => {},
+        'outfile' => {},
     );
     eval {
         $sitemap->generate_all(make_comic('2016-01-01'));

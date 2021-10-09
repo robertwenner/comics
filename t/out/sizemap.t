@@ -20,7 +20,7 @@ sub set_up : Test(setup) {
     MockComic::set_up();
     $sizemap = Comic::Out::Sizemap->new(
         'template' => 'sizemap.templ',
-        'output' => 'sizemap.html',
+        'outfile' => 'sizemap.html',
     );
 }
 
@@ -42,11 +42,11 @@ sub fails_on_missing_configuration : Tests {
         );
     };
     like($@, qr{\bSizemap\b}, 'should mention module');
-    like($@, qr{\boutput\b}i, 'should mention what is missing');
+    like($@, qr{\boutfile\b}i, 'should mention what is missing');
 
     eval {
         Comic::Out::Sizemap->new(
-            'output' => {},
+            'outfile' => {},
         );
     };
     like($@, qr{\bSizemap\b}, 'should mention module');
@@ -138,7 +138,7 @@ sub aggregate_none : Tests {
 sub configure_scale : Tests {
     $sizemap = Comic::Out::Sizemap->new(
         'template' => 'sizemap.templ',
-        'output' => 'sizemap.html',
+        'outfile' => 'sizemap.html',
         'scale' => 2.0,
     );
     my $comic = make_comic(500, 100);
@@ -160,7 +160,7 @@ sub fails_if_configured_scale_is_not_numeric : Tests {
     eval {
         $sizemap = Comic::Out::Sizemap->new(
             'template' => 'sizemap.templ',
-            'output' => 'sizemap.html',
+            'outfile' => 'sizemap.html',
             'scale' => 'whatever',
         );
     };
@@ -172,7 +172,7 @@ sub fails_if_configured_scale_is_not_numeric : Tests {
 sub configure_published_color : Tests {
     $sizemap = Comic::Out::Sizemap->new(
         'template' => 'sizemap.templ',
-        'output' => 'sizemap.html',
+        'outfile' => 'sizemap.html',
         'published_color' => 'red',
     );
     my $comic = make_comic(500, 100);
@@ -184,7 +184,7 @@ sub configure_published_color : Tests {
 sub configure_unpublished_color : Tests {
     $sizemap = Comic::Out::Sizemap->new(
         'template' => 'sizemap.templ',
-        'output' => 'sizemap.html',
+        'outfile' => 'sizemap.html',
         'unpublished_color' => 'pink',
     );
     my $comic = make_comic(500, 100);
@@ -199,7 +199,7 @@ sub generate_all : Tests {
 
     $sizemap = Comic::Out::Sizemap->new(
         'template' => 'sizemap.templ',
-        'output' => 'sizemap.html',
+        'outfile' => 'sizemap.html',
     );
     my $comic = make_comic(500, 100);
     $sizemap->generate_all($comic);

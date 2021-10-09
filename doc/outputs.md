@@ -519,12 +519,11 @@ Sitemaps can tell search engines which pages they should crawl.
         "Comic::Out::Sitemap": {
             "template": {
                 "English": "templates/sitemap-en.xml",
-                "Deutsch": "templates/sitemap-de.xml",
+                "Deutsch": "templates/sitemap-de.xml"
             },
-            "output": {
-                "English": "generated/web/english/sitemap.xml",
-                "Deutsch": "generated/web/deutsch/sitemap.xml"
-            }
+            "outfile": {
+                "Deutsch": "web/deutsch/sitemap.xml",
+                "English": "web/english/sitemap.xml"
         }
     }
 }
@@ -535,7 +534,8 @@ The module accepts these options:
 * `template`: object of languages to Perl Toolkit template files to use for
   that language.
 
-* `output`: object with language to output file.
+* `outfile`: object of languages to output files for the sitemaps in the
+  respective languages.
 
 The module makes these variables available in the template:
 
@@ -543,6 +543,9 @@ The module makes these variables available in the template:
 
 * `notFor`: code reference to a function to check whether a given comic
   should be included in the sitemap.
+
+The generated file will always be placed in a per-language directory under
+the configured `outdir`, named `sitemap.xml`.
 
 
 ### `Comic::Out::Sizemap`
@@ -557,7 +560,7 @@ The size map is configured like this:
     "Out": {
         "Comic::Out::Sizemap": {
             "template": "templates/sizemap.templ",
-            "output": "generated/sizemap.html",
+            "outfile": "generated/sizemap.html",
             "scale": 0.3,
             "published_color": "green",
             "unpublished_color": "blue"
@@ -570,7 +573,7 @@ The configuration parameters are:
 
 * `template`: what Perl Template to use.
 
-* `output`: to which file to write the size map.
+* `outfile`: to which file to write the size map.
 
 * `scale`: by which factor to scale the shown frames; optional, defaults to
   0.3
