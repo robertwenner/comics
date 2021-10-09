@@ -168,3 +168,38 @@ sub needs_something_else : Tests {
     $gen->needs('key', 'Comic::Out::Generator');  # would croak if it failed
     is_deeply($gen->{settings}->{'key'}, $obj);
 }
+
+
+sub needs_hash_or_scalar : Tests {
+    my $gen = Comic::Out::Generator->new(
+        'scalar' => 'value',
+        'hash' => {
+            '1' => 'one',
+        },
+        'array' => [],
+    );
+
+    $gen->needs('scalar', 'hash-or-scalar');  # would croak if it failed
+    is($gen->{settings}->{'scalar'}, 'value');
+
+    $gen->needs('hash', 'hash-or-scalar');  # would croak if it failed
+    is_deeply($gen->{settings}->{'hash'}, {'1' => 'one'});
+
+    eval {
+        $gen->needs('array', 'hash-or-scalar');
+    };
+    like($@, qr{must be hash or scalar});
+}
+
+
+sub per_language_setting : Tests {
+    my $gen = Comic::Out::Generator->new(
+        'template' => 'en.templ',
+        'outfile' => {
+            'English' => 'out-en.html',
+        }
+    );
+
+    is($gen->per_language_setting('template', 'English'), 'en.templ', 'wrong template');
+    is($gen->per_language_setting('outfile', 'English'), 'out-en.html', 'wrong outfile');
+}

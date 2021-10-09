@@ -71,7 +71,7 @@ sub new {
     my ($class, %settings) = @ARG;
     my $self = $class->SUPER::new(%settings);
 
-    $self->needs('template', 'HASH');
+    $self->needs('template', 'hash-or-scalar');
     $self->needs('outfile', 'HASH');
 
     return $self;
@@ -95,7 +95,6 @@ Parameters:
 sub generate_all {
     my ($self, @comics) = @ARG;
 
-    my %site_map_templates = %{$self->{settings}->{template}};
     my %outfiles = %{$self->{settings}->{outfile}};
     my @sorted = sort Comic::from_oldest_to_latest @comics;
 
@@ -104,7 +103,7 @@ sub generate_all {
     $vars{'notFor'} = \&Comic::not_published_on_the_web;
 
     foreach my $language (_all_comic_languages(@sorted)) {
-        my $templ = $site_map_templates{$language};
+        my $templ = $self->per_language_setting('template', $language);
         croak("Comic::Out::Sitemap: No $language template configured") unless ($templ);
 
         my $xml = Comic::Out::Template::templatize('(none)', $templ, $language, %vars);

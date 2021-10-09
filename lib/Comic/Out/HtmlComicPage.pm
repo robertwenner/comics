@@ -78,7 +78,7 @@ sub new {
     my $self = $class->SUPER::new(%settings);
 
     $self->needs('outdir', 'directory');
-    $self->needs('template', 'HASH');
+    $self->needs('template', 'hash-or-scalar');
 
     return $self;
 }
@@ -165,8 +165,7 @@ sub generate_all {
             Comic::make_dir($self->{settings}->{outdir} . lc $language);
 
             # The actual export
-            my %template = %{$self->{settings}->{template}};
-            my $template = $template{$language};
+            my $template = $self->per_language_setting('template', $language);
             $comic->keel_over("Comic::Out::HtmlComicPage: No $language template") unless ($template);
             $self->_export_language_html($comic, $language, $template);
         }
