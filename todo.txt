@@ -235,7 +235,14 @@
 
 - feature: warnings as errors
 
-- feature: manually allow frame ordering by naming them (Ids) with numbers
+- feature: allow manually ordering frames by naming them (Ids) with numbers
+  to hint at the transcript collector in which order to process frames (and
+  with that texts), may be needed for panels that cover multiple rows
+
+- feature: allow manually ordering texts by naming them (Ids) with numbers
+  to force transcript order in more elaborate cartoons (often single panel)
 
 - feature: warn about spellcheck ignore words defined in the comic but not
   used
+
+- feature: specify qr code image size (e.g., in pixels)
