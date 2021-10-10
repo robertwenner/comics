@@ -221,11 +221,11 @@ file.
 sub order {
     # Simple dependency description.
     my @order = (
+        # Modules that modify the SVG in-memory.
+        'Comic::Out::Copyright',
         # Modules that work with the Inkscape source files.
         'Comic::Out::SvgPerLanguage',
-        # Modules that work with SVG files per language and modify these.
-        'Comic::Out::Copyright',
-        # After modifications are done, convert to differnt image file formats.
+        # Convert svg files to different image file formats.
         'Comic::Out::Png',
         # Once we have an output image, include / embed that somewhere.
         'Comic::Out::HtmlComicPage',
