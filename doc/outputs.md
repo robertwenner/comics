@@ -282,7 +282,9 @@ probably need to install Cygwin tools on Windows.
 Generates a per-language HTML page with all published comics comics in
 chronological order.
 
-The configuration takes a template and an output file for each language:
+The configuration takes a template and an output file. You can pass a single
+template for all languages, or one for each language. The output file is
+always per-language.
 
 ```json
 {

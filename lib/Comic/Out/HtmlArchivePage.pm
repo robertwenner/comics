@@ -45,8 +45,9 @@ Parameters:
 
 =back
 
-The passed settings need to specify the L<Toolkit> template files and the
-output files, both per language.
+The passed settings need to specify the L<Toolkit> template file(s) and the
+output files. If you only pass one template, that's used for all languages.
+The output file is always per language.
 
 For example:
 
@@ -71,13 +72,16 @@ sub new {
     my ($class, %settings) = @ARG;
     my $self = $class->SUPER::new(%settings);
 
-    $self->needs('template', 'HASH');
+    $self->needs('template', 'hash-or-scalar');
     $self->needs('outfile', 'HASH');
-    foreach my $language (keys %{$settings{template}}) {
-        croak "Comic::Out::HtmlArchivePage $language in template but not in outfile" unless ($settings{outfile}{$language});
-    }
-    foreach my $language (keys %{$settings{outfile}}) {
-        croak "Comic::Out::HtmlArchivePage $language in outfile but not in template" unless ($settings{template}{$language});
+
+    if (ref $self->{settings}->{template} eq 'HASH') {
+        foreach my $language (keys %{$settings{template}}) {
+            croak "Comic::Out::HtmlArchivePage $language in template but not in outfile" unless ($settings{outfile}{$language});
+        }
+        foreach my $language (keys %{$settings{outfile}}) {
+            croak "Comic::Out::HtmlArchivePage $language in outfile but not in template" unless ($settings{template}{$language});
+        }
     }
 
     return $self;
@@ -123,8 +127,11 @@ sub generate_all {
         } @comics;
         next if (!@published);
 
-        my $templ_file = $self->{settings}->{template}{$language};
+        my $templ_file = $self->per_language_setting('template', $language);
+        croak("No template for $language") unless ($templ_file);
         my $page = $self->{settings}->{outfile}{$language};
+        croak("No outfile for $language") unless ($page);
+
         my %vars;
         $vars{'comics'} = \@comics;
         $vars{'modified'} = $comics[-1]->{modified};

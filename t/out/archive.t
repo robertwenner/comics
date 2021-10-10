@@ -1,5 +1,6 @@
 use strict;
 use warnings;
+use utf8;
 
 use base 'Test::Class';
 use Test::More;
@@ -77,17 +78,6 @@ sub ctor_complains_about_missing_config : Tests {
         );
     };
     like($@, qr{Comic::Out::HtmlArchivePage\.template}, 'should say what is missing');
-
-    eval {
-        Comic::Out::HtmlArchivePage->new(
-            'template' => '...',
-            'outfile' => {
-                'English' => '...',
-            },
-        );
-    };
-    like($@, qr{Comic::Out::HtmlArchivePage\.template}, 'should say where it is wrong');
-    like($@, qr{\bmust be hash\b}, 'should say what is wrong');
 
     eval {
         Comic::Out::HtmlArchivePage->new(
@@ -191,18 +181,35 @@ sub some_comics : Tests {
 }
 
 
-sub ignores_if_not_that_language : Tests {
-    my @comics = (
-        make_comic("eins", 'Deutsch', "2016-01-01"),
-        make_comic("two", 'English', "2016-01-02"),
-        make_comic("drei", 'Deutsch', "2016-01-03"),
+sub croaks_if_no_template_for_language : Tests {
+    my $archive = Comic::Out::HtmlArchivePage->new(
+        'template' => {
+            'English' => 'archive.templ',
+        },
+        'outfile' => {
+            'English' => 'english/web/archive.templ',
+        },
     );
-    generate(@comics);
-    MockComic::assert_wrote_file('generated/web/deutsch/archiv.html', qr{
-        <li><a\shref="comics/eins.html">eins</a></li>\s+
-        <li><a\shref="comics/drei.html">drei</a></li>\s+
-        }mx);
-    MockComic::assert_wrote_file('generated/web/deutsch/archiv.html', qr{(?!two)}mx);
+    my $comic = make_comic("beer", 'Deutsch', "2016-01-01");
+    eval {
+        $archive->generate_all($comic);
+    };
+    like($@, qr{\btemplate\b}i, 'should say what is mising');
+    like($@, qr{\bDeutsch\b}i, 'should mention language');
+}
+
+
+sub croaks_if_no_outfile_for_language : Tests {
+    my $archive = Comic::Out::HtmlArchivePage->new(
+        'template' => 'archive.templ',
+        'outfile' => {},
+    );
+    my $comic = make_comic("beer", 'English', "2016-01-01");
+    eval {
+        $archive->generate_all($comic);
+    };
+    like($@, qr{\boutfile\b}i, 'should say what is mising');
+    like($@, qr{\bEnglish\b}i, 'should mention language');
 }
 
 
