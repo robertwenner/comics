@@ -446,6 +446,24 @@ sub index_html_with_canonical_link : Tests {
 }
 
 
+sub export_index_one_template_for_all_languages : Tests {
+    MockComic::fake_file('comic.templ', '...');
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            'English' => "Beer",
+        },
+        $MockComic::PUBLISHED_WHEN => '2016-01-01',
+    );
+
+    my $hcp = Comic::Out::HtmlComicPage->new(
+        'outdir' => 'generated/web/',
+        'template' =>  'en-comic.templ'
+    );
+    $hcp->export_index($comic);
+    # Would have thrown if it failed
+}
+
+
 sub index_html_does_not_break_perm_link : Tests {
     MockComic::fake_file('comic.templ', '[% comic.url.$Language %]');
     my $comic = MockComic::make_comic(

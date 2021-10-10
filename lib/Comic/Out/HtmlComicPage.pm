@@ -305,13 +305,13 @@ sub export_index {
     # it should!).
     my ($self, @comics) = @ARG;
 
-    my %template = %{$self->{settings}->{template}};
     my %latest_published = $self->_find_latest_published(@comics);
     foreach my $language (sort keys %latest_published) {
         my $dir = $self->{settings}->{outdir} . lc $language;
         my $page = "$dir/index.html";
         my $last_pub = $latest_published{$language};
-        my $html = $self->_do_export_html($last_pub, $language, $template{$language});
+        my $template = $self->per_language_setting('template', $language);
+        my $html = $self->_do_export_html($last_pub, $language, $template);
         Comic::write_file($page, $html);
     }
     return;
@@ -348,8 +348,7 @@ sub _find_latest_published {
     my ($self, @comics) = @ARG;
 
     my %latest_published;
-    my %template = %{$self->{settings}->{template}};
-    foreach my $language (keys %template) {
+    foreach my $language (Comic::Out::Generator::all_languages(@comics)) {
         my @sorted = (sort Comic::from_oldest_to_latest grep {
             !$_->not_yet_published($_) && $_->_is_for($language)
         } @comics);
