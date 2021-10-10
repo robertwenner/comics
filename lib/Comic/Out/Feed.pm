@@ -124,13 +124,7 @@ sub generate_all {
     my $now = _now();
     $now->set_time_zone(_get_tz());
     my $now_formatted = DateTime::Format::RFC3339->new()->format_datetime($now);
-
-    my %languages;
-    foreach my $comic (@comics) {
-        foreach my $language ($comic->languages()) {
-            $languages{$language} = 1;
-        }
-    }
+    my @languages = Comic::Out::Generator::all_languages(@comics);
 
     foreach my $type (keys %{$self->{settings}}) {
         next if ($type eq 'outdir');
@@ -141,7 +135,7 @@ sub generate_all {
         my $outfile = $self->{settings}->{$type}->{'outfile'};
         $outfile = lc($type) . '.xml' unless($outfile);
 
-        foreach my $language (keys %languages) {
+        foreach my $language (@languages) {
             my @published = reverse sort Comic::from_oldest_to_latest grep {
                 !$_->not_yet_published($language)
             } @comics;

@@ -117,7 +117,7 @@ Makes these variables available during template processing:
 sub generate_all {
     my ($self, @comics) = @ARG;
 
-    foreach my $language (sort keys %{$self->{settings}->{template}}) {
+    foreach my $language (Comic::Out::Generator::all_languages(@comics)) {
         my @published = sort Comic::from_oldest_to_latest grep {
             !$_->not_yet_published() && $_->_is_for($language)
         } @comics;

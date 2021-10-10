@@ -144,13 +144,6 @@ sub _populate_vars {
          $_->not_yet_published()
     } @comics;
 
-    my %languages;
-    foreach my $comic (@comics) {
-        foreach my $language ($comic->languages()) {
-            $languages{$language} = 1;
-        }
-    }
-
     my @to_collect = @{$self->{settings}->{collect}};
     my %collected;
     # Manually set to empty hashes for easier use in the template.
@@ -188,9 +181,8 @@ sub _populate_vars {
         }
     }
 
-    my @languages = sort keys %languages;
     my %vars;
-    $vars{'languages'} = \@languages;
+    $vars{'languages'} = [Comic::Out::Generator::all_languages(@comics)];
     $vars{'comics'} = \@unpublished;
     $vars{'publishers'} = $self->_publishers(@comics);
 

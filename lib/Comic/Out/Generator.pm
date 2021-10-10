@@ -340,9 +340,41 @@ sub per_language_setting {
         return $self->{settings}->{$setting};
     }
     else {
-        # per-lamguage hash
+        # per-language hash
         return ${$self->{settings}->{$setting}}{$language};
     }
+}
+
+
+=head2 all_languages
+
+Static method that gets all languages in the passed comics.
+
+Parameters:
+
+=over 4
+
+=item * B<@comics> from what comics to get the languages.
+
+=back
+
+Returns an alphabetically sorted array of languages.
+
+=cut
+
+sub all_languages {
+    my @comics = @ARG;
+
+    my %languages;
+    foreach my $comic (@comics) {
+        foreach my $language ($comic->languages()) {
+            $languages{$language}++;
+        }
+    }
+
+    # return sort keys %languages is undefined behavior.
+    my @languages = sort keys %languages;
+    return @languages;
 }
 
 

@@ -123,14 +123,7 @@ Copies the configured files and directories.
 sub generate_all {
     my ($self, @comics) = @ARG;
 
-    my %languages;
-    foreach my $comic (@comics) {
-        foreach my $language ($comic->languages()) {
-            $languages{$language}++;
-        }
-    }
-
-    foreach my $language (sort keys %languages) {
+    foreach my $language (Comic::Out::Generator::all_languages(@comics)) {
         my $lc_lang = lc $language;
         my $to_dir = $self->{settings}->{outdir} . $lc_lang;
         eval {

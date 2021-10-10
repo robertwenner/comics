@@ -102,7 +102,7 @@ sub generate_all {
     $vars{'comics'} = [ @sorted ];
     $vars{'notFor'} = \&Comic::not_published_on_the_web;
 
-    foreach my $language (_all_comic_languages(@sorted)) {
+    foreach my $language (Comic::Out::Generator::all_languages(@sorted)) {
         my $templ = $self->per_language_setting('template', $language);
         croak("Comic::Out::Sitemap: No $language template configured") unless ($templ);
 
@@ -114,19 +114,6 @@ sub generate_all {
     }
 
     return;
-}
-
-
-sub _all_comic_languages {
-    my (@comics) = @ARG;
-
-    my %languages;
-    foreach my $c (@comics) {
-        foreach my $language ($c->languages()) {
-            $languages{$language} = 1;
-        }
-    }
-    return keys %languages;
 }
 
 
