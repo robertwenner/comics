@@ -70,7 +70,7 @@ For example:
     "RSS" => {
         "max" => 10,
         "template" => "templates/rss.templ",
-        "output" => "rss.xml",
+        "outfile" => "rss.xml",
     },
     "Atom" => {
         "template" => "templates/atom.xml",
@@ -81,7 +81,7 @@ comics, and placing the feeds in F<rss.xml> and F<atom.xml> respectively.
 
 Each feed will have 10 comics if no C<max> is given.
 
-If no C<output> is given, the feed will be written to the feed name (in
+If no C<outfile> is given, the feed will be written to the feed name (in
 lower case) with an C<.xml> extension (i.e., F<atom.xml> for the "Atom" feed
 in the above example).
 
@@ -138,8 +138,8 @@ sub generate_all {
         my $templates = $self->{settings}->{$type}->{'template'};
         my $max = $self->{settings}->{$type}->{'max'};
         $max = $FEED_ITEM_COUNT unless($max);
-        my $output = $self->{settings}->{$type}->{'output'};
-        $output = lc($type) . '.xml' unless($output);
+        my $outfile = $self->{settings}->{$type}->{'outfile'};
+        $outfile = lc($type) . '.xml' unless($outfile);
 
         foreach my $language (keys %languages) {
             my @published = reverse sort Comic::from_oldest_to_latest grep {
@@ -156,7 +156,7 @@ sub generate_all {
             );
 
             my $feed = Comic::Out::Template::templatize("$type feed", $template, $language, %vars);
-            Comic::write_file($self->{settings}->{outdir} . lc($language) . "/$output", $feed);
+            Comic::write_file($self->{settings}->{outdir} . lc($language) . "/$outfile", $feed);
         }
     }
     return;

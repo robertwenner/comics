@@ -80,7 +80,7 @@ sub no_template_configured_at_all : Tests {
     my $feed = Comic::Out::Feed->new(
         "outdir" => "generated/web",
         "Whatever" => {
-            "output" => "rss.xml"
+            "outfile" => "rss.xml"
         },
     );
     my @comics = (make_comic('one', '2016-01-01'));
@@ -209,7 +209,7 @@ TEMPL
                 "English" => "EN.templ",
                 "Deutsch" => "DE.templ",
             },
-            "output" => "myfeed.xml",
+            "outfile" => "myfeed.xml",
         },
     );
 

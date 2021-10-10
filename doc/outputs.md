@@ -179,7 +179,7 @@ comic to Facebook.
                     "Deutsch": "path/to/german/atom.template"
                 },
                 "max": 5,
-                "output": "atom.xml"
+                "outfile": "atom.xml"
             }
         }
     }
@@ -203,7 +203,7 @@ Each feed configuration can take these arguments:
   passed to the template as `max`. Defaults to 10, meaning the feed will
   have the 10 latest comics.
 
-* `output`: the file name of the output file. This will always be within the
+* `outfile`: the file name of the output file. This will always be within the
   `outdir` output directory, plus a language specific directory (the
   language name in lower case), e.g., `generated/web/english/atom.xml` for
   the atom example above. Defaults to the lower-case feed name plus an
