@@ -220,9 +220,6 @@
 
 - defect: copyright placement is way off if frames x is not around -206?
 
-- feature: generators should accept a single template for all languages in
-  addition to a hash of languages to templates
-
 - feature: deduct output path from fragments, like outdir / base dir plus
   language placeholders, for less repetitive configuration files
 
