@@ -77,6 +77,7 @@ sub new {
     my $self = $class->SUPER::new(%settings);
 
     $self->needs('outdir', 'directory');
+    $self->optional('Imager::QRCode', 'HASH', {});
 
     return $self;
 }

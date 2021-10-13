@@ -90,6 +90,8 @@ sub new {
     my $self = $class->SUPER::new(%settings);
 
     $self->needs('outdir', 'directory');
+    $self->optional('from-all', 'array-or-scalar', []);
+    $self->optional('from-language', 'array-or-scalar', []);
 
     if (!$settings{'from-all'} && !$settings{'from-language'}) {
         croak('Comic::Out::FileCopy: Must specify at least one of from-all and from-language');

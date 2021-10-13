@@ -97,6 +97,8 @@ sub new {
     my $self = $class->SUPER::new(%settings);
 
     $self->needs('outdir', 'directory');
+    $self->optional('Atom', 'hash');
+    $self->optional('RSS', 'hash');
 
     return $self;
 }

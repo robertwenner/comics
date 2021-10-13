@@ -88,21 +88,10 @@ sub new {
     my ($class, %settings) = @ARG;
     my $self = $class->SUPER::new(%settings);
 
-    $self->needs('template', '');
-    $self->needs('outfile', '');
-
-	if ($self->{settings}->{collect}) {
-		if (ref $self->{settings}->{collect} eq '') {
-			# Turn into an array for easier use later.
-			$self->{settings}->{collect} = [ $self->{settings}->{collect} ];
-		}
-		if (ref $self->{settings}->{collect} ne 'ARRAY') {
-			croak('Comic::Out::Backlog.collect must be array or single value');
-		}
-	}
-	else {
-	    $self->{settings}->{collect} = [];
-	}
+    $self->needs('template', 'scalar');
+    $self->needs('outfile', 'scalar');
+    $self->optional('toplocation', 'scalar', undef);
+    $self->optional('collect', 'array-or-scalar', []);
 
     return $self;
 }

@@ -289,6 +289,7 @@ sub needs {
 
     my $expected_type = _type_name($type);
     my $actual_type = _type_name(ref $value);
+
     if ($type eq 'hash-or-scalar') {
         unless ($actual_type eq 'scalar' || $actual_type eq 'hash') {
             croak("$me.$name must be $expected_type, but is $actual_type");
@@ -306,11 +307,70 @@ sub needs {
 }
 
 
+=head2 optional
+
+Checks whether the passed settings have the given key and if the key exists,
+makes sure that its value is the given type. Ignore if the key is missing.
+
+Parameters:
+
+=over 4
+
+=item B<$name> setting name.
+
+=item B<$type> expected type. Pass '' for scalars, 'ARRAY' for arrays, or
+    'HASH' for hashes.
+
+    Pass 'array-or-scalar' for a settig that can be either a scalar or an
+    array. It will be converted in an array. If the argument was not given,
+    that array will be empty. If the argument was a scalar, that will be the
+    one and only array element. If the argument was an array, it is
+    preserved as is.
+
+=item B<$default_value> what to put in the settings if the key was not found.
+
+=back
+
+=cut
+
+sub optional {
+    my ($self, $name, $type, $default_value) = @ARG;
+
+    unless (exists $self->{settings}->{$name}) {
+        $self->{settings}->{$name} = $default_value if ($default_value);
+        return;
+    }
+
+    my $value = $self->{settings}->{$name};
+    my $me = ref $self;
+    my $expected_type = _type_name($type);
+    my $actual_type = _type_name(ref $value);
+
+    if ($type eq 'array-or-scalar') {
+        if ($actual_type eq 'scalar') {
+            ${$self->{settings}}{$name} = [$value];
+        }
+        elsif ( $actual_type eq 'array') {
+            # ok, keep as is
+        }
+        else {
+            croak("$me.$name must be $expected_type, but is $actual_type");
+        }
+    }
+    else {
+        croak("$me.$name must be $expected_type but is $actual_type") unless ($expected_type eq $actual_type);
+    }
+
+    return;
+}
+
+
 sub _type_name {
     my ($type) = @ARG;
 
+    return 'array or scalar' if ($type eq 'array-or-scalar');
     return 'hash or scalar' if ($type eq 'hash-or-scalar');
-    return 'scalar' if ($type eq '' || $type eq 'directory');
+    return 'scalar' if ($type eq '' || $type eq 'scalar' || $type eq 'directory');
     return 'array' if ($type eq 'ARRAY');
     return 'hash' if ($type eq 'HASH');
     return $type;

@@ -91,19 +91,12 @@ sub new {
     my ($class, %settings) = @ARG;
     my $self = $class->SUPER::new(%settings);
 
-    $self->needs('template', '');
-    $self->needs('outfile', '');
-
-    # Devel::Cover does not see that $SCALE is an always set const:
-    # uncoverable condition false
-    $self->{settings}->{scale} ||= $SCALE;
+    $self->needs('template', 'scalar');
+    $self->needs('outfile', 'scalar');
+    $self->optional('scale', 'scalar', $SCALE);
     croak('Comic:Out::Sizemap.scale must be numeric') unless (looks_like_number($self->{settings}->{scale}));
-    # Devel::Cover does not see that $PUBLISHED_COLOR is an always set const:
-    # uncoverable condition false
-    $self->{settings}->{published_color} ||= $PUBLISHED_COLOR;
-    # Devel::Cover does not see that $UNPUBLISHED_COLOR is an always set const:
-    # uncoverable condition false
-    $self->{settings}->{unpublished_color} ||= $UNPUBLISHED_COLOR;
+    $self->optional('published_color', 'scalar', $PUBLISHED_COLOR);
+    $self->optional('unpublished_color', 'scalar', $UNPUBLISHED_COLOR);
 
     return $self;
 }

@@ -68,9 +68,7 @@ sub new {
     my $self = $class->SUPER::new(%settings);
 
     $self->needs('text', 'HASH');
-    # Devel::Cover does not see that $STYLE is an always set const:
-    # uncoverable condition false
-    $self->{settings}->{style} ||= $STYLE;
+    $self->optional('style', 'scalar', $STYLE);
 
     return $self;
 }

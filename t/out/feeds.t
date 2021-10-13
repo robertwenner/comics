@@ -83,9 +83,9 @@ sub no_template_configured_at_all : Tests {
             "outfile" => "rss.xml"
         },
     );
-    my @comics = (make_comic('one', '2016-01-01'));
+    my $comic = make_comic('one', '2016-01-01');
     eval {
-        $feed->generate_all(@comics);
+        $feed->generate_all($comic);
     };
     like($@, qr{no Whatever template}i);
 }

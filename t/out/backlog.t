@@ -94,7 +94,7 @@ sub constructor_arguments : Tests {
     };
     like($@, qr{\bcollect\b});
     like($@, qr{\barray\b});
-    like($@, qr{\bsingle value\b});
+    like($@, qr{\bscalar\b});
 }
 
 
