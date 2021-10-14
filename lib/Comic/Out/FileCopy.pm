@@ -97,21 +97,6 @@ sub new {
         croak('Comic::Out::FileCopy: Must specify at least one of from-all and from-language');
     }
 
-    foreach my $from (qw(from-all from-language)) {
-        $self->{settings}->{$from} = [];
-        next unless ($settings{$from});
-
-        if (ref $settings{$from} eq '') {
-            push @{$self->{settings}->{$from}}, $settings{$from};
-        }
-        elsif (ref $settings{$from} eq 'ARRAY') {
-            push @{$self->{settings}->{$from}}, @{$settings{$from}};
-        }
-        else {
-            croak("Comic::Out::FileCopy.$from needs to be scalar or array");
-        }
-    }
-
     return $self;
 }
 

@@ -15,6 +15,12 @@ __PACKAGE__->runtests() unless caller;
 my @ran;
 my @cp_args;
 
+no warnings qw/redefine/;
+local *Comic::Out::FileCopy::_cp = sub {
+    push @cp_args, (@_);
+};
+use warnings;
+
 
 sub setup : Test(setup) {
     MockComic::set_up();
@@ -23,19 +29,17 @@ sub setup : Test(setup) {
 }
 
 
-    no warnings qw/redefine/;
-    local *Comic::Out::FileCopy::_cp = sub {
-        push @cp_args, (@_);
-    };
-    use warnings;
+
 sub make_copy {
     my ($from_all, $from_language) = @_;
 
-    return Comic::Out::FileCopy->new(
+    my %settings = (
         'outdir' => 'generated/web',
-        'from-all' => $from_all,
-        'from-language' => $from_language,
     );
+    $settings{'from-all'} = $from_all if ($from_all);
+    $settings{'from-language'} = $from_language if ($from_language);
+
+    return Comic::Out::FileCopy->new(%settings);
 }
 
 
