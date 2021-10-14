@@ -41,9 +41,12 @@ sub count_children {
 
 sub no_such_layer_does_nothing : Tests {
     my $comic = MockComic::make_comic();
-    is(count_layers($comic, 'Raw'), 0, 'should not have a raw layer');
+    my @before = sort map { $_->getAttribute('inkscape:label') } $comic->get_all_layers();
+
     Comic::Out::SvgPerLanguage::_drop_top_level_layers($comic->{dom}, 'Raw');
-    is(count_layers($comic, 'Raw'), 0, 'should still not have a raw layer');
+
+    my @after = sort map { $_->getAttribute('inkscape:label') } $comic->get_all_layers();
+    is_deeply(\@after, \@before);
 }
 
 
@@ -51,9 +54,11 @@ sub ignores_non_layer_elements : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::XML => '<foo inkscape:groupmode="layer" inkscape:label="Raw"/>',
     );
-    my $before = $comic->copy_svg();
+
     Comic::Out::SvgPerLanguage::_drop_top_level_layers($comic->{dom}, 'Raw');
-    is_deeply($comic->{dom}, $before);
+
+    my @tags = $comic->{dom}->documentElement()->getChildrenByLocalName('foo');
+    is(scalar @tags, 1);
 }
 
 
@@ -61,9 +66,11 @@ sub ignores_if_wrong_group_mode : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::XML => '<g inkscape:groupmode="whatever" inkscape:label="Raw"/>',
     );
-    my $before = $comic->copy_svg();
+
     Comic::Out::SvgPerLanguage::_drop_top_level_layers($comic->{dom}, 'Raw');
-    is_deeply($comic->{dom}, $before);
+
+    my @tags = $comic->{dom}->documentElement()->getChildrenByLocalName('g');
+    is(scalar @tags, 1);
 }
 
 
@@ -71,9 +78,11 @@ sub ignores_if_no_group_mode : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::XML => '<g inkscape:label="Raw"/>',
     );
-    my $before = $comic->copy_svg();
+
     Comic::Out::SvgPerLanguage::_drop_top_level_layers($comic->{dom}, 'Raw');
-    is_deeply($comic->{dom}, $before);
+
+    my @tags = $comic->{dom}->documentElement()->getChildrenByLocalName('g');
+    is(scalar @tags, 1);
 }
 
 

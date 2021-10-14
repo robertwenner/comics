@@ -146,9 +146,8 @@ sub _flip_language_layers {
 sub _write_svg_file {
     my ($comic, $svg_file) = @ARG;
 
-    my $svg = $comic->copy_svg();
-    _drop_top_level_layers($svg, 'Raw');
-    _write($svg, $svg_file);
+    _drop_top_level_layers($comic->{dom}, 'Raw');
+    _write($comic->{dom}, $svg_file);
     return;
 }
 

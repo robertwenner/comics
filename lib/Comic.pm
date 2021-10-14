@@ -675,19 +675,19 @@ Gets all SVG layers defined in this Comic.
 sub get_all_layers {
     my ($self) = @ARG;
 
-    return $self->{xpath}->findnodes(_top_level_layers_xpath());
+    return $self->{xpath}->findnodes("//$DEFAULT_NAMESPACE:g");
 }
 
 
 =head2 has_layer
 
-Checks whether this Comic has (all the Inkscape layer(s) by the given name(s).
+Checks whether this Comic has all the Inkscape layer(s) by the given name(s).
 
 Parameters:
 
 =over 4
 
-=item * B<layer> For which layer(s) to look.
+=item * B<@layer> For which layer(s) to look.
 
 =back
 
@@ -737,19 +737,6 @@ sub _build_xpath {
         $xpath .= "/$DEFAULT_NAMESPACE:$p";
     }
     return $xpath;
-}
-
-
-=head2 copy_svg
-
-Returns a copy of this Comic's SVG structure, parsed. Call this if you need
-to (temporarily) modify the Comic's SVG.
-
-=cut
-
-sub copy_svg {
-    my ($self) = @ARG;
-    return _parse_xml($self->{dom}->toString());
 }
 
 

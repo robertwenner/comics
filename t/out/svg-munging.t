@@ -36,6 +36,7 @@ sub make_comic {
     }
 
     my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::DEUTSCH => 'drink beer' },
         $MockComic::TEXTS => \%layers,
         $MockComic::FRAMES => [0, 0, 100, 200],
     );
@@ -54,23 +55,6 @@ sub get_layer {
         $node = $node->nextSibling();
     }
     return undef;
-}
-
-
-sub copy_svg : Tests {
-    my $comic = make_comic();
-    my $svg = $comic->copy_svg();
-    is($svg, $comic->{dom}, 'should be equal');
-    is_deeply($svg, $comic->{dom}, 'should be deeply equal');
-    ok($comic->{dom} != $svg, 'should not be the same');
-}
-
-
-sub can_safely_modify_copy : Tests {
-    my $comic = make_comic();
-    my $svg = $comic->copy_svg();
-    $svg->documentElement()->addNewChild(undef, 'foo');
-    isnt($svg, $comic->{dom}, 'should not be equal anymore');
 }
 
 
@@ -106,7 +90,7 @@ sub configure_style : Tests {
 }
 
 
-sub croaks_if_no_style : Tests {
+sub croaks_if_no_text_for_language : Tests {
     $copyright = Comic::Out::Copyright->new(
         'text' => {
             'English' => 'beercomics.com',
@@ -125,17 +109,26 @@ sub croaks_if_no_style : Tests {
 
 sub adds_url_and_license : Tests {
     my $comic = make_comic();
+
     $copyright->generate($comic);
+
     is(get_layer($comic->{dom}, 'CopyrightDeutsch')->getFirstChild()->textContent(),
         'biercomics.de');
+    my @layers = sort map { $_->getAttribute('inkscape:label') } $comic->get_all_layers();
+    is_deeply(\@layers, ['CopyrightDeutsch', 'Deutsch', 'Rahmen'], 'wrong layers');
 }
 
 
 sub adds_url_and_license_per_language : Tests {
     my $comic = MockComic::make_comic($MockComic::FRAMES => [0, 0, 100, 100]);
+
     $copyright->generate($comic);
+
     is(get_layer($comic->{dom}, "CopyrightDeutsch")->getFirstChild()->textContent(), "biercomics.de");
     is(get_layer($comic->{dom}, "CopyrightEnglish")->getFirstChild()->textContent(), "beercomics.com");
+
+    my @layers = sort map { $_->getAttribute('inkscape:label') } $comic->get_all_layers();
+    is_deeply(\@layers, ['CopyrightDeutsch', 'CopyrightEnglish', 'Rahmen'], 'wrong layers');
 }
 
 

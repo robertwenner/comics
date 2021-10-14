@@ -93,14 +93,13 @@ Parameters:
 sub generate {
     my ($self, $comic) = @ARG;
 
+    my $svg = $comic->{dom};
     foreach my $language ($comic->languages()) {
-        my $svg = $comic->{dom};
-
         unless ($self->{settings}->{text}->{$language}) {
             croak("No $language Comic::Out::Copyright text configured");
         }
-        my $payload = XML::LibXML::Text->new($self->{settings}->{text}->{$language});
 
+        my $payload = XML::LibXML::Text->new($self->{settings}->{text}->{$language});
         my $tspan = XML::LibXML::Element->new('tspan');
         $tspan->setAttribute('sodipodi:role', 'line');
         $tspan->appendChild($payload);
@@ -109,20 +108,21 @@ sub generate {
         my ($x, $y, $transform) = _where_to_place_the_text($comic);
         $text->setAttribute('x', $x);
         $text->setAttribute('y', $y);
-        $text->setAttribute('id', 'Copyright');
+        $text->setAttribute('id', "Copyright$language");
         $text->setAttribute('xml:space', 'preserve');
 
         my $style = $self->{settings}->{style};
         $text->setAttribute('style', $style);
         $text->setAttribute('transform', $transform) if ($transform);
-
         $text->appendChild($tspan);
 
         my $layer = XML::LibXML::Element->new('g');
+        $layer->setNamespace('http://www.w3.org/2000/svg');
+        $layer->setNamespace('http://www.inkscape.org/namespaces/inkscape', 'inkscape', 0);
         $layer->setAttribute('inkscape:groupmode', 'layer');
-        $layer->setAttribute('inkscape:label', "Copyright$language");
+        $layer->setAttributeNS('http://www.inkscape.org/namespaces/inkscape', 'label', "Copyright$language");
         $layer->setAttribute('style', 'display:inline');
-        $layer->setAttribute('id', 'Copyright');
+        $layer->setAttribute('id', "Copyright$language");
         $layer->appendChild($text);
 
         my $root = $svg->documentElement();

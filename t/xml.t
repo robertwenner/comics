@@ -30,12 +30,3 @@ sub load_huge : Tests {
     };
     is("", $@, "should load huge XML");
 }
-
-
-sub copy_huge_svg : Tests {
-    my $comic = MockComic::make_comic($MockComic::XML => make_big_png());
-    eval {
-        $comic->copy_svg();
-    };
-    is("", $@, "should copy huge SVG / XML");
-}
