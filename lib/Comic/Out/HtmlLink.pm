@@ -61,6 +61,7 @@ Links are per-language cause the link text varies by language.
 sub new {
     my ($class) = @ARG;
     my $self = $class->SUPER::new();
+    $self->flag_extra_settings();
     return $self;
 }
 

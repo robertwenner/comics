@@ -253,7 +253,10 @@ Creates a new Comic::Out::Generator.
 sub new {
     my ($class, %settings) = @ARG;
     my $self = bless{}, $class;
+
     %{$self->{settings}} = %settings;
+    $self->{valid_ssettings} = {};
+
     return $self;
 }
 
@@ -282,6 +285,8 @@ Parameters:
 
 sub needs {
     my ($self, $name, $type) = @ARG;
+
+    $self->{valid_settings}->{$name} = 1;
 
     my $me = ref $self;
     croak("Must specify $me.$name") unless (exists $self->{settings}->{$name});
@@ -336,6 +341,8 @@ Parameters:
 sub optional {
     my ($self, $name, $type, $default_value) = @ARG;
 
+    $self->{valid_settings}->{$name} = 1;
+
     unless (exists $self->{settings}->{$name}) {
         $self->{settings}->{$name} = $default_value if ($default_value);
         return;
@@ -374,6 +381,27 @@ sub _type_name {
     return 'array' if ($type eq 'ARRAY');
     return 'hash' if ($type eq 'HASH');
     return $type;
+}
+
+
+=head2 flag_extra_settings
+
+Flag (croak) on any extra (invalid) settings passed to this Generator's
+constructor. Valid settings are the names passed to C<needs> and C<optional>.
+
+This method should be called at the end of child class constructors.
+
+=cut
+
+sub flag_extra_settings {
+    my ($self) = @ARG;
+
+    my $me = ref $self;
+    foreach my $s (keys %{$self->{settings}}) {
+        croak("$me: unknown setting '$s'") unless ($self->{valid_settings}->{$s});
+    }
+
+    return;
 }
 
 

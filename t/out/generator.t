@@ -192,6 +192,35 @@ sub needs_hash_or_scalar : Tests {
 }
 
 
+sub optional_settings_type_check : Tests {
+    my $gen = Comic::Out::Generator->new(
+        's-value' => [],
+        'h-value' => 1,
+        'a-value' => {},
+        's-or-a-value' => {},
+    );
+
+    eval {
+        $gen->optional('s-value', 'hash-or-scalar');
+    };
+    like($@, qr{s-value});
+    like($@, qr{hash});
+    like($@, qr{scalar});
+
+    eval {
+        $gen->optional('h-value', 'hash');
+    };
+    like($@, qr{h-value});
+    like($@, qr{hash});
+
+    eval {
+        $gen->optional('a-value', 'array');
+    };
+    like($@, qr{a-value});
+    like($@, qr{array});
+}
+
+
 sub per_language_setting : Tests {
     my $gen = Comic::Out::Generator->new(
         'template' => 'en.templ',
@@ -202,4 +231,20 @@ sub per_language_setting : Tests {
 
     is($gen->per_language_setting('template', 'English'), 'en.templ', 'wrong template');
     is($gen->per_language_setting('outfile', 'English'), 'out-en.html', 'wrong outfile');
+}
+
+
+sub complains_about_unknown_settings : Tests {
+    my $gen = Comic::Out::Generator->new(
+        'a' => '1',
+        'whatever' => '...',
+    );
+
+    $gen->optional('a', 'scalar', 1);
+    eval {
+        $gen->flag_extra_settings();
+    };
+    like($@, qr{Comic::Out::Generator}, 'should mention module');
+    like($@, qr{unknown}, 'should state problem');
+    like($@, qr{whatever}, 'should mention bad setting');
 }

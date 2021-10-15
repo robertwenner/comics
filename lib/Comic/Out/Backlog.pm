@@ -92,6 +92,7 @@ sub new {
     $self->needs('outfile', 'scalar');
     $self->optional('toplocation', 'scalar', undef);
     $self->optional('collect', 'array-or-scalar', []);
+    $self->flag_extra_settings();
 
     return $self;
 }

@@ -79,6 +79,7 @@ sub new {
 
     $self->needs('outdir', 'directory');
     $self->needs('template', 'hash-or-scalar');
+    $self->flag_extra_settings();
 
     return $self;
 }

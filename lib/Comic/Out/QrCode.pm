@@ -77,7 +77,8 @@ sub new {
     my $self = $class->SUPER::new(%settings);
 
     $self->needs('outdir', 'directory');
-    $self->optional('Imager::QRCode', 'HASH', {});
+    $self->optional('Imager::QRCode', 'HASH', undef);
+    $self->flag_extra_settings();
 
     return $self;
 }
@@ -105,9 +106,9 @@ sub generate {
     my ($self, @comics) = @ARG;
 
     my %imager_settings = %IMAGER_DEFAULT_SETTINGS;
-    if ($self->{settings}->{'Imager::QrCode'}) {
-        foreach my $key (keys %{$self->{settings}->{'Imager::QrCode'}}) {
-            $imager_settings{$key} = $self->{settings}->{'Imager::QrCode'}{$key};
+    if ($self->{settings}->{'Imager::QRCode'}) {
+        foreach my $key (keys %{$self->{settings}->{'Imager::QRCode'}}) {
+            $imager_settings{$key} = $self->{settings}->{'Imager::QRCode'}{$key};
         }
     }
 

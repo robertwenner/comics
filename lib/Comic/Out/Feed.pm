@@ -99,6 +99,7 @@ sub new {
     $self->needs('outdir', 'directory');
     $self->optional('Atom', 'hash');
     $self->optional('RSS', 'hash');
+    $self->flag_extra_settings();
 
     return $self;
 }

@@ -73,6 +73,7 @@ sub new {
     my $self = $class->SUPER::new(%settings);
 
     $self->needs('outdir', 'directory');
+    $self->flag_extra_settings();
 
     return $self;
 }

@@ -52,7 +52,7 @@ sub imager_qrcode_options_override_defaults : Tests {
     my $comic = MockComic::make_comic();
     $qrcode = Comic::Out::QrCode->new(
         'outdir' => 'qr',
-        'Imager::QrCode' => {
+        'Imager::QRCode' => {
             'mode' => 'ascii',
         },
     );

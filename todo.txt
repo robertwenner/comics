@@ -164,7 +164,8 @@
   be confusing when case actually matters, e.g., for Perl modules.
   If case matters, make sure it's used consistently.
 
-- feature: complain about unknown settings to catch typos
+- feature: complain about unknown settings to catch typos (done for Generators,
+  missing in Checks)
 
 - clean out backlog: when a comic goes from backlog to published, remove its
   html file from the backlog

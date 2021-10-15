@@ -40,7 +40,7 @@ TEMPL
 
     $feed = Comic::Out::Feed->new(
         "outdir" => "generated/web/",
-        "Test" => {
+        "Atom" => {
             "template" => "simple.templ"
         }
     );
@@ -66,7 +66,7 @@ sub make_comic {
 sub no_output_directory_configured : Tests {
     eval {
         Comic::Out::Feed->new(
-            "Test" => {
+            "Atom" => {
                 "template" => "simple.templ"
             }
         );
@@ -79,7 +79,7 @@ sub no_output_directory_configured : Tests {
 sub no_template_configured_at_all : Tests {
     my $feed = Comic::Out::Feed->new(
         "outdir" => "generated/web",
-        "Whatever" => {
+        "Atom" => {
             "outfile" => "rss.xml"
         },
     );
@@ -87,14 +87,14 @@ sub no_template_configured_at_all : Tests {
     eval {
         $feed->generate_all($comic);
     };
-    like($@, qr{no Whatever template}i);
+    like($@, qr{no Atom template}i);
 }
 
 
 sub no_template_configured_for_language : Tests {
     my $feed = Comic::Out::Feed->new(
         "outdir" => "generated/web",
-        "Whatever" => {
+        "Atom" => {
             "template" => {}
         }
     );
@@ -102,7 +102,7 @@ sub no_template_configured_for_language : Tests {
     eval {
         $feed->generate_all(@comics);
     };
-    like($@, qr{No Whatever template}i, 'should mention problem');
+    like($@, qr{No Atom template}i, 'should mention problem');
     like($@, qr{English}, 'should mention language');
 }
 
@@ -111,14 +111,14 @@ sub bad_template_for_all_languages : Tests {
     my $comic = make_comic('one', '2016-01-01');
     my $feed = Comic::Out::Feed->new(
         "outdir" => "generated/web",
-        "Whatever" => {
+        "Atom" => {
             "template" => $comic
         },
     );
     eval {
-        $feed->generate_all(($comic));
+        $feed->generate_all($comic);
     };
-    like($@, qr{Bad Whatever template}i, 'should mention problem');
+    like($@, qr{Bad Atom template}i, 'should mention problem');
 }
 
 
@@ -126,16 +126,16 @@ sub bad_template_for_one_language : Tests {
     my $comic = make_comic('one', '2016-01-01');
     my $feed = Comic::Out::Feed->new(
         "outdir" => "generated/web",
-        "Whatever" => {
+        "Atom" => {
             "template" => {
-                "English" => $comic
+                "English" => $comic,
             },
         },
     );
     eval {
-        $feed->generate_all(($comic));
+        $feed->generate_all($comic);
     };
-    like($@, qr{Bad Whatever template}i, 'should mention problem');
+    like($@, qr{Bad Atom template}i, 'should mention problem');
     like($@, qr{English}, 'should mention language');
 }
 
@@ -147,17 +147,17 @@ sub no_comics : Tests {
 
 
 sub all_comics_filtered : Tests {
-    my @comics = (make_comic('one', '3000-01-01'));
-    $feed->generate_all(@comics);
-    MockComic::assert_wrote_file('generated/web/english/test.xml', '');
+    my $comic = make_comic('one', '3000-01-01');
+    $feed->generate_all($comic);
+    MockComic::assert_wrote_file('generated/web/english/atom.xml', '');
 }
 
 
 sub one_comic : Tests {
-    my @comics = (make_comic('one', '2016-01-01'));
+    my $comic = make_comic('one', '2016-01-01');
 
-    $feed->generate_all(@comics);
-    MockComic::assert_wrote_file('generated/web/english/test.xml', qr{^\s*one\s*$}m);
+    $feed->generate_all($comic);
+    MockComic::assert_wrote_file('generated/web/english/atom.xml', qr{^\s*one\s*$}m);
 }
 
 
@@ -169,7 +169,7 @@ sub published_only : Tests {
     );
 
     $feed->generate_all(@comics);
-    MockComic::assert_wrote_file('generated/web/english/test.xml', qr{^\s*two\s*$}m);
+    MockComic::assert_wrote_file('generated/web/english/atom.xml', qr{^\s*two\s*$}m);
 }
 
 
@@ -181,7 +181,7 @@ sub orders_from_latest_to_oldest : Tests {
     );
 
     $feed->generate_all(@comics);
-    MockComic::assert_wrote_file('generated/web/english/test.xml', qr{^\s*three\s*two\s*one\s*$}m);
+    MockComic::assert_wrote_file('generated/web/english/atom.xml', qr{^\s*three\s*two\s*one\s*$}m);
 }
 
 
@@ -230,14 +230,14 @@ TEMPL
     MockComic::fake_file("notFor.templ", $templ);
     $feed = Comic::Out::Feed->new(
         "outdir" => "generated/web/",
-        "Test" => {
+        "Atom" => {
             "template" => "notFor.templ",
         },
     );
     my @comics = (make_comic('one', '2016-01-01'));
 
     $feed->generate_all(@comics);
-    MockComic::assert_wrote_file('generated/web/english/test.xml', qr{^\s*blah\s*$}m);
+    MockComic::assert_wrote_file('generated/web/english/atom.xml', qr{^\s*blah\s*$}m);
 }
 
 
@@ -248,14 +248,14 @@ sub proviedes_max_item_count : Tests {
         $MockComic::DESCRIPTION => {'English' => 'Drinking beer'});
     $feed = Comic::Out::Feed->new(
         "outdir" => "generated/web/",
-        "Test" => {
+        "Atom" => {
             "template" => "test.templ",
             "max" => 1234,
         }
     );
 
     $feed->generate_all(($comic));
-    MockComic::assert_wrote_file('generated/web/english/test.xml', "1234");
+    MockComic::assert_wrote_file('generated/web/english/atom.xml', "1234");
 }
 
 
@@ -266,13 +266,13 @@ sub provides_updated_timestamp : Tests {
         $MockComic::DESCRIPTION => {'English' => 'Drinking beer'});
     $feed = Comic::Out::Feed->new(
         "outdir" => "generated/web/",
-        "Test" => {
+        "Atom" => {
             "template" => "test.templ"
         }
     );
 
     $feed->generate_all(($comic));
-    MockComic::assert_wrote_file('generated/web/english/test.xml', qr{^\s*2021-02-28T18:03:10-04:00\s*}m);
+    MockComic::assert_wrote_file('generated/web/english/atom.xml', qr{^\s*2021-02-28T18:03:10-04:00\s*}m);
 }
 
 
@@ -288,12 +288,12 @@ ATOM
     $comic->{pngSize}->{English} = 1024;
     $feed = Comic::Out::Feed->new(
         "outdir" => "generated/web/",
-        "Test" => {
+        "Atom" => {
             "template" => "test.templ"
         }
     );
     $feed->generate_all(($comic));
-    MockComic::assert_wrote_file('generated/web/english/test.xml', qr{^\s*1024\s*}m);
+    MockComic::assert_wrote_file('generated/web/english/atom.xml', qr{^\s*1024\s*}m);
 }
 
 

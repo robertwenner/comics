@@ -96,6 +96,7 @@ sub new {
     if (!$settings{'from-all'} && !$settings{'from-language'}) {
         croak('Comic::Out::FileCopy: Must specify at least one of from-all and from-language');
     }
+    $self->flag_extra_settings();
 
     return $self;
 }

@@ -69,6 +69,7 @@ sub new {
 
     $self->needs('text', 'HASH');
     $self->optional('style', 'scalar', $STYLE);
+    $self->flag_extra_settings();
 
     return $self;
 }

@@ -73,6 +73,7 @@ sub new {
 
     $self->needs('template', 'hash-or-scalar');
     $self->needs('outfile', 'HASH');
+    $self->flag_extra_settings();
 
     return $self;
 }

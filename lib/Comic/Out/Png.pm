@@ -73,6 +73,7 @@ sub new {
 
     $self->needs('outdir', 'directory');
     $self->{inkscape_version} = undef;
+    $self->flag_extra_settings();
 
     return $self;
 }

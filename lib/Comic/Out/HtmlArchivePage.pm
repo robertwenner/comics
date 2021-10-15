@@ -83,6 +83,7 @@ sub new {
             croak "Comic::Out::HtmlArchivePage $language in outfile but not in template" unless ($settings{template}{$language});
         }
     }
+    $self->flag_extra_settings();
 
     return $self;
 }

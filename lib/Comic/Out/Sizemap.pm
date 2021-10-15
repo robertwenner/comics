@@ -97,6 +97,7 @@ sub new {
     croak('Comic:Out::Sizemap.scale must be numeric') unless (looks_like_number($self->{settings}->{scale}));
     $self->optional('published_color', 'scalar', $PUBLISHED_COLOR);
     $self->optional('unpublished_color', 'scalar', $UNPUBLISHED_COLOR);
+    $self->flag_extra_settings();
 
     return $self;
 }
