@@ -675,7 +675,7 @@ Gets all SVG layers defined in this Comic.
 sub get_all_layers {
     my ($self) = @ARG;
 
-    return $self->{xpath}->findnodes("//$DEFAULT_NAMESPACE:g");
+    return $self->{xpath}->findnodes(_all_layers_xpath());
 }
 
 
@@ -697,7 +697,7 @@ sub has_layer {
     my ($self, @layers) = @ARG;
 
     foreach my $layer (@layers) {
-        if (!$self->{xpath}->findnodes($self->_top_level_layers_xpath($layer))) {
+        if (!$self->{xpath}->findnodes($self->_all_layers_xpath($layer))) {
             return 0;
         }
     }
@@ -705,10 +705,10 @@ sub has_layer {
 }
 
 
-sub _top_level_layers_xpath {
-    # Builds an XPath expression to find the top-level Inkscape layers
-    # (i.e., below the svg element) with the given name(s) or all layers if
-    # no name is given.
+sub _all_layers_xpath {
+    # Builds an XPath expression to find all Inkscape layers (i.e., below
+    # the svg element) with the given name(s) or all layers if no name is
+    # given.
     my (@labels) = @ARG;
 
     my $xpath = "/$DEFAULT_NAMESPACE:svg//$DEFAULT_NAMESPACE:g[\@inkscape:groupmode='layer'";
@@ -943,7 +943,7 @@ sub texts_in_language {
     $self->_find_frames();
     my @texts;
     foreach my $language (@languages) {
-        my @layers = _top_level_layers_xpath($language, "Meta$language", "HintergrundText$language") . "//$DEFAULT_NAMESPACE:text";
+        my @layers = _all_layers_xpath($language, "Meta$language", "HintergrundText$language") . "//$DEFAULT_NAMESPACE:text";
         my @nodes = $self->{xpath}->findnodes(@layers);
         foreach my $node (sort { $self->_text_pos_sort($a, $b) } @nodes) {
             push @texts, _text_content($node);
@@ -976,7 +976,7 @@ sub texts_in_layer {
     $self->_find_frames();
     my @texts;
     foreach my $layer (@layers) {
-        my @layernames = _top_level_layers_xpath($layer) . "//$DEFAULT_NAMESPACE:text";
+        my @layernames = _all_layers_xpath($layer) . "//$DEFAULT_NAMESPACE:text";
         my @nodes = $self->{xpath}->findnodes(@layernames);
         foreach my $node (sort { $self->_text_pos_sort($a, $b) } @nodes) {
             push @texts, _text_content($node);

@@ -58,6 +58,54 @@ sub get_layer {
 }
 
 
+sub layer_names {
+    my ($comic) = @_;
+    my @names = sort map { $_->getAttribute('inkscape:label') } $comic->get_all_layers();
+    return @names;
+}
+
+
+sub get_all_layers_top_level : Tests {
+    my $xml = <<'XML';
+<g inkscape:groupmode="layer" id="layer1" inkscape:label="English"/>
+<g inkscape:groupmode="layer" id="layer2" inkscape:label="Deutsch"/>
+<g inkscape:groupmode="layer" id="layer3" inkscape:label="Español"/>
+XML
+    my $comic = MockComic::make_comic($MockComic::XML => $xml);
+
+    is_deeply([layer_names($comic)], ['Deutsch', 'English', 'Español']);
+}
+
+
+sub get_all_layers_nested : Tests {
+    my $xml = <<'XML';
+<g inkscape:groupmode="layer" id="layer9" inkscape:label="ContainerDeutsch" style="display:none">
+    <g style="opacity:0.35" inkscape:label="HintergrundDeutsch" id="g4526" inkscape:groupmode="layer"/>
+    <g inkscape:groupmode="layer" id="layer13" inkscape:label="HintergrundTextDeutsch"/>
+    <g inkscape:groupmode="layer" id="layer3" inkscape:label="MetaDeutsch"/>
+    <g inkscape:groupmode="layer" id="layer2" inkscape:label="Deutsch" style="display:inline"/>
+</g>
+XML
+    my $comic = MockComic::make_comic($MockComic::XML => $xml);
+
+    is_deeply(
+        [layer_names($comic)],
+        ['ContainerDeutsch', 'Deutsch', 'HintergrundDeutsch', 'HintergrundTextDeutsch', 'MetaDeutsch']);
+}
+
+
+sub get_all_layers_doesnot_pick_up_groupings : Tests {
+    my $xml = <<'XML';
+<g inkscape:groupmode="layer" id="layer1" inkscape:label="English">
+    <g id="g1867" transform="translate(1095.9858,-36.186291)" style="fill:#000000"/>
+</g>
+XML
+    my $comic = MockComic::make_comic($MockComic::XML => $xml);
+
+    is_deeply([layer_names($comic)], ['English']);
+}
+
+
 sub needs_configuration : Tests {
     eval {
         Comic::Out::Copyright->new();
