@@ -375,12 +375,12 @@ sub optional {
 sub _type_name {
     my ($type) = @ARG;
 
-    return 'array or scalar' if ($type eq 'array-or-scalar');
-    return 'hash or scalar' if ($type eq 'hash-or-scalar');
-    return 'scalar' if ($type eq '' || $type eq 'scalar' || $type eq 'directory');
-    return 'array' if ($type eq 'ARRAY');
-    return 'hash' if ($type eq 'HASH');
-    return $type;
+    return 'array or scalar' if (lc $type eq 'array-or-scalar');
+    return 'hash or scalar' if (lc $type eq 'hash-or-scalar');
+    return 'scalar' if ($type eq '' || lc $type eq 'scalar' || lc $type eq 'directory');
+    return 'array' if (lc $type eq 'array');
+    return 'hash' if (lc $type eq 'hash');
+    croak "Unknown type $type";
 }
 
 

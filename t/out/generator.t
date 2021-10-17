@@ -161,15 +161,6 @@ sub needs_directory_with_trailing_slash : Tests {
 }
 
 
-sub needs_something_else : Tests {
-    my $obj = Comic::Out::Generator->new();
-    my $gen = Comic::Out::Generator->new('key' => $obj);
-
-    $gen->needs('key', 'Comic::Out::Generator');  # would croak if it failed
-    is_deeply($gen->{settings}->{'key'}, $obj);
-}
-
-
 sub needs_hash_or_scalar : Tests {
     my $gen = Comic::Out::Generator->new(
         'scalar' => 'value',
@@ -247,4 +238,14 @@ sub complains_about_unknown_settings : Tests {
     like($@, qr{Comic::Out::Generator}, 'should mention module');
     like($@, qr{unknown}, 'should state problem');
     like($@, qr{whatever}, 'should mention bad setting');
+}
+
+
+sub complains_about_unknown_type : Tests {
+    eval {
+        Comic::Out::Generator::_type_name('whatever');
+    };
+    like($@, qr{\bunknown\b}i, 'says what the problem is');
+    like($@, qr{\btype\b}i, 'says what is bad');
+    like($@, qr{\bwhatever\b}, 'gives the unknown value');
 }
