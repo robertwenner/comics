@@ -131,7 +131,9 @@ Places a copyright or license or URL note on the per-language `.svg` comic.
             "text": {
                 "English": "beercomics.com -- CC BY-NC-SA 4.0"
             },
-            "style": "font-family: sans-serif; font-size: 10px"
+            "style": "font-family: sans-serif; font-size: 10px",
+            "id_prefix": "Copyright",
+            "label_prefix": "Copyright"
         }
     }
 }
@@ -147,6 +149,11 @@ The style is optional. If not specified, it defaults to a black sans-serif
 font of size 10px. (This is without regard to frame spacing.) To pick a
 style, look at the XML of your comic texts (Inkscape menu Edit, then XML
 Editor...) and copy a `style=` description.
+
+Both `id_prefix` and `label_prefix` are optional and default to "Copyright".
+These prefixes are used with the language name for label and id of the newly
+generated layers. You can pick different ones in case you already have a
+layer named e.g., `CopyrightEnglish`.
 
 The position for the copyright note is picked automatically and depends on
 the frames in the comic. If there are rows of frames, the text will be

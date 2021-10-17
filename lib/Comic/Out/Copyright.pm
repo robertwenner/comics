@@ -17,7 +17,7 @@ use version; our $VERSION = qv('0.0.3');
 Readonly my $STYLE => 'color:#000000;font-size:10px;line-height:125%;font-family:sans-serif;display:inline';
 
 
-=for stopwords Wenner merchantability perlartistic
+=for stopwords Wenner merchantability perlartistic Inkscape px
 
 
 =head1 NAME
@@ -28,8 +28,8 @@ This module works on the generated F<.svg> file for each language.
 
 =head1 SYNOPSIS
 
-    my $svg = Comic::Out::Copyright->new(%settings);
-    $svg->generate($comic);
+    my $copyright = Comic::Out::Copyright->new(%settings);
+    $copyright->generate($comic);
 
 =head1 DESCRIPTION
 
@@ -50,25 +50,48 @@ Parameters:
 
 =back
 
-The note to add is given in the configuration like this:
+The note to add is given like this:
 
-    "text" => {
-        "English": "beercomics.com -- CC BY-NC-SA 4.0"
-    },
-    "style": "font-family: sans-serif; font-size: 10px",
+    my $copyright = Comic::Out::Copyright->new(
+        'text' => {
+            'English': 'beercomics.com -- CC BY-NC-SA 4.0'
+        },
+        'style' => 'font-family: sans-serif; font-size: 10px',
+        'label_prefix' => 'Copyright',
+        'id_prefix' => 'Copyright',
+    );
 
-where C<text> is the actual text to display, and C<style> is the style
-attribute for that text. Anything legal in SVG is fair game.
+The arguments are:
+
+=over 4
+
+=item * B<%text> (mandatory) the actual copyright or license text to insert
+    in each language.
+
+=item * B<$style> (optional) the style attribute for that inserted text.
+    Anything legal in SVG is fair game. Defaults to black sans-serif in
+    10 pixel size.
+
+=item * B<label_prefix> prefix for the new generated Inkscape layer's label
+    attribute. See C<id_prefix> below.
+
+=item * B<<id_prefix> prefix for the new generated Inkscape layer's id
+    attribute. Defaults to "Copyright". The language will be appended to
+    this. This allows changing label and id in case you already have layers
+    named e.g., C<CopyrightEnglish>.
+
+=back
 
 =cut
-
 
 sub new {
     my ($class, %settings) = @ARG;
     my $self = $class->SUPER::new(%settings);
 
     $self->needs('text', 'HASH');
-    $self->optional('style', 'scalar', $STYLE);
+    $self->optional('style', '', $STYLE);
+    $self->optional('label_prefix', '', 'Copyright');
+    $self->optional('id_prefix', '', 'Copyright');
     $self->flag_extra_settings();
 
     return $self;
@@ -78,8 +101,8 @@ sub new {
 =head2 generate
 
 Generates the copyright note in the given Comic. The text will be placed in
-a new layer named "Copyright" plus the language name (with the first letter
-capitalized).
+a new layer named from the given label_prefix plus the language name (with
+the first letter capitalized), e.g., C<CopyrightEnglish>.
 
 Parameters:
 
@@ -100,6 +123,9 @@ sub generate {
             croak("No $language Comic::Out::Copyright text configured");
         }
 
+        my $id = "$self->{settings}->{id_prefix}$language";
+        my $label = "$self->{settings}->{label_prefix}$language";
+
         my $payload = XML::LibXML::Text->new($self->{settings}->{text}->{$language});
         my $tspan = XML::LibXML::Element->new('tspan');
         $tspan->setAttribute('sodipodi:role', 'line');
@@ -109,7 +135,7 @@ sub generate {
         my ($x, $y, $transform) = _where_to_place_the_text($comic);
         $text->setAttribute('x', $x);
         $text->setAttribute('y', $y);
-        $text->setAttribute('id', "Copyright$language");
+        $text->setAttribute('id', $id);
         $text->setAttribute('xml:space', 'preserve');
 
         my $style = $self->{settings}->{style};
@@ -121,9 +147,9 @@ sub generate {
         $layer->setNamespace('http://www.w3.org/2000/svg');
         $layer->setNamespace('http://www.inkscape.org/namespaces/inkscape', 'inkscape', 0);
         $layer->setAttribute('inkscape:groupmode', 'layer');
-        $layer->setAttributeNS('http://www.inkscape.org/namespaces/inkscape', 'label', "Copyright$language");
+        $layer->setAttributeNS('http://www.inkscape.org/namespaces/inkscape', 'label', $label);
         $layer->setAttribute('style', 'display:inline');
-        $layer->setAttribute('id', "Copyright$language");
+        $layer->setAttribute('id', $id);
         $layer->appendChild($text);
 
         my $root = $svg->documentElement();

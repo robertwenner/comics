@@ -138,6 +138,25 @@ sub configure_style : Tests {
 }
 
 
+sub configure_label_and_id_prefix : Tests {
+    $copyright = Comic::Out::Copyright->new(
+        'text' => {
+            'Deutsch' => 'beercomics.de',
+        },
+        'style' => 'my great style',
+        'label_prefix' => 'Label',
+        'id_prefix' => 'Id',
+    );
+    my $comic = make_comic();
+
+    $copyright->generate($comic);
+
+    my $layer = get_layer($comic->{dom}, 'LabelDeutsch');
+    is($layer->getAttribute('inkscape:label'), 'LabelDeutsch');
+    is($layer->getAttribute('id'), 'IdDeutsch');
+}
+
+
 sub croaks_if_no_text_for_language : Tests {
     $copyright = Comic::Out::Copyright->new(
         'text' => {
