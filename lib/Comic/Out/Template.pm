@@ -89,10 +89,10 @@ sub templatize {
     if ($output =~ m/\[%/mg || $output =~ m/%\]/mg) {
         croak "$template_file for $description: Unresolved template marker";
     }
-    if ($output =~ m/ARRAY\(0x[[:xdigit:]]+\)/mg) {
+    if ($output =~ m/ARRAY[(]0x[[:xdigit:]]+[)]/mg) {
         croak "$template_file for $description: ARRAY ref found:\n$output";
     }
-    if ($output =~ m/HASH\(0x[[:xdigit:]]+\)/mg) {
+    if ($output =~ m/HASH[(]0x[[:xdigit:]]+[)]/mg) {
         croak "$template_file for $description: HASH ref found:\n$output";
     }
 

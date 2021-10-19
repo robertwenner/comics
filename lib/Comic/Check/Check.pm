@@ -115,7 +115,7 @@ Finds all Check modules.
 =cut
 
 sub find_all {
-    return Comic::Modules::find_modules(qr{/(Comic/Check/[^.]+\.pm)$}, 'Comic/Check/Check.pm');
+    return Comic::Modules::find_modules(qr{/(Comic/Check/[^.]+[.]pm)$}, 'Comic/Check/Check.pm');
 }
 
 

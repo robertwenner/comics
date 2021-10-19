@@ -160,7 +160,7 @@ Parameters:
 sub module_name {
     my ($name) = @ARG;
 
-    $name =~ s/\.pm$//;
+    $name =~ s/[.]pm$//;
     $name =~ s{/}{::}g;
 
     return $name;
@@ -185,7 +185,7 @@ sub module_path {
     my ($name) = @ARG;
 
     $name =~ s{::}{/}g;
-    $name = "$name.pm" unless $name =~ m/\.pm$/;
+    $name = "$name.pm" unless $name =~ m/[.]pm$/;
 
     return $name;
 }

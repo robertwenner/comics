@@ -24,7 +24,6 @@ Test::Perl::Critic->import(
         'RegularExpressions::RequireExtendedFormatting',
         'RegularExpressions::RequireDotMatchAnything',
         'RegularExpressions::RequireLineBoundaryMatching',
-        'RegularExpressions::ProhibitEscapedMetacharacters',
         'ControlStructures::ProhibitPostfixControls',
         'ControlStructures::ProhibitUnlessBlocks',
         'Documentation::RequirePodAtEnd',

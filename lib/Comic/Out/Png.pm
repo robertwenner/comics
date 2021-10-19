@@ -213,7 +213,7 @@ sub _get_png_info {
 
     $comic->{pngFile}{$language} = "$comic->{baseName}{$language}.png";
     $comic->{imageUrl}{$language} = $comic->{url}{$language};
-    $comic->{imageUrl}{$language} =~ s/\.html$/.png/;
+    $comic->{imageUrl}{$language} =~ s/[.]html$/.png/;
     $comic->{height} = $info->{'ImageHeight'};
     $comic->{width} = $info->{'ImageWidth'};
     # Can't use $info->{'ImageSize'} as it returns e.g., 26 KiB, and parsing
@@ -272,7 +272,7 @@ sub _parse_inkscape_version {
     # Inkscape 1.0 (4035a4fb49, 2020-05-01)
     # Inkscape 1.0.2 (e86c870879, 2021-01-15)
     # Inkscape 1.1 (ce6663b3b7, 2021-05-25)
-    if ($inkscape_output =~ m/^Inkscape\s+(\d+\.\d)/) {
+    if ($inkscape_output =~ m/^Inkscape\s+(\d+[.]\d)/) {
         return $1;
     }
     $comic->keel_over("Comic::Out::Png: Cannot figure out Inkscape version from this:\n$inkscape_output");

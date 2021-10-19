@@ -439,7 +439,7 @@ sub collect_files {
             File::Find::find(
                 sub {
                     my $name = $File::Find::name;
-                    push @collection, $name if ($name =~ m/\.svg$/);
+                    push @collection, $name if ($name =~ m/[.]svg$/);
                 },
                 $fod);
         }

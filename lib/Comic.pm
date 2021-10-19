@@ -222,7 +222,7 @@ sub _cache_file_for {
     if ($dirs eq q{./}) { # no path
         $dirs = '';
     }
-    $filename =~ s/\.svg$//;
+    $filename =~ s/[.]svg$//;
     return make_dir($CACHE_DIR . "/$dir/$dirs") . "$filename.$ext";
 }
 
