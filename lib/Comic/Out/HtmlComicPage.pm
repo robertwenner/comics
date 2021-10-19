@@ -2,13 +2,12 @@ package Comic::Out::HtmlComicPage;
 
 use strict;
 use warnings;
-use utf8;
 use Locales unicode => 1;
 use English '-no_match_vars';
 use Carp;
 use Readonly;
 use Clone qw(clone);
-use URI::Encode qw(uri_encode uri_decode);
+use URI::Encode qw(uri_encode);
 
 use Comic::Out::Template;
 use Comic::Out::Generator;

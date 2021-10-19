@@ -2,7 +2,6 @@ package Comic::Out::HtmlLink;
 
 use strict;
 use warnings;
-use utf8;
 use English '-no_match_vars';
 
 use version; our $VERSION = qv('0.0.3');

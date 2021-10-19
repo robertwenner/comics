@@ -2,11 +2,9 @@ package Comic::Out::Sitemap;
 
 use strict;
 use warnings;
-use utf8;
 use Locales unicode => 1;
 use English '-no_match_vars';
 use Carp;
-use Readonly;
 
 use Comic::Out::Template;
 use Comic::Out::Generator;

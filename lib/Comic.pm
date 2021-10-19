@@ -6,7 +6,6 @@ use autodie;
 
 use Readonly;
 use English '-no_match_vars';
-use utf8;
 use Locales unicode => 1;
 use base qw(Exporter);
 use POSIX qw(strftime floor);
@@ -16,7 +15,7 @@ use String::Util 'trim';
 use DateTime;
 use DateTime::Format::ISO8601;
 use DateTime::Format::RFC3339;
-use File::Path qw(make_path);
+use File::Path;
 use File::Basename;
 use File::Slurper;
 use open ':std', ':encoding(UTF-8)'; # to handle e.g., umlauts correctly
@@ -26,7 +25,7 @@ use JSON;
 use HTML::Entities;
 use Image::ExifTool qw(:Public);
 use Image::SVG::Transform;
-use URI::Encode qw(uri_encode uri_decode);
+use URI::Encode qw(uri_encode);
 
 use Comic::Consts;
 use Comic::Settings;

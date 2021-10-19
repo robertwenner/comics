@@ -2,7 +2,6 @@ package Comic::Check::Spelling;
 
 use strict;
 use warnings;
-use utf8;
 use Carp;
 use English '-no_match_vars';
 use String::Util 'trim';

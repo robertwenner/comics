@@ -3,7 +3,6 @@ package Comic::Modules;
 use strict;
 use warnings;
 
-use Readonly;
 use English '-no_match_vars';
 use Carp;
 use File::Find;

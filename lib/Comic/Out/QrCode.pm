@@ -2,7 +2,6 @@ package Comic::Out::QrCode;
 
 use strict;
 use warnings;
-use utf8;
 use English '-no_match_vars';
 use Imager::QRCode;
 

@@ -2,7 +2,6 @@ package Comic::Out::Sizemap;
 
 use strict;
 use warnings;
-use utf8;
 use Locales unicode => 1;
 use English '-no_match_vars';
 use Scalar::Util qw(looks_like_number);

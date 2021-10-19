@@ -28,6 +28,7 @@ Test::Perl::Critic->import(
         'ControlStructures::ProhibitUnlessBlocks',
         'Documentation::RequirePodAtEnd',
         'CodeLayout::RequireTidyCode',
+        'TooMuchCode::ProhibitDuplicateLiteral',
     ],
 );
 Test::Perl::Critic::all_critic_ok();

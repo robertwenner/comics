@@ -2,10 +2,9 @@ package Comic::Out::FileCopy;
 
 use strict;
 use warnings;
-use utf8;
 use English '-no_match_vars';
 use Carp;
-use File::Path qw(make_path);
+use File::Path;
 
 
 use version; our $VERSION = qv('0.0.3');

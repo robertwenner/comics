@@ -2,7 +2,6 @@ package Comic::Social::Reddit;
 
 use strict;
 use warnings;
-use Scalar::Util qw/blessed/;
 use English '-no_match_vars';
 use Carp;
 use Readonly;

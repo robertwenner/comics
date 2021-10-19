@@ -2,7 +2,6 @@ package Comic::Out::Png;
 
 use strict;
 use warnings;
-use utf8;
 use English '-no_match_vars';
 use Carp;
 use File::Copy;

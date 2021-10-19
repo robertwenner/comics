@@ -6,7 +6,6 @@ use autodie;
 
 use English '-no_match_vars';
 use open ':std', ':encoding(UTF-8)'; # to handle e.g., umlauts correctly
-use Readonly;
 use Carp;
 use File::Slurper;
 use File::Find;
