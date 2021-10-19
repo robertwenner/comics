@@ -159,6 +159,30 @@ sub export_command_line_inkscape1 : Tests {
 }
 
 
+sub export_command_line_inkscape1_1 : Tests {
+    no warnings qw/redefine/;
+    local *Comic::Out::Png::_get_inkscape_version = sub {
+        return "1.1";
+    };
+    use warnings;
+
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+    );
+
+    $png->_svg_to_png($comic, $MockComic::ENGLISH, 'latest-comic.svg', 'latest-comic.png');
+
+    like($command_lines[0], qr{^inkscape }, 'inkscape call');
+    unlike($command_lines[0], qr{ --without-gui }, 'old suppresses GUI flag');
+    like($command_lines[0], qr{ --export-type=png\b}, 'png file type');
+    like($command_lines[0], qr{ --export-filename=\S*\blatest-comic.png\b}, 'png file name');
+    like($command_lines[0], qr{\blatest-comic.svg$}, 'input svg file');
+    like($command_lines[0], qr{ --export-area-drawing }, 'export area');
+    like($command_lines[0], qr{ --export-background=#ffffff}, 'background color');
+    is_deeply($comic->{warnings}, []);
+}
+
+
 sub export_command_line_future_inkscape : Tests {
     no warnings qw/redefine/;
     local *Comic::Out::Png::_get_inkscape_version = sub {
