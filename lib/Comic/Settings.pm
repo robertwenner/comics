@@ -2,6 +2,7 @@ package Comic::Settings;
 
 use strict;
 use warnings;
+use utf8;
 
 use Readonly;
 use English '-no_match_vars';
@@ -21,11 +22,15 @@ Readonly our $UPLOADERS => 'Uploader';
 Readonly our $SOCIAL_MEDIA_POSTERS => 'Social';
 
 
+=encoding utf8
+
 =for stopwords JSON Wenner perlartistic MERCHANTABILITY
+
 
 =head1 NAME
 
 Comic::Settings - Compiles settings from different sources.
+
 
 =head1 SYNOPSIS
 
@@ -37,6 +42,7 @@ Comic::Settings - Compiles settings from different sources.
     if ($s{'top_level_key'} == 1) {
         ...
     }
+
 
 =head1 DESCRIPTION
 

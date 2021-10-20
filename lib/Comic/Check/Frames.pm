@@ -2,6 +2,7 @@ package Comic::Check::Frames;
 
 use strict;
 use warnings;
+use utf8;
 use English '-no_match_vars';
 use Readonly;
 use Comic::Consts;
@@ -12,9 +13,15 @@ use base('Comic::Check::Check');
 use version; our $VERSION = qv('0.0.3');
 
 
+=encoding utf8
+
+=for stopwords html Wenner merchantability perlartistic
+
+
 =head1 NAME
 
 Comic::Check::Frames - Checks a comic's frame style, width, and positions.
+
 
 =head1 SYNOPSIS
 
@@ -24,6 +31,7 @@ Comic::Check::Frames - Checks a comic's frame style, width, and positions.
     foreach my $comic (@all_comics) {
         $check->check($comic);
     }
+
 
 =head1 DESCRIPTION
 
@@ -205,9 +213,6 @@ sub _more_off {
     my ($a, $b, $dist) = @ARG;
     return abs($a - $b) > $dist;
 }
-
-
-=for stopwords html Wenner merchantability perlartistic
 
 
 =head1 VERSION

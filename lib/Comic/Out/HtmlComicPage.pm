@@ -2,6 +2,7 @@ package Comic::Out::HtmlComicPage;
 
 use strict;
 use warnings;
+use utf8;
 use Locales unicode => 1;
 use English '-no_match_vars';
 use Carp;
@@ -17,17 +18,22 @@ use base('Comic::Out::Generator');
 use version; our $VERSION = qv('0.0.3');
 
 
+=encoding utf8
+
 =for stopwords Wenner merchantability perlartistic notFor html outdir
+
 
 =head1 NAME
 
 Comic::Out::HtmlComicPage - Generates a html page for each comic, plus an
 index page for the last.
 
+
 =head1 SYNOPSIS
 
     my $html = Comic::Out::HtmlComicPage->new(%settings);
     $html->generate_all(@comics);
+
 
 =head1 DESCRIPTION
 

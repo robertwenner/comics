@@ -2,9 +2,15 @@ package Comic::Consts;
 
 use strict;
 use warnings;
+use utf8;
 use Readonly;
 
 use version; our $VERSION = qv('0.0.3');
+
+
+=encoding utf8
+
+=for stopwords Wenner merchantability perlartistic
 
 
 =head1 NAME
@@ -33,19 +39,20 @@ Readonly our $FRAME_SPACING => 10;
 Readonly our $FRAME_SPACING_TOLERANCE => 2.0;
 
 
-=for stopwords Wenner merchantability perlartistic
-
 =head1 SYNOPSIS
 
 None.
+
 
 =head1 DESCRIPTION
 
 None; this is an internal module.
 
+
 =head1 SUBROUTINES/METHODS
 
 None.
+
 
 =head1 VERSION
 

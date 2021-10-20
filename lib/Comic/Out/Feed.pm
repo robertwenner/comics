@@ -2,6 +2,7 @@ package Comic::Out::Feed;
 
 use strict;
 use warnings;
+use utf8;
 use English '-no_match_vars';
 use Carp;
 
@@ -19,16 +20,21 @@ use Readonly;
 Readonly my $FEED_ITEM_COUNT => 10;
 
 
+=encoding utf8
+
 =for stopwords Wenner merchantability perlartistic RSS notFor outdir
+
 
 =head1 NAME
 
 Comic::Out::Feed - Generates feeds. Meant for RSS or Atom feeds.
 
+
 =head1 SYNOPSIS
 
     my $feed = Comic::Out::Feed->new(%settings);
     $feed->generate_all(@comics);
+
 
 =head1 DESCRIPTION
 

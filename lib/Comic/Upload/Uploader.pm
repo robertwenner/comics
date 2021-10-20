@@ -2,6 +2,7 @@ package Comic::Upload::Uploader;
 
 use strict;
 use warnings;
+use utf8;
 use English '-no_match_vars';
 
 use version; our $VERSION = qv('0.0.3');
@@ -11,17 +12,21 @@ use version; our $VERSION = qv('0.0.3');
 
 =for stopwords Wenner merchantability perlartistic
 
+
 =head1 NAME
 
 Comic::Upload::Uploader - base class for modules uploading comics.
+
 
 =head1 SYNOPSIS
 
 This class cannot be used directly.
 
+
 =head1 DESCRIPTION
 
 Use classes derived from this class.
+
 
 =head1 SUBROUTINES/METHODS
 

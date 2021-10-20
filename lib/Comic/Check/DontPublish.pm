@@ -2,6 +2,7 @@ package Comic::Check::DontPublish;
 
 use strict;
 use warnings;
+use utf8;
 use English '-no_match_vars';
 
 use Comic::Check::Check;
@@ -10,9 +11,15 @@ use base('Comic::Check::Check');
 use version; our $VERSION = qv('0.0.3');
 
 
+=encoding utf8
+
+=for stopwords html Wenner merchantability perlartistic Inkscape
+
+
 =head1 NAME
 
 Comic::Check::DontPublish - Checks a comic for a special marker.
+
 
 =head1 SYNOPSIS
 
@@ -20,6 +27,7 @@ Comic::Check::DontPublish - Checks a comic for a special marker.
     foreach my $comic (@all_comics) {
         $check->check($comic);
     }
+
 
 =head1 DESCRIPTION
 
@@ -33,8 +41,6 @@ to source control; see <L:Don't commit: Avoiding distractions while coding|
 https://www.sparkpost.com/blog/dont-commit-avoiding-distractions-while-coding/>.
 
 Comic::Check::DontPublish doesn't keep state and can be used for multiple comics.
-
-=cut
 
 
 =head1 SUBROUTINES/METHODS
@@ -127,9 +133,6 @@ sub _check_texts {
 
     return;
 }
-
-
-=for stopwords html Wenner merchantability perlartistic Inkscape
 
 
 =head1 VERSION

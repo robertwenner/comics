@@ -2,6 +2,7 @@ package Comic::Out::Copyright;
 
 use strict;
 use warnings;
+use utf8;
 use English '-no_match_vars';
 use Carp;
 use Readonly;
@@ -16,6 +17,8 @@ use version; our $VERSION = qv('0.0.3');
 Readonly my $STYLE => 'color:#000000;font-size:10px;line-height:125%;font-family:sans-serif;display:inline';
 
 
+=encoding utf8
+
 =for stopwords Wenner merchantability perlartistic Inkscape px
 
 
@@ -25,10 +28,12 @@ Comic::Out::Copyright - Adds a copyright or license note to a comic.
 
 This module works on the generated F<.svg> file for each language.
 
+
 =head1 SYNOPSIS
 
     my $copyright = Comic::Out::Copyright->new(%settings);
     $copyright->generate($comic);
+
 
 =head1 DESCRIPTION
 

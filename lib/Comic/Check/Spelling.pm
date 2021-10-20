@@ -2,6 +2,7 @@ package Comic::Check::Spelling;
 
 use strict;
 use warnings;
+use utf8;
 use Carp;
 use English '-no_match_vars';
 use String::Util 'trim';
@@ -13,11 +14,15 @@ use base('Comic::Check::Check');
 use version; our $VERSION = qv('0.0.3');
 
 
+=encoding utf8
+
 =for stopwords Inkscape Wenner merchantability perlartistic MetaEnglish EnglishBackground englishtest english
+
 
 =head1 NAME
 
 Comic::Check::Spelling - Checks spelling in the given comic.
+
 
 =head1 SYNOPSIS
 
@@ -28,6 +33,7 @@ Comic::Check::Spelling - Checks spelling in the given comic.
     foreach my $comic (@all_comics) {
         $check->check($comic);
     }
+
 
 =head1 DESCRIPTION
 

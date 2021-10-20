@@ -2,6 +2,7 @@ package Comic::Modules;
 
 use strict;
 use warnings;
+use utf8;
 
 use English '-no_match_vars';
 use Carp;
@@ -10,7 +11,10 @@ use File::Find;
 use version; our $VERSION = qv('0.0.3');
 
 
+=encoding utf8
+
 =for stopwords Wenner merchantability perlartistic
+
 
 =head1 NAME
 
@@ -202,17 +206,21 @@ None.
 
 None.
 
+
 =head1 CONFIGURATION AND ENVIRONMENT
 
 Uses Perl's module finding mechanism (e.g., C<@INC>).
+
 
 =head1 INCOMPATIBILITIES
 
 None known.
 
+
 =head1 BUGS AND LIMITATIONS
 
 None known.
+
 
 =head1 AUTHOR
 

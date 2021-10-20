@@ -2,6 +2,7 @@ package Comic::Check::DateCollision;
 
 use strict;
 use warnings;
+use utf8;
 use English '-no_match_vars';
 use String::Util 'trim';
 
@@ -11,10 +12,14 @@ use base('Comic::Check::Check');
 use version; our $VERSION = qv('0.0.3');
 
 
+=encoding utf8
+
+
 =head1 NAME
 
 Comic::Check::DateCollision - Checks that comics are not published on the
 same day in the same location.
+
 
 =head1 SYNOPSIS
 
@@ -22,6 +27,7 @@ same day in the same location.
     foreach my $comic (@all_comics) {
         $check->check($comic);
     }
+
 
 =head1 DESCRIPTION
 

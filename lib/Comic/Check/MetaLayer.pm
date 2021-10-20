@@ -2,6 +2,7 @@ package Comic::Check::MetaLayer;
 
 use strict;
 use warnings;
+use utf8;
 use English '-no_match_vars';
 
 use Comic::Check::Check;
@@ -10,13 +11,15 @@ use base('Comic::Check::Check');
 use version; our $VERSION = qv('0.0.3');
 
 
+=encoding utf8
+
 =for stopwords Wenner merchantability perlartistic Inkscape
 
-=encoding utf8
 
 =head1 NAME
 
 Comic::Check::MetaLayer - Checks the meta layer's texts.
+
 
 =head1 SYNOPSIS
 
@@ -25,12 +28,11 @@ Comic::Check::MetaLayer - Checks the meta layer's texts.
         $check->check($comic);
     }
 
+
 =head1 DESCRIPTION
 
 Comic::Check::MetaLayer doesn't keeps track of comics. It's safe to be shared
 but doesn't need to be shared.
-
-=cut
 
 
 =head1 SUBROUTINES/METHODS

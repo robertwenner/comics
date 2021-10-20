@@ -2,12 +2,15 @@ package Comic::Out::Generator;
 
 use strict;
 use warnings;
+use utf8;
 use English '-no_match_vars';
 use Carp;
 use Comic::Modules;
 
 use version; our $VERSION = qv('0.0.3');
 
+
+=encoding utf8
 
 =for stopwords html Wenner merchantability perlartistic png html svg acyclic yaml toml ebook
 
@@ -16,9 +19,11 @@ use version; our $VERSION = qv('0.0.3');
 
 Comic::Out::Generator - base class for all Comic modules that produce output.
 
+
 =head1 SYNOPSIS
 
 Should not be used directly.
+
 
 =head1 DESCRIPTION
 
@@ -185,23 +190,28 @@ Groups could be:
 
 =over 4
 
-=item B<1)> group "from source": works with the original C<.svg> file (i.e.,
-    L<Comic::Out::SvgPerLanguage>).
+=item B<1> group "svg modifier": modify the in-memory C<.svg> data,
+    (e.g., L<Comic::Out::Copyright> or a future watermarking module).
 
-=item B<2)> group "svg modifier": modify the per-language C<.svg> files,
-    e.g., L<Comic::Out::Copyright>) or a future watermarking module.
+=item B<2> group "svg source": works with the in-memory C<.svg> file (i.e.,
+    L<Comic::Out::SvgPerLanguage>) and produces per-language output C<.svg>
+    files.
 
-=item B<3)> group "graphic format": converts to another graphic format like
-    C<.png> or C<.pdf>, or optimize existing images.
+=item B<3> group "graphic format": converts from C<.svg> to another graphic
+    format like C<.png> or C<.pdf>, or optimize existing images.
 
-=item B<4)> group "basic context", provides the context in which to view the
+=item B<4> group "basic context", provides the context in which to view the
     comics, like a web page, or a C<.pdf>, or an <.epub>.
 
-=item B<5)> group "advanced context" for additional output like an archive
-    web page, tag clouds, a PDF index, a RSS feed, and so on.
+=item B<5> group "advanced context" for additional output that depends on
+    the output generated in the previous step, like an archive web page, tag
+    clouds, a PDF index, a RSS feed, and so on.
 
-=item B<6)> group "everything else": stuff like L<Comic::Out::Sizemap> and
+=item B<6> group "everything else": stuff like L<Comic::Out::Sizemap> and
     L<Comic::Out::Backlog> that depends only on the "graphic format" group.
+
+=item B<7> independent modules that can go anywhere (e.g.,
+    L<Comic::Out::FileCopy>).
 
 =back
 
@@ -223,7 +233,7 @@ sub order {
     my @order = (
         # Modules that modify the SVG in-memory.
         'Comic::Out::Copyright',
-        # Modules that work with the Inkscape source files.
+        # Modules that work with the in-memory SVG and produce language-dependent files.
         'Comic::Out::SvgPerLanguage',
         # Convert svg files to different image file formats.
         'Comic::Out::Png',
@@ -236,9 +246,10 @@ sub order {
         'Comic::Out::Feed',
         'Comic::Out::Sitemap',
         # Other generators, potentially independent of previous ones.
-        'Comic::Out::FileCopy',
         'Comic::Out::Sizemap',
         'Comic::Out::Backlog',
+        # Modules independent of anything else.
+        'Comic::Out::FileCopy',
     );
     return map { +($order[$_] => $_) } 0 .. $#order;
 }

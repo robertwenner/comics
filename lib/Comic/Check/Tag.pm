@@ -2,6 +2,7 @@ package Comic::Check::Tag;
 
 use strict;
 use warnings;
+use utf8;
 use English '-no_match_vars';
 use String::Util 'trim';
 
@@ -10,6 +11,9 @@ use base('Comic::Check::Check');
 
 use version; our $VERSION = qv('0.0.3');
 
+
+=encoding utf8
+
 =for stopwords html Wenner merchantability perlartistic metadata
 
 
@@ -17,12 +21,14 @@ use version; our $VERSION = qv('0.0.3');
 
 Comic::Check::Tag  - Checks a comic's tags for consistency.
 
+
 =head1 SYNOPSIS
 
     my $check = Comic::Check::Tag->new('tags', 'who');
     foreach my $comic (@all_comics) {
         $check->check($comic);
     }
+
 
 =head1 DESCRIPTION
 
@@ -32,8 +38,6 @@ tag clouds.
 
 Comic::Check::Tag keeps track of the tags it has seen, so you need to
 use the same instance for checking all your comics.
-
-=cut
 
 
 =head1 SUBROUTINES/METHODS

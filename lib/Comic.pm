@@ -2,6 +2,7 @@ package Comic;
 
 use strict;
 use warnings;
+use utf8;
 use autodie;
 
 use Readonly;
@@ -34,6 +35,9 @@ use Comic::Modules;
 
 use version; our $VERSION = qv('0.0.3');
 
+
+=encoding utf8
+
 =for stopwords inkscape html svg png Wenner merchantability perlartistic MetaEnglish rss sitemap sizemap xml dbus JSON metadata outdir
 
 
@@ -56,6 +60,7 @@ This document refers to version 0.0.3.
     foreach my $file (@ARGV) {
         my $c = Comic->new($file, $settings);
     }
+
 
 =head1 DESCRIPTION
 
@@ -151,10 +156,13 @@ sub load {
         write_file($meta_cache, $meta_data);
     }
 
+    # modified is used in <meta name="last-modified" content="..."/> and sitemap.xml
+    # Does it need to be in RFC3339 format like that HTTP header?
+    # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Last-Modified
+    # Or is that HTML tag obsolete anyway?
     my $modified = DateTime->from_epoch(epoch => _mtime($file));
     $modified->set_time_zone(_get_tz());
     $self->{modified} = $modified->ymd;
-    # $self->{rfc3339Modified} = DateTime::Format::RFC3339->new()->format_datetime($modified);
     my $pub = trim($self->{meta_data}->{published}->{when});
     if ($pub) {
         my $published = DateTime::Format::ISO8601->parse_datetime($pub);
@@ -489,7 +497,7 @@ The following example configures five checks. The Weekday check gets passed
 5, which is Friday, according to the L<Comic::Check::Weekday> documentation.
 
 The L<Comic::Check::DontPublish> check gets passed the tags C<DONT_PUBLISH>
-and C<FIXME> to look for.
+and C<FIX!!!> to look for.
 
 Finally L<Comic::Check::Frames> uses named parameters in an object. The
 names need to match what the module expects or they may be silently ignored.
@@ -498,7 +506,7 @@ names need to match what the module expects or they may be silently ignored.
         "Check" => {
             "Comic/Check/Transcript.pm" => {},
             "Comic/Check/Actors" => [],
-            "Comic::Check::DontPublish" => [ "DONT_PUBLISH", "FIXME" ],
+            "Comic::Check::DontPublish" => [ "DONT_PUBLISH", "FIX!!!" ],
             "Comic::Check::Weekday.pm" => [ 5 ],
             "Comic::Check::Frames" => {
                 "FRAME_ROW_HEIGHT" => 1.25,
@@ -903,7 +911,7 @@ sub language_codes {
             $codes{$lang} = $language_code_cache{$lang};
             next LANG;
         }
-        foreach my $lcode (Locales::->new()->get_language_codes()) {
+        foreach my $lcode (Locales->new()->get_language_codes()) {
             my $loc = Locales->new($lcode);
             next unless($loc);
             my $code = $loc->get_code_from_language($lang);

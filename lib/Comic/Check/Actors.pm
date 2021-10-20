@@ -2,6 +2,7 @@ package Comic::Check::Actors;
 
 use strict;
 use warnings;
+use utf8;
 use English '-no_match_vars';
 
 use Comic::Check::Check;
@@ -12,10 +13,12 @@ use version; our $VERSION = qv('0.0.3');
 
 =encoding utf8
 
+
 =head1 NAME
 
 Comic::Check::Actors - Checks the actors in a comic for consistency between
 languages.
+
 
 =head1 SYNOPSIS
 
@@ -24,12 +27,11 @@ languages.
         $check->check($comic);
     }
 
+
 =head1 DESCRIPTION
 
 Comic::Check::Actors doesn't keeps track of comics. It's safe to be shared
 but doesn't need to be shared.
-
-=cut
 
 
 =head1 SUBROUTINES/METHODS

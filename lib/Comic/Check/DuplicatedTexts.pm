@@ -2,6 +2,7 @@ package Comic::Check::DuplicatedTexts;
 
 use strict;
 use warnings;
+use utf8;
 use English '-no_match_vars';
 use String::Util 'trim';
 
@@ -13,9 +14,13 @@ use version; our $VERSION = qv('0.0.3');
 
 =encoding utf8
 
+=for stopwords html Wenner merchantability perlartistic
+
+
 =head1 NAME
 
 Comic::Check::DuplicatedTexts - Checks a comic's transcript for duplicated texts.
+
 
 =head1 SYNOPSIS
 
@@ -24,12 +29,11 @@ Comic::Check::DuplicatedTexts - Checks a comic's transcript for duplicated texts
         $check->check($comic);
     }
 
+
 =head1 DESCRIPTION
 
 Comic::Check::DuplicatedTexts doesn't keeps track of comics. It's safe to be shared
 but doesn't need to be shared.
-
-=cut
 
 
 =head1 SUBROUTINES/METHODS
@@ -124,9 +128,6 @@ sub _normalize_text {
     $text =~ s/\s+/ /mg;
     return $text;
 }
-
-
-=for stopwords html Wenner merchantability perlartistic
 
 
 =head1 VERSION

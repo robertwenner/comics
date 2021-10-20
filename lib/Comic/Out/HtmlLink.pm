@@ -2,6 +2,7 @@ package Comic::Out::HtmlLink;
 
 use strict;
 use warnings;
+use utf8;
 use English '-no_match_vars';
 
 use version; our $VERSION = qv('0.0.3');
@@ -10,17 +11,22 @@ use Comic::Out::Generator;
 use base('Comic::Out::Generator');
 
 
+=encoding utf8
+
 =for stopwords Wenner merchantability perlartistic svg html metadata
+
 
 =head1 NAME
 
 Comic::Out::HtmlLink - Generates a reference ("see that other comic") from
 comic metadata.
 
+
 =head1 SYNOPSIS
 
     my $htmllink = Comic::Out::HtmlLink->new();
     $htmllink->generate_all(@comics);
+
 
 =head1 DESCRIPTION
 

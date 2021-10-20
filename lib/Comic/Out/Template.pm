@@ -2,6 +2,7 @@ package Comic::Out::Template;
 
 use strict;
 use warnings;
+use utf8;
 use English '-no_match_vars';
 use Carp;
 use File::Slurper;
@@ -11,16 +12,21 @@ use Template::Plugin::JSON;
 use version; our $VERSION = qv('0.0.3');
 
 
+=encoding utf8
+
 =for stopwords Wenner merchantability perlartistic templatize templating
+
 
 =head1 NAME
 
 Comic::Out::Template - wraps Perl's Template module, adding extra checks for
 correct use.
 
+
 =head1 SYNOPSIS
 
     Comic::Out::Template::templatize('...', 'my.templ', 'English', %vars);
+
 
 =head1 DESCRIPTION
 
@@ -61,8 +67,8 @@ Parameters:
 sub templatize {
     my ($description, $template_file, $language, %vars) = @ARG;
 
-    # TODO: could cache templates, so that the same comic template does not
-    # get reloaded for each comic
+    # Could cache templates, so that the same comic template does not get
+    # reloaded for each comic. Needs profiling first.
     my %options = (
         STRICT => 1,
         PRE_CHOMP => 0, # removes space in beginning of a directive

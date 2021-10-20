@@ -2,6 +2,7 @@ package Comic::Check::EmptyTexts;
 
 use strict;
 use warnings;
+use utf8;
 use English '-no_match_vars';
 
 use Comic::Check::Check;
@@ -12,9 +13,11 @@ use version; our $VERSION = qv('0.0.3');
 
 =encoding utf8
 
+
 =head1 NAME
 
 Comic::Check::EmptyTexts - Checks that the comic has no empty texts.
+
 
 =head1 SYNOPSIS
 
@@ -22,6 +25,7 @@ Comic::Check::EmptyTexts - Checks that the comic has no empty texts.
     foreach my $comic (@all_comics) {
         $check->check($comic);
     }
+
 
 =head1 DESCRIPTION
 

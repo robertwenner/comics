@@ -2,6 +2,7 @@ package Comic::Out::FileCopy;
 
 use strict;
 use warnings;
+use utf8;
 use English '-no_match_vars';
 use Carp;
 use File::Path;
@@ -13,16 +14,21 @@ use Comic::Out::Generator;
 use base('Comic::Out::Generator');
 
 
+=encoding utf8
+
 =for stopwords Wenner merchantability perlartistic outdir cron Cygwin
+
 
 =head1 NAME
 
 Comic::Out::FileCopy - Copies files.
 
+
 =head1 SYNOPSIS
 
     my $feed = Comic::Out::FileCopy->new(%settings);
     $feed->generate_all(@comics);
+
 
 =head1 DESCRIPTION
 

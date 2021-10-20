@@ -2,6 +2,7 @@ package Comic::Out::QrCode;
 
 use strict;
 use warnings;
+use utf8;
 use English '-no_match_vars';
 use Imager::QRCode;
 
@@ -19,16 +20,21 @@ Readonly::Hash my %IMAGER_DEFAULT_SETTINGS => {
 };
 
 
+=encoding utf8
+
 =for stopwords Wenner merchantability perlartistic
+
 
 =head1 NAME
 
 Comic::Out::QrCode - Generates a QR code pointing to a Comic's URL.
 
+
 =head1 SYNOPSIS
 
     my $qr_code = Comic::Out::QrCode->new();
     $qr_code->generate(@comics);
+
 
 =head1 DESCRIPTION
 

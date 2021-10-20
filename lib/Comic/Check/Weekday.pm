@@ -2,6 +2,7 @@ package Comic::Check::Weekday;
 
 use strict;
 use warnings;
+use utf8;
 use English '-no_match_vars';
 use Carp;
 use String::Util 'trim';
@@ -14,10 +15,17 @@ use base('Comic::Check::Check');
 use version; our $VERSION = qv('0.0.3');
 
 
+=encoding utf8
+
+
+=for stopwords html Wenner merchantability perlartistic
+
+
 =head1 NAME
 
 Comic::Check::Weekday - Checks a comic's published date is always on certain
 weekdays.
+
 
 =head1 SYNOPSIS
 
@@ -26,6 +34,7 @@ weekdays.
         $check->check($comic);
     }
 
+
 =head1 DESCRIPTION
 
 For regularly published comics, it may make sense to check that a comic is
@@ -33,8 +42,6 @@ scheduled for a certain weekday, e.g., every Friday.
 
 Comic::Check::Weekday does not keeps track of comics. It's safe to be shared
 but doesn't need to be shared.
-
-=cut
 
 
 =head1 SUBROUTINES/METHODS
@@ -103,9 +110,6 @@ sub check {
 
     return;
 }
-
-
-=for stopwords html Wenner merchantability perlartistic
 
 
 =head1 VERSION

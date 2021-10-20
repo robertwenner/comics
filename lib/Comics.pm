@@ -2,6 +2,7 @@ package Comics;
 
 use strict;
 use warnings;
+use utf8;
 use autodie;
 
 use English '-no_match_vars';
@@ -20,13 +21,17 @@ use Comic::Social::Social;
 
 use version; our $VERSION = qv('0.0.3');
 
-=for stopwords html Inkscape JSON merchantability perlartistic png submodules Wenner cron cronjob pngs uploader uploaders
+
+=encoding utf8
+
+=for stopwords html Inkscape JSON merchantability perlartistic submodules Wenner cron cronjob uploader uploaders
 
 
 =head1 NAME
 
-Comics - Exports comics in multiple languages from Inkscape files to png and
-generates web pages for these.
+Comics - Exports comics in multiple languages from Inkscape files and generates
+additional files like web pages.
+
 
 =head1 SYNOPSIS
 
@@ -58,10 +63,11 @@ generates web pages for these.
     # Cronjob to publish comics:
     Comics::post_todays_comic("/path/to/config.json", "/path/to/comics/svg/");
 
+
 =head1 DESCRIPTION
 
 This module simplifies working with individual Comics: finding input files,
-having a main configuration, generating pngs and web pages.
+having a main configuration, generating C<pngs> and web pages.
 
 =cut
 
@@ -418,10 +424,9 @@ Arguments:
     for comics. If you give file names, these files will be collected
     regardless of their extension, where any directories will only be
     scanned for supported files.
-
     Pass a relative path for directories if you usually use relative paths,
     e.g., in the C<see> comic meta data to refer to another comic. Later
-    code checking paths may or ay not be aware of the current directory and
+    code checking paths may or may not be aware of the current directory and
     hence not find referenced files.
 
 =back

@@ -2,6 +2,7 @@ package Comic::Check::Transcript;
 
 use strict;
 use warnings;
+use utf8;
 use English '-no_match_vars';
 use String::Util 'trim';
 
@@ -13,10 +14,12 @@ use version; our $VERSION = qv('0.0.3');
 
 =encoding utf8
 
+
 =head1 NAME
 
 Comic::Check::Transcript - Checks a comic's transcript for meta information
 and real comic text order.
+
 
 =head1 SYNOPSIS
 
@@ -24,6 +27,7 @@ and real comic text order.
     foreach my $comic (@all_comics) {
         $check->check($comic);
     }
+
 
 =head1 DESCRIPTION
 

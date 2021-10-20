@@ -2,6 +2,7 @@ package Comic::Out::SvgPerLanguage;
 
 use strict;
 use warnings;
+use utf8;
 use English '-no_match_vars';
 use Carp;
 
@@ -12,7 +13,10 @@ use base('Comic::Out::Generator');
 use version; our $VERSION = qv('0.0.3');
 
 
+=encoding utf8
+
 =for stopwords Wenner merchantability perlartistic MetaEnglish Scalable
+
 
 =head1 NAME
 
@@ -23,10 +27,12 @@ layers common for all languages plus the ones for that language.
 Other modules may work with the generated F<.svg> files, for example to
 convert to other image formats per language.
 
+
 =head1 SYNOPSIS
 
     my $svg = Comic::Out::SvgPerLanguage->new(%settings);
     $svg->generate($comic);
+
 
 =head1 DESCRIPTION
 

@@ -2,6 +2,7 @@ package Comic::Out::Png;
 
 use strict;
 use warnings;
+use utf8;
 use English '-no_match_vars';
 use Carp;
 use File::Copy;
@@ -14,12 +15,16 @@ use base('Comic::Out::Generator');
 use version; our $VERSION = qv('0.0.3');
 
 
+=encoding utf8
+
 =for stopwords Wenner merchantability perlartistic png optipng
+
 
 =head1 NAME
 
 Comic::Out::Png - Generates a Portable Network Graphics (F<.png>) file for
 the given Comic in each of the Comic's languages.
+
 
 =head1 SYNOPSIS
 
@@ -28,6 +33,7 @@ the given Comic in each of the Comic's languages.
     );
     my $png = Comic::Out::Png->new(%settings);
     $png->generate($comic);
+
 
 =head1 DESCRIPTION
 
@@ -120,9 +126,11 @@ sub generate {
 
     foreach my $language ($comic->languages()) {
         my $published_png = "$comic->{dirName}{$language}/$comic->{baseName}{$language}.png";
-        # TODO pull backlog out of here, write only published pngs
+        # Need to pull backlogPath out of here, write only published pngs?
         # OR pass a published and a not published outdir
         # OR pass a hash of outdir to coderef to decide which png goes where --- yay for overengineering!
+        # But then again using the backlog as a cache is kind of an implementation
+        # detail of this module?
         my $backlog_png = "$comic->{backlogPath}{$language}/$comic->{baseName}{$language}.png" || '';
 
         if (Comic::up_to_date($comic->{srcFile}, $backlog_png)) {
@@ -208,14 +216,14 @@ sub _get_png_info {
     my ($comic, $png_file, $language) = @_;
 
     my $tool = Image::ExifTool->new();
-    my $info = $tool->ImageInfo($png_file);
+    my $image_info = $tool->ImageInfo($png_file);
 
     $comic->{pngFile}{$language} = "$comic->{baseName}{$language}.png";
     $comic->{imageUrl}{$language} = $comic->{url}{$language};
     $comic->{imageUrl}{$language} =~ s/[.]html$/.png/;
-    $comic->{height} = $info->{'ImageHeight'};
-    $comic->{width} = $info->{'ImageWidth'};
-    # Can't use $info->{'ImageSize'} as it returns e.g., 26 KiB, and parsing
+    $comic->{height} = $image_info->{'ImageHeight'};
+    $comic->{width} = $image_info->{'ImageWidth'};
+    # Can't use $image_info->{'ImageSize'} as it returns e.g., 26 KiB, and parsing
     # that would be more complicated than just asking the file system.
     $comic->{pngSize}{$language} = _file_size($png_file); return;
 }

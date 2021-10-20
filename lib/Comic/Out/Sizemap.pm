@@ -2,6 +2,7 @@ package Comic::Out::Sizemap;
 
 use strict;
 use warnings;
+use utf8;
 use Locales unicode => 1;
 use English '-no_match_vars';
 use Scalar::Util qw(looks_like_number);
@@ -24,16 +25,21 @@ Readonly my $UNPUBLISHED_COLOR => 'blue';
 Readonly my $MIN_SIZE_SENTINEL => 9_999_999;
 
 
+=encoding utf8
+
 =for stopwords Wenner merchantability perlartistic notFor
+
 
 =head1 NAME
 
 Comic::Out::Sizemap - Generates a map of different comic image sizes used.
 
+
 =head1 SYNOPSIS
 
     my $sizemap = Comic::Out::Sizemap->new(%settings);
     $sizemap->generate_all(@comics);
+
 
 =head1 DESCRIPTION
 

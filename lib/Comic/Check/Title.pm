@@ -2,6 +2,7 @@ package Comic::Check::Title;
 
 use strict;
 use warnings;
+use utf8;
 use English '-no_match_vars';
 use String::Util 'trim';
 
@@ -11,9 +12,15 @@ use base('Comic::Check::Check');
 use version; our $VERSION = qv('0.0.3');
 
 
+=encoding utf8
+
+=for stopwords html Wenner merchantability perlartistic
+
+
 =head1 NAME
 
 Comic::Check::Title - Checks a comic's title to prevent duplicate titles.
+
 
 =head1 SYNOPSIS
 
@@ -21,6 +28,7 @@ Comic::Check::Title - Checks a comic's title to prevent duplicate titles.
     foreach my $comic (@all_comics) {
         $check->check($comic);
     }
+
 
 =head1 DESCRIPTION
 
@@ -30,8 +38,6 @@ image and HTML page file names.
 
 Comic::Check::Title keeps track of the titles it has seen, so you need to
 use the same instance for checking all your comics.
-
-=cut
 
 
 =head1 SUBROUTINES/METHODS
@@ -82,9 +88,6 @@ sub check {
     }
     return;
 }
-
-
-=for stopwords html Wenner merchantability perlartistic
 
 
 =head1 VERSION

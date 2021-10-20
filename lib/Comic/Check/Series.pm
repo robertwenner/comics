@@ -2,6 +2,7 @@ package Comic::Check::Series;
 
 use strict;
 use warnings;
+use utf8;
 use English '-no_match_vars';
 use String::Util 'trim';
 
@@ -11,9 +12,13 @@ use base('Comic::Check::Check');
 use version; our $VERSION = qv('0.0.3');
 
 
+=encoding utf8
+
+
 =head1 NAME
 
 Comic::Check::Series - Checks a comic's series meta information.
+
 
 =head1 SYNOPSIS
 
@@ -24,12 +29,11 @@ Comic::Check::Series - Checks a comic's series meta information.
     # ...
     $check->final_check();
 
+
 =head1 DESCRIPTION
 
 Comic::Check::Series keeps track of the comics it has seen and hence all
 comics need to be checked by the same Comic::Check::Series.
-
-=cut
 
 
 =head1 SUBROUTINES/METHODS

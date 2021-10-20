@@ -2,6 +2,7 @@ package Comic::Out::Backlog;
 
 use strict;
 use warnings;
+use utf8;
 use English '-no_match_vars';
 use Carp;
 
@@ -13,13 +14,17 @@ use base('Comic::Out::Generator');
 use version; our $VERSION = qv('0.0.3');
 
 
+=encoding utf8
+
 =for stopwords Wenner merchantability perlartistic html
+
 
 =head1 NAME
 
 Comic::Out::Backlog - Generates a single html page with all unpublished
 comics plus possibly lists of used tags, series and other per-language
 comic meta data.
+
 
 =head1 SYNOPSIS
 
@@ -28,6 +33,7 @@ comic meta data.
     };
     my $png = Comic::Out::Backlog->new(%settings);
     $png->generate_all(@comics);
+
 
 =head1 DESCRIPTION
 

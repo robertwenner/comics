@@ -2,6 +2,7 @@ package Comic::Out::HtmlArchivePage;
 
 use strict;
 use warnings;
+use utf8;
 use English '-no_match_vars';
 use Carp;
 
@@ -13,17 +14,22 @@ use base('Comic::Out::Generator');
 use version; our $VERSION = qv('0.0.3');
 
 
+=encoding utf8
+
 =for stopwords Wenner merchantability perlartistic html
+
 
 =head1 NAME
 
 Comic::Out::HtmlArchivePage - Generates a per-language html page with all published
 comics comics in chronological order.
 
+
 =head1 SYNOPSIS
 
     my $archive = Comic::Out::HtmlArchivePage->new(%settings);
     $archive->generate_all(@comics);
+
 
 =head1 DESCRIPTION
 

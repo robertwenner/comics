@@ -2,6 +2,7 @@ package Comic::Social::Reddit;
 
 use strict;
 use warnings;
+use utf8;
 use English '-no_match_vars';
 use Carp;
 use Readonly;
@@ -17,9 +18,11 @@ use version; our $VERSION = qv('0.0.3');
 
 =for stopwords Wenner merchantability perlartistic boolean reddit reddits subreddits hashtags username
 
+
 =head1 NAME
 
 Comic::Social::Reddit - post a Comic on L<https://reddit.com>.
+
 
 =head1 SYNOPSIS
 
@@ -31,6 +34,7 @@ Comic::Social::Reddit - post a Comic on L<https://reddit.com>.
             secret => '...',
         },
     })
+
 
 =head1 DESCRIPTION
 
@@ -90,7 +94,7 @@ sub new {
         client_id => $settings->{'Reddit'}->{'client_id'},
         secret => $settings->{'Reddit'}->{'secret'},
     );
-    my %optional_settings = ();
+    my %optional_settings;
     if ($settings->{'Reddit'}->{'client_settings'}) {
         %optional_settings = %{$settings->{'Reddit'}->{'client_settings'}};
     }
@@ -239,7 +243,7 @@ sub _post {
             if ($error) {
                 return "$language: /r/$subreddit: $error";
             }
-        }
+        };
     }
 
     return "Posted '$title' ($comic->{url}{$language}) to $subreddit ($full_name) at "

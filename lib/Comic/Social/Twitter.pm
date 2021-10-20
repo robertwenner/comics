@@ -2,6 +2,7 @@ package Comic::Social::Twitter;
 
 use strict;
 use warnings;
+use utf8;
 use Scalar::Util qw/blessed/;
 use English '-no_match_vars';
 use Carp;
@@ -23,9 +24,11 @@ Readonly my $MAX_LEN => 280;
 
 =for stopwords Wenner merchantability perlartistic html png Ich braue mein eigenes Weil ich kann hashtags
 
+
 =head1 NAME
 
 Comic::Social::Twitter - tweet a Comic.
+
 
 =head1 SYNOPSIS
 
@@ -40,6 +43,7 @@ Comic::Social::Twitter - tweet a Comic.
     });
     my $result = $twitter->post($comic);
     print "$result\n";
+
 
 =head1 DESCRIPTION
 
@@ -177,7 +181,7 @@ sub post {
             }
             else {
                 $status = $self->{twitter}->update_with_media($text, [
-                    "$comic->{dirName}{$language}/$comic->{pngFile}{$language}"
+                    "$comic->{dirName}{$language}/$comic->{pngFile}{$language}",
                 ]);
             }
             push @result, $status->{text};

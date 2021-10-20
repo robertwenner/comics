@@ -2,6 +2,7 @@ package Comic::Check::Check;
 
 use strict;
 use warnings;
+use utf8;
 use English '-no_match_vars';
 use Carp;
 use Comic::Modules;
@@ -9,19 +10,24 @@ use Comic::Modules;
 use version; our $VERSION = qv('0.0.3');
 
 
+=encoding utf8
+
+=for stopwords html Wenner merchantability perlartistic
+
+
 =head1 NAME
 
 Comic::Check::Check  - base class for all comic checks.
+
 
 =head1 SYNOPSIS
 
 Should not be used directly.
 
+
 =head1 DESCRIPTION
 
 All Comic::Checks should derive from this class.
-
-=cut
 
 
 =head1 SUBROUTINES/METHODS
@@ -142,9 +148,6 @@ sub warning {
     $comic->warning(ref($self) . ': ' . $message);
     return;
 }
-
-
-=for stopwords html Wenner merchantability perlartistic
 
 
 =head1 VERSION
