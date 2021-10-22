@@ -1,128 +1,145 @@
-- Perl: use feature qw(signatures); no warnings qw(experimental::signatures);
-  or Function::Parameters, Method::Signatures
+- break up code into different (pluggable?) modules, e.g., reddit poster,
+  inkscape importer
+
+- cleanup hard-coded names, e.g., "Rahmen" or even "Meta", "generated"
 
 - rework variables available for templates: standardize names, pick decent
   names, DRY up them up, generate them in one place, document them
 
-- move move vars variables into the comics, for better scoping and to allow
-  multiple generators to contribute
+- should the names in the JSON configuration file be case-insensitive? Could
+  be confusing when case actually matters, e.g., for Perl modules.
+  If case matters, make sure it's used consistently. Language names are
+  still used inconsistently.
 
-- twitter with @someone does not get tweeted for some reason
+- cleanup: move more vars variables into the comics, for better scoping and
+  to allow multiple generators to contribute
 
-- backlog: list comics under series headings (hideable?)
+- make handling of paths uniform, relative paths need to be resolved
+  relative to a given base directory (e.g., the "see": "..." reference to
+  another comic).
 
-- don't post to reddit / don't tweet a link, if the link is dead (slow
-  web server?), or have uploading code try to make sure the upload worked
-  (link check)
 
-- define comic order by refering the previous or next comic, instead of
-  having a date, so that inserting one for current events doesn't ripple
-  through the backlog (and still maintaining a regular / weekly schedule)
+- refact: Perl: use feature qw(signatures); no warnings
+  qw(experimental::signatures); or Function::Parameters, Method::Signatures
 
-- break up code into different (pluggable?) modules, e.g., reddit poster,
-  inkscape importer
+- defect: twitter with @someone does not get tweeted for some reason
 
-- internal archive with published dates and (source svg) file names and
-  comic counts (maybe a matter of the template only)
+- feature: list comics under series headings (hideable?) in backlog, to see
+  which comics are in a series; extend to tags and who
 
-- allow adding (invisible) watermarks
+- feature: don't post to reddit / don't tweet a link, if the link is dead
+  (slow web server?), or have uploading code try to make sure the upload
+  worked (link check)
 
-- transcript needs to check all frames for ordering, not just rows; that
-  should get rid of space padding in texts
+- feature: define comic order by refering the previous or next comic,
+  instead of having a date, so that inserting one for current events doesn't
+  ripple through the backlog (and still maintaining a regular / weekly
+  schedule); or provide a script that inserts a comic by moving all others
+  (complicated, needs to know on which dates comics are published, and would
+  still mess up comics that need to stay in place for e.g., holidays)
 
-- email current comic when publishing
+- feature: internal archive with published dates and (source svg) file names
+  and comic counts (maybe a matter of the template only); backlog only shows
+  unpublished ones
 
-- handle more frame varieties, e.g., long frame over 2 rows on the side
+- feature: allow adding (invisible) watermarks
 
-- add "previously published in ..." link to the bottom of the page
+- feature: transcript needs to check all frames for ordering, not just rows;
+  that should get rid of space padding in texts
 
-- comics by series pages / links (can a comic be in more than one series?
-  (why not?))
+- feature: handle more frame varieties, e.g., long frame over 2 rows on the
+  side
 
-- prev next first last buttons per series
+- feature: email current comic when publishing; email list management should
+  not be part of this
 
-- tags under each comics, as hyperlinks to the tag cloud
+- feature: add "previously published in ..." link to the bottom of the page
+  for comics that didn't appear on the web page initially
 
-- tag cloud (see https://www.w3.org/TR/html5/common-idioms.html#tag-clouds)
-  or comics by tag pages
+- feature: support a comics by series pages / links (can a comic be in more
+  than one series? (why not?))
 
-- export svg instead of png (for a truly fluent / responsive web design),
-  but would also need to offer the font for download, I guess? or chop the
-  svgs or pngs up per frame (ugly, relies on either table-based HTML layout,
-  CSS magic beyond my skills, or chopping comics by rows only)
+- feature: prev next first last buttons per series
 
-- minimize svg file sizes (e.g., with svgo), if svg export is supported
+- feature: tags under each comics, as hyperlinks to the tag cloud
+  (see https://www.w3.org/TR/html5/common-idioms.html#tag-clouds) or comics
+  by tag pages
 
-- generate latex code for pdf, or generarte pdf right away
+- feature: export svg instead of png (for a truly fluent / responsive web
+  design), but would also need to offer the font for download, I guess? or
+  chop the svgs or pngs up per frame (ugly, relies on either table-based
+  HTML layout, CSS magic beyond my skills, or chopping comics by rows only)
 
-- liner notes with comments in pdf, suck in other interesting documentation.
-  This can pull stats per comics from git: how long between creation and
-  publication, how long was the backlog each Fri, how big was the ideas file
-  each week, how often was the comic changed (after being published).
+- feature: minimize svg file sizes (e.g., with svgo), if svg export is supported
 
-- sizemap should have colors depending on where the comic was published
+- feature: generate latex code for pdf, or generarte pdf right away
 
-- make sizemap svg attributes configurable
+- feature: liner notes with comments in pdf, suck in other interesting
+  documentation. This can pull stats per comics from git: how long between
+  creation and publication, how long was the backlog each Fri, how big was
+  the ideas file each week, how often was the comic changed (after being
+  published).
 
-- add a thumbnail / preview for really large images (posters), especially in
-  RSS
+- feature: sizemap should have colors depending on where the comic was
+  published, not published vs unpublished
 
-- cleanup hard-coded names, e.g., "Rahmen" or even "Meta", "generated"
+- feature: make more sizemap svg attributes configurable
+
+- feature: add a thumbnail / preview for really large images (posters),
+  especially in RSS
 
 - check for date holes (why? are those bad? only in the future? but I could
   schedule a xmas or Fri 13 comic ahead of time and then have holes and
   that's ok); warn in backlog if no comic for next Friday
 
-- more social media: Mastodon, Openbook, Ello, Diaspora, inrupt.com
+- feature: more social media: Mastodon, Openbook, Ello, Diaspora, inrupt.com
   (via Zapier?)
 
-- use a configuration file to avoid passing lots of parameters
-
-- use inkscape shell to export in bulk (could be faster than creating
-  multiple inkscape processes), would be great to avoid writing temp svg
-  files if inkscape accepts the svg on stdin
+- feature: use inkscape shell to export in bulk (could be faster than
+  creating multiple inkscape processes), would be great to avoid writing
+  temp svg files if inkscape accepts the svg on stdin
 
 - publish on CPAN, add badge to README.md like this for Minilla:
   [![MetaCPAN Release](https://badge.fury.io/pl/Minilla.svg)](https://metacpan.org/release/Minilla)
   https://badge.fury.io/for/pl
 
-- check: published date must be >= created date (typo?)
+- feature: check that published date is >= created date (typo?)
 
-- profile and fix slooooow handling of some (large?) svg files; debug
-  hiccups when it seems to stall for minutes (when cache is stale, but looks
-  like frame collection could be the problem, not actually calling inkscape)
+- performance: profile and fix slooooow handling of some (large?) svg files;
+  debug hiccups when it seems to stall for minutes (when cache is stale, but
+  looks like frame collection could be the problem, not actually calling
+  inkscape)
 
-- check that speaker names all show up in the "who" meta data (but be
-  careful about additional text, like "Paul, opening a beer:")
+- feature: check that speaker names all show up in the "who" meta data (but
+  be careful about additional text, like "Paul, opening a beer:")
 
-- write qr code file only when writing the pngs, i.e., when the source has
-  changed (only need this if the generated title / qr code file name has
-  changed, but this is harder to detect)
+- performance: write qr code file only when writing the pngs, i.e., when the
+  source has changed (only need this if the generated title / qr code file
+  name has changed, but this is harder to detect)
 
-- speed up with multiple threads for checking and converting svg files (1
-  thread per comic, then wait till all are done; reuse threads for writing
-  per-comic pages, when all next/prev links are known)
+- performance: speed up with multiple threads for checking and converting
+  svg files (1 thread per comic, then wait till all are done; reuse threads
+  for writing per-comic pages, when all next/prev links are known)
 
-- cache more data, like png sizes, transcript, and frame positions?
+- performance: cache more data, like png sizes, transcript, and frame
+  positions? use a database / key-value store?
 
-- mark cache as dirty if comic fails a check, so that you don't have to
-  manually touch the svg: cache files should get written only after all
-  checks have passed, and then a re-run doesn't try to use bad / incomplete
-  cache files
+- feature: mark cache as dirty if comic fails a check, so that you don't
+  have to manually touch the svg: cache files should get written only after
+  all checks have passed, and then a re-run doesn't try to use bad /
+  incomplete cache files
 
-- verbose and debug flags to print what's going on (helpful for configurable
-  checks and actions)
+- feature: verbose and debug flags to print what's going on (helpful for
+  configurable checks and actions)
 
-- switch Twitter module to Twitter::API
+- feature: switch Twitter module to Twitter::API
 
-- check 2FA for Reddit and Twitter
+- feature: check 2FA for Reddit and Twitter
 
-- optimization: when modifying only the latest comic (or an unpublished
+- performance: when modifying only the latest comic (or an unpublished
   comic), don't recreate all html pages (only if the latest comic file name
   (title) changes, links need to get updated). This should speed up final
-  touches on the comic.
-
-- defect: don't remove spaces in tags
+  touches on the latest comic
 
 - defect: frame detection for text outside of a single frame (comic title)
   does not seem to treat that text as after anything within the frame. The
@@ -141,13 +158,10 @@
 - check if meta text is not in a meta layer? by checking for colons? but
   trailig colons should be ok.
 
-- transcript check needs to not just grab all texts in order but also
-  respect layers: don't treat regular text as speaker indicator just because
-  it ends in a colon (could be a before / after style comic).
-
-- make handling of paths uniform, relative paths need to be resolved
-  relative to a given base directory (e.g., the "see": "..." reference to
-  another comic).
+- feature (defect?): transcript check needs to not just grab all texts in
+  order but also respect layers: don't treat regular text as speaker
+  indicator just because it ends in a colon (could be a before / after style
+  comic).
 
 - feature: upload to e.g., imgur.com and then post a link to that on reddit.
   This may be interesting for people not running their own website, and for
@@ -159,10 +173,6 @@
 - feature: allow comics to opt out of the feed. (use case?)
 
 - feature: post "classics" to social media if there is no new comic
-
-- should the names in the JSON configuration file be case-insensitive? Could
-  be confusing when case actually matters, e.g., for Perl modules.
-  If case matters, make sure it's used consistently.
 
 - feature: complain about unknown settings to catch typos (done for Generators,
   missing in Checks)
@@ -184,28 +194,30 @@
 - replace vars{'tags'} and vars{'tagsOrder'} in backlog with an ordered hash
   if Template supports this nicely
 
-- backlog currently appends language name to tags and series, it could
-  instead return hashes with languages as keys. On the one hand the template
-  gets more complicated (one more nested loop), on the other hand it's
-  cleaner and would allow to show / hide tags or series per language
+- feature: backlog currently appends language name to tags and series, it
+  could instead return hashes with languages as keys. On the one hand the
+  template gets more complicated (one more nested loop), on the other hand
+  it's cleaner and would allow to show / hide tags or series per language
 
-- break up Comic::Out::Backlog into the actual backlog part and meta data
-  (e.g., tags) aggregation overview
+- refact: break up Comic::Out::Backlog into the actual backlog part and meta
+  data (e.g., tags) aggregation overview
 
-- support aggregating meta data that's not per-language in the backlog
+- feature: support aggregating meta data that's not per-language in the
+  backlog (author, contrib, published when / where)
 
-- sitemap should work without people having to define a template
+- feature: sitemap should work without people having to define a template
 
-- if we keep the sitemap via template, filter the list passed to each
-  template instead of passing the filter notFor function for easier use
+- feature: if we keep the sitemap via template, filter the list passed to
+  each template instead of passing the filter notFor function for easier use
 
-- default subreddits should be per language hash, both in config and in
-  comic meta data
+- feature: default subreddits should be per language hash, both in config
+  and in comic meta data (support meta data single value for backward
+  compatibility)
 
 - feature: make configurable prefix / suffix for Reddit titles
 
 - fix: save png image size per language; it can vary by language, e.g., when
-  one language has 2 lines of text under the comic and the other three
+  one language has 2 lines of text under the comic frame and the other three
 
 - feature: Comic::Social::Twitter needs a svg mode
 
@@ -233,14 +245,19 @@
 
 - feature: warnings as errors
 
-- feature: allow manually ordering frames by naming them (Ids) with numbers
-  to hint at the transcript collector in which order to process frames (and
+- feature: allow manually ordering frames by naming them (ids) with numbers
+  to tell the transcript collector in which order to process frames (and
   with that texts), may be needed for panels that cover multiple rows
 
-- feature: allow manually ordering texts by naming them (Ids) with numbers
+- feature: allow manually ordering texts by naming them (ids) with numbers
   to force transcript order in more elaborate cartoons (often single panel)
 
 - feature: warn about spellcheck ignore words defined in the comic but not
   used
 
 - feature: specify qr code image size (e.g., in pixels)
+
+- defect: png meta info needs to turn newlines into spaces, not just remove
+  them completely
+
+- feature: support https://www.indexnow.org/
