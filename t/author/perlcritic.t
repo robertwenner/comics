@@ -45,10 +45,20 @@ Test::Perl::Critic->import(
         'TooMuchCode::ProhibitUnnecessaryUTF8Pragma',
         # Nobody on the team (me) uses Emacs.
         'Editor::RequireEmacsFileVariables',
-        # Look at those in detail:
+        # Too many false positives; triggers on string comparison eq operator,
+        # where any typo is an error anyway. Also, I've never been bitten by
+        # a == vs = typo.
         'ValuesAndExpressions::RequireConstantOnLeftSideOfEquality',
+        # Too finicky; a long message does not get shorter by splitting it over
+        # multiple lines.
         'ValuesAndExpressions::RestrictLongStrings',
+        # We're not on punchcards anymore...
         'Tics::ProhibitLongLines',
+        # Tidy style is ugly, way too much white space, e.g., aligning assignment
+        # operators on consecutive lines of assignments, or after an opening and
+        # before a closing paren.
+        'CodeLayout::RequireTidyCode',
+        # Look at those in detail:
         'Modules::RequirePerlVersion',
         'Compatibility::PerlMinimumVersionAndWhy',
         'Compatibility::PodMinimumVersion',
@@ -56,7 +66,6 @@ Test::Perl::Critic->import(
         'RegularExpressions::RequireExtendedFormatting',
         'RegularExpressions::RequireDotMatchAnything',
         'RegularExpressions::RequireLineBoundaryMatching',
-        'CodeLayout::RequireTidyCode',
     ],
 );
 Test::Perl::Critic::all_critic_ok();
