@@ -139,8 +139,8 @@ sub generate_all {
         croak("No outfile for $language") unless ($page);
 
         my %vars;
-        $vars{'comics'} = \@comics;
-        $vars{'modified'} = $comics[-1]->{modified};
+        $vars{'comics'} = \@published;
+        $vars{'modified'} = $published[-1]->{modified};
         $vars{'notFor'} = \&Comic::not_for;
         $vars{'root'} = '';
         Comic::write_file($page, Comic::Out::Template::templatize('archive', $templ_file, $language, %vars));

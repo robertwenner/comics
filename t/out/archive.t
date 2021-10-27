@@ -168,8 +168,8 @@ sub one_comic : Tests {
 
 sub some_comics : Tests {
     my @comics = (
-        make_comic("eins", 'Deutsch', "2016-01-01"),
         make_comic("zwei", 'Deutsch', "2016-01-02"),
+        make_comic("eins", 'Deutsch', "2016-01-01"),
         make_comic("drei", 'Deutsch', "2016-01-03"),
     );
     generate(@comics);
