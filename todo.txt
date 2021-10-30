@@ -261,3 +261,10 @@
   them completely
 
 - feature: support https://www.indexnow.org/
+
+- feature: allow picking up Dublin core entities from Inkscape's document
+  properties: Creator = Author and Artist, Rights = Copyright; use for PNG
+  meta data and make available in templates
+
+- feature: pick up Contributors from Inkscape document properties, make
+  available in templates (merge with current contributors JSON meta data)
