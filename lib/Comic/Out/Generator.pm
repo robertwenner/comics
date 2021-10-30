@@ -237,10 +237,11 @@ sub order {
         'Comic::Out::SvgPerLanguage',
         # Convert svg files to different image file formats.
         'Comic::Out::Png',
+        # Set variables needed when generating the comic page.
+        'Comic::Out::HtmlLink',
         # Once we have an output image, include / embed that somewhere.
         'Comic::Out::HtmlComicPage',
         # Work with whatever embedding output format we generated in the previous step.
-        'Comic::Out::HtmlLink',
         'Comic::Out::HtmlArchivePage',
         'Comic::Out::QrCode',
         'Comic::Out::Feed',

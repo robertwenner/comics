@@ -24,7 +24,7 @@ sub set_up : Test(setup) {
 sub no_see : Tests {
     my $comic = MockComic::make_comic();
     $htmllink->generate_all(($comic));
-    is($comic->{see}, undef, 'should not have references');
+    is_deeply($comic->{htmllink}, {'Deutsch' => {}, 'English' => {}}, 'should not have references');
 }
 
 
@@ -36,7 +36,7 @@ sub empty_see : Tests {
         },
     );
     $htmllink->generate_all(($comic));
-    is($comic->{htmllink}, undef, 'should not have references');
+    is_deeply($comic->{htmllink}, {'Deutsch' => {}, 'English' => {}}, 'should not have references');
 }
 
 

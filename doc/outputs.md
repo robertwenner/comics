@@ -325,13 +325,14 @@ While processing the templates, these variables are available:
 
 ## `Comic::Out::HtmlLink`
 
-Generates a reference ("see that other comic") from comic metadata.
+Generates a HTML reference ("see that other comic") from comic metadata.
+This assume you use the `Comic::Out::HtmlPage` module as well.
 
 This module does not take any configuration.
 
 Actual linking is triggered by comic meta data within a `see` object. This
-is language specific, so it needs a nested language object with a link text
-as key and a `.svg` file as value.
+is language specific (link texts vary by language), so it needs a nested
+language object with a link text as key and a `.svg` file as value.
 
 ```
 {
@@ -348,7 +349,10 @@ not depend on the actual title (and hence URL) of the linked comic. Also,
 other forms of linking (e.g., to a page in a book) may not even have meta
 data like an `.html` output file, but all comics do have a title.
 
-Links are per-language cause the link text varies by language.
+This adds a `htmllink` hash to each comic. The keys in that hash are
+languages (with initial upper case letter), pointing to yet another hash.
+That hash has a list of link text to (absolute) URL of the referred comic's
+HTML page.
 
 
 ## `Comic::Out::HtmlComicPage`

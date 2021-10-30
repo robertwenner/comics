@@ -112,6 +112,7 @@ sub generate_all {
 
     foreach my $comic (@comics) {
         foreach my $language ($comic->languages()) {
+            $comic->{'htmllink'}{$language} = {};
             if (!defined $comic->{meta_data}->{see} || !defined $comic->{meta_data}->{see}{$language}) {
                 next;
             }

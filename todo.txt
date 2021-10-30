@@ -268,3 +268,5 @@
 
 - feature: pick up Contributors from Inkscape document properties, make
   available in templates (merge with current contributors JSON meta data)
+
+- feature: use relative links for HtmlLink for easy offline use
