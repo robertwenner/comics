@@ -152,11 +152,21 @@ sub publishers_order_no_top_location : Tests {
         make_comic('2', 'English', '3016-01-01', 'web'),
         make_comic('3', 'Deutsch', '3016-01-01', 'braumagazin.de'),
         make_comic('4', 'English', '3016-01-01', 'austin beer guide'),
-        make_comic('5', 'English', '3016-01-01', 'Web'),
+        make_comic('5', 'English', '3016-01-01', 'web'),
         make_comic('6', 'English', '3016-01-01', 'web'),
     );
     is_deeply($backlog->_publishers(@comics),
        ['austin beer guide', 'braumagazin.de', 'cbb', 'web']);
+}
+
+
+sub publishers_order_case_preserving_ignoring : Tests {
+    my @comics = (
+        make_comic('1', 'English', '3016-01-01', 'web'),
+        make_comic('2', 'English', '3016-01-02', 'Web'),
+        make_comic('3', 'English', '3016-01-03', 'WEB'),
+    );
+    is_deeply($backlog->_publishers(@comics), ['web']);
 }
 
 

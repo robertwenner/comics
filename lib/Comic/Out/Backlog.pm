@@ -205,18 +205,35 @@ sub _populate_vars {
 sub _publishers {
     my ($self, @comics) = @ARG;
 
-    my %unique_published = map {
-        lc $_->{meta_data}->{published}->{where} => 1
-    } @comics;
+    # Try to preserve case of locations, but if they differ only in case,
+    # consider them equal. Keep the first case of any location.
+    # Could probably also use Hash::Case::Preserve for this, but I'm trying
+    # to avoid pulling in too many modules that trip up CI when dependencies
+    # are missing.
+    my %lower_location;
+    my %unique_published;
+    foreach my $comic (@comics) {
+        my $where = $comic->{meta_data}->{published}->{where};
+        my $key = $lower_location{lc $where} || $where;
+        $unique_published{$key}++;
+        $lower_location{lc $where} = $where unless ($lower_location{lc $where});
+    }
 
     my $top = $self->{settings}->{'toplocation'};
     if ($top) {
-        my @published_without_top_location = grep { lc $_ ne lc $top } keys %unique_published;
-        return [$top, sort {lc $a cmp lc $b} @published_without_top_location];
+        my @published_without_top_location = grep { $_ ne $top } keys %unique_published;
+        return [$top, sort _alpha @published_without_top_location];
     }
     else {
-        return [sort {lc $a cmp lc $b} keys %unique_published];
+        return [sort _alpha keys %unique_published];
     }
+}
+
+
+sub _alpha {
+    # Sort alphabetically first case-insensitive then case-sensitive, to avoid
+    # items differing only in case jumping around.
+    return lc $a cmp lc $b || $a cmp $b;
 }
 
 
