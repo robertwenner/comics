@@ -31,22 +31,8 @@ sub find_checks : Tests {
 }
 
 
-sub check_cached_comic : Tests {
+sub check_comic : Tests {
     my $comic = MockComic::make_comic();
-    $comic->{use_meta_data_cache} = 1;
-
-    my $check = DummyCheck->new();
-    @{$comic->{checks}} = ($check);
-
-    $comic->check();
-    is(${$check->{calls}}{'notify'}, 1, 'should have notified about comic');
-    is(${$check->{calls}}{'check'}, undef, 'should not have checked cached comic');
-}
-
-
-sub check_uncached_comic : Tests {
-    my $comic = MockComic::make_comic();
-    $comic->{use_meta_data_cache} = 0;
 
     my $check = DummyCheck->new();
     @{$comic->{checks}} = ($check);

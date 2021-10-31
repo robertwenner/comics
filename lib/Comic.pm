@@ -75,9 +75,6 @@ Readonly my $DEFAULT_NAMESPACE => 'defNs';
 # What date to use for sorting unpublished comics.
 Readonly my $UNPUBLISHED => '3000-01-01';
 
-# Temp dir for caches, per-langugage svg exports, etc.
-Readonly my $CACHE_DIR => 'tmp';
-
 # Enable workarounds for the old (pre-modules) code base, where lines
 # between modules were not clear cut (probably cause there were no modules.)
 Readonly my $OLD_CODE_WORKAROUND => 1;
@@ -136,25 +133,14 @@ sub load {
 
     $self->{srcFile} = $file;
 
-    my $meta_data;
-    my $meta_cache = _meta_cache_for($self->{srcFile});
-    $self->{use_meta_data_cache} = up_to_date($self->{srcFile}, $meta_cache);
-    if ($self->{use_meta_data_cache}) {
-        $meta_data = File::Slurper::read_text($meta_cache);
-    }
-    else {
-        $self->{dom} = _parse_xml(File::Slurper::read_text($file));
-        $self->{xpath} = XML::LibXML::XPathContext->new($self->{dom});
-        $self->{xpath}->registerNs($DEFAULT_NAMESPACE, 'http://www.w3.org/2000/svg');
-        my $meta_xpath = _build_xpath('metadata/rdf:RDF/cc:Work/dc:description/text()');
-        $meta_data = _unhtml(join ' ', $self->{xpath}->findnodes($meta_xpath));
-    }
+    $self->{dom} = _parse_xml(File::Slurper::read_text($file));
+    $self->{xpath} = XML::LibXML::XPathContext->new($self->{dom});
+    $self->{xpath}->registerNs($DEFAULT_NAMESPACE, 'http://www.w3.org/2000/svg');
+    my $meta_xpath = _build_xpath('metadata/rdf:RDF/cc:Work/dc:description/text()');
+    my $meta_data = _unhtml(join ' ', $self->{xpath}->findnodes($meta_xpath));
     eval {
         $self->{meta_data} = from_json($meta_data);
     } or $self->keel_over("Error in JSON for: $EVAL_ERROR");
-    if (!$self->{use_meta_data_cache}) {
-        write_file($meta_cache, $meta_data);
-    }
 
     # modified is used in <meta name="last-modified" content="..."/> and sitemap.xml
     # Does it need to be in RFC3339 format like that HTTP header?
@@ -195,7 +181,7 @@ sub load {
 
         if ($OLD_CODE_WORKAROUND) {
             # Remove this when the templates don't use the whole value
-            # (e.g., URL), but piece it together from parts like domin,
+            # (e.g., URL), but piece it together from parts like domain,
             # path, and file.
             my $html_file = "$self->{baseName}{$language}.html";
             $self->{htmlFile}{$language} = $html_file;
@@ -207,30 +193,6 @@ sub load {
     $self->_adjust_checks($self->{meta_data}->{$Comic::Settings::CHECKS});
 
     return;
-}
-
-
-sub _meta_cache_for {
-    my ($svg_file) = @ARG;
-    return _cache_file_for($svg_file, 'meta', 'json');
-}
-
-
-sub _transcript_cache_for {
-    my ($svg_file, $language) = @ARG;
-    return _cache_file_for("$language/$svg_file", 'transcript', 'txt');
-}
-
-
-sub _cache_file_for {
-    my ($svg_file, $dir, $ext) = @ARG;
-
-    my ($filename, $dirs, $suffix) = fileparse($svg_file);
-    if ($dirs eq q{./}) { # no path
-        $dirs = '';
-    }
-    $filename =~ s/[.]svg$//;
-    return make_dir($CACHE_DIR . "/$dir/$dirs") . "$filename.$ext";
 }
 
 
@@ -533,8 +495,6 @@ sub check {
         $check->notify($self);
     }
 
-    return if ($self->{use_meta_data_cache});
-
     foreach my $check (@{$self->{checks}}) {
         $check->check($self);
     }
@@ -580,15 +540,7 @@ sub get_transcript {
     my ($self, $language) = @ARG;
 
     if (!defined($self->{transcript}{$language})) {
-        my $cache = _transcript_cache_for($self->{srcFile}, $language);
-        my $transcript_cached = up_to_date($self->{srcFile}, $cache);
-        if ($transcript_cached) {
-            @{$self->{transcript}{$language}} = split /[\r\n]+/, File::Slurper::read_text($cache);
-        }
-        else {
-            @{$self->{transcript}{$language}} = _append_speech_to_speaker($self->texts_in_language($language));
-            write_file($cache, join "\n", @{$self->{transcript}{$language}});
-        }
+        @{$self->{transcript}{$language}} = _append_speech_to_speaker($self->texts_in_language($language));
     }
     return @{$self->{transcript}{$language}};
 }
@@ -622,6 +574,23 @@ sub up_to_date {
     # Takes file names as arguments rather than being a member method for
     # easier mocking.
     my ($source, $target) = @ARG;
+
+    # Cannot cache more, in particular cannot cache the transcript or frame
+    # positions. This is because output generators need to be able to work
+    # with the svg, e.g., Comic::Out::Copyright modifies it, and it does not
+    # have a diect output file, so there is no easy up-to-date check.
+    #
+    # Should Comic::Out::Coyright know about input and output files?
+    #   That would be weird, as it doesn't really create outputs itself.
+    #   It should not know about other Generators more than necessary.
+    # Or move the decision on what is up to date to Comics?
+    #   But the generators should decide that, each may have a different
+    #   opinion. The Comics module should not need to know what the final
+    #   output format is; that is in the configuration.
+    # Or build a more complex generator dependency hierachy?
+    #   Comic::Out::Png does not know what runs before itself, but it would
+    #   know whether the .png file is up to date and nothing needs to be
+    #   done.
 
     my $up_to_date = 0;
     if (_exists($source) && _exists($target)) {

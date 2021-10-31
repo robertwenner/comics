@@ -118,7 +118,7 @@ sub writes_qr_code_image_file : Tests {
             $MockComic::ENGLISH => 'Drinking beer',
     });
     $qrcode->generate($comic);
-    MockComic::assert_made_dirs('generated/tmp/meta/', 'generated/web/english/comics', 'generated/web/english/', 'generated/web/english/qr/');
+    MockComic::assert_made_dirs('generated/web/english/comics', 'generated/web/english/', 'generated/web/english/qr/');
     is($write_args{file}, 'generated/web/english/qr/drinking-beer.png');
 }
 
