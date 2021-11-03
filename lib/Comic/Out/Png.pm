@@ -137,9 +137,8 @@ sub generate {
             _move($backlog_png, $published_png) or $comic->keel_over("Comic::Out::Png: Cannot move $backlog_png to $published_png: $OS_ERROR");
         }
 
-        my $language_svg = $comic->{svgFile}{$language};
-        unless (Comic::up_to_date($language_svg, $published_png)) {
-            $self->_svg_to_png($comic, $language, $language_svg, $published_png);
+        unless (Comic::up_to_date($comic->{srcFile}, $published_png)) {
+            $self->_svg_to_png($comic, $language, $comic->{svgFile}{$language}, $published_png);
             _optimize_png($comic, $published_png);
         }
         _get_png_info($comic, $published_png, $language);

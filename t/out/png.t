@@ -387,12 +387,12 @@ sub moves_from_backlog_fails : Tests {
 
 
 sub does_not_generate_if_png_is_up_to_date : Tests {
-    my $svg_file;
-    my $png_file;
+    my @checked_up_to_date;
 
     no warnings qw/redefine/;
     local *Comic::up_to_date = sub {
         my ($source, $target) = @_;
+        push @checked_up_to_date, $source, $target;
         return $target !~ m/backlog/ && $target =~ m/\.png$/;
     };
     local *Comic::Out::Png::_svg_to_png = sub {
@@ -414,6 +414,10 @@ sub does_not_generate_if_png_is_up_to_date : Tests {
     is_deeply($comic->{imageUrl}, {'English' => 'https://beercomics.com/comics/latest-comic.png'}, 'wrong URL');
     is($comic->{height}, 'png height', 'wrong height');
     is($comic->{width}, 'png width', 'wrong width');
+    is_deeply(\@checked_up_to_date,
+        ['some_comic.svg', 'generated/backlog/english/latest-comic.png',
+        'some_comic.svg', 'generated/web/english/comics/latest-comic.png'],
+        'checked wrong files');
 }
 
 
@@ -423,7 +427,6 @@ sub generates_png_from_svn : Tests {
 
     no warnings qw/redefine/;
     local *Comic::up_to_date = sub {
-        my ($source, $target) = @_;
         return 0;
     };
     local *Comic::Out::Png::_svg_to_png = sub {

@@ -571,26 +571,12 @@ Parameters:
 =cut
 
 sub up_to_date {
-    # Takes file names as arguments rather than being a member method for
-    # easier mocking.
     my ($source, $target) = @ARG;
 
     # Cannot cache more, in particular cannot cache the transcript or frame
     # positions. This is because output generators need to be able to work
     # with the svg, e.g., Comic::Out::Copyright modifies it, and it does not
-    # have a diect output file, so there is no easy up-to-date check.
-    #
-    # Should Comic::Out::Coyright know about input and output files?
-    #   That would be weird, as it doesn't really create outputs itself.
-    #   It should not know about other Generators more than necessary.
-    # Or move the decision on what is up to date to Comics?
-    #   But the generators should decide that, each may have a different
-    #   opinion. The Comics module should not need to know what the final
-    #   output format is; that is in the configuration.
-    # Or build a more complex generator dependency hierachy?
-    #   Comic::Out::Png does not know what runs before itself, but it would
-    #   know whether the .png file is up to date and nothing needs to be
-    #   done.
+    # have a direct output file, so there is no easy up-to-date check.
 
     my $up_to_date = 0;
     if (_exists($source) && _exists($target)) {

@@ -38,6 +38,17 @@ English comic not yet published may go in `backlog/` (both directories being
 within the specified `out` directory, here `generated/`.
 
 
+## Caching
+
+To speed up processing, some output generators will not run if they detect
+that their output file is up to date (i.e., it was modified after the
+corresponding source comic file was modified).
+
+This also means that a configuration change, e.g., for the
+`Comic::Out::Copyright` note won't get picked up automatically. In this case
+delete the output directory to force re-creating everything.
+
+
 ## `Comic::Out::Backlog`
 
 Generates an overview of the comics in the queue, plus the tags, character
