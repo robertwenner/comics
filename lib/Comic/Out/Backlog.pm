@@ -71,7 +71,7 @@ For example:
         'outfile' => 'generated/backlog.html',
         'template' => 'templates/backlog.templ',
         'toplocation' => 'web',
-		'collect' => ['tags', 'series', 'who'],
+        'collect' => ['tags', 'series', 'who'],
     );
     my $backlog = Comic::Out::Backlog(%settings);
 
@@ -155,7 +155,7 @@ sub _populate_vars {
             # Tag exists in meta data.
             foreach my $language ($comic->languages()) {
                 my $per_language = $found->{$language};
-				# Silently ignore empty tags. If a Check is configured, it may
+                # Silently ignore empty tags. If a Check is configured, it may
                 # or may not catch this.
                 next unless ($per_language);
 
@@ -182,21 +182,38 @@ sub _populate_vars {
     $vars{'publishers'} = $self->_publishers(@comics);
 
     foreach my $want (@to_collect) {
-		$vars{$want} = $collected{$want};
-        ## no critic(BuiltinFunctions::ProhibitReverseSortBlock)
-        # I need to sort by count first, then alphabetically by name, so I have to use
-        # $b on the left side of the comparison operator. Perl Critic doesn't understand
-        # my sorting needs...
-		$vars{"${want}Order"} = [ sort {
-            # First, sort by count
-            $collected{$want}{$b} <=> $collected{$want}{$a} or
-		# use critic
-            # then by name, case insensitive, so that e.g., m and M get sorted together
-            lc $a cmp lc $b or
-            # then by name, case sensitive, to avoid names "jumping" around (and breaking tests).
-            $a cmp $b
-        } keys %{$collected{$want}} ];
-	}
+        $vars{$want} = $collected{$want};
+        $vars{"${want}Order"} = [
+            # Perl::Critic complains that this sort block is too long, and I'd
+            # agree, but I don't see how I can move it to its own sub since it
+            # needs %collected.
+            ## no critic(BuiltinFunctions::RequireSimpleSortBlock)
+            # I'm using the long form with multiple if blocks as Devel::Cover
+            # complained about uncovered branches and conditions with a set of
+            # cmp or <=> operators; https://stackoverflow.com/questions/69848068
+            # I need to sort by count first, so I have to use $b on the left
+            # side of the comparison operator. Perl Critic doesn't
+            # understand my sorting needs...
+            ## no critic(BuiltinFunctions::ProhibitReverseSortBlock)
+            sort {
+                my $cmp = $collected{$want}{$b} <=> $collected{$want}{$a};
+                ## use critic
+                if (!$cmp) {
+                    # Then sort by name, case insensitive, so that e.g., m and M
+                    # get sorted together (Branch true cannot be covered: cmp
+                    # always returns non-zero cause we only have each term only
+                    # once as a hash key.) uncoverable condition true
+                    $cmp = lc $a cmp lc $b;
+                }
+                if (!$cmp) {
+                    # Lastly sort by name, case sensitive, to avoid names
+                    # "jumping" around (and breaking tests).
+                    $cmp = $a cmp $b;
+                }
+                $cmp;
+            } keys %{$collected{$want}},
+        ];
+    }
 
     return %vars;
 }
@@ -213,7 +230,7 @@ sub _publishers {
     my %lower_location;
     my %unique_published;
     foreach my $comic (@comics) {
-        my $where = $comic->{meta_data}->{published}->{where};
+        my $where = $comic->{meta_data}->{published}->{where} || '';
         my $key = $lower_location{lc $where} || $where;
         $unique_published{$key}++;
         $lower_location{lc $where} = $where unless ($lower_location{lc $where});
@@ -222,18 +239,11 @@ sub _publishers {
     my $top = $self->{settings}->{'toplocation'};
     if ($top) {
         my @published_without_top_location = grep { $_ ne $top } keys %unique_published;
-        return [$top, sort _alpha @published_without_top_location];
+        return [$top, sort @published_without_top_location];
     }
     else {
-        return [sort _alpha keys %unique_published];
+        return [sort keys %unique_published];
     }
-}
-
-
-sub _alpha {
-    # Sort alphabetically first case-insensitive then case-sensitive, to avoid
-    # items differing only in case jumping around.
-    return lc $a cmp lc $b || $a cmp $b;
 }
 
 

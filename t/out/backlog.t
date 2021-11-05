@@ -128,6 +128,24 @@ sub publishers_top_location_no_backlog : Tests {
 }
 
 
+sub publishers_published_where_undef : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'beer' },
+        $MockComic::PUBLISHED_WHEN => undef,
+        $MockComic::PUBLISHED_WHERE => undef);
+    is_deeply($backlog->_publishers($comic), ['']);
+}
+
+
+sub publishers_published_where_empty : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'beer' },
+        $MockComic::PUBLISHED_WHEN => undef,
+        $MockComic::PUBLISHED_WHERE => '');
+    is_deeply($backlog->_publishers($comic), ['']);
+}
+
+
 sub publishers_order_top_location : Tests {
     my @comics = (
         make_comic('1', 'English', '3016-01-01', 'cbb'),
@@ -165,6 +183,7 @@ sub publishers_order_case_preserving_ignoring : Tests {
         make_comic('1', 'English', '3016-01-01', 'web'),
         make_comic('2', 'English', '3016-01-02', 'Web'),
         make_comic('3', 'English', '3016-01-03', 'WEB'),
+        make_comic('4', 'English', '3016-01-03', 'web'),
     );
     is_deeply($backlog->_publishers(@comics), ['web']);
 }
