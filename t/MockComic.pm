@@ -117,6 +117,10 @@ sub mock_methods {
         return $now ? $now->clone() : DateTime->now;
     };
 
+    *Comic::_get_tz = sub {
+        return '-0500';
+    };
+
     use warnings;
 }
 
