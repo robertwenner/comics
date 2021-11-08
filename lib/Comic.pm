@@ -75,10 +75,6 @@ Readonly my $DEFAULT_NAMESPACE => 'defNs';
 # What date to use for sorting unpublished comics.
 Readonly my $UNPUBLISHED => '3000-01-01';
 
-# Enable workarounds for the old (pre-modules) code base, where lines
-# between modules were not clear cut (probably cause there were no modules.)
-Readonly my $OLD_CODE_WORKAROUND => 1;
-
 
 my %language_code_cache;
 
@@ -179,15 +175,13 @@ sub load {
         $self->{dirName}{$language} = make_dir($base);
         $self->{baseName}{$language} = $self->_normalized_title($language);
 
-        if ($OLD_CODE_WORKAROUND) {
-            # Remove this when the templates don't use the whole value
-            # (e.g., URL), but piece it together from parts like domain,
-            # path, and file.
-            my $html_file = "$self->{baseName}{$language}.html";
-            $self->{htmlFile}{$language} = $html_file;
-            $self->{href}{$language} = 'comics/' . $html_file;
-            $self->{url}{$language} = "https://$domain/$self->{href}{$language}";
-        }
+        # OLD_CODE_WORKAROUND: Remove this when the templates don't use the
+        # whole value (e.g., URL), but piece it together from parts like
+        # domain, path, and file.
+        my $html_file = "$self->{baseName}{$language}.html";
+        $self->{htmlFile}{$language} = $html_file;
+        $self->{href}{$language} = 'comics/' . $html_file;
+        $self->{url}{$language} = "https://$domain/$self->{href}{$language}";
     }
 
     $self->_adjust_checks($self->{meta_data}->{$Comic::Settings::CHECKS});
@@ -679,7 +673,7 @@ sub _all_layers_xpath {
         if ($had_labels == 0) {
             $xpath .= ' and (';
         }
-        elsif ($had_labels > 0) {
+        else {
             $xpath .= ' or ';
         }
         $xpath .= "\@inkscape:label='$l'";
@@ -720,9 +714,7 @@ sub make_dir {
     my $dir = shift;
 
     $dir = "generated/$dir" if ($dir !~ m{^generated/});
-    unless (-d $dir) {
-        File::Path::make_path($dir);
-    }
+    File::Path::make_path($dir);
     return $dir;
 }
 
@@ -731,7 +723,6 @@ sub _normalized_title {
     my ($self, $language) = @ARG;
 
     my $title = $self->{meta_data}->{title}->{$language};
-    $self->keel_over("No $language title in $self->{srcFile}") unless($title);
     $title =~ s/[&<>*?]//g;
     $title =~ s/\s{2}/ /g;
     $title =~ s/\s/-/g;
@@ -768,7 +759,7 @@ Checks whether this Comic is not yet published.
 sub not_yet_published {
     my ($self) = @ARG;
 
-    return 1 if ($self->{meta_data}->{published}->{where} ne 'web');
+    return 1 if (($self->{meta_data}->{published}->{where} || '') ne 'web');
 
     Readonly my $DAYS_PER_WEEK => 7;
     Readonly my $THURSDAY => 4;
@@ -787,6 +778,8 @@ sub not_yet_published {
         # Adding 7 week days (going one week further) makes sure next Friday is
         # in the valid dates range.
     }
+    # Devel::Coverage doesn't see that $UNPUBLISHED is always defined.
+    # uncoverable branch false
     my $published = $self->{meta_data}->{published}->{when} || $UNPUBLISHED;
     return ($published cmp $till->ymd) > 0;
 }
@@ -1072,7 +1065,9 @@ sub write_file {
     my ($file_name, $contents) = @ARG; # uncoverable statement
 
     open my $F, '>', $file_name; # uncoverable statement
-    print {$F} $contents or croak("Cannot write to $file_name: $OS_ERROR"); # uncoverable statement
+    # uncoverable statement
+    # uncoverable branch false
+    print {$F} $contents or croak("Cannot write to $file_name: $OS_ERROR");
     close $F; # uncoverable statement
     return; # uncoverable statement
 }

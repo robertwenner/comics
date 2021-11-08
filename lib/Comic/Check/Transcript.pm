@@ -107,7 +107,7 @@ sub _both_names {
 
     $a =~ s/:$//;
     $b =~ s/:$//;
-    if (lc $a eq lc $b && $a ne '') {
+    if (lc $a eq lc $b) {
         return 1;
     }
     return 0;

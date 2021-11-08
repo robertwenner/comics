@@ -43,3 +43,11 @@ sub no_languages : Tests {
     );
     is_deeply([sort $comic->languages()], []);
 }
+
+
+sub catches_json_syntax_error : Tests {
+    eval {
+        MockComic::make_comic($MockComic::JSON => '{');
+    };
+    like($@, qr{error in json}i);
+}

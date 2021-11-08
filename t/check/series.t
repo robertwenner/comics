@@ -161,6 +161,19 @@ sub different_language_same_series : Tests {
 }
 
 
+sub different_language_different_series : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::SERIES => {
+            $MockComic::DEUTSCH => 'Buckimude',
+            $MockComic::ENGLISH => 'Bym',
+        },
+        $MockComic::PUBLISHED_WHEN => '3016-01-01',
+    );
+    $check->check($comic);
+    is_deeply([@{$comic->{warnings}}], []);
+}
+
+
 sub duplicate_series_does_not_hide_later_error : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {

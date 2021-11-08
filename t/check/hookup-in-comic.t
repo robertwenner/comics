@@ -3,6 +3,7 @@ use warnings;
 
 use base 'Test::Class';
 use Test::More;
+use Test::Output;
 use lib 't';
 use MockComic;
 use lib 't/check';
@@ -213,7 +214,20 @@ sub run_all_checks_runs_only_checks_for_comic : Tests {
 }
 
 
-sub collect_warnings_from_one_check : Tests {
+sub prints_warnings_from_unpublished_comic : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::PUBLISHED_WHEN => undef,
+    );
+    my $check = DummyCheck->new("problem from check");
+    push @{$comic->{checks}}, $check;
+
+    stdout_like {
+        $comic->check();
+    } qr{1 problem}i;
+}
+
+
+sub collect_warnings_from_one_check_published : Tests {
     my $comic = MockComic::make_comic();
     my $check = DummyCheck->new("problem from check");
     push @{$comic->{checks}}, $check;

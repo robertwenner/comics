@@ -13,12 +13,6 @@ __PACKAGE__->runtests() unless caller;
 
 sub set_up : Test(setup) {
     MockComic::set_up();
-    MockComic::fake_file('template',
-        '[% FOREACH t IN comic.transcript.$Language %]' .
-        '[% FILTER html %]' .
-        '[% t %],' .
-        '[% END %]' .
-        '[% END %]');
 }
 
 
@@ -95,4 +89,21 @@ sub appends_speech_to_speaker : Tests {
     );
     my @transcript = $comic->get_transcript('Deutsch');
     is_deeply([@transcript], [ 'Max: Bier?', 'Paul: Nein danke!']);
+}
+
+
+sub caches : Tests {
+    my $called = 0;
+    no warnings qw/redefine/;
+    local *Comic::texts_in_language = sub {
+        $called++;
+        return "foo";
+    };
+    use warnings;
+    my $comic = MockComic::make_comic();
+
+    $comic->get_transcript('Deutsch');
+    $comic->get_transcript('Deutsch');
+
+    is($called, 1, 'should have cached');
 }
