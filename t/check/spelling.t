@@ -450,3 +450,147 @@ XML
         \@asked_to_check,
         ['Title at www.example.org', 'secure ', 'plain ', 'path ', 'query ']);
 }
+
+
+sub prints_unknown_words_xml_for_copy_and_pasting_as_ignore_words : Tests {
+    %typos = ('foo' => 'foo');
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => "foo",
+        },
+    );
+    $check->{print_unknown_xml} = 1;
+
+    $check->check($comic);
+
+    like(${$comic->{warnings}}[-1], qr{English}, 'should mention language');
+    like(${$comic->{warnings}}[-1], qr{&quot;foo&quot;}, 'should have quoted word');
+}
+
+
+sub prints_unknown_words_xml_for_copy_and_pasting_as_ignre_words_per_language : Tests {
+    %typos = (
+        'title en' => 'title en',
+        'title de' => 'title de',
+    );
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => "title en",
+            $MockComic::DEUTSCH => "title de",
+        },
+    );
+    $check->{print_unknown_xml} = 1;
+
+    $check->check($comic);
+
+    like(${$comic->{warnings}}[1], qr{Deutsch}, 'should mention language');
+    like(${$comic->{warnings}}[1], qr{&quot;title de&quot;}, 'should have quoted word');
+    like(${$comic->{warnings}}[3], qr{English}, 'should mention language');
+    like(${$comic->{warnings}}[3], qr{&quot;title en&quot;}, 'should have quoted word');
+}
+
+
+sub prints_unknown_words_xml_for_copy_and_pasting_many_words_per_language : Tests {
+    %typos = (
+        'foo' => 'foo',
+        'bar' => 'bar',
+        'baz' => 'baz',
+    );
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => "Beer!",
+        },
+        $MockComic::XML => <<'XML',
+    <g inkscape:groupmode="layer" inkscape:label="English">
+        <text x="0" y="0"><tspan>foo</tspan></text>
+    </g>
+    <g inkscape:groupmode="layer" inkscape:label="MetaEnglish">
+        <text x="0" y="0"><tspan>bar</tspan></text>
+    </g>
+    <g inkscape:groupmode="layer" inkscape:label="HintergrundEnglish">
+        <text x="0" y="0"><tspan>baz</tspan></text>
+    </g>
+    <g inkscape:groupmode="layer" inkscape:label="MoreEnglish">
+        <text x="0" y="0"><tspan>foo</tspan></text>
+    </g>
+XML
+    );
+    $check->{print_unknown_xml} = 1;
+
+    $check->check($comic);
+
+    like(${$comic->{warnings}}[-1], qr{English}, 'should mention language');
+    like(${$comic->{warnings}}[-1], qr{&quot;bar&quot;, &quot;baz&quot;, &quot;foo&quot;}, 'should have quoted words');
+}
+
+
+sub prints_unknown_words_plain_for_copy_and_pasting_as_ignore_words : Tests {
+    %typos = ('foo' => 'foo');
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => "foo",
+        },
+    );
+    $check->{print_unknown_quoted} = 1;
+
+    $check->check($comic);
+
+    like(${$comic->{warnings}}[-1], qr{English}, 'should mention language');
+    like(${$comic->{warnings}}[-1], qr{"foo"}, 'should have quoted word');
+}
+
+
+sub prints_unknown_words_plain_for_copy_and_pasting_as_ignre_words_per_language : Tests {
+    %typos = (
+        'title en' => 'title en',
+        'title de' => 'title de',
+    );
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => "title en",
+            $MockComic::DEUTSCH => "title de",
+        },
+    );
+    $check->{print_unknown_quoted} = 1;
+
+    $check->check($comic);
+
+    like(${$comic->{warnings}}[1], qr{Deutsch}, 'should mention language');
+    like(${$comic->{warnings}}[1], qr{"title de"}, 'should have quoted word');
+    like(${$comic->{warnings}}[3], qr{English}, 'should mention language');
+    like(${$comic->{warnings}}[3], qr{"title en"}, 'should have quoted word');
+}
+
+
+sub prints_unknown_words_plain_for_copy_and_pasting_many_words_per_language : Tests {
+    %typos = (
+        'foo' => 'foo',
+        'bar' => 'bar',
+        'baz' => 'baz',
+    );
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => "Beer!",
+        },
+        $MockComic::XML => <<'XML',
+    <g inkscape:groupmode="layer" inkscape:label="English">
+        <text x="0" y="0"><tspan>foo</tspan></text>
+    </g>
+    <g inkscape:groupmode="layer" inkscape:label="MetaEnglish">
+        <text x="0" y="0"><tspan>bar</tspan></text>
+    </g>
+    <g inkscape:groupmode="layer" inkscape:label="HintergrundEnglish">
+        <text x="0" y="0"><tspan>baz</tspan></text>
+    </g>
+    <g inkscape:groupmode="layer" inkscape:label="MoreEnglish">
+        <text x="0" y="0"><tspan>foo</tspan></text>
+    </g>
+XML
+    );
+    $check->{print_unknown_quoted} = 1;
+
+    $check->check($comic);
+
+    like(${$comic->{warnings}}[-1], qr{English}, 'should mention language');
+    like(${$comic->{warnings}}[-1], qr{"bar", "baz", "foo"}, 'should have quoted words');
+}

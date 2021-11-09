@@ -62,6 +62,14 @@ Parameters:
     be lowercase and start with a capital letter. Ignored words are not
     case-sensitive.
 
+=item * B<$print_unknown_xml> Whether to print the unknown words in
+    XML-syntax, like C<&quot;unknown&quot;> to easily copy into the comic's
+    ignore list when editing the source directly.
+
+=item * B<$print_unknown_quoted> Whether to print the unknown words in plain
+    text, like C<"unknown"> to easily copy into the comic's ignore list when
+    editing the source directly.
+
 =back
 
 =cut
@@ -70,6 +78,7 @@ Parameters:
 sub new {
     my ($class, %args) = @ARG;
     my $self = $class->SUPER::new();
+
     $self->{ignore} = {};
     if ($args{ignore}) {
         unless (ref $args{ignore} eq ref {}) {
@@ -88,6 +97,9 @@ sub new {
             }
         }
     }
+    $self->{print_unknown_xml} = $args{print_unknown_xml};
+    $self->{print_unknown_quoted} = $args{print_unknown_quoted};
+
     $self->{dictionaries} = ();
     return $self;
 }
@@ -121,7 +133,9 @@ sub check {
 
     my %codes = $comic->language_codes();
     foreach my $language ($comic->languages()) {
+        $self->{unknown_words} = {};
         $self->{complained_about} = {};
+
         $self->_check_metadata($comic, $language);
         $self->_check_layers($comic, $language);
 
@@ -129,6 +143,11 @@ sub check {
             my $count = $self->{complained_about}{$msg};
             $msg .= " ($count times)" if ($count > 1);
             $self->warning($comic, $msg);
+        }
+
+        if (keys %{$self->{unknown_words}}) {
+            $self->_unknown_word_list($comic, $language, $self->{print_unknown_xml}, '&quot;');
+            $self->_unknown_word_list($comic, $language, $self->{print_unknown_quoted}, q{"});
         }
     }
     return;
@@ -203,6 +222,22 @@ sub _check_text {
         next if (defined ($self->{ignore}{$language}{lc $word}));
 
         ${$self->{complained_about}}{"Misspelled in $where: '$word'?"}++;
+        ${$self->{unknown_words}}{$word}++;
+    }
+    return;
+}
+
+
+sub _unknown_word_list {
+    my ($self, $comic, $language, $check, $quote) = @ARG;
+
+    if ($check) {
+        my $msg = "Unknown $language word(s): ";
+        foreach my $unknown (sort keys %{$self->{unknown_words}}) {
+            $msg .= "$quote$unknown$quote, ";
+        }
+        $msg =~ s/, $//;
+        $self->warning($comic, $msg);
     }
     return;
 }

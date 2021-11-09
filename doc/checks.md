@@ -250,11 +250,25 @@ the comic (to only ignore them in that particular comic):
         "Comic::Check::Spelling": {
             "ignore": {
                 "English": [ "word", "otherword" ]
-            }
+            },
+            "print_unknown_quoted": true,
+            "print_unknown_xml": true,
         }
     }
 }
 ```
+
+If `print_unknown_quoted` is true, prints a summary of unknown words ready
+for copying and pasting into the comic's ignore list.
+
+If `print_unknown_xml` is true, prints a summary of unknown words in XML
+format ready for copying and pasting into the comic's ignore list; this is
+for people who manually edit the XML in the `.svg` files.
+
+Note that checks added in the comic override globally defined ones. If you
+want to use a `print_unknown_...` option, you should also include it in each
+comic that defines a `Comic::Check::Spelling` check (i.e., in your comic
+template).
 
 Spellchecking requires either `hunspell` or GNU `aspell`. You need to
 install one of them plus its development dependencies in the operating
