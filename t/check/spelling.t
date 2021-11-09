@@ -524,7 +524,7 @@ XML
 }
 
 
-sub prints_unknown_words_plain_for_copy_and_pasting_as_ignore_words : Tests {
+sub prints_unknown_words_quoted_for_copy_and_pasting_as_ignore_words : Tests {
     %typos = ('foo' => 'foo');
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
@@ -540,7 +540,7 @@ sub prints_unknown_words_plain_for_copy_and_pasting_as_ignore_words : Tests {
 }
 
 
-sub prints_unknown_words_plain_for_copy_and_pasting_as_ignre_words_per_language : Tests {
+sub prints_unknown_words_quoted_for_copy_and_pasting_as_ignre_words_per_language : Tests {
     %typos = (
         'title en' => 'title en',
         'title de' => 'title de',
@@ -562,7 +562,7 @@ sub prints_unknown_words_plain_for_copy_and_pasting_as_ignre_words_per_language 
 }
 
 
-sub prints_unknown_words_plain_for_copy_and_pasting_many_words_per_language : Tests {
+sub prints_unknown_words_quoted_for_copy_and_pasting_many_words_per_language : Tests {
     %typos = (
         'foo' => 'foo',
         'bar' => 'bar',
@@ -593,4 +593,38 @@ XML
 
     like(${$comic->{warnings}}[-1], qr{English}, 'should mention language');
     like(${$comic->{warnings}}[-1], qr{"bar", "baz", "foo"}, 'should have quoted words');
+}
+
+
+sub prints_unknown_words_lines_for_copy_and_pasting : Tests {
+    %typos = (
+        'foo' => 'foo',
+        'bar' => 'bar',
+        'baz' => 'baz',
+    );
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => "Beer!",
+        },
+        $MockComic::XML => <<'XML',
+    <g inkscape:groupmode="layer" inkscape:label="English">
+        <text x="0" y="0"><tspan>foo</tspan></text>
+    </g>
+    <g inkscape:groupmode="layer" inkscape:label="MetaEnglish">
+        <text x="0" y="0"><tspan>bar</tspan></text>
+    </g>
+    <g inkscape:groupmode="layer" inkscape:label="HintergrundEnglish">
+        <text x="0" y="0"><tspan>baz</tspan></text>
+    </g>
+    <g inkscape:groupmode="layer" inkscape:label="MoreEnglish">
+        <text x="0" y="0"><tspan>foo</tspan></text>
+    </g>
+XML
+    );
+    $check->{print_unknown_lines} = 1;
+
+    $check->check($comic);
+
+    like(${$comic->{warnings}}[-1], qr{English}, 'should mention language');
+    like(${$comic->{warnings}}[-1], qr{\nbar\nbaz\nfoo}m, 'should have words on lines');
 }

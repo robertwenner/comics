@@ -64,11 +64,14 @@ Parameters:
 
 =item * B<$print_unknown_xml> Whether to print the unknown words in
     XML-syntax, like C<&quot;unknown&quot;> to easily copy into the comic's
-    ignore list when editing the source directly.
+    ignore list when editing the source directly in a text editor.
 
-=item * B<$print_unknown_quoted> Whether to print the unknown words in plain
-    text, like C<"unknown"> to easily copy into the comic's ignore list when
-    editing the source directly.
+=item * B<$print_unknown_quoted> Whether to print the unknown words quoted,
+    like C<"unknown"> to easily copy into the comic's ignore list when
+    editing the source comic file in an SVG or XML editor.
+
+=item * B<$print_unknown_lines> Whether to print the unknown words one a line
+    to easily copy into a global ignore list.
 
 =back
 
@@ -99,6 +102,7 @@ sub new {
     }
     $self->{print_unknown_xml} = $args{print_unknown_xml};
     $self->{print_unknown_quoted} = $args{print_unknown_quoted};
+    $self->{print_unknown_lines} = $args{print_unknown_lines};
 
     $self->{dictionaries} = ();
     return $self;
@@ -146,8 +150,9 @@ sub check {
         }
 
         if (keys %{$self->{unknown_words}}) {
-            $self->_unknown_word_list($comic, $language, $self->{print_unknown_xml}, '&quot;');
-            $self->_unknown_word_list($comic, $language, $self->{print_unknown_quoted}, q{"});
+            $self->_unknown_word_list($comic, $language, $self->{print_unknown_xml}, '&quot;', ', ');
+            $self->_unknown_word_list($comic, $language, $self->{print_unknown_quoted}, q{"}, ', ');
+            $self->_unknown_word_list($comic, $language, $self->{print_unknown_lines}, '', "\n");
         }
     }
     return;
@@ -229,14 +234,14 @@ sub _check_text {
 
 
 sub _unknown_word_list {
-    my ($self, $comic, $language, $check, $quote) = @ARG;
+    my ($self, $comic, $language, $check, $quote, $separator) = @ARG;
 
     if ($check) {
-        my $msg = "Unknown $language word(s): ";
+        my $msg = "Unknown $language word(s):\n";
         foreach my $unknown (sort keys %{$self->{unknown_words}}) {
-            $msg .= "$quote$unknown$quote, ";
+            $msg .= "$quote$unknown$quote$separator";
         }
-        $msg =~ s/, $//;
+        $msg =~ s/$separator$//;
         $self->warning($comic, $msg);
     }
     return;

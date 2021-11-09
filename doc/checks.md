@@ -253,6 +253,7 @@ the comic (to only ignore them in that particular comic):
             },
             "print_unknown_quoted": true,
             "print_unknown_xml": true,
+            "print_unknown_lines": true
         }
     }
 }
@@ -265,7 +266,10 @@ If `print_unknown_xml` is true, prints a summary of unknown words in XML
 format ready for copying and pasting into the comic's ignore list; this is
 for people who manually edit the XML in the `.svg` files.
 
-Note that checks added in the comic override globally defined ones. If you
+If `print_unknown_lines` is true, print the unknown words each on its own
+lines, for copying them into a user dictionary.
+
+Note that any Check added in the comic overrides globally defined ones. If you
 want to use a `print_unknown_...` option, you should also include it in each
 comic that defines a `Comic::Check::Spelling` check (i.e., in your comic
 template).
