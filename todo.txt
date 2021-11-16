@@ -1,5 +1,5 @@
 - break up code into different (pluggable?) modules, e.g., reddit poster,
-  inkscape importer
+  inkscape importer; still misses server upload (rsync)
 
 - cleanup hard-coded names, e.g., "Rahmen" or even "Meta", "generated"
 
@@ -24,8 +24,8 @@
 
 - defect: twitter with @someone does not get tweeted for some reason
 
-- feature: list comics under series headings (hideable?) in backlog, to see
-  which comics are in a series; extend to tags and who
+- feature: list comics (svg files) under series headings (hideable?) in
+  backlog, to see which comics are in a series; extend to tags and who
 
 - feature: don't post to reddit / don't tweet a link, if the link is dead
   (slow web server?), or have uploading code try to make sure the upload
@@ -124,15 +124,10 @@
 - performance: cache more data, like png sizes, transcript, and frame
   positions? use a database / key-value store?
 
-- feature: mark cache as dirty if comic fails a check, so that you don't
-  have to manually touch the svg: cache files should get written only after
-  all checks have passed, and then a re-run doesn't try to use bad /
-  incomplete cache files
-
 - feature: verbose and debug flags to print what's going on (helpful for
   configurable checks and actions)
 
-- feature: switch Twitter module to Twitter::API
+- refact: switch Twitter module to Twitter::API
 
 - feature: check 2FA for Reddit and Twitter
 
@@ -270,3 +265,13 @@
   available in templates (merge with current contributors JSON meta data)
 
 - feature: use relative links for HtmlLink for easy offline use
+
+- doc: describe general context for end users (svg as single file per comic),
+  main output directory
+
+- doc: more dev documentation: how to add a new check, output generator, or
+  social media poster; how Comic as a value object ties everything together,
+  the role of Comics as a simple entry point
+
+- doc: add example comic project with comics, templates, cron script,
+  settings.json
