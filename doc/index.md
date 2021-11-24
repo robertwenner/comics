@@ -37,12 +37,12 @@ That said, there are still a few basic assumptions on how things work:
   needs to be somehow marked as belonging to a language (or none or all).
   This is done with Inkscape layers, and the layer names tell the Comics
   modules what to do with the layers (hide, show, get the transcript, and so
-  on). Whatever doesn't go in a layer goes into the comic's [metadata
-  chapter](metadata.md).
+  on). Whatever doesn't go in a layer goes into the comic's
+  [metadata](metadata.md).
 
 - Generate everything. Since everything is in the comic's `.svg`, take that
   as input and generate whatever is needed: web pages, RSS feed, transcript,
-  and so on. This is described in [outputs chapter](output.md) chapter.
+  and so on. This is described in the [outputs chapter](output.md).
 
 - Have the computer help check. If a computer already processes each comic,
   have it also check for e.g., spelling errors. This is described in the
@@ -52,6 +52,6 @@ That said, there are still a few basic assumptions on how things work:
   push a new comic e.g., every week. You don't need to run the web server on
   your own hardware, but have one you can access as you see fit. I don't
   recommend just tweeting or posting the comics to e.g., reddit. Being in
-  charge of the server gives you more control. See the [upload
-  modules](upload.md) for details. You can still post to social media with
-  the [social media modules](social.md).
+  charge of the server gives you more control. See the [upload modules
+  chapter](upload.md) for details. You can still post to social media with
+  the [social media chapter](social.md).
