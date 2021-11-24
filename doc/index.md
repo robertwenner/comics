@@ -42,7 +42,7 @@ That said, there are still a few basic assumptions on how things work:
 
 - Generate everything. Since everything is in the comic's `.svg`, take that
   as input and generate whatever is needed: web pages, RSS feed, transcript,
-  and so on. This is described in the [outputs chapter](output.md).
+  and so on. This is described in the [outputs chapter](outputs.md).
 
 - Have the computer help check. If a computer already processes each comic,
   have it also check for e.g., spelling errors. This is described in the

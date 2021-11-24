@@ -50,7 +50,7 @@ These values are:
 
 * `secret`: from your Reddit account's apps details page.
 
-* B<$default_subreddit> Optional default subreddit(s), e.g., "funny" or
+* `default_subreddit` Optional default subreddit(s), e.g., "funny" or
   "/r/comics". This is language-independent. If there is no default
   subreddit and the comic doesn't specify subreddits either, it won't be
   posted to Reddit at all.

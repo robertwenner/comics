@@ -18,7 +18,7 @@ Available checks are all Perl modules found on your system where the name
 starts with `Comic::Check`.
 
 Each comic can override the globally configured checks; see the
-[Comic](comic.md) documentation.
+[metadata](metadata.md) documentation.
 
 When a comic is checked, each Check can report problems to that particular
 comic, which can then print them and / or store them and make them available
@@ -53,13 +53,14 @@ Checks that comics are not published on the same day in the same location.
 
 For regularly published comics you may want to avoid publishing multiple
 comics on the same date. However, it's probably fine to publish a comic in
-different locations on the same day.
+different locations on the same day, or different comics in different
+languages on the same day.
 
 Dates need to be in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601)
 format, without time.
 
-`Comic::Check::DateCollision` check will fail if you have two comics with
-this meta data:
+`Comic::Check::DateCollision` will fail if you have two comics with the same
+languages and this meta data:
 
 ```json
 {
@@ -71,7 +72,8 @@ this meta data:
 ```
 
 It would not fail if one of the comics had either a different date (`when`)
-or a different location (`where`).
+or a different location (`where`), or if one the comics didn't have the same
+languages.
 
 This check ignores comics without a published date or with an empty
 published date.
@@ -82,11 +84,11 @@ published date.
 Checks the comics for special markers. If any of the special markers is
 found in any text in the comic, the comic is flagged with a warning.
 
-The idea is that you can leave yourself reminders in the comic for things
-you want to get back to before it's published. The idea comes from software
-development, where you may want to revisit areas of the code before committing
-to source control; see [Don't commit: Avoiding distractions while
-coding](https://www.sparkpost.com/blog/dont-commit-avoiding-distractions-while-coding/).
+The idea is that you can leave yourself reminders (to do items) in the comic
+for things you want to get back to before it's published. The idea comes
+from software development, where you may want to revisit areas of the code
+before committing to source control; see [Don't commit: Avoiding
+distractions while coding](https://www.sparkpost.com/blog/dont-commit-avoiding-distractions-while-coding/).
 
 When using this Check, you must configure it and tell it which markers it
 should look for. In your settings file, use something like this:
