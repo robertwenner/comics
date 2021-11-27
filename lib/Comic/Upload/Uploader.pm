@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use utf8;
 use English '-no_match_vars';
+use Carp;
 
 use version; our $VERSION = qv('0.0.3');
 
@@ -51,7 +52,18 @@ Upload the comics according to the upload configuration settings.
 
 sub upload {
     # uncoverable subroutine
-    croak('Comic::Upload::Uploader::upload should have been overridden'); # uncoverable statement
+    my ($self) = @ARG; # uncoverable statement
+    $self->_croak('Comic::Upload::Uploader::upload should have been overridden'); # uncoverable statement
+    # PerlCritic doesn't know that this return is unreacchable:
+    return; # uncoverable statement
+}
+
+
+sub _croak {
+    my ($self, $message) = @ARG;
+
+    my $me = ref $self;
+    croak("$me: $message");
 }
 
 
