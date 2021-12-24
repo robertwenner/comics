@@ -33,13 +33,11 @@ Comic::Social::Twitter - tweet a Comic.
 =head1 SYNOPSIS
 
     my $twitter = Comic::Social::Twitter->new({
-        'Twitter' => {
-            consumer_key => '...',
-            consumer_secret => '...',
-            access_token => '...',
-            access_token_secret => '...',
-            mode => 'png',
-        },
+        consumer_key => '...',
+        consumer_secret => '...',
+        access_token => '...',
+        access_token_secret => '...',
+        mode => 'png',
     });
     my $result = $twitter->post($comic);
     print "$result\n";

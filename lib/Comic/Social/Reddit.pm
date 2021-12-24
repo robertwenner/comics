@@ -81,28 +81,28 @@ sub new {
     my ($class, $settings) = @ARG;
     my $self = $class->SUPER::new();
 
-    croak('No Reddit configuration') unless($settings->{'Reddit'});
-    croak('Must pass Reddit.username') unless ($settings->{'Reddit'}->{'username'});
-    croak('Must pass Reddit.password') unless ($settings->{'Reddit'}->{'password'});
-    croak('Must pass Reddit.secret') unless ($settings->{'Reddit'}->{'secret'});
-    croak('Must pass Reddit.client_id') unless ($settings->{'Reddit'}->{'client_id'});
+    croak('Must pass Reddit configuration hash') unless ($settings);
+    croak('Must pass Reddit.username') unless ($settings->{'username'});
+    croak('Must pass Reddit.password') unless ($settings->{'password'});
+    croak('Must pass Reddit.secret') unless ($settings->{'secret'});
+    croak('Must pass Reddit.client_id') unless ($settings->{'client_id'});
 
     my %mandatory_settings = (
         user_agent => 'Comic::Social::Reddit by /u/beercomics',
-        username => $settings->{'Reddit'}->{'username'},
-        password => $settings->{'Reddit'}->{'password'},
-        client_id => $settings->{'Reddit'}->{'client_id'},
-        secret => $settings->{'Reddit'}->{'secret'},
+        username => $settings->{'username'},
+        password => $settings->{'password'},
+        client_id => $settings->{'client_id'},
+        secret => $settings->{'secret'},
     );
     my %optional_settings;
-    if ($settings->{'Reddit'}->{'client_settings'}) {
-        %optional_settings = %{$settings->{'Reddit'}->{'client_settings'}};
+    if ($settings->{'client_settings'}) {
+        %optional_settings = %{$settings->{'client_settings'}};
     }
     my %client_settings = (%mandatory_settings, %optional_settings);
     $self->{reddit} = Reddit::Client->new(%client_settings);
 
     @{$self->{settings}->{default_subreddit}} = ();
-    my $def_srs = $settings->{'Reddit'}->{'default_subreddit'};
+    my $def_srs = $settings->{'default_subreddit'};
     push @{$self->{settings}->{'default_subreddit'}}, _subreddits('Reddit.default_subreddit', $def_srs);
 
     return $self;

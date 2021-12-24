@@ -26,13 +26,11 @@ sub set_up : Test(setup) {
     use warnings;
 
     $reddit = Comic::Social::Reddit->new({
-        'Reddit' => {
-            'username' => 'me',
-            'password' => 'pass',
-            'client_id' => 'client',
-            'secret' => 'very secret',
-			'default_subreddit' => '/r/comics',
-        },
+        'username' => 'me',
+        'password' => 'pass',
+        'client_id' => 'client',
+        'secret' => 'very secret',
+        'default_subreddit' => '/r/comics',
     });
 }
 
@@ -46,11 +44,9 @@ sub fails_if_missing_configuration : Tests {
 
     eval {
         Comic::Social::Reddit->new({
-            'Reddit' => {
-                'password' => '...',
-                'client_id' => '...',
-                'secret' => '...',
-            },
+            'password' => '...',
+            'client_id' => '...',
+            'secret' => '...',
         });
     };
     like($@, qr{\bReddit\b}, 'should mention module');
@@ -58,11 +54,9 @@ sub fails_if_missing_configuration : Tests {
 
     eval {
         Comic::Social::Reddit->new({
-            'Reddit' => {
-                'username' => '...',
-                'client_id' => '...',
-                'secret' => '...',
-            },
+            'username' => '...',
+            'client_id' => '...',
+            'secret' => '...',
         });
     };
     like($@, qr{\bReddit\b}, 'should mention module');
@@ -70,11 +64,9 @@ sub fails_if_missing_configuration : Tests {
 
     eval {
         Comic::Social::Reddit->new({
-            'Reddit' => {
-                'username' => '...',
-                'password' => '...',
-                'secret' => '...',
-            },
+            'username' => '...',
+            'password' => '...',
+            'secret' => '...',
         });
     };
     like($@, qr{\bReddit\b}, 'should mention module');
@@ -82,11 +74,9 @@ sub fails_if_missing_configuration : Tests {
 
     eval {
         Comic::Social::Reddit->new({
-            'Reddit' => {
-                'username' => '...',
-                'password' => '...',
-                'client_id' => '...',
-            },
+            'username' => '...',
+            'password' => '...',
+            'client_id' => '...',
         });
     };
     like($@, qr{\bReddit\b}, 'should mention module');
@@ -106,14 +96,12 @@ sub passes_options_to_reddit_client : Tests {
 	use warnings;
 
 	Comic::Social::Reddit->new({
-        'Reddit' => {
-            'username' => 'me',
-            'password' => 'pass',
-            'client_id' => 'client',
-            'secret' => 'very secret',
-			'client_settings' => {
-				'foo' => 'bar',
-			},
+        'username' => 'me',
+        'password' => 'pass',
+        'client_id' => 'client',
+        'secret' => 'very secret',
+        'client_settings' => {
+            'foo' => 'bar',
         },
     });
 	my %expected = (
@@ -132,13 +120,11 @@ sub subreddit_from_configuration_scalar : Tests {
     my $comic = MockComic::make_comic();
 
 	$reddit = Comic::Social::Reddit->new({
-        'Reddit' => {
-            'username' => 'me',
-            'password' => 'pass',
-            'client_id' => 'client',
-            'secret' => 'very secret',
-            'default_subreddit' => 'comics',
-        },
+        'username' => 'me',
+        'password' => 'pass',
+        'client_id' => 'client',
+        'secret' => 'very secret',
+        'default_subreddit' => 'comics',
     });
 
 	is_deeply(['comics'], [$reddit->_get_subreddits($comic, 'Deutsch')]);
@@ -150,13 +136,11 @@ sub subreddit_from_configuration_array : Tests {
     my $comic = MockComic::make_comic();
 
     $reddit = Comic::Social::Reddit->new({
-        'Reddit' => {
-            'username' => 'me',
-            'password' => 'pass',
-            'client_id' => 'client',
-            'secret' => 'very secret',
-            'default_subreddit' => ['comics', 'funny'],
-        },
+        'username' => 'me',
+        'password' => 'pass',
+        'client_id' => 'client',
+        'secret' => 'very secret',
+        'default_subreddit' => ['comics', 'funny'],
     });
 
 	is_deeply(['comics', 'funny'], [$reddit->_get_subreddits($comic, 'Deutsch')]);
@@ -169,13 +153,11 @@ sub subreddit_from_configuration_invalid : Tests {
 
     eval {
         Comic::Social::Reddit->new({
-            'Reddit' => {
-                'username' => 'me',
-                'password' => 'pass',
-                'client_id' => 'client',
-                'secret' => 'very secret',
-                'default_subreddit' => $comic,
-            },
+            'username' => 'me',
+            'password' => 'pass',
+            'client_id' => 'client',
+            'secret' => 'very secret',
+            'default_subreddit' => $comic,
         });
     };
     like($@, qr{default_subreddit}, 'should mention bad param name');
@@ -257,12 +239,10 @@ sub ignores_empty_subreddits : Tests {
     my $comic = MockComic::make_comic($MockComic::JSON => $json);
 
     $reddit = Comic::Social::Reddit->new({
-        'Reddit' => {
-            'username' => 'me',
-            'password' => 'pass',
-            'client_id' => 'client',
-            'secret' => 'very secret',
-        },
+        'username' => 'me',
+        'password' => 'pass',
+        'client_id' => 'client',
+        'secret' => 'very secret',
     });
 
 	is_deeply([], [$reddit->_get_subreddits($comic, 'English')]);

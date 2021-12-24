@@ -3,14 +3,16 @@
 The `Comic::Social::...` modules post today's comic for each language on
 social networks.
 
-If you have multiple comics for today, e.g., one only in English and one
-only in German, the social media code will post both.
+If you have multiple comics for today, for example, one only in English and
+one only in German, the social media code will post all.
 
 Some social networks are more painful to automate than others, in particular
 Facebook. (I hate Facebook, for various reasons, and their finicky API did
 not help.) Because of that only easy social networks are supported. For
 everything else, create a [RSS Feed](outputs.md#Comic::Out::Feed) and hook
 it up to a free [Zapier](https://zapier.com) account to spread the joy.
+
+All `Comic::Social::...` configuration must be within the `Social` object.
 
 
 ## `Comic::Social::Reddit`
@@ -28,8 +30,8 @@ The configuration looks like this:
 
 ```json
 {
-    "SocialMediaPoster":
-        "Reddit": {
+    "Social":
+        "Comic::Social::Reddit":
             "username": "your reddit name",
             "password": "secret",
             "client_id": "...",
@@ -42,7 +44,7 @@ The configuration looks like this:
 
 These values are:
 
-* `username`: your Reddit user name.
+* `username`: your Reddit username.
 
 * `password`: your Reddit password.
 
@@ -68,8 +70,8 @@ The configuration looks like this:
 
 ```json
 {
-    "SocialMediaPoster": {
-        "Twitter": {
+    "Social": {
+        "Comic::Social::Twitter": {
             "mode": "png",
             "consumer_key": "...",
             "consumer_secret": "...",
@@ -85,7 +87,7 @@ The fields are:
 * `mode`: either `html` or `png` to tweet either a link to the comic or
   the actual comic `png` file. Defaults to `png`. `html` mode requires that the
   comic is uploaded and the URL is available in the Comic. `png` mode
-  requires that the `.png` has been generated and its file name is stored in
+  requires that the `.png` has been generated and its filename is stored in
   the Comic.
 
 * `consumer_key` from your Twitter app settings.
@@ -121,5 +123,5 @@ For example, if the given Comic has this meta data:
 }
 ```
 
-it will be tweeted in English as "Brewing my own beer! Because I can! #beer #brewing"
+This will be tweeted in English as "Brewing my own beer! Because I can! #beer #brewing"
 and in German as "Ich braue mein eigenes Bier! Weil ich's kann! #Bier #brauen".
