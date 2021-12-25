@@ -118,16 +118,29 @@ sub generate_all {
             }
 
             my $references = $comic->{meta_data}->{see}{$language};
-            foreach my $ref (keys %{$references}) {
-                my $found = 0;
+            REF: foreach my $ref (keys %{$references}) {
+                my $want = ${$references}{$ref};
+
+                # Try exact match.
                 foreach my $c (@comics) {
-                    if ($c->{srcFile} eq ${$references}{$ref}) {
+                    if ($c->{srcFile} eq $want) {
                         $comic->{'htmllink'}{$language}{$ref} = $c->{url}{$language};
-                        $found = 1;
+                        next REF;
                     }
                 }
 
-                if (!$found) {
+                # Try relative match: if the path ends in what we're looking for.
+                my @found;
+                foreach my $c (@comics) {
+                    if ($c->{srcFile} =~ m{$want$}) {
+                        $comic->{'htmllink'}{$language}{$ref} = $c->{url}{$language};
+                        push @found, $c->{srcFile};
+                    }
+                }
+                if (@found > 1) {
+                    $comic->keel_over("Comic::Out::HtmlLink: $language link $want matches ". join ' and ', @found);
+                }
+                if (@found == 0) {
                     $comic->keel_over("Comic::Out::HtmlLink: $language link refers to non-existent ${$references}{$ref}");
                 }
             }

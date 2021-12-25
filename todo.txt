@@ -14,10 +14,6 @@
 - cleanup: move more vars variables into the comics, for better scoping and
   to allow multiple generators to contribute
 
-- make handling of paths uniform, relative paths need to be resolved
-  relative to a given base directory (e.g., the "see": "..." reference to
-  another comic).
-
 
 - refact: Perl: use feature qw(signatures); no warnings
   qw(experimental::signatures); or Function::Parameters, Method::Signatures

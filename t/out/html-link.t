@@ -54,16 +54,36 @@ sub dead_link : Tests {
     };
     like($@, qr{referrer\.svg}, 'should include referred file');
     like($@, qr{English}, 'should include language of the reference');
-    like($@, qr{oops\.svg}, 'should include comit that has the bad refernce');
+    like($@, qr{oops\.svg}, 'should include comic that has the bad refernce');
 }
 
 
-sub links_to_url : Tests {
+sub link_exact_match : Tests {
     my $referenced = MockComic::make_comic(
         $MockComic::TITLE => {
             $MockComic::ENGLISH => 'The original',
         },
-        $MockComic::IN_FILE => 'original.svg',
+        $MockComic::IN_FILE => 'comics/web/original.svg',
+    );
+    $referenced->{url}{$MockComic::ENGLISH} = 'https://beercomics.com/comics/the-original.html';
+    my $referrer = MockComic::make_comic(
+        $MockComic::SEE => {
+            $MockComic::ENGLISH => {
+                "the original comic" => "comics/web/original.svg",
+            }
+        },
+    );
+    $htmllink->generate_all($referenced, $referrer);
+    is_deeply($referrer->{htmllink}->{'English'}, {'the original comic' => 'https://beercomics.com/comics/the-original.html'});
+}
+
+
+sub link_file_name_only : Tests {
+    my $referenced = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => 'The original',
+        },
+        $MockComic::IN_FILE => 'comics/web/original.svg',
     );
     $referenced->{url}{$MockComic::ENGLISH} = 'https://beercomics.com/comics/the-original.html';
     my $referrer = MockComic::make_comic(
@@ -72,8 +92,62 @@ sub links_to_url : Tests {
                 "the original comic" => "original.svg",
             }
         },
-        $MockComic::IN_FILE => 'referrer.svg',
     );
     $htmllink->generate_all($referenced, $referrer);
     is_deeply($referrer->{htmllink}->{'English'}, {'the original comic' => 'https://beercomics.com/comics/the-original.html'});
+}
+
+
+sub link_file_not_unique : Tests {
+    my $candidate_one = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => 'Candidate 1',
+        },
+        $MockComic::IN_FILE => 'comics/web/original.svg',
+    );
+    my $candidate_two = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => 'Candidate 2',
+        },
+        $MockComic::IN_FILE => 'comics/other-web/original.svg',
+    );
+    my $referrer = MockComic::make_comic(
+        $MockComic::SEE => {
+            $MockComic::ENGLISH => {
+                "the original comic" => "original.svg",
+            }
+        },
+    );
+    eval {
+        $htmllink->generate_all($candidate_one, $candidate_two, $referrer);
+    };
+    like($@, qr{matches}, 'should say what is wrong');
+    like($@, qr{original\.svg}, 'should mention link');
+    like($@, qr{comics/web/original\.svg}, 'should mention first candidate');
+    like($@, qr{comics/other-web/original\.svg}, 'should mention second candidate');
+}
+
+
+sub test_picks_more_specific_over_more_generic : Tests {
+    my $candidate_one = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => 'Candidate 1',
+        },
+        $MockComic::IN_FILE => '/somewhere/else/original.svg',
+    );
+    my $candidate_two = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => 'Candidate 2',
+        },
+        $MockComic::IN_FILE => 'original.svg',
+    );
+    my $referrer = MockComic::make_comic(
+        $MockComic::SEE => {
+            $MockComic::ENGLISH => {
+                "the original comic" => "original.svg",
+            }
+        },
+    );
+    $htmllink->generate_all($candidate_one, $candidate_two, $referrer);
+    is_deeply($referrer->{htmllink}->{'English'}, {'the original comic' => 'https://beercomics.com/comics/candidate-2.html'});
 }

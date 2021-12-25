@@ -349,7 +349,7 @@ language object with a link text as key and a `.svg` file as value.
 {
     "see": {
         "English": {
-            "First reopening": "comics/web/beergarden-reopened.svg"
+            "First reopening": "beergarden-reopened.svg"
         }
     }
 }
@@ -360,10 +360,27 @@ not depend on the actual title (and hence URL) of the linked comic. Also,
 other forms of linking (e.g., to a page in a book) may not even have meta
 data like an `.html` output file, but all comics do have a title.
 
-This adds a `htmllink` hash to each comic. The keys in that hash are
+This module adds a `htmllink` hash to each comic. The keys in that hash are
 languages (with initial upper case letter), pointing to yet another hash.
 That hash has a list of link text to (absolute) URL of the referred comic's
 HTML page.
+
+Link target `.svg` files can be given as (full or partial) paths or just
+filenames; the latter is preferred unless you have the same filenames in
+different directories.
+
+Background: When comics are loaded, they remember their source file name.
+This is usually relative to where you collected the `.svg` files. For
+example, if your comics live in `comics/web/`, each collected comic will
+have its source file starting with that path, and you could use e.g.,
+`comics/web/some-comic.svg` as a reference. However, if your cron job
+happens to just pass the full path to your comics directory (vs `cd`ing into
+it and passing the relative path), your comics will have the full path
+instead of just `comics/web/`. To work in both situations, the
+`Comic::Out::HtmlLink` module looks first for an exact match, then it checks
+all comics to see if their source filenames end in the link target. This is
+a simple string comparison. It does not touch the file system and doesn't
+allow relative paths like `../../other/dirctory/comic.svg`.
 
 
 ## `Comic::Out::HtmlComicPage`
