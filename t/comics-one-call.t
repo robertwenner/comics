@@ -186,7 +186,7 @@ CONFIG
     use warnings;
 
     my $out = Capture::Tiny::capture_stdout {
-        Comics::post_todays_comic("config.json", "comics/");
+        Comics::publish_comic("config.json", "comics/");
     };
     like($out, qr{posted to dummy});
 }
@@ -210,7 +210,7 @@ CONFIG
     use warnings;
 
     my $out = Capture::Tiny::capture_stdout {
-        Comics::post_todays_comic("config.json", "comics/");
+        Comics::publish_comic("config.json", "comics/");
     };
     like($out, qr{\bnot posting\b}i, 'should say what is wrong');
     like($out, qr{\btoday\b}i, 'should say why it is not posting');
@@ -227,7 +227,7 @@ sub post_to_social_media_error_no_posters : Tests {
 CONFIG
     MockComic::fake_file("config.json", $config);
     eval {
-        Comics::post_todays_comic("config.json", "comics/");
+        Comics::publish_comic("config.json", "comics/");
     };
     like($@, qr{no social media posters}i);
 }

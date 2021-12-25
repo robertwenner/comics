@@ -40,7 +40,7 @@ additional files like web pages.
     # Detailled:
     my $comics = Comics->new();
     $comics->load_settings("my-settings.json");
-    $comics->collect_files("/path/to/comics/svg/");
+    my @comics = $comics->collect_files(@comic_dirs)
     $comics->load_checks();
     $comics->run_all_checks();
     $comics->load_generators();
@@ -58,10 +58,11 @@ additional files like web pages.
     Comics::generate("config.json", "comics/");
 
     # Simple command to sync local comics to a web server:
-    Comics::upload("config.json", "comics/");
+    Comics::upload("/path/to/config.json");
 
-    # Cronjob to publish comics:
-    Comics::post_todays_comic("/path/to/config.json", "/path/to/comics/svg/");
+    # Simple command (e.g., for a cronjob) to dpublish the latest comic,
+    # including generating everything, upoading, and posting to social media:
+    Comics::publish_comic('/path/to/config.json', '/path/to/comics/svg/');
 
 
 =head1 DESCRIPTION
@@ -139,7 +140,7 @@ Uploads all comics.
 
 This is meant as a single method to sync the local comics with a web server.
 
-It calls the C<generate> function, then runs the configured uploaders.
+Comic web pages need to be generated before calling this function.
 
 Arguments:
 
@@ -147,16 +148,16 @@ Arguments:
 
 =item * B<$config> path to the configuration file.
 
-=item * B<@dirs> directories from which to collect comics.
-
 =back
 
 =cut
 
 sub upload {
-    my ($config, @dirs) = @ARG;
+    my ($config) = @ARG;
 
-    my $comics = generate($config, @dirs);
+    my $comics = Comics->new();
+    $comics->load_settings($config);
+
     $comics->load_uploaders();
     unless (@{$comics->{uploaders}}) {
         croak('No uploaders configured');
@@ -167,7 +168,7 @@ sub upload {
 }
 
 
-=head2 post_todays_comic
+=head2 publish_comic
 
 Generates all comics, uploads them, and posts today's comic(s) to social
 media.
@@ -175,10 +176,11 @@ media.
 This is meant as a single method to call to do everything needed to publish
 a new comic and post it to social media, e.g. in a cronjob.
 
-    perl -MComics -e 'Comics::publish("/home/robert/comics/bier/config.json", "/home/robert/comics/bier/comics/web");'
+    perl -MComics -e 'Comics::publish("config.json", "comics/");'
 
 This function will print any output from the social media posting plugins to
-standard out. The cron daemon should pick that up and email it to the owner.
+standard out. The cron daemon should pick that up and email it to the cron
+job's owner.
 
 This module does not know whether a comic was already posted. As a simple
 check, it won't post if the comic was not released today.
@@ -195,10 +197,12 @@ Arguments:
 
 =cut
 
-sub post_todays_comic {
+sub publish_comic {
     my ($config, @dirs) = @ARG;
 
-    my $comics = upload($config, @dirs);
+    my $comics = generate($config, @dirs);
+    upload($config);
+
     $comics->load_social_media_posters();
     unless (@{$comics->{social_media_posters}}) {
         croak('No social media posters configured');
