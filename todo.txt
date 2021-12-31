@@ -1,6 +1,3 @@
-- break up code into different (pluggable?) modules, e.g., reddit poster,
-  inkscape importer; still misses server upload (rsync)
-
 - cleanup hard-coded names, e.g., "Rahmen" or even "Meta", "generated"
 
 - rework variables available for templates: standardize names, pick decent
@@ -13,7 +10,6 @@
 
 - cleanup: move more vars variables into the comics, for better scoping and
   to allow multiple generators to contribute
-
 
 - refact: Perl: use feature qw(signatures); no warnings
   qw(experimental::signatures); or Function::Parameters, Method::Signatures
@@ -261,9 +257,6 @@
   available in templates (merge with current contributors JSON meta data)
 
 - feature: use relative links for HtmlLink for easy offline use
-
-- doc: describe general context for end users (svg as single file per comic),
-  main output directory
 
 - doc: more dev documentation: how to add a new check, output generator, or
   social media poster; how Comic as a value object ties everything together,
