@@ -241,9 +241,6 @@
 
 - feature: specify qr code image size (e.g., in pixels)
 
-- defect: png meta info needs to turn newlines into spaces, not just remove
-  them completely
-
 - feature: support https://www.indexnow.org/
 
 - feature: allow picking up Dublin core entities from Inkscape's document

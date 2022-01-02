@@ -164,7 +164,7 @@ sub _svg_to_png {
     # Add data inferred from comic
     my %meta_data = (
         'Title' => $comic->{meta_data}->{title}->{$language},
-        'Description' => join('', $comic->get_transcript($language)),
+        'Description' => join(' ', $comic->get_transcript($language)),
         'CreationTime' => $comic->{modified},
         'URL' => $comic->{url}{$language},
     );
