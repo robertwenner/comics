@@ -28,9 +28,11 @@ sub set_up : Test(setup) {
 sub make_comic {
     my ($width, $height) = @_;
 
-    my $comic = MockComic::make_comic();
-    $comic->{height} = $height;
-    $comic->{width} = $width;
+    my $comic = MockComic::make_comic($MockComic::TITLE => {
+        $MockComic::ENGLISH => 'a comic',
+    });
+    $comic->{height} = {$MockComic::ENGLISH => $height};
+    $comic->{width} = {$MockComic::ENGLISH => $width};
     return $comic;
 }
 
@@ -59,12 +61,12 @@ sub sorting : Tests {
     my $b = make_comic(20, 90);
     my $c = make_comic(30, 80);
 
-    is_deeply([$c, $b, $a], [sort Comic::Out::Sizemap::_by_height ($b, $a, $c)]);
-    is_deeply([$a, $b, $c], [sort Comic::Out::Sizemap::_by_width ($b, $a, $c)]);
+    is_deeply([$c, $b, $a], [sort Comic::Out::Sizemap::_by_height ($b, $a, $c)], 'height');
+    is_deeply([$a, $b, $c], [sort Comic::Out::Sizemap::_by_width ($b, $a, $c)], 'width');
 }
 
 
-sub aggregate_sizes_none : Tests {
+sub aggregate_sizses_none : Tests {
     my %aggregated = Comic::Out::Sizemap::_aggregate_comic_sizes();
     is_deeply(\%aggregated, {
         height => {
@@ -90,7 +92,7 @@ sub aggregate_sizes_one : Tests {
             min => 300,
             max => 300,
             avg => 300,
-       },
+        },
         width => {
             min => 100,
             max => 100,
@@ -205,4 +207,30 @@ sub generate_all : Tests {
     $sizemap->generate_all($comic);
 
     MockComic::assert_wrote_file('sizemap.html', qr{<svg [^>]+>});
+}
+
+
+sub different_sizes_per_language : Tests {
+    my $comic = MockComic::make_comic($MockComic::TITLE => {
+        $MockComic::ENGLISH => 'a comic',
+        $MockComic::DEUTSCH => 'ein Comic',
+    });
+    $comic->{height} = {
+        $MockComic::ENGLISH => 500,
+        $MockComic::DEUTSCH => 525,
+    };
+    $comic->{width} = {
+        $MockComic::ENGLISH => 200,
+        $MockComic::DEUTSCH => 200,
+    };
+
+    $sizemap = Comic::Out::Sizemap->new(
+        'template' => 'sizemap.templ',
+        'outfile' => 'sizemap.html',
+        'scale' => 1
+    );
+
+    my %vars = $sizemap->_aggregate($comic);
+    like($vars{'svg'}, qr{<rect\s.*height="500"}, 'should have English rect');
+    like($vars{'svg'}, qr{<rect\s.*height="525"}, 'should have German rect');
 }

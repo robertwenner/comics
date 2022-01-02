@@ -412,8 +412,8 @@ sub does_not_generate_if_png_is_up_to_date : Tests {
     is_deeply($comic->{pngSize}, {'English' => 'file size'}, 'wrong size');
     is_deeply($comic->{pngFile}, {'English' => 'latest-comic.png'}, 'wrong png file name');
     is_deeply($comic->{imageUrl}, {'English' => 'https://beercomics.com/comics/latest-comic.png'}, 'wrong URL');
-    is($comic->{height}, 'png height', 'wrong height');
-    is($comic->{width}, 'png width', 'wrong width');
+    is_deeply($comic->{height}, {'English' => 'png height'}, 'wrong height');
+    is_deeply($comic->{width}, {'English' => 'png width'}, 'wrong width');
     is_deeply(\@checked_up_to_date,
         ['some_comic.svg', 'generated/backlog/english/latest-comic.png',
         'some_comic.svg', 'generated/web/english/comics/latest-comic.png'],
@@ -447,6 +447,46 @@ sub generates_png_from_svn : Tests {
     is_deeply($comic->{pngFile}, {'English' => 'latest-comic.png'}, 'wrong png file name');
     is_deeply($comic->{pngSize}, {'English' => 'file size'}, 'wrong size');
     is_deeply($comic->{imageUrl}, {'English' => 'https://beercomics.com/comics/latest-comic.png'}, 'wrong URL');
-    is($comic->{height}, 'png height', 'wrong height');
-    is($comic->{width}, 'png width', 'wrong width');
+    is_deeply($comic->{height}, {'English' => 'png height'}, 'wrong height');
+    is_deeply($comic->{width}, {'English' => 'png width'}, 'wrong width');
+}
+
+
+sub different_image_dimensions_per_language : Tests {
+    my $asked = 0;
+    $exif_tool = Test::MockModule->new('Image::ExifTool');
+    $exif_tool->redefine('ImageInfo', sub($) {
+        $asked++;
+        return {
+            'ImageHeight' => "height $asked",
+            'ImageWidth' => "width $asked",
+        };
+    });
+    no warnings qw/redefine/;
+    local *Comic::up_to_date = sub {
+        return 0;
+    };
+    local *Comic::Out::Png::_svg_to_png = sub {
+        return;
+    };
+    use warnings;
+
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            'Deutsch' => 'de',
+            'English' => 'en',
+        },
+    );
+    $comic->{url}{'Deutsch'} = 'https://beercomics.com/comics/de.html';
+    $comic->{svgFile}{'Deutsch'} = 'generated/tmp/svg/english/de.svg';
+    $comic->{url}{'English'} = 'https://beercomics.com/comics/en.html';
+    $comic->{svgFile}{'English'} = 'generated/tmp/svg/english/en.svg';
+    $png->generate($comic);
+
+    is_deeply($comic->{height},
+        {'Deutsch' => 'height 1', 'English' => 'height 2'},
+        'wrong height');
+    is_deeply($comic->{width},
+        {'Deutsch' => 'width 1', 'English' => 'width 2'},
+        'wrong width');
 }

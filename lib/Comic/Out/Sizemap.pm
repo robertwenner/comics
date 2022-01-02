@@ -148,15 +148,17 @@ sub _aggregate {
     foreach my $comic (sort Comic::from_oldest_to_latest @comics) {
         my $color = $self->{settings}->{published_color};
         $color = $self->{settings}->{unpublished_color} if ($comic->not_yet_published());
-        $svg->rectangle(x => 0, y => 0,
-            width => $comic->{width} * $self->{settings}->{scale},
-            height => $comic->{height} * $self->{settings}->{scale},
-            id => basename("$comic->{srcFile}"),
-            style => {
-                'fill-opacity' => 0,
-                'stroke-width' => '3',
-                'stroke' => "$color",
-            });
+        foreach my $language ($comic->languages()) {
+            $svg->rectangle(x => 0, y => 0,
+                width => $comic->{'width'}{$language} * $self->{settings}->{scale},
+                height => $comic->{'height'}{$language} * $self->{settings}->{scale},
+                id => basename("$comic->{srcFile} $language"),
+                style => {
+                    'fill-opacity' => 0,
+                    'stroke-width' => '3',
+                    'stroke' => "$color",
+                });
+        }
     }
 
     my %vars;
@@ -196,13 +198,15 @@ sub _aggregate_comic_sizes {
     foreach my $comic (@comics) {
         $count++;
         foreach my $dim (qw(height width)) {
-            if ($aggregate{$dim}{'min'} > $comic->{$dim}) {
-                $aggregate{$dim}{'min'} = $comic->{$dim};
+            foreach my $language ($comic->languages()) {
+                if ($aggregate{$dim}{'min'} > $comic->{$dim}{$language}) {
+                    $aggregate{$dim}{'min'} = $comic->{$dim}{$language};
+                }
+                if ($aggregate{$dim}{'max'} < $comic->{$dim}{$language}) {
+                    $aggregate{$dim}{'max'} = $comic->{$dim}{$language};
+                }
+                $aggregate{$dim}{'avg'} += $comic->{$dim}{$language};
             }
-            if ($aggregate{$dim}{'max'} < $comic->{$dim}) {
-                $aggregate{$dim}{'max'} = $comic->{$dim};
-            }
-            $aggregate{$dim}{'avg'} += $comic->{$dim};
         }
     }
 
@@ -219,14 +223,28 @@ sub _aggregate_comic_sizes {
 ## no critic(Subroutines::ProhibitSubroutinePrototypes, Subroutines::RequireArgUnpacking)
 sub _by_width($$) {
 ## use critic
-    return $_[0]->{width} <=> $_[1]->{width};
+    my ($a, $b) = @ARG;
+    return _min_by_hash($a, 'width') <=> _min_by_hash($b, 'width');
 }
 
 
 ## no critic(Subroutines::ProhibitSubroutinePrototypes, Subroutines::RequireArgUnpacking)
 sub _by_height($$) {
 ## use critic
-    return $_[0]->{height} <=> $_[1]->{height};
+    my ($a, $b) = @ARG;
+    return _min_by_hash($a, 'height') <=> _min_by_hash($b, 'height');
+}
+
+
+sub _min_by_hash {
+    my ($comic, $field) = @ARG;
+
+    my $val = $MIN_SIZE_SENTINEL;
+    foreach my $language (keys %{$comic->{$field}}) {
+        my $newval = $comic->{$field}{$language};
+        $val = $newval if ($newval < $val);
+    }
+    return $val;
 }
 
 

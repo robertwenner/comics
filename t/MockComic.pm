@@ -178,8 +178,10 @@ sub make_comic {
     my $checks = $args{$CHECKS} || [];
     my $comic = Comic->new($args{$SETTINGS}, $checks);
     $comic->load($args{$IN_FILE});
-    $comic->{height} = $args{$HEIGHT};
-    $comic->{width} = $args{$WIDTH};
+    foreach my $language ($comic->languages()) {
+        $comic->{height}{$language} = $args{$HEIGHT};
+        $comic->{width}{$language} = $args{$WIDTH};
+    }
     return $comic;
 }
 

@@ -509,7 +509,7 @@ are taken to the `.png` file. For example
 
 Would set a field named "foo" to "bar".
 
-After writing, this Generator defines these values in the comic for use in
+After writing, this generator defines these values in the comic for use in
 templates or other generators:
 
 * `pngName`: map of language to base name of the `.png` file, e.g.,
@@ -517,14 +517,11 @@ templates or other generators:
 
 * `imageUrl`: map of language to complete URL of the `.png` file.
 
-* `pngSize`: map of image size in bytes, per language
+* `pngSize`: map of image size in bytes, per language.
 
-* `height`: height of the images in pixels
+* `height`: map of language to height of the image in pixels.
 
-* `width`: width of the image in pixels
-
-Height and width are not per-language, assuming a comic has the same size in
-each language.
+* `width`: map of langugae to width of the image in pixels.
 
 
 ### `Comic::Out::QrCode`

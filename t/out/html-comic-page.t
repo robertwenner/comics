@@ -395,8 +395,8 @@ sub fb_open_graph : Tests {
 <meta property="og:description" content="[% FILTER html %][% comic.meta_data.description.$Language %][% END %]"/>
 <meta property="og:locale" content="de"/>
 <meta property="og:image:type" content="image/png"/>
-<meta property="og:image:height" content="[% comic.height %]"/>
-<meta property="og:image:width" content="[% comic.width %]"/>
+<meta property="og:image:height" content="[% comic.height.$Language %]"/>
+<meta property="og:image:width" content="[% comic.width.$Language %]"/>
 <meta property="og:article:published" content="[% comic.meta_data.published.when %]"/>
 <meta property="og:article:modified" content="[% comic.modified %]"/>
 <meta property="og:article:author" content="Robert Wenner"/>

@@ -111,9 +111,9 @@ This places these variables in the given comic:
 
 =item * B<%imageUrl> hash of language to image URL.
 
-=item * B<$height> image height, same for all languages.
+=item * B<%height> hash of language to image height in pixels.
 
-=item * B<$width> image width, same for all languages.
+=item * B<%width> hash of language to image width in pixels.
 
 =item * B<%pngSize> hash of language to C<.png> file size in bytes.
 
@@ -220,11 +220,12 @@ sub _get_png_info {
     $comic->{pngFile}{$language} = "$comic->{baseName}{$language}.png";
     $comic->{imageUrl}{$language} = $comic->{url}{$language};
     $comic->{imageUrl}{$language} =~ s/[.]html$/.png/;
-    $comic->{height} = $image_info->{'ImageHeight'};
-    $comic->{width} = $image_info->{'ImageWidth'};
+    $comic->{height}{$language} = $image_info->{'ImageHeight'};
+    $comic->{width}{$language} = $image_info->{'ImageWidth'};
     # Can't use $image_info->{'ImageSize'} as it returns e.g., 26 KiB, and parsing
     # that would be more complicated than just asking the file system.
-    $comic->{pngSize}{$language} = _file_size($png_file); return;
+    $comic->{pngSize}{$language} = _file_size($png_file);
+    return;
 }
 
 
@@ -353,7 +354,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2016 - 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2016 - 2022, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or
