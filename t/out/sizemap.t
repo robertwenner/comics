@@ -230,6 +230,8 @@ sub different_sizes_per_language : Tests {
         'scale' => 1
     );
 
+    is(500, Comic::Out::Sizemap::_min_by_hash($comic, 'height'));
+
     my %vars = $sizemap->_aggregate($comic);
     like($vars{'svg'}, qr{<rect\s.*height="500"}, 'should have English rect');
     like($vars{'svg'}, qr{<rect\s.*height="525"}, 'should have German rect');
