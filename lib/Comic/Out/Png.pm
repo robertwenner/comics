@@ -131,7 +131,7 @@ sub generate {
         # OR pass a hash of outdir to coderef to decide which png goes where --- yay for overengineering!
         # But then again using the backlog as a cache is kind of an implementation
         # detail of this module?
-        my $backlog_png = "$comic->{backlogPath}{$language}/$comic->{baseName}{$language}.png" || '';
+        my $backlog_png = "$comic->{backlogPath}{$language}/$comic->{baseName}{$language}.png";
 
         if (Comic::up_to_date($comic->{srcFile}, $backlog_png)) {
             _move($backlog_png, $published_png) or $comic->keel_over("Comic::Out::Png: Cannot move $backlog_png to $published_png: $OS_ERROR");
