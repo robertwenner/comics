@@ -9,6 +9,7 @@ use Test::Deep;
 use Comic;
 use Comic::Settings;
 use JSON;
+use Carp;
 
 # Constants to catch typos when defining meta data.
 our Readonly $ENGLISH = 'English';
