@@ -44,7 +44,7 @@ sub generator_order_is_implicit : Tests {
     MockComic::fake_file('config.json', <<"CONFIG");
 {
     "$Comic::Settings::GENERATORS": {
-        "Comic::Out::Png": {
+        "Comic::Out::PngInkscape": {
             "outdir": "generated/png"
         },
         "Comic::Out::SvgPerLanguage": {
@@ -61,5 +61,5 @@ CONFIG
 
     is(
         Comics::_pretty_refs(@{$comics->{generators}}),
-        'Comic::Out::SvgPerLanguage, Comic::Out::Png, Comic::Out::HtmlLink');
+        'Comic::Out::SvgPerLanguage, Comic::Out::PngInkscape, Comic::Out::HtmlLink');
 }

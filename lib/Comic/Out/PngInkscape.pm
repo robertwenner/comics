@@ -1,4 +1,4 @@
-package Comic::Out::Png;
+package Comic::Out::PngInkscape;
 
 use strict;
 use warnings;
@@ -22,8 +22,9 @@ use version; our $VERSION = qv('0.0.3');
 
 =head1 NAME
 
-Comic::Out::Png - Generates a Portable Network Graphics (F<.png>) file for
-the given Comic in each of the Comic's languages.
+Comic::Out::PngInkscape - Generates a Portable Network Graphics (F<.png>)
+file for the given Comic in each of the Comic's languages by calling
+Inkscape for the conversion.
 
 
 =head1 SYNOPSIS
@@ -31,7 +32,7 @@ the given Comic in each of the Comic's languages.
     my %settings = (
         # ...
     );
-    my $png = Comic::Out::Png->new(%settings);
+    my $png = Comic::Out::PngInkscape->new(%settings);
     $png->generate($comic);
 
 
@@ -51,7 +52,7 @@ C<outdir>. The names are derived from the Comic's titles in their languages.
 
 =head2 new
 
-Creates a new Comic::Out::Png.
+Creates a new Comic::Out::PngInkscape.
 
 Parameters:
 
@@ -68,7 +69,7 @@ For example:
     my %settings = (
         'outdir' => 'generated/web/'
     )
-    my $png = Comic::Out::Png(%settings);
+    my $png = Comic::Out::PngInkscape(%settings);
 
 =cut
 
@@ -134,7 +135,7 @@ sub generate {
         my $backlog_png = "$comic->{backlogPath}{$language}/$comic->{baseName}{$language}.png";
 
         if (Comic::up_to_date($comic->{srcFile}, $backlog_png)) {
-            _move($backlog_png, $published_png) or $comic->keel_over("Comic::Out::Png: Cannot move $backlog_png to $published_png: $OS_ERROR");
+            _move($backlog_png, $published_png) or $comic->keel_over("Comic::Out::PngInkscape: Cannot move $backlog_png to $published_png: $OS_ERROR");
         }
 
         unless (Comic::up_to_date($comic->{srcFile}, $published_png)) {
@@ -158,7 +159,7 @@ sub _svg_to_png {
 
     my $version = $self->_get_inkscape_version($comic);
     my $export_cmd = _build_inkscape_command($comic, $svg_file, $png_file, $version);
-    _system($export_cmd) && $comic->keel_over("Comic::Out::Png: Could not export: $export_cmd: $OS_ERROR");
+    _system($export_cmd) && $comic->keel_over("Comic::Out::PngInkscape: Could not export: $export_cmd: $OS_ERROR");
 
     my $tool = Image::ExifTool->new();
     # Add data inferred from comic
@@ -188,7 +189,7 @@ sub _svg_to_png {
     # Finally write png meta data
     my $rc = $tool->WriteInfo($png_file);
     if ($rc != 1) {
-        $comic->keel_over('Comic::Out::Png: Cannot write PNG meta data: ' . $tool->GetValue('Error'));
+        $comic->keel_over('Comic::Out::PngInkscape: Cannot write PNG meta data: ' . $tool->GetValue('Error'));
     }
     return;
 }
@@ -199,7 +200,7 @@ sub _optimize_png {
 
     # Shrink / optimize PNG
     my $shrink_cmd = "optipng --quiet $png_file";
-    _system($shrink_cmd) && $comic->warning("Comic::Out::Png: Could not shrink: $shrink_cmd: $OS_ERROR");
+    _system($shrink_cmd) && $comic->warning("Comic::Out::PngInkscape: Could not shrink: $shrink_cmd: $OS_ERROR");
 
     return;
 }
@@ -265,7 +266,7 @@ sub _query_inkscape_version {
     # uncoverable branch false
     if ($OS_ERROR) {
         # uncoverable statement
-        $comic->keel_over("Comic::Out::Png: Could not run Inkscape: $OS_ERROR");
+        $comic->keel_over("Comic::Out::PngInkscape: Could not run Inkscape: $OS_ERROR");
     }
     # uncoverable statement
     return $version;
@@ -282,7 +283,7 @@ sub _parse_inkscape_version {
     if ($inkscape_output =~ m/^Inkscape\s+(\d+[.]\d)/) {
         return $1;
     }
-    $comic->keel_over("Comic::Out::Png: Cannot figure out Inkscape version from this:\n$inkscape_output");
+    $comic->keel_over("Comic::Out::PngInkscape: Cannot figure out Inkscape version from this:\n$inkscape_output");
     # PerlCritic doesn't know that keel_over doesn't return and the return statement
     # here is unreachable.
     return 'unknown';  # uncoverable statement
@@ -308,7 +309,7 @@ sub _build_inkscape_command {
             '--export-area-drawing --export-background=#ffffff';
     }
     if ($version ne '1.0' && $version ne '1.1') {
-        $comic->warning("Comic::Out::Png: Don't know Inkscape $version, hoping it's compatible to 1.1");
+        $comic->warning("Comic::Out::PngInkscape: Don't know Inkscape $version, hoping it's compatible to 1.1");
     }
 
     return 'inkscape --g-fatal-warnings ' .

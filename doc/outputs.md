@@ -16,8 +16,8 @@ name.
 
 Some output modules depend on other output modules running first. For
 example, to export your comics as `.png`, you first need to export them as
-per-language `.svg`s, then the `Comic::Out::Png` module will work with the
-per-language `.svg`s.
+per-language `.svg`s, then the `Comic::Out::PngInkscape` module will work
+with the per-language `.svg`s.
 
 The code is smart enough to use the modules in the right order, but it
 cannot yet pull in missing modules. So to get `.png` output, you must
@@ -459,10 +459,10 @@ When the template is processed, these variables are also available:
 The `index.html` file uses the same template as the regular comic pages.
 
 
-## `Comic::Out::Png`
+## `Comic::Out::PngInkscape`
 
 Generates a Portable Network Graphics (`.png`) file for from a Scalable
-Vector Graphics (`.svg`) file.
+Vector Graphics (`.svg`) file by calling Inkscape.
 
 The configuration looks like this:
 

@@ -172,12 +172,12 @@ beginning? Could be hard to configure, and the code has to build a direct
 acyclic graph like a build tool --- more complexity than I want here.
 
 This gets more complicated with multiple dependencies: if both
-L<Comic::Out::Png> and L<Comic::Out::QrCode> depend on
+L<Comic::Out::PngInkscape> and L<Comic::Out::QrCode> depend on
 L<Comic::Out::SvgPerLanguage> which should go first? Does it matter? The
-other way around: Should L<Comic::Out::Png> depend on
+other way around: Should L<Comic::Out::PngInkscape> depend on
 L<Comic::Out::SvgPerLanguage> or L<Comic::Out::Copyright>? Clearly if
-L<Comic::Out::Copyright> is requested, <Comic::Out::Png> needs to depend on
-that, otherwise on L<Comic::Out::SvgPerLanguage>.
+L<Comic::Out::Copyright> is requested, <Comic::Out::PngInkscape> needs to
+depend on that, otherwise on L<Comic::Out::SvgPerLanguage>.
 
 
 =head3 Implicit dependency groups
@@ -236,7 +236,7 @@ sub order {
         # Modules that work with the in-memory SVG and produce language-dependent files.
         'Comic::Out::SvgPerLanguage',
         # Convert svg files to different image file formats.
-        'Comic::Out::Png',
+        'Comic::Out::PngInkscape',
         # Set variables needed when generating the comic page.
         'Comic::Out::HtmlLink',
         # Once we have an output image, include / embed that somewhere.
@@ -559,7 +559,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2021 - 2022, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or

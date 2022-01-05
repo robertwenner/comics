@@ -7,7 +7,7 @@ use Test::MockModule;
 use lib 't';
 use MockComic;
 
-use Comic::Out::Png;
+use Comic::Out::PngInkscape;
 
 
 __PACKAGE__->runtests() unless caller;
@@ -47,14 +47,14 @@ sub set_up : Test(setup) {
         };
     });
     no warnings qw/redefine/;
-    *Comic::Out::Png::_query_inkscape_version = sub {
+    *Comic::Out::PngInkscape::_query_inkscape_version = sub {
         return 'Inkscape 0.9';
     };
-    *Comic::Out::Png::_system = sub {
+    *Comic::Out::PngInkscape::_system = sub {
         push @command_lines, @_;
         return $system_exit_code;
     };
-    *Comic::Out::Png::_file_size = sub {
+    *Comic::Out::PngInkscape::_file_size = sub {
         return 'file size';
     };
     use warnings;
@@ -67,7 +67,7 @@ sub set_up : Test(setup) {
     $get_value = undef;
     $write_info_exit_code = 1;
 
-    $png = Comic::Out::Png->new(
+    $png = Comic::Out::PngInkscape->new(
         'outdir' => 'generated',
     );
 }
@@ -75,22 +75,22 @@ sub set_up : Test(setup) {
 
 sub ctor_complains_if_no_outdir_configured : Tests {
     eval {
-        Comic::Out::Png->new();
+        Comic::Out::PngInkscape->new();
     };
-    like($@, qr{Comic::Out::Png}i, 'should mention module');
+    like($@, qr{Comic::Out::PngInkscape}i, 'should mention module');
     like($@, qr{\boutdir\b}i, 'should mention setting');
 }
 
 
 sub parses_inkscape_version : Tests {
     my $comic = MockComic::make_comic();
-    is(Comic::Out::Png::_parse_inkscape_version($comic, "Inkscape 0.92.5 (2060ec1f9f, 2020-04-08)\n"), "0.9");
-    is(Comic::Out::Png::_parse_inkscape_version($comic, "Inkscape 1.0 (4035a4fb49, 2020-05-01)\n"), "1.0");
-    is(Comic::Out::Png::_parse_inkscape_version($comic, "Inkscape 1.0.2 (e86c870879, 2021-01-15)\n"), "1.0");
-    is(Comic::Out::Png::_parse_inkscape_version($comic, "Inkscape 10.0.0 (abcdef, 2200-01-01)\n"), "10.0");
+    is(Comic::Out::PngInkscape::_parse_inkscape_version($comic, "Inkscape 0.92.5 (2060ec1f9f, 2020-04-08)\n"), "0.9");
+    is(Comic::Out::PngInkscape::_parse_inkscape_version($comic, "Inkscape 1.0 (4035a4fb49, 2020-05-01)\n"), "1.0");
+    is(Comic::Out::PngInkscape::_parse_inkscape_version($comic, "Inkscape 1.0.2 (e86c870879, 2021-01-15)\n"), "1.0");
+    is(Comic::Out::PngInkscape::_parse_inkscape_version($comic, "Inkscape 10.0.0 (abcdef, 2200-01-01)\n"), "10.0");
 
     eval {
-        Comic::Out::Png::_parse_inkscape_version($comic, "Whatever 2020...");
+        Comic::Out::PngInkscape::_parse_inkscape_version($comic, "Whatever 2020...");
     };
     like($@, qr{Cannot figure out}i);
     like($@, qr{Whatever 2020}i);
@@ -101,7 +101,7 @@ sub caches_inkscape_version : Tests {
     my $called = 0;
 
     no warnings qw/redefine/;
-    local *Comic::Out::Png::_query_inkscape_version = sub {
+    local *Comic::Out::PngInkscape::_query_inkscape_version = sub {
         $called++;
         return "Inkscape 1.0";
     };
@@ -119,7 +119,7 @@ sub caches_inkscape_version : Tests {
 
 sub export_command_line_inkscape09 : Tests {
     no warnings qw/redefine/;
-    local *Comic::Out::Png::_get_inkscape_version = sub {
+    local *Comic::Out::PngInkscape::_get_inkscape_version = sub {
         return "0.9";
     };
     use warnings;
@@ -139,7 +139,7 @@ sub export_command_line_inkscape09 : Tests {
 
 sub export_command_line_inkscape1 : Tests {
     no warnings qw/redefine/;
-    local *Comic::Out::Png::_get_inkscape_version = sub {
+    local *Comic::Out::PngInkscape::_get_inkscape_version = sub {
         return "1.0";
     };
     use warnings;
@@ -161,7 +161,7 @@ sub export_command_line_inkscape1 : Tests {
 
 sub export_command_line_inkscape1_1 : Tests {
     no warnings qw/redefine/;
-    local *Comic::Out::Png::_get_inkscape_version = sub {
+    local *Comic::Out::PngInkscape::_get_inkscape_version = sub {
         return "1.1";
     };
     use warnings;
@@ -185,7 +185,7 @@ sub export_command_line_inkscape1_1 : Tests {
 
 sub export_command_line_future_inkscape : Tests {
     no warnings qw/redefine/;
-    local *Comic::Out::Png::_get_inkscape_version = sub {
+    local *Comic::Out::PngInkscape::_get_inkscape_version = sub {
         return "11.0";
     };
     use warnings;
@@ -322,7 +322,7 @@ sub optimize_png_ok : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH, 'Optimized comic' },
     );
-    Comic::Out::Png::_optimize_png($comic, 'optimized-comic.png');
+    Comic::Out::PngInkscape::_optimize_png($comic, 'optimized-comic.png');
     like($command_lines[0], qr{optipng}, 'opting not found');
     like($command_lines[0], qr{\boptimized-comic\.png\b}, 'png file name');
 }
@@ -334,7 +334,7 @@ sub optimize_png_fails : Tests {
         $MockComic::TITLE => { $MockComic::ENGLISH, 'some-comic.svg' },
         $MockComic::PUBLISHED_WHEN => '3000-01-01',
     );
-    Comic::Out::Png::_optimize_png($comic, 'some-comic.png');
+    Comic::Out::PngInkscape::_optimize_png($comic, 'some-comic.png');
     like($comic->{warnings}[0], qr{\boptipng\b});
 }
 
@@ -348,7 +348,7 @@ sub moves_from_backlog : Tests {
         my ($source, $target) = @_;
         return $target =~ m/\.png$/;
     };
-    local *Comic::Out::Png::_move = sub {
+    local *Comic::Out::PngInkscape::_move = sub {
         ($from, $to) = @_;
         return 1;   # success according to perldoc File::Copy
     };
@@ -373,7 +373,7 @@ sub moves_from_backlog_fails : Tests {
         my ($source, $target) = @_;
         return $target =~ m/\.png$/;
     };
-    local *Comic::Out::Png::_move = sub {
+    local *Comic::Out::PngInkscape::_move = sub {
         return 0;
     };
     use warnings;
@@ -398,7 +398,7 @@ sub does_not_generate_if_png_is_up_to_date : Tests {
         push @checked_up_to_date, $source, $target;
         return $target !~ m/backlog/ && $target =~ m/\.png$/;
     };
-    local *Comic::Out::Png::_svg_to_png = sub {
+    local *Comic::Out::PngInkscape::_svg_to_png = sub {
         fail("Called _svg_to_png");
     };
     use warnings;
@@ -432,7 +432,7 @@ sub generates_png_from_svn : Tests {
     local *Comic::up_to_date = sub {
         return 0;
     };
-    local *Comic::Out::Png::_svg_to_png = sub {
+    local *Comic::Out::PngInkscape::_svg_to_png = sub {
         ($svg_file, $png_file) = @_[3, 4];
         return;
     };
@@ -469,7 +469,7 @@ sub different_image_dimensions_per_language : Tests {
     local *Comic::up_to_date = sub {
         return 0;
     };
-    local *Comic::Out::Png::_svg_to_png = sub {
+    local *Comic::Out::PngInkscape::_svg_to_png = sub {
         return;
     };
     use warnings;
