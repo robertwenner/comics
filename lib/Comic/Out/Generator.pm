@@ -267,7 +267,7 @@ sub new {
     my $self = bless{}, $class;
 
     %{$self->{settings}} = %settings;
-    $self->{valid_ssettings} = {};
+    $self->{valid_settings} = {};
 
     return $self;
 }
