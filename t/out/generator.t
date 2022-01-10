@@ -1,6 +1,8 @@
 use strict;
 use warnings;
 
+use JSON;
+
 use base 'Test::Class';
 use Test::More;
 
@@ -248,4 +250,17 @@ sub complains_about_unknown_type : Tests {
     like($@, qr{\bunknown\b}i, 'says what the problem is');
     like($@, qr{\btype\b}i, 'says what is bad');
     like($@, qr{\bwhatever\b}, 'gives the unknown value');
+}
+
+
+sub handles_json_boolean : Tests {
+    my $json = '{ "T": true, "F": false }';
+    my $decoded = decode_json($json);
+
+    my $gen = Comic::Out::Generator->new(%{$decoded});
+    $gen->optional('T', 'scalar', 1);
+    $gen->optional('F', 'scalar', 0);
+
+    ok($gen->{settings}{'T'});
+    ok(!$gen->{settings}{'F'});
 }
