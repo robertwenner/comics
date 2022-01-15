@@ -29,14 +29,14 @@ You'll need [Inkscape](https://inkscape.org) in the `$PATH` to actually
 export your comics to `png`.
 
 You also need `Imager::File::PNG`, which in turn depends on `libpng-dev` and
-`optipng`. For spell checking, you need `ASpell` or `Hunspell` development
-libraries (e.g., `libaspell-dev`) plus dictionaries for the languages you
-want to use.
+`optipng`. For spell checking, you need `ASpell` or `Hunspell` with the
+corresponding development libraries (e.g., `libaspell-dev`) plus
+dictionaries for the languages you want to use.
 
 
 ## Installation
 
-```
+```bash
 perl Makefile.PL
 make
 make test       # optional, may need Perl test modules
@@ -51,7 +51,7 @@ developer documentation in the respective modules.
 
 ## Copyright & License
 
-Copyright 2015 - 2021, Robert Wenner
+Copyright 2015 - 2022, Robert Wenner
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
