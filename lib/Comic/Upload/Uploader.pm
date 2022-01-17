@@ -48,11 +48,20 @@ sub new {
 
 Upload the comics according to the upload configuration settings.
 
+Parameters:
+
+=over 4
+
+=item * B<@comics> Latest (today's) comics. Implementing classes can use
+    this to upload only changed comics.
+
+=back
+
 =cut
 
 sub upload {
     # uncoverable subroutine
-    my ($self) = @ARG; # uncoverable statement
+    my ($self, @comics) = @ARG; # uncoverable statement
     $self->_croak('Comic::Upload::Uploader::upload should have been overridden'); # uncoverable statement
     # PerlCritic doesn't know that this return is unreacchable:
     return; # uncoverable statement

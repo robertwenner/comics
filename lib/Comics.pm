@@ -546,8 +546,9 @@ Run all the configured uploaders to upload generated content somewhere.
 sub upload_all_comics {
     my ($self) = @ARG;
 
+    my @comics = _todays_comics(@{$self->{comics}});
     foreach my $uploader (@{$self->{uploaders}}) {
-        $uploader->upload();
+        $uploader->upload(@comics);
     }
 
     return;

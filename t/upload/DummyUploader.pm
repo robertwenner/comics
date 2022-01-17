@@ -13,6 +13,7 @@ sub new {
     my $self = $class->SUPER::new();
 
     @{$self->{ctor_params}} = [@args];
+    $self->{called} = 0;
     $self->{posted} = [];
 
     return $self;
@@ -27,6 +28,7 @@ sub assert_constructed {
 
 sub upload {
     my ($self, @args) = @_;
+    $self->{called}++;
     push @{$self->{uploaded}}, @args;
     return;
 }
