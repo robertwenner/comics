@@ -13,6 +13,7 @@ my %dependencies = (
     'File::Slurper' => 0,
     'Hash::Merge' => 0,
     'HTML::Entities' => 0,
+    'HTTP::Tiny' => 0,
     'Image::ExifTool' => 0,
     'Imager::QRCode' => 0,
     'Image::SVG::Transform' => 0,

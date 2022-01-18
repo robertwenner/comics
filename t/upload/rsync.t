@@ -4,6 +4,10 @@ use utf8;
 
 use base 'Test::Class';
 use Test::More;
+use Test::MockModule;
+
+use lib 't';
+use MockComic;
 
 use Comic::Upload::Rsync;
 
@@ -16,6 +20,8 @@ my @rsync_args;
 
 
 sub set_up : Test(setup) {
+    MockComic::set_up();
+
     no warnings qw/redefine/;
     *File::Rsync::exec = sub {
         my ($self, @args) = @_;
@@ -233,4 +239,254 @@ sub override_rsync_options : Tests {
     is_deeply(\@rsync_args, [
         ['src', 'generated/comics/english', 'dest', 'me@example.com/english', 'recursive', 1, 'compress', 1 ],
     ]);
+}
+
+
+sub check_upload_bad_number_of_tries_passed : Tests {
+    eval {
+        Comic::Upload::Rsync->new(
+            'sites' => [
+                {
+                    'source' => 'generated/comics/english',
+                    'destination' => 'me@example.com/english',
+                },
+            ],
+            'check' => 10,
+        );
+    };
+    like($@, qr{\bhash\b}, 'should say what is wrong');
+    like($@, qr{\bcheck\b}, 'should mention setting');
+
+    eval {
+        Comic::Upload::Rsync->new(
+            'sites' => [
+                {
+                    'source' => 'generated/comics/english',
+                    'destination' => 'me@example.com/english',
+                },
+            ],
+            'check' => {
+                'delay' => 10,
+                'tries' => 'many',
+            },
+        );
+    };
+    like($@, qr{check.tries}, 'should mention the setting');
+    like($@, qr{number}, 'should state what the problem is');
+
+    eval {
+        Comic::Upload::Rsync->new(
+            'sites' => [
+                {
+                    'source' => 'generated/comics/english',
+                    'destination' => 'me@example.com/english',
+                },
+            ],
+            'check' => {
+                'delay' => 10,
+                'tries' => -1,
+            },
+        );
+    };
+    like($@, qr{check.tries}, 'should mention the setting');
+    like($@, qr{number}, 'should state what the problem is');
+
+    eval {
+        Comic::Upload::Rsync->new(
+            'sites' => [
+                {
+                    'source' => 'generated/comics/english',
+                    'destination' => 'me@example.com/english',
+                },
+            ],
+            'check' => {
+                'delay' => 'a lot',
+                'tries' => 10,
+            },
+        );
+    };
+    like($@, qr{check.delay}, 'should mention the setting');
+    like($@, qr{positive number}, 'should state what the problem is');
+
+    eval {
+        Comic::Upload::Rsync->new(
+            'sites' => [
+                {
+                    'source' => 'generated/comics/english',
+                    'destination' => 'me@example.com/english',
+                },
+            ],
+            'check' => {
+                'delay' => -1,
+                'tries' => 10,
+            },
+        );
+    };
+    like($@, qr{check\.delay}, 'should mention the setting');
+    like($@, qr{positive number}, 'should state what the problem is');
+}
+
+
+sub calls_check_for_all_comics_and_languages : Tests {
+    my @urls;
+    no warnings qw/redefine/;
+    local *Comic::Upload::Rsync::_check_url = sub {
+        my ($self, $url) = @_;
+        push @urls, $url;
+    };
+    use warnings;
+
+    my $rsync = Comic::Upload::Rsync->new(
+        'sites' => [
+            {
+                'source' => 'generated/comics/english',
+                'destination' => 'me@example.com/english',
+            },
+        ],
+        'check' => {},
+    );
+
+    my $comic1 = MockComic::make_comic();
+    $comic1->{url} = {'Deutsch' => 'comic1/de', 'English' => 'comic1/en'};
+
+    my $comic2 = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::DEUTSCH => 'zwei' }
+    );
+    $comic2->{url} = {'Deutsch' => 'comic2/de'};
+
+    my $comic3 = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'three' }
+    );
+    $comic3->{url} = {'English' => 'comic3/en'};
+
+    $rsync->upload($comic1, $comic2, $comic3);
+
+    is_deeply(\@urls, ['comic1/de', 'comic1/en', 'comic2/de', 'comic3/en']);
+}
+
+
+sub does_not_call_check_if_none_configured : Tests {
+    no warnings qw/redefine/;
+    local *Comic::Upload::Rsync::_check_url = sub {
+        fail('should not have checked');
+    };
+    use warnings;
+
+    my $rsync = Comic::Upload::Rsync->new(
+        'sites' => [
+            {
+                'source' => 'generated/comics/english',
+                'destination' => 'me@example.com/english',
+            },
+        ],
+    );
+
+    my $comic1 = MockComic::make_comic();
+
+    $rsync->upload($comic1);
+
+    ok(1);  # would have failed in the mocked _check_url
+}
+
+
+sub check_upload_hits_url_ok : Tests {
+    my @got_urls;
+
+    my $client = Test::MockModule->new(ref(HTTP::Tiny->new()));
+    $client->redefine('get', sub {
+        my ($self, $url) = @_;
+        push @got_urls, $url;
+        return {success => 1};
+    });
+
+    my $rsync = Comic::Upload::Rsync->new(
+        'sites' => [
+            {
+                'source' => 'generated/comics/english',
+                'destination' => 'me@example.com/english',
+            },
+        ],
+        'check' => {
+            'delay' => 10,
+            'tries' => 10,
+        },
+    );
+
+    $rsync->_check_url('https://beercomics.com/comics/beer-drinking.html');
+
+    is_deeply(['https://beercomics.com/comics/beer-drinking.html'], \@got_urls, 'checked wrong URLs');
+}
+
+
+sub check_upload_sleeps_and_retries_eventually_succeds : Tests {
+    my $tries = 3;
+    my $client = Test::MockModule->new(ref(HTTP::Tiny->new()));
+    $client->redefine('get', sub {
+        $tries--;
+        return {success => $tries == 0};
+    });
+
+    my @slept;
+    no warnings qw/redefine/;
+    local *Comic::Upload::Rsync::_sleep = sub {
+        push @slept, $_[0];
+    };
+    use warnings;
+
+    my $rsync = Comic::Upload::Rsync->new(
+        'sites' => [
+            {
+                'source' => 'generated/comics/english',
+                'destination' => 'me@example.com/english',
+            },
+        ],
+        'check' => {
+            'delay' => 10,
+            'tries' => 5,
+        },
+    );
+
+    $rsync->_check_url('https://beercomics.com/comics/beer-drinking.html');
+
+    is(0, $tries, 'wromg number or retries');
+    is_deeply([10, 10], \@slept, 'wrong sleep times');
+}
+
+
+sub check_upload_sleeps_and_retries_till_time_is_out : Tests {
+    my $tries;
+    my $client = Test::MockModule->new(ref(HTTP::Tiny->new()));
+    $client->redefine('get', sub {
+        $tries++;
+        return {success => 0};
+    });
+
+    my $slept;
+    no warnings qw/redefine/;
+    local *Comic::Upload::Rsync::_sleep = sub {
+        $slept++;
+    };
+    use warnings;
+
+    my $rsync = Comic::Upload::Rsync->new(
+        'sites' => [
+            {
+                'source' => 'generated/comics/english',
+                'destination' => 'me@example.com/english',
+            },
+        ],
+        'check' => {
+            'delay' => 10,
+            'tries' => 30,
+        },
+    );
+
+    eval {
+        $rsync->_check_url('https://beercomics.com/comics/beer-drinking.html');
+    };
+    like($@, qr{could not get}i, 'should say what is wrong');
+    like($@, qr{https://beercomics\.com/comics/beer-drinking\.html}, 'should mention URL');
+
+    is($tries, 31, 'wrong number of retries');
+    is($slept, 30, 'wrong sleep times');
 }

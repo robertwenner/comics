@@ -6,6 +6,7 @@ use utf8;
 use English '-no_match_vars';
 use Tie::IxHash;
 use File::Rsync;
+use HTTP::Tiny;
 
 use version; our $VERSION = qv('0.0.3');
 
@@ -21,6 +22,8 @@ Readonly my @DEFAULT_RSYNC_OPTIONS => qw(
     times
     update
 );
+Readonly my $DEFAULT_CHECK_DELAY => 10; # seconds
+Readonly my $DEFAULT_CHECK_TRIES => 30; # times
 
 
 =encoding utf8
@@ -73,6 +76,10 @@ The passed settings must be a hash reference like this:
         ],
         "keyfile" => "path/to/your/ssh-key.id_rsa",
         "options" => ["recursive"],
+        "check" => {
+            "delay" => 10,
+            "tries" => 30,
+        },
     }
 
 The C<source> defines the source directory that will be copied.
@@ -88,6 +95,17 @@ C<options> is an optional array of no-arg options for rsync. See the rsync
 man page for details. Defaults to checksum, compress, delete, recursive,
 times, and update if not given.
 
+C<check> (optional) means to check that the URLs of the comic(s) passed to
+the C<upload> function are live in each of the comic's languages. If the
+URLs are not available, wait C<delay> seconds and try again, up to C<tries>
+times. If the URLs are still not reachable, the upload is considered failed
+and this module C<croak>s. This is meant to prevent later modules from
+posting dead links to social media when a sluggish web server hasn't yet
+made the new comic available. The above example will try to load the Comic's
+URLs up to 30 times, with a delay of 10 seconds between tries, for a total
+of 5 minutes, croaking if the URL is not available by then. If C<check> is
+not given, the web server is not queried.
+
 =cut
 
 sub new {
@@ -96,13 +114,24 @@ sub new {
 
     $self->_croak('settings hash missing') unless(@ARG);
     $self->_croak('settings must be a hash') unless (@ARG % 2 == 0);
+
     my %settings = @ARG;
     $self->_croak('sites missing in settings') unless ($settings{sites});
     $self->_croak('sites must be an array') unless (ref $settings{sites} eq 'ARRAY');
     $self->_croak('sites must not be empty') if (@{$settings{sites}} == 0);
+
     my $options = $settings{options};
     if ($options) {
         $self->_croak('options must be an array') if (ref $options ne 'ARRAY');
+    }
+
+    my $check = $settings{check};
+    if ($check) {
+        $self->_croak('check must be a hash') if (ref $check ne 'HASH');
+        $check->{'delay'} = $DEFAULT_CHECK_DELAY unless ($check->{'delay'});
+        $self->_croak('check.delay must be a positive number') if ($check->{delay} !~ m{^\d+$}x);
+        $check->{'tries'} = $DEFAULT_CHECK_TRIES unless ($check->{'tries'});
+        $self->_croak('check.tries must be a positive number') if ($check->{tries} !~ m{^\d+$}x);
     }
 
     $self->{settings} = \%settings;
@@ -115,13 +144,22 @@ sub new {
 
 Uploads files according to the settings passed to the constructor.
 
+Parameters:
+
+=over 4
+
+=item * B<@comics> Latest (today's) comics. Used for checking that the web
+    server has updated them, if a C<check_timeout> is configured.
+
+=back
+
 =cut
 
 sub upload {
-    my ($self) = @ARG;
+    my ($self, @comics) = @ARG;
 
     my %options;
-    # Preserve options order, first or easier testing, second in case it
+    # Preserve options order, first for easier testing, second in case it
     # matters for user defined options.
     ## no critic(Miscellanea::ProhibitTies)
     tie %options, 'Tie::IxHash';
@@ -152,7 +190,42 @@ sub upload {
     }
 
     $self->_croak($problems) if ($problems);
+
+    if ($self->{settings}->{check}) {
+        foreach my $comic (@comics) {
+            foreach my $language ($comic->languages()) {
+                $self->_check_url($comic->{url}{$language});
+            }
+        }
+    }
+
     return;
+}
+
+
+sub _check_url {
+    my ($self, $url) = @ARG;
+
+    my $tries = 0;
+    while (1) {
+        my $response = HTTP::Tiny->new->get($url);
+        last if ($response->{success});
+
+        if ($tries == $self->{settings}->{check}->{tries}) {
+            $self->_croak("Could not get $url");
+        }
+        $tries++;
+        _sleep($self->{settings}->{'check'}->{'delay'});
+    }
+    return;
+}
+
+
+sub _sleep {
+    # uncoverable subroutine
+    my ($seconds) = @ARG; # uncoverable statement
+    sleep $seconds; # uncoverable statement
+    return; # uncoverable statement
 }
 
 
@@ -193,7 +266,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2021 - 2022, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or

@@ -14,8 +14,7 @@ server. You will also need to have your server configured to accept either
 
 This needs to be configured for any site to which you want to `rsync`:
 
-
-```
+```json
     "Upload": {
         "Comic::Upload::Rsync": {
             "sites": {
@@ -61,16 +60,44 @@ This needs to be configured for any site to which you want to `rsync`:
   line option `--update` could be written as just `update`. See the [`rsync`
   manual](https://linux.die.net/man/1/rsync) for the available options.
 
-  If `options` are not given, they default to `update` (only send modified
+  If no `options` are given, they default to `update` (only send modified
   files), `checksum` (use file checksum vs modification time to check if
   files have changed), `compress` (compress files for better performance
   during transfer), `recursive` (send the whole directory tree), `delete`
   (delete files on the server that have been deleted locally), and `times`
   (preserve file modification times).
 
+* `check` (optional): an object with `tries` and `delay`: if given, try to
+  get the latest comics' URLs in each language from the web server. If that
+  fails, wait `delay` seconds and try again, up to `tries` times. If the web
+  server still doesn't return something for the URL, assume uploading failed
+  and exit with an error. This is meant to prevent later modules from
+  posting dead links to social media when a sluggish web server hasn't yet
+  made the new comic available. If `check` is not given, there won't be any
+  checks whether the web server is ready.
+
 The above example configuration would upload all German comics from
 `generated/web/deutsch/` and all English comics from
-`generated/path/english` to the server `your-server.example.com` (logging in
+`generated/web/english` to the server `your-server.example.com` (logging in
 as `you` with the `ssh` key in `.ssh/mykey.id_rsa`) to the `deutsch/` and
 `english/` directories respectively. It would use the `--update` and
 `--checksums` `rsync` options.
+
+Consider the following example for retrying:
+
+```json
+    "Upload": {
+        "Comic::Upload::Rsync": {
+            "check": [
+                "tries": 30,
+                "delay": 10
+            ]
+        }
+    }
+
+```
+
+The above example will try to load the Comic's URLs up to 30 times, with a
+delay of 10 seconds between tries, for up to 5 minutes, exiting with an
+error if the URL is not available by then. As soon as the web server
+delivers the page, the check exits successfully.
