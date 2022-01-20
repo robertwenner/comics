@@ -35,7 +35,7 @@ and regular backups.)
 Comics may have different ideas on where exactly they need to go, for example
 a German comic published on the web may go in `web/deutsch/comics/` while an
 English comic not yet published may go in `backlog/` (both directories being
-within the specified `out` directory, here `generated/`.
+within the specified `out` directory, here `generated/`).
 
 
 ## Caching
@@ -380,7 +380,7 @@ instead of just `comics/web/`. To work in both situations, the
 `Comic::Out::HtmlLink` module looks first for an exact match, then it checks
 all comics to see if their source filenames end in the link target. This is
 a simple string comparison. It does not touch the file system and doesn't
-allow relative paths like `../../other/dirctory/comic.svg`.
+allow relative paths like `../../other/directory/comic.svg`.
 
 
 ## `Comic::Out::HtmlComicPage`
@@ -418,7 +418,7 @@ use:
   "Beer brewing" this could be `beer-brewing.html`.
 
 * `href`: hash of the path to the comic's HTML file relative to the server
-  root, er language, e.g., `comics/beer-brewing.html` for English.
+  root, per language, e.g., `comics/beer-brewing.html` for English.
 
 * `url`: full URL to the HTML file for the comic in each language, e.g.,
   `https://beercomics.com/comics/beer-brewing.html` for English.
@@ -463,6 +463,9 @@ The `index.html` file uses the same template as the regular comic pages.
 
 Generates a Portable Network Graphics (`.png`) file for from a Scalable
 Vector Graphics (`.svg`) file by calling Inkscape.
+
+You need to install png libraries on the operating system level, e.g., `brew
+install libpng` on MacOS, or `sudo apt-get install libpng` on Ubuntu.
 
 The configuration looks like this:
 
@@ -521,7 +524,7 @@ templates or other generators:
 
 * `height`: map of language to height of the image in pixels.
 
-* `width`: map of langugae to width of the image in pixels.
+* `width`: map of language to width of the image in pixels.
 
 
 ### `Comic::Out::QrCode`
