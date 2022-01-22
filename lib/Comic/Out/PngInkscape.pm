@@ -326,7 +326,7 @@ sub _build_inkscape_command {
 =head1 DEPENDENCIES
 
 The Comic module. Inkscape. C<libpng> (MacOS) or C<libpng-dev> on Ubuntu.
-Optonally optipng.
+Optionally optipng.
 
 
 =head1 DIAGNOSTICS
