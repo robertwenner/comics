@@ -14,8 +14,10 @@ Checks, define an empty "Checks":
 }
 ```
 
+To disable a single check, don't include it in the `Checks` section.
+
 Available checks are all Perl modules found on your system where the name
-starts with `Comic::Check`.
+starts with `Comic::Check::`.
 
 Each comic can override the globally configured checks; see the
 [metadata](metadata.md) documentation.

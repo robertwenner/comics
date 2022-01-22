@@ -8,6 +8,10 @@ use File::Slurper;
 use Comic::Check::Check;
 use Comics;
 
+use lib 't/check';
+use BadCheck;
+
+
 __PACKAGE__->runtests() unless caller;
 
 my %faked_files;
@@ -60,4 +64,17 @@ sub uses_no_checks_if_checks_config_section_is_empty : Tests {
 sub base_final_check_does_nothing : Tests {
     my $check = Comic::Check::Check->new();
     is($check->final_check(), undef);
+}
+
+
+sub base_check_confesses_if_not_overridden : Tests {
+    my $check = BadCheck->new();
+
+    eval {
+        $check->check();
+    };
+
+    like($@, qr{\boverridden\b}m, 'should mention problem');
+    like($@, qr{\bBadCheck\b}m, 'should mention broken module');
+    like($@, qr{\bComic::Check::Check::check\b}m, 'should mention method name');
 }

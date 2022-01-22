@@ -111,3 +111,43 @@ sub collect_files_recurses_in_directories : Tests {
     my $comics = Comics->new();
     is_deeply([$comics->collect_files('dir')], ['comic.svg']);
 }
+
+
+sub load_modules_empty_object_configured : Tests {
+    my @loaded;
+    no warnings qw/redefine/;
+    local *Comic::Modules::load_module = sub {
+        my ($name, @args) = @_;
+        push @loaded, $name;
+        return;
+    };
+    use warnings;
+    MockComic::fake_file('settings.json', '{ "Checks": {} }');
+
+    my $comics = Comics->new();
+    $comics->load_settings('settings.json');
+
+    $comics->load_checks();
+
+    is_deeply(\@loaded, [], 'Should not have loaded check modules');
+}
+
+
+sub load_modules_one_module_configured : Tests {
+    my @loaded;
+    no warnings qw/redefine/;
+    local *Comic::Modules::load_module = sub {
+        my ($name, @args) = @_;
+        push @loaded, $name;
+        return;
+    };
+    use warnings;
+    MockComic::fake_file('settings.json', '{ "Checks": {"Comic::Check::DummyCheck": {} } }');
+
+    my $comics = Comics->new();
+    $comics->load_settings('settings.json');
+
+    $comics->load_checks();
+
+    is_deeply(\@loaded, ['Comic::Check::DummyCheck'], 'Wrong check module');
+}

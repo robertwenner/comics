@@ -93,8 +93,8 @@ Parameters:
 =cut
 
 sub check {
-    # uncoverable subroutine
-    croak('Comic::Check::Check::check should have been overridden'); # uncoverable statement
+    my ($self) = @ARG;
+    confess('Comic::Check::Check::check must be overridden in ' . ref $self);
 }
 
 
