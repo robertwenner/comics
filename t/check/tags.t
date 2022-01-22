@@ -110,3 +110,63 @@ sub multiple_tags : Tests {
     $check->check($comic2);
     is_deeply($comic2->{warnings}, ["Comic::Check::Tag: who 'tag1' and 'tag 1' from some_comic.svg only differ in white space"]);
 }
+
+
+sub does_not_modify_tags : Tests {
+    $check = Comic::Check::Tag->new('tags');
+    my $other_comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Something else' },
+        $MockComic::TAGS => { $MockComic::ENGLISH => [ 'something', 'else' ] },
+    );
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Purity law' },
+        $MockComic::TAGS => { $MockComic::ENGLISH => [ 'purity law' ] },
+    );
+
+    $check->notify($comic);
+    $check->notify($other_comic);
+    $check->check($comic);
+    $check->check($other_comic);
+
+    is_deeply($comic->{meta_data}->{tags}, { 'English' => ['purity law'] });
+}
+
+
+sub does_not_modify_tags_different_comics_multiple_tags : Tests {
+    $check = Comic::Check::Tag->new('tags');
+    my $first = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Purity' },
+        $MockComic::TAGS => { $MockComic::ENGLISH => [ 'purity law', 'law of purity' ] },
+    );
+    my $second = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'More purity' },
+        $MockComic::TAGS => { $MockComic::ENGLISH => [ 'purity law', 'law of purity' ] },
+    );
+
+    $check->notify($first);
+    $check->notify($second);
+    $check->check($first);
+    $check->check($second);
+
+    is_deeply($first->{warnings}, [], 'first should not have warnings');
+    is_deeply($second->{warnings}, [], 'second should not have warnings');
+
+    is_deeply($first->{meta_data}->{tags}, { 'English' => ['purity law', 'law of purity'] });
+    is_deeply($second->{meta_data}->{tags}, { 'English' => ['purity law', 'law of purity'] });
+}
+
+
+sub does_not_check_comic_against_itself : Tests {
+    $check = Comic::Check::Tag->new('tags');
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Purity law comic' },
+        $MockComic::TAGS => {
+            $MockComic::ENGLISH => ['purity law', 'law of purity'],
+        },
+    );
+
+    $check->notify($comic);
+    $check->check($comic);
+
+    is_deeply($comic->{warnings}, []);
+}

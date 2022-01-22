@@ -116,6 +116,8 @@ sub _check_against {
     my ($self, $comic, $tag, $language) = @ARG;
 
     foreach my $oldcomic (@{$self->{comics}}) {
+        next if ($comic eq $oldcomic);
+
         foreach my $oldtag (@{$oldcomic->{meta_data}->{$tag}->{$language}}) {
             foreach my $newtag (@{$comic->{meta_data}->{$tag}->{$language}}) {
                 next if $oldtag eq $newtag;
@@ -126,9 +128,14 @@ sub _check_against {
                     $self->warning($comic, "$location only differ in case");
                 }
 
-                $oldtag =~ s/\s+//g;
-                $newtag =~ s/\s+//g;
-                if ($oldtag eq $newtag) {
+                # Uses string exptrapolation to copy the variables, so that the white space
+                # removal does not modify the original comic values.
+                # I had no luck with Storable::dclone. :-/
+                my $trimmed_old = "$oldtag";
+                $trimmed_old =~ s/\s+//g;
+                my $trimmed_new = "$newtag";
+                $trimmed_new =~ s/\s+//g;
+                if ($trimmed_old eq $trimmed_new) {
                     $self->warning($comic, "$location only differ in white space");
                 }
             }
