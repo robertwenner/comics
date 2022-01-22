@@ -19,10 +19,6 @@
 - feature: list comics (svg files) under series headings (hideable?) in
   backlog, to see which comics are in a series; extend to tags and who
 
-- feature: don't post to reddit / don't tweet a link, if the link is dead
-  (slow web server?), or have uploading code try to make sure the upload
-  worked (link check)
-
 - feature: define comic order by refering the previous or next comic,
   instead of having a date, so that inserting one for current events doesn't
   ripple through the backlog (and still maintaining a regular / weekly
@@ -128,6 +124,11 @@
   (title) changes, links need to get updated). This should speed up final
   touches on the latest comic
 
+- performance: add a function to Comic to check if it's up to date, and
+  allow checks and converters to return immediately if a comic has not
+  changed. This would speed up e.g., spell checking, at the cost of losing
+  old error messages, even for unpublished comics.
+
 - defect: frame detection for text outside of a single frame (comic title)
   does not seem to treat that text as after anything within the frame. The
   whole frame handling code needs a close look.
@@ -162,7 +163,8 @@
 - feature: post "classics" to social media if there is no new comic
 
 - feature: complain about unknown settings to catch typos (done for Generators,
-  missing in Checks)
+  missing in Checks), also catch unknown top level configuration objects
+  like "Check" vs "Checks"
 
 - clean out backlog: when a comic goes from backlog to published, remove its
   html file from the backlog
@@ -220,12 +222,12 @@
 - feature: deduct output path from fragments, like outdir / base dir plus
   language placeholders, for less repetitive configuration files
 
-- feature: spellcheck containers inside other containers first, to provide a
-  more accurate location of misspelled words (English vs ContainerEnglish)
+- feature: spellcheck layers inside other layers first, to provide a more
+  accurate location of misspelled words (English vs ContainerEnglish)
 
 - feature: spellcheck: specify a comics specific word list, allow ignoring
   #hashtags, allow ignoring words with non-letters, ignoring case, passing
-  hypenated German words as one word.
+  hypenated German words as one word
 
 - feature: warnings as errors
 
@@ -258,3 +260,11 @@
 
 - doc: add example comic project with comics, templates, cron script,
   settings.json
+
+- feature: disable one or all checks on the command line... sounds hackish,
+  after all, the configuration controls features like checks, or the entry
+  point (Comics::generate vs Comics::upload)
+
+- feature: allow putting a ssh key for rsync in the config, so that a dumb scp
+  doesn't skip a .ssh directory or .ssh-key.pem file (when switching between
+  computers)
