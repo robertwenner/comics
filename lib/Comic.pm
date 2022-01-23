@@ -886,23 +886,21 @@ Parameters:
 
 =over 4
 
-=item * B<language> Language name(s).
+=item * B<$language> Language name.
 
 =back
 
 =cut
 
 sub texts_in_language {
-    my ($self, @languages) = @ARG;
+    my ($self, $language) = @ARG;
 
     $self->_find_frames();
     my @texts;
-    foreach my $language (@languages) {
-        my @layers = _all_layers_xpath($language, "Meta$language", "HintergrundText$language") . "//$DEFAULT_NAMESPACE:text";
-        my @nodes = $self->{xpath}->findnodes(@layers);
-        foreach my $node (sort { $self->_text_pos_sort($a, $b) } @nodes) {
-            push @texts, _text_content($node);
-        }
+    my @layers = _all_layers_xpath($language, "Meta$language", "HintergrundText$language") . "//$DEFAULT_NAMESPACE:text";
+    my @nodes = $self->{xpath}->findnodes(@layers);
+    foreach my $node (sort { $self->_text_pos_sort($a, $b) } @nodes) {
+        push @texts, _text_content($node);
     }
     return @texts;
 }
