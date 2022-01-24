@@ -222,9 +222,6 @@
 - feature: deduct output path from fragments, like outdir / base dir plus
   language placeholders, for less repetitive configuration files
 
-- feature: spellcheck layers inside other layers first, to provide a more
-  accurate location of misspelled words (English vs ContainerEnglish)
-
 - feature: spellcheck: specify a comics specific word list, allow ignoring
   #hashtags, allow ignoring words with non-letters, ignoring case, passing
   hypenated German words as one word

@@ -340,11 +340,10 @@ XML
     $check->check($comic);
 
     is_deeply(\@asked_to_check, ["Beer!",
-        "typpo meta", "typpo normal", "typpo bg", # layers directly picked
-        "typpo container", "typpo meta", "typpo normal", "typpo bg",  # layers in the container
+        "typpo container", "typpo meta", "typpo normal", "typpo bg",
     ]);
     is_deeply($comic->{warnings}, [
-        "Comic::Check::Spelling: Misspelled in layer ContainerEnglish: 'typpo'? (4 times)",
+        "Comic::Check::Spelling: Misspelled in layer ContainerEnglish: 'typpo'?",
         "Comic::Check::Spelling: Misspelled in layer English: 'typpo'?",
         "Comic::Check::Spelling: Misspelled in layer HintergrundEnglish: 'typpo'?",
         "Comic::Check::Spelling: Misspelled in layer MetaEnglish: 'typpo'?",

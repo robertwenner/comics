@@ -913,6 +913,9 @@ Gets the normalized texts in the given layers.
 Normalized means line breaks are removed and multiple consecutive spaces are
 reduced to one.
 
+If a text is in a layer within another layer, it is only reported for that
+inner layer, not for its parent layer(s).
+
 Parameters:
 
 =over 4
@@ -929,9 +932,22 @@ sub texts_in_layer {
     $self->_find_frames();
     my @texts;
     foreach my $layer (@layers) {
-        my @layernames = _all_layers_xpath($layer) . "//$DEFAULT_NAMESPACE:text";
-        my @nodes = $self->{xpath}->findnodes(@layernames);
-        foreach my $node (sort { $self->_text_pos_sort($a, $b) } @nodes) {
+        my @text_nodes = _all_layers_xpath($layer) . "//$DEFAULT_NAMESPACE:text";
+        my @nodes = $self->{xpath}->findnodes(@text_nodes);
+        TEXT_NODE: foreach my $node (sort { $self->_text_pos_sort($a, $b) } @nodes) {
+            my $parent = $node->parentNode;
+            # This loop should never hit the root element anyway. If there are text outside of
+            # layers, the xpath would not match them. Still, this loop condition looks better
+            # to me than an infnite loop.
+            while ($parent->localname ne 'svg') {
+                my $group_is_layer = ($parent->getAttribute('inkscape:groupmode') || '') eq 'layer';
+                if ($parent->localname eq 'g' && $group_is_layer) {
+                    # Skip if this is inside another layer than we're looking for.
+                    next TEXT_NODE if ($parent->getAttribute('inkscape:label') ne $layer);
+                    last;
+                }
+                $parent = $parent->parentNode;
+            }
             push @texts, _text_content($node);
         }
     }
@@ -1203,7 +1219,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2015 - 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2015 - 2022, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or
