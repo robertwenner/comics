@@ -140,13 +140,16 @@ sub pass_configured_names_of_layers_to_drop : Tests {
     };
     use warnings;
 
-    my $comic = MockComic::make_comic();
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'some comic', },
+        $MockComic::XML => '<g inkscape:groupmode="layer" inkscape:label="English"/>',
+    );
     my $svg = Comic::Out::SvgPerLanguage->new(
         'outdir' => 'generated/',
         'drop_layers' => ['Raw', 'Scan'],
     );
 
-    $svg->_write_svg_file($comic, 'some-comic.svg');
+    $svg->generate($comic);
 
     is_deeply(\@dropped, ['Raw', 'Scan']);
 }

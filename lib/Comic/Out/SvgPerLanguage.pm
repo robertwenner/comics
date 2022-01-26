@@ -117,8 +117,9 @@ sub generate {
 
         next if (Comic::up_to_date($comic->{srcFile}, $svg_file));
 
+        _drop_top_level_layers($comic->{dom}, @{$self->{settings}->{'drop_layers'}});
         _flip_language_layers($comic, $language);
-        $self->_write_svg_file($comic, $svg_file);
+        _write($comic->{dom}, $svg_file);
     }
     return;
 }
@@ -147,15 +148,6 @@ sub _flip_language_layers {
     unless ($had_lang) {
         $comic->keel_over("Comic::Out::SvgPerLanguage: No $language layer");
     }
-    return;
-}
-
-
-sub _write_svg_file {
-    my ($self, $comic, $svg_file) = @ARG;
-
-    _drop_top_level_layers($comic->{dom}, @{$self->{settings}->{'drop_layers'}});
-    _write($comic->{dom}, $svg_file);
     return;
 }
 
@@ -222,7 +214,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2016 - 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2016 - 2022, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or
