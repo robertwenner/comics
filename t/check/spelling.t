@@ -202,6 +202,7 @@ sub checks_text_layers_per_language : Tests {
         'no typpo here' => 'typpo',
         'Tüppfehler' => 'Tüppfehler',
         'meta tüppfehler' => 'tüppfehler',
+        'other typpo' => 'typpo',
     );
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
@@ -213,6 +214,7 @@ sub checks_text_layers_per_language : Tests {
         $MockComic::XML => <<'XML',
     <g inkscape:groupmode="layer" inkscape:label="English">
         <text x="0" y="0"><tspan>no typpo here</tspan></text>
+        <text x="0" y="0"><tspan>other typpo</tspan></text>
     </g>
     <g inkscape:groupmode="layer" inkscape:label="MetaEnglish">
         <text x="0" y="0"><tspan>no meta typpo</tspan></text>
@@ -230,11 +232,11 @@ XML
 
     is_deeply(
         \@asked_to_check,
-        ['Bier!', 'Tüppfehler', 'meta tüppfehler', 'Beer!', 'no typpo here', 'no meta typpo']);
+        ['Bier!', 'Tüppfehler', 'meta tüppfehler', 'Beer!', 'no typpo here', 'other typpo', 'no meta typpo']);
     is_deeply($comic->{warnings}, [
         "Comic::Check::Spelling: Misspelled in layer Deutsch: 'Tüppfehler'?",
         "Comic::Check::Spelling: Misspelled in layer HintergrundDeutsch: 'tüppfehler'?",
-        "Comic::Check::Spelling: Misspelled in layer English: 'typpo'?",
+        "Comic::Check::Spelling: Misspelled in layer English: 'typpo'? (2 times)",
     ]);
 }
 
