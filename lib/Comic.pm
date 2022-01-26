@@ -653,7 +653,7 @@ sub has_layer {
     my ($self, @layers) = @ARG;
 
     foreach my $layer (@layers) {
-        if (!$self->{xpath}->findnodes($self->_all_layers_xpath($layer))) {
+        if (!$self->{xpath}->findnodes(_all_layers_xpath($layer))) {
             return 0;
         }
     }
