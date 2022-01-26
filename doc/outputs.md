@@ -660,7 +660,8 @@ This is configured like this:
 {
     "Out": {
         "Comic::Out::SvgPerLanguage": {
-            "outdir": "generated/svgs"
+            "outdir": "generated/svgs",
+            "drop_layers": "Raw"
         }
     }
 }
@@ -669,3 +670,11 @@ This is configured like this:
 The `outdir` specifies where the generated `.svg` files should go; default
 is `tmp/svg`. This module will create a directory per language in the given
 output directory.
+
+The optional `drop_layers` gives a single layer name or a list of layers
+names to remove when saving the `svg` per language. Such layers must be
+top-level layers (not inside other layers). They could be sketches or scans.
+Removing them here makes for smaller `.svg` files which in turn take less
+disk space and could speed up converting to other graphic formats like
+`png`. If you do want to publish `.svg` files, it's probably also good to
+remove that unneeded extra information and get faster downloads.

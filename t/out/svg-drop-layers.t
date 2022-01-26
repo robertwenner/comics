@@ -112,3 +112,41 @@ XML
     is(count_layers($comic, 'Uncooked'), 0, 'uncooked layers should be removed');
     is(count_layers($comic, 'Cooked'), 1, 'cooked layer should still be there');
 }
+
+
+sub rejects_bad_layers_to_drop : Tests {
+    eval {
+        Comic::Out::SvgPerLanguage->new(
+            'outdir' => 'generated/',
+            'drop_layers' => {},
+        );
+    };
+    like($@, qr{\bdrop_layers\b}, 'should include the bad parameter name');
+    like($@, qr{\bscalar\b}, 'should say what was expected');
+    like($@, qr{\barray\b}, 'should say what was expected');
+}
+
+
+sub pass_configured_names_of_layers_to_drop : Tests {
+    my @dropped;
+
+    no warnings qw/redefine/;
+    local *Comic::Out::SvgPerLanguage::_drop_top_level_layers = sub {
+        my ($svg, @layers) = @_;
+        push @dropped, @layers;
+    };
+    local *Comic::Out::SvgPerLanguage::_write = sub {
+        # ignore
+    };
+    use warnings;
+
+    my $comic = MockComic::make_comic();
+    my $svg = Comic::Out::SvgPerLanguage->new(
+        'outdir' => 'generated/',
+        'drop_layers' => ['Raw', 'Scan'],
+    );
+
+    $svg->_write_svg_file($comic, 'some-comic.svg');
+
+    is_deeply(\@dropped, ['Raw', 'Scan']);
+}

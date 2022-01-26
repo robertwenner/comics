@@ -53,12 +53,14 @@ Parameters:
 
 =back
 
-The passed settings can specify the output directory (C<outdir>).
+The passed settings can specify the output directory (C<outdir>) and
+optionally the name(s) of layers to exclude.
 
 For example:
 
     my %settings = (
         'outdir' => 'generated/tmp/svg',
+        'drop_layers' => ['Raw'],
     );
     my $svg = Comic::Out::SvgPerLanguage(%settings);
 
@@ -67,8 +69,8 @@ C<outdir>. The names are derived from the Comic's titles in the respective
 languages.
 
 The final file names will be placed in the Comic as a C<SvgPerLanguage> hash
-with language names (e.g., "English") as keys and F<.svg> file's path
-(starting with C<outdir>) and name as value.
+with language names (e.g., "English") as keys and a value of the F<.svg>
+file's path (starting with C<outdir>) and name.
 
 =cut
 
@@ -77,6 +79,7 @@ sub new {
     my $self = $class->SUPER::new(%settings);
 
     $self->needs('outdir', 'directory');
+    $self->optional('drop_layers', 'array-or-scalar', []);
     $self->flag_extra_settings();
 
     return $self;
@@ -115,7 +118,7 @@ sub generate {
         next if (Comic::up_to_date($comic->{srcFile}, $svg_file));
 
         _flip_language_layers($comic, $language);
-        _write_svg_file($comic, $svg_file);
+        $self->_write_svg_file($comic, $svg_file);
     }
     return;
 }
@@ -149,9 +152,9 @@ sub _flip_language_layers {
 
 
 sub _write_svg_file {
-    my ($comic, $svg_file) = @ARG;
+    my ($self, $comic, $svg_file) = @ARG;
 
-    _drop_top_level_layers($comic->{dom}, 'Raw');
+    _drop_top_level_layers($comic->{dom}, @{$self->{settings}->{'drop_layers'}});
     _write($comic->{dom}, $svg_file);
     return;
 }
