@@ -153,3 +153,49 @@ sub pass_configured_names_of_layers_to_drop : Tests {
 
     is_deeply(\@dropped, ['Raw', 'Scan']);
 }
+
+
+
+sub hide_transcript_layer_from_comic_configuration : Tests {
+    my @shown;
+    my @hidden;
+
+    no warnings qw/redefine/;
+    local *Comic::Out::SvgPerLanguage::_write = sub {
+        # ignore
+    };
+    local *Comic::Out::SvgPerLanguage::_hide_layer = sub {
+        foreach my $layer (@_) {
+            push @hidden, $layer->getAttribute('inkscape:label');
+        }
+        return;
+    };
+    local *Comic::Out::SvgPerLanguage::_show_layer = sub {
+        foreach my $layer (@_) {
+            push @shown, $layer->getAttribute('inkscape:label');
+        }
+        return;
+    };
+    use warnings;
+
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::DEUTSCH => 'Ein Comic',
+            $MockComic::ENGLISH => 'some comic',
+        },
+        $MockComic::XML => '
+            <g inkscape:groupmode="layer" inkscape:label="English"/>
+            <g inkscape:groupmode="layer" inkscape:label="Deutsch"/>
+            <g inkscape:groupmode="layer" inkscape:label="MetaEnglish"/>
+            <g inkscape:groupmode="layer" inkscape:label="MetaDeutsch"/>
+            <g inkscape:groupmode="layer" inkscape:label="BackgroundEnglish"/>
+            <g inkscape:groupmode="layer" inkscape:label="BackgroundDeutsch"/>
+        ',
+    );
+    $comic->{'settings'}->{'LayerNames'}->{'ExtraTranscriptPrefix'} = 'Meta';
+
+    Comic::Out::SvgPerLanguage::_flip_language_layers($comic, 'English');
+
+    is_deeply(['Deutsch', 'MetaEnglish', 'MetaDeutsch', 'BackgroundDeutsch'], \@hidden, 'hid wrong layers');
+    is_deeply(['English', 'BackgroundEnglish'], \@shown, 'showed wrong layers');
+}

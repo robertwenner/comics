@@ -6,7 +6,7 @@ use Test::More;
 
 use lib 't';
 use MockComic;
-use Comic::Check::MetaLayer;
+use Comic::Check::ExtraTranscriptLayer;
 
 __PACKAGE__->runtests() unless caller;
 
@@ -15,7 +15,7 @@ my $check;
 
 sub set_up : Test(setup) {
     MockComic::set_up();
-    $check = Comic::Check::MetaLayer->new();
+    $check = Comic::Check::ExtraTranscriptLayer->new();
 }
 
 
@@ -25,24 +25,39 @@ sub accepts_meta_prefix : Tests {
         $MockComic::XML => <<'XML',
     <g
         inkscape:groupmode="layer"
-        inkscape:label="HyperMegaEnglish"/>
+        inkscape:label="TranscriptorEnglish"/>
 XML
     );
-    $check = Comic::Check::MetaLayer->new('HyperMega');
+    $comic->{settings}->{LayerNames}->{ExtraTranscriptPrefix} = 'Transcriptor';
 
     $check->check($comic);
 
-    like(${$comic->{warnings}}[0], qr{No texts in HyperMegaEnglish layer}i);
+    like(${$comic->{warnings}}[0], qr{No texts in TranscriptorEnglish layer}i);
 }
 
 
-sub no_meta_layer : Tests {
-    my $comic = MockComic::make_comic(
-        $MockComic::TITLE => { $MockComic::ENGLISH => "funny comic" });
+sub bails_out_if_no_meta_prefix_configured : Tests {
+    my $comic = MockComic::make_comic();
 
-    $check->check($comic);
+    eval {
+        $check->check($comic);
+    };
+    like($@, qr{\bconfigured\b}, 'should say what is wrong');
+    like($@, qr{\bLayerNames\b}, 'should include top level configuration element');
+    like($@, qr{\bExtraTranscriptPrefix\b}, 'should include configuration element');
+}
 
-    like(${$comic->{warnings}}[0], qr{No MetaEnglish layer}i);
+
+sub bails_out_if_meta_prefix_is_empty : Tests {
+    my $comic = MockComic::make_comic();
+    $comic->{settings}->{LayerNames}->{ExtraTranscriptPrefix} = '';
+
+    eval {
+        $check->check($comic);
+    };
+    like($@, qr{\bempty\b}, 'should say what is wrong');
+    like($@, qr{\bLayerNames\b}, 'should include top level configuration element');
+    like($@, qr{\bExtraTranscriptPrefix\b}, 'should include configuration element');
 }
 
 
@@ -50,12 +65,13 @@ sub no_meta_layer_checks_other_languages : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::PUBLISHED_WHEN => '3000-01-01',
     );
+    $comic->{settings}->{LayerNames}->{ExtraTranscriptPrefix} = 'Meta';
 
     $check->check($comic);
 
     is_deeply($comic->{warnings}, [
-        "Comic::Check::MetaLayer: No MetaDeutsch layer",
-        "Comic::Check::MetaLayer: No MetaEnglish layer",
+        "Comic::Check::ExtraTranscriptLayer: No MetaDeutsch layer",
+        "Comic::Check::ExtraTranscriptLayer: No MetaEnglish layer",
     ]);
 }
 
@@ -69,6 +85,7 @@ sub no_text_in_meta_layer : Tests {
         inkscape:label="MetaEnglish"/>
 XML
     );
+    $comic->{settings}->{LayerNames}->{ExtraTranscriptPrefix} = 'Meta';
 
     $check->check($comic);
 
@@ -97,6 +114,7 @@ sub first_text_must_be_from_meta_layer : Tests {
     </g>
 XML
     );
+    $comic->{settings}->{LayerNames}->{ExtraTranscriptPrefix} = 'Meta';
 
     $check->check($comic);
 
@@ -113,6 +131,7 @@ sub first_text_must_be_from_meta_layer_no_texts : Tests {
     <g inkscape:groupmode="layer" inkscape:label="MetaEnglish"/>
 XML
     );
+    $comic->{settings}->{LayerNames}->{ExtraTranscriptPrefix} = 'Meta';
 
     $check->check($comic);
 
@@ -141,6 +160,7 @@ sub does_not_rely_on_order_in_xml : Tests {
     </g>
 XML
     );
+    $comic->{settings}->{LayerNames}->{ExtraTranscriptPrefix} = 'Meta';
 
     $check->check($comic);
 
@@ -163,6 +183,7 @@ sub all_good : Tests {
     </g>
 XML
     );
+    $comic->{settings}->{LayerNames}->{ExtraTranscriptPrefix} = 'Meta';
 
     $check->check($comic);
 

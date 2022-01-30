@@ -32,13 +32,13 @@ That said, there are still a few basic assumptions on how things work:
   to a particular comic are configured in global [settings](settings.md) and
   the templates used to generate outputs (see below).
 
-- Stuff needs to be in its place (layer and metadata). If everything is in
+- Stuff needs to be in its place (layers and metadata). If everything is in
   the same file but needs to end up in different files per language, stuff
   needs to be somehow marked as belonging to a language (or none or all).
-  This is done with Inkscape layers, and the layer names tell the Comics
-  modules what to do with the layers (hide, show, get the transcript, and so
-  on). Whatever doesn't go in a layer goes into the comic's
-  [metadata](metadata.md).
+  This is done with Inkscape [layers](layers.md), and the layer names tell
+  the Comics modules what to do with the layers (hide, show, get the
+  transcript, and so on). Whatever doesn't go in a layer goes into the
+  comic's [metadata](metadata.md).
 
 - Generate everything. Since everything is in the comic's `.svg`, take that
   as input and generate whatever is needed: web pages, RSS feed, transcript,

@@ -36,6 +36,7 @@ sub setup {
         $MockComic::TEXTS => \%layers,
         $MockComic::FRAMES => [0, 0, 200, 200],
     );
+    $comic->{'settings'}->{'LayerNames'}->{'ExtraTranscriptPrefix'} = 'Meta';
 }
 
 

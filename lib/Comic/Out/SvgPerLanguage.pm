@@ -15,7 +15,7 @@ use version; our $VERSION = qv('0.0.3');
 
 =encoding utf8
 
-=for stopwords Wenner merchantability perlartistic MetaEnglish Scalable
+=for stopwords Wenner merchantability perlartistic Scalable
 
 
 =head1 NAME
@@ -94,8 +94,14 @@ The F<.svg> file name will be derived from the title of the comic. The
 F<.svg> file will be placed in a per-language directory under the configured
 C<outdir>.
 
-Inkscape files must have meta data matching the layer names, e.g., "English"
-in the meta data and an "English" layer and an "MetaEnglish" layer.
+Inkscape files must have layer names describing the layer's purpose:
+
+Any layer that has a trailing language name is considered for that language
+and only for that language.
+
+If a C<LayerNames> section exists and has a C<ExtraTranscriptPrefix>, any
+layer where the name starts that prefix is considered a transcript layer for
+the language (trailing language as above).
 
 Parameters:
 
@@ -128,26 +134,53 @@ sub generate {
 sub _flip_language_layers {
     my ($comic, $language) = @ARG;
 
-    # Hide all but current language layers
+    my $transcript_layer = $comic->{settings}->{'LayerNames'}->{'ExtraTranscriptPrefix'};
+
     my $had_lang = 0;
     foreach my $layer ($comic->get_all_layers()) {
         my $label = $layer->{'inkscape:label'};
         $layer->{'style'} = 'display:inline' unless (defined($layer->{'style'}));
-        foreach my $other_lang ($comic->languages()) {
-            # Turn off all meta layers and all other languages
-            if ($label =~ m/$other_lang$/ || $label =~ m/^Meta/) {
-                $layer->{'style'} =~ s{\bdisplay:inline\b}{display:none};
-            }
+
+        if ($transcript_layer && $label =~ m{^$transcript_layer}) {
+            # If a layer starts with the transcript layer prefix, hide it. Transcript-only
+            # layers should never be visible.
+            _hide_layer($layer);
+            next;
         }
-        # Make sure the right language layer is visible
-        if ($label =~ m/$language$/ && $label !~ m/Meta/) {
-            $layer->{'style'} =~ s{\bdisplay:none\b}{display:inline};
-            $had_lang = 1;
+
+        if ($label =~ m/$language$/) {
+            # If a layer name ends with the language, show it.
+            _show_layer($layer);
+            $had_lang++;
+            next;
+        }
+
+        foreach my $other_lang ($comic->languages()) {
+            next if $other_lang eq $language;
+
+            # If a layer name ends with another language, hide it.
+            if ($label =~ m/$other_lang$/) {
+                _hide_layer($layer);
+            }
         }
     }
     unless ($had_lang) {
         $comic->keel_over("Comic::Out::SvgPerLanguage: No $language layer");
     }
+    return;
+}
+
+
+sub _hide_layer {
+    my ($layer) = @ARG;
+    $layer->{'style'} =~ s{\bdisplay:inline\b}{display:none};
+    return;
+}
+
+
+sub _show_layer {
+    my ($layer) = @ARG;
+    $layer->{'style'} =~ s{\bdisplay:\w+\b}{display:inline};
     return;
 }
 

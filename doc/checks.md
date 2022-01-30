@@ -19,6 +19,18 @@ To disable a single check, don't include it in the `Checks` section.
 Available checks are all Perl modules found on your system where the name
 starts with `Comic::Check::`.
 
+Some checks take arguments (see their descriptions). Because of the JSON
+syntax, you still need to include empty curly or square braces afer the
+check name, even if you don't pass arguments.
+
+```json
+{
+    "Checks": {
+        "Comic::Check::Actors": []
+    }
+}
+```
+
 Each comic can override the globally configured checks; see the
 [metadata](metadata.md) documentation.
 
@@ -189,28 +201,33 @@ will still accept anything between 1.5 and 2.5 pixels:
 Frames must be in a layer named "Frames".
 
 
-## `Comic::Check::MetaLayer`
+## `Comic::Check::ExtraTranscriptLayer`
 
-Checks the comic's meta layers. Meta layers should contain explanatory texts
-for what's going on in the comic. This can be used to generate a transcript
-of the comic for search engines.
+Checks the comic's extra transcript layers. These layers should contain
+explanatory texts for what's going on in the comic. They are not included in
+the exported comic images. This can be used to generate a transcript of the
+comic for search engines or screen readers.
 
-This check makes sure a meta layer exists for each language in the comic,
-that these meta layers have texts, and that the first text for each language
-comes from the language's meta layer.
+This check makes sure an extra transcript layer exists for each language in
+the comic, that these extra transcript layers have texts, and that the first
+text for each language comes from the language's extra transcript layer.
 
-When you configure this Check, you can pass a meta prefix. This defaults to
-`Meta`. Meta layers are found by looking for this meta prefix followed by
-the language. For example, if meta marker is `Meta` and language is
-`English`, the comic is expected to have an Inkscape layer called
+When you configure this Check, you need to configure the prefix for these
+extra transcript layers globally.
+
+The transcript generator uses the layers where the name is this meta prefix
+followed by the language. For example, if prefix is `Meta` and language
+is `English`, the comic is expected to have an Inkscape layer called
 `MetaEnglish`.
 
 ```json
 {
+    "LayerNames": {
+        "ExtraTranscriptPrefix": "Meta"
+    },
+
     "Checks": {
-        "Comic::Check::MetaLayer": [
-            "MyMeta"
-        ]
+        "Comic::Check::ExtraTranscriptLayer": []
     }
 }
 ```

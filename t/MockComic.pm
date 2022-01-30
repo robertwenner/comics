@@ -177,7 +177,8 @@ sub make_comic {
     fake_file($args{$IN_FILE}, fake_comic(%args));
 
     my $checks = $args{$CHECKS} || [];
-    my $comic = Comic->new($args{$SETTINGS}, $checks);
+    my %settings = %{$args{$SETTINGS}};
+    my $comic = Comic->new(\%settings, $checks);
     $comic->load($args{$IN_FILE});
     foreach my $language ($comic->languages()) {
         $comic->{height}{$language} = $args{$HEIGHT};

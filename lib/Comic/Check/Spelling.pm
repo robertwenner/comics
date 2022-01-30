@@ -16,7 +16,7 @@ use version; our $VERSION = qv('0.0.3');
 
 =encoding utf8
 
-=for stopwords Inkscape Wenner merchantability perlartistic MetaEnglish EnglishBackground englishtest english
+=for stopwords Inkscape Wenner merchantability perlartistic MetaEnglish BackgroundEnglish Englishtest
 
 
 =head1 NAME
@@ -114,10 +114,10 @@ sub new {
 Checks the given Comic's spelling.
 
 This Check considers all layers in the given comic, where the layer name
-includes the language name, with an upper case first character and the rest
-in lower case. For example, when checking english spelling, this Check will
-look at layers named "English", "MetaEnglish", and "EnglishBackground", but
-not "englishtest" or "ENGLISH".
+ends in  the language name (with an upper case first character and the rest
+in lower case). For example, when checking English spelling, this Check will
+look at layers named "English", "MetaEnglish", and "BackgroundEnglish", but
+not "Englishtest" or "ENGLISH".
 
 If the dictionaries for a language are not installed, all words will be
 flagged as typos.
@@ -285,7 +285,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2021 - 2022, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or
