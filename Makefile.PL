@@ -9,7 +9,6 @@ my %dependencies = (
     'DateTime::Format::ISO8601' => 0,
     'DateTime::Format::RFC3339' => 0,
     'ExtUtils::MakeMaker' => 0,
-    'File::Imager:: Png' => 0,
     'File::Rsync' => 0,
     'File::Slurper' => 0,
     'Hash::Merge' => 0,
