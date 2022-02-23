@@ -339,6 +339,10 @@ While processing the templates, these variables are available:
 Generates a HTML reference ("see that other comic") from comic metadata.
 This assume you use the `Comic::Out::HtmlPage` module as well.
 
+This is only for linking to another of your comics; to include a hyperlink
+to any other web site just add it to your comic's metadata and have the
+template do whatever it needs to do.
+
 This module does not take any configuration.
 
 Actual linking is triggered by comic meta data within a `see` object. This
@@ -381,6 +385,29 @@ instead of just `comics/web/`. To work in both situations, the
 all comics to see if their source filenames end in the link target. This is
 a simple string comparison. It does not touch the file system and doesn't
 allow relative paths like `../../other/directory/comic.svg`.
+
+
+`Comic::Out::HtmlLink` is only for linking to another of your comics. To
+include a hyperlink to any other web site just add it to your comic's
+metadata and have the template do whatever it needs to do. For example, add
+this in your comic:
+
+```json
+{
+    "link": {
+        "English": {
+            "Click here for beer comics": "https://beercomics.com"
+        }
+    }
+}
+
+Then use something like this in the comic page template:
+
+```template
+[% FOREACH l IN comic.meta_data.link.$Language %]
+<a href="[% l.value %]">[% l.key %]</a>
+[% END %]
+```
 
 
 ## `Comic::Out::HtmlComicPage`

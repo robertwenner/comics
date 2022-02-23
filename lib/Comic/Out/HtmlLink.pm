@@ -30,7 +30,10 @@ comic metadata.
 
 =head1 DESCRIPTION
 
-Generates links to other comics that can be used in HTML.
+Generates links to other of your comics that can be used in HTML.
+
+If you want to add any link, just put it in the comic and have your template
+handle it.
 
 =cut
 
