@@ -178,6 +178,30 @@ TEMPL
 }
 
 
+sub array_of_hashes : Tests {
+    my $comic = {
+        meta_data => {
+            link => {
+                English => [
+                    {
+                        href => 'https://',
+                        text => 'click me',
+                    }
+                ]
+             },
+        },
+    };
+    MockComic::fake_file('file.templ', <<'TEMPL');
+[% FOREACH l IN comic.meta_data.link.English %]
+    <a href="[% l.href %]">[% l.text %]</a>
+[% END %]
+TEMPL
+    like(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', (
+            "comic" => $comic)),
+        qr{^\s*<a href="https://">click me</a>\s*$}m);
+}
+
+
 sub function: Tests {
     MockComic::fake_file('file.templ', '[% func %]');
     is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', ("func" => &{ return "works" })),
