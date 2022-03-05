@@ -106,6 +106,7 @@ sub generate {
 
     my $comics = Comics->new();
     $comics->load_settings($config);
+    check_settings(%{$comics->{settings}});
 
     my @files = $comics->collect_files(@dirs);
     unless (@files) {
@@ -157,6 +158,7 @@ sub upload {
 
     my $comics = Comics->new();
     $comics->load_settings($config);
+    check_settings(%{$comics->{settings}});
 
     $comics->load_uploaders();
     unless (@{$comics->{uploaders}}) {
@@ -265,6 +267,41 @@ sub load_settings {
             croak("$file not found");
         }
         $self->{settings}->load_str(File::Slurper::read_text($file));
+    }
+
+    return;
+}
+
+
+=head2 check_settings
+
+Checks the given settings for validity and consistency. This is used for
+global settings or settings for L<Comic>, checks and output modules need to
+do their own checks on their own settings.
+
+Arguments:
+
+=over 4
+
+=item * B<%settings> configuration settings to check.
+
+=back
+
+=cut
+
+sub check_settings {
+    my (%settings) = @ARG;
+
+    foreach my $prefix (qw(NoTranscriptPrefix TranscriptOnlyPrefix)) {
+        if (exists $settings{'LayerNames'}{$prefix} && $settings{'LayerNames'}{$prefix} eq '') {
+            croak("$prefix cannot be empty");
+        }
+    }
+
+    my $not = $settings{'LayerNames'}{'NoTranscriptPrefix'};
+    my $only = $settings{'LayerNames'}{'TranscriptOnlyPrefix'};
+    if ($only && $not && $only =~ m{^$not}x) {
+        croak('TranscriptOnlyPrefix and NoTranscriptPrefix cannot overlap');
     }
 
     return;
@@ -673,7 +710,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2020 - 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2020 - 2022, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or
