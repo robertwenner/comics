@@ -86,7 +86,7 @@ __END__
 
 # Then I could get the dimensions of the text (maybe, SVG::Estimate does not
 # mention it supports text, even though it supports lots of other shapes and
-# things), and subtract the x lenbth from the x coordinate.
+# things), and subtract the x length from the x coordinate.
 
 sub right_aligned_texts : Tests {
     assert_order(<<'SVG', "123");
