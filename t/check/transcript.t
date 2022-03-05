@@ -56,6 +56,7 @@ sub includes_language() : Tests {
 sub same_name_no_content() : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => {'MetaDeutsch' => ['Max:', 'Max:']});
+    $comic->{settings}->{LayerNames}->{TranscriptOnlyPrefix} = 'Meta';
     eval {
         $check->check($comic);
     };
@@ -66,6 +67,7 @@ sub same_name_no_content() : Tests {
 sub different_names_no_content() : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => {'MetaDeutsch' => ['Max:', 'Paul:']});
+    $comic->{settings}->{LayerNames}->{TranscriptOnlyPrefix} = 'Meta';
     eval {
         $check->check($comic);
     };
@@ -76,6 +78,7 @@ sub different_names_no_content() : Tests {
 sub description_with_colon_speaker() : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => {'MetaDeutsch' => ['Es war einmal ein Bier...', 'Paul:', '...']});
+    $comic->{settings}->{LayerNames}->{TranscriptOnlyPrefix} = 'Meta';
     $check->check($comic);
     ok(1);
 }
@@ -84,6 +87,7 @@ sub description_with_colon_speaker() : Tests {
 sub same_name_colon_missing() : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => {'MetaDeutsch' => ['Paul:', 'Paul']});
+    $comic->{settings}->{LayerNames}->{TranscriptOnlyPrefix} = 'Meta';
     eval {
         $check->check($comic);
     };
@@ -96,6 +100,7 @@ sub last_text_is_speaker_indicator : Tests {
         $MockComic::TEXTS => {
             $MockComic::DEUTSCH => ['Max:', 'blah', 'Paul:'],
     });
+    $comic->{settings}->{LayerNames}->{TranscriptOnlyPrefix} = 'Meta';
     eval {
         $check->check($comic);
     };
@@ -107,6 +112,7 @@ sub full_context() : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TEXTS => {'MetaDeutsch' =>
             ['one', 'two', 'three', 'Paul:', 'Paul:', 'ignore']});
+    $comic->{settings}->{LayerNames}->{TranscriptOnlyPrefix} = 'Meta';
     eval {
         $check->check($comic);
     };
@@ -123,6 +129,7 @@ sub container_layer() : Tests {
         </g>
     </g>
 XML
+    $comic->{settings}->{LayerNames}->{TranscriptOnlyPrefix} = 'Meta';
     eval {
         $check->check($comic);
     };
@@ -139,6 +146,7 @@ sub layer_with_noise() : Tests {
         </a>
     </g>
 XML
+    $comic->{settings}->{LayerNames}->{TranscriptOnlyPrefix} = 'Meta';
     eval {
         $check->check($comic);
     };
@@ -164,6 +172,7 @@ sub wtfPositiveY : Tests {
             <rect width="500" height="248" x="0" y="598"/>
         </g>
 XML
+    $comic->{settings}->{LayerNames}->{TranscriptOnlyPrefix} = 'Meta';
     $comic->_find_frames();
     is_deeply($comic->{frame_tops}, [78, 338, 598], "frame tops");
     eval {
@@ -192,6 +201,7 @@ sub wtfNegativeY : Tests {
     <rect width="498" height="248" x="0" y="-102"/>
   </g>
 XML
+    $comic->{settings}->{LayerNames}->{TranscriptOnlyPrefix} = 'Meta';
     eval {
         $check->check($comic);
     };

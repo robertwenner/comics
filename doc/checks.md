@@ -5,8 +5,8 @@ want to publish your comics on Friday, you can add a Weekday check that
 warns you if you specify a date that isn't a Friday. (Date calculations are
 hard!)
 
-If there is no Checks section, all available Checks are used. To disable all
-Checks, define an empty "Checks":
+If there is no Checks section in the configuration file(s), all Checks are
+used. To disable all Checks, define an empty "Checks":
 
 ```json
 {
@@ -20,7 +20,7 @@ Available checks are all Perl modules found on your system where the name
 starts with `Comic::Check::`.
 
 Some checks take arguments (see their descriptions). Because of the JSON
-syntax, you still need to include empty curly or square braces afer the
+syntax, you still need to include empty curly or square braces after the
 check name, even if you don't pass arguments.
 
 ```json
@@ -223,7 +223,7 @@ is `English`, the comic is expected to have an Inkscape layer called
 ```json
 {
     "LayerNames": {
-        "ExtraTranscriptPrefix": "Meta"
+        "TranscriptOnlyPrefix": "Meta"
     },
 
     "Checks": {

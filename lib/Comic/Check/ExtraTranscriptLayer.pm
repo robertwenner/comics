@@ -44,7 +44,7 @@ to be shared but doesn't need to be shared.
 =head2 new
 
 Creates a new Comic::Check::ExtraTranscriptLayer. The prefix for layer names is taken
-from the C<ExtraTranscriptPrefix> in the global C<LayerNames> configuration.
+from the C<TranscriptOnlyPrefix> in the global C<LayerNames> configuration.
 
 =cut
 
@@ -72,9 +72,9 @@ Parameters:
 sub check {
     my ($self, $comic) = @ARG;
 
-    my $prefix = $comic->{settings}->{'LayerNames'}->{'ExtraTranscriptPrefix'};
-    croak('No LayerNames.ExtraTranscriptPrefix configured') unless (defined $prefix);
-    croak('LayerNames.ExtraTranscriptPrefix cannot be empty') unless ($prefix);
+    my $prefix = $comic->{settings}->{'LayerNames'}->{'TranscriptOnlyPrefix'};
+    croak('No LayerNames.TranscriptOnlyPrefix configured') unless (defined $prefix);
+    croak('LayerNames.TranscriptOnlyPrefix cannot be empty') unless ($prefix);
 
     foreach my $language ($comic->languages()) {
         unless ($comic->has_layer("$prefix$language")) {

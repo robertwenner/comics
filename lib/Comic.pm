@@ -38,8 +38,7 @@ use version; our $VERSION = qv('0.0.3');
 
 =encoding utf8
 
-=for stopwords inkscape html svg png Wenner merchantability perlartistic MetaEnglish rss sitemap sizemap xml dbus JSON metadata outdir
-
+=for stopwords inkscape html svg png Wenner merchantability perlartistic xml dbus outdir JSON metadata
 
 =head1 NAME
 
@@ -516,9 +515,9 @@ sub check {
 =head2 get_transcript
 
 Gets this Comic's transcript. The transcript is ordered text from this
-Comic's meta and real text layers, ordered from top left to bottom right by
-frames. Usually it consists of speaker indicators and actual speech texts,
-plus maybe some background texts.
+Comic's transcript and real text layers, ordered from top left to bottom
+right by frames. Usually it consists of speaker indicators and actual speech
+texts, plus maybe some background texts.
 
 Parameters:
 
@@ -877,7 +876,8 @@ sub language_codes {
 
 =head2 texts_in_language
 
-Gets the normalized texts for the given language.
+Gets the normalized texts for the given language. Texts are order by frames
+from left to right.
 
 Normalized means line breaks are removed and multiple consecutive spaces are
 reduced to one.
@@ -895,20 +895,38 @@ Parameters:
 sub texts_in_language {
     my ($self, $language) = @ARG;
 
-    $self->_find_frames();
+    my $ignore_prefix = $self->{settings}->{LayerNames}->{NoTranscriptPrefix};
+
+    # Collect needed layers in a hash, so that duplicted layer names are queried only once.
+    # The code that collects the nodes from layers will pick up all duplicates, but it should
+    # just run once per name. (Inkscape doesn't care about duplicated layer names.)
+    my %needed_layers;
+    foreach my $layer ($self->{xpath}->findnodes(_all_layers_xpath())) {
+        my $name = $layer->getAttribute('inkscape:label');
+
+        # Ignore layers without a name (no idea what they are for, probably drawing, and we'd
+        # get an undefined warning from Perl), any layers which don't end in the language we
+        # need, and any layers that start with the no-transcript prefix.
+        next unless ($name);
+        next unless ($name =~ m{$language$}x);
+        next if ($ignore_prefix && $name =~ m{^$ignore_prefix}x);
+        $needed_layers{$name}++;
+    }
+
+    my @found = $self->_text_nodes_in_layers(keys %needed_layers);
     my @texts;
-    my @layers = _all_layers_xpath($language, "Meta$language", "HintergrundText$language") . "//$DEFAULT_NAMESPACE:text";
-    my @nodes = $self->{xpath}->findnodes(@layers);
-    foreach my $node (sort { $self->_text_pos_sort($a, $b) } @nodes) {
+    foreach my $node (sort { $self->_text_pos_sort($a, $b) } @found) {
         push @texts, _text_content($node);
     }
+
     return @texts;
 }
 
 
 =head2 texts_in_layer
 
-Gets the normalized texts in the given layers.
+Gets the normalized texts in the given layers, ordered by frames and then
+from left to right.
 
 Normalized means line breaks are removed and multiple consecutive spaces are
 reduced to one.
@@ -929,16 +947,28 @@ Parameters:
 sub texts_in_layer {
     my ($self, @layers) = @ARG;
 
-    $self->_find_frames();
+    my @nodes = $self->_text_nodes_in_layers(@layers);
     my @texts;
-    foreach my $layer (@layers) {
-        my @text_nodes = _all_layers_xpath($layer) . "//$DEFAULT_NAMESPACE:text";
-        my @nodes = $self->{xpath}->findnodes(@text_nodes);
-        TEXT_NODE: foreach my $node (sort { $self->_text_pos_sort($a, $b) } @nodes) {
+    foreach my $node (sort { $self->_text_pos_sort($a, $b) } @nodes) {
+        push @texts, _text_content($node);
+    }
+
+    return @texts;
+}
+
+
+sub _text_nodes_in_layers {
+    my ($self, @needed_layers) = @ARG;
+
+    my @found;
+    foreach my $layer (@needed_layers) {
+        my $text_nodes = _all_layers_xpath($layer) . "//$DEFAULT_NAMESPACE:text";
+        my @nodes = $self->{xpath}->findnodes($text_nodes);
+        TEXT_NODE: foreach my $node (@nodes) {
             my $parent = $node->parentNode;
-            # This loop should never hit the root element anyway. If there are text outside of
+            # This loop should never hit the root element anyway. If there are texts outside of
             # layers, the xpath would not match them. Still, this loop condition looks better
-            # to me than an infnite loop.
+            # to me than an infinite loop.
             while ($parent->localname ne 'svg') {
                 my $group_is_layer = ($parent->getAttribute('inkscape:groupmode') || '') eq 'layer';
                 if ($parent->localname eq 'g' && $group_is_layer) {
@@ -948,10 +978,10 @@ sub texts_in_layer {
                 }
                 $parent = $parent->parentNode;
             }
-            push @texts, _text_content($node);
+            push @found, $node;
         }
     }
-    return @texts;
+    return @found;
 }
 
 
@@ -1009,7 +1039,7 @@ sub _text_pos_sort {
 
 
 sub _transformed {
-    my ($self, $node, $attribute) = @ARG;
+    my ($self, $node) = @ARG;
 
     my ($x, $y) = ($node->getAttribute('x'), $node->getAttribute('y'));
     if (!defined $x || !defined $y) {
@@ -1050,10 +1080,11 @@ sub _text_from_path {
 sub _pos_to_frame {
     my ($self, $y) = @ARG;
 
+    $self->_find_frames();
     for my $i (0..@{$self->{frame_tops}} - 1) {
         return $i if ($y < @{$self->{frame_tops}}[$i]);
     }
-    return @{$self->{frame_tops}};
+    return scalar @{$self->{frame_tops}};
 }
 
 

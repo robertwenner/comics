@@ -192,7 +192,7 @@ sub hide_transcript_layer_from_comic_configuration : Tests {
             <g inkscape:groupmode="layer" inkscape:label="BackgroundDeutsch"/>
         ',
     );
-    $comic->{'settings'}->{'LayerNames'}->{'ExtraTranscriptPrefix'} = 'Meta';
+    $comic->{'settings'}->{'LayerNames'}->{'TranscriptOnlyPrefix'} = 'Meta';
 
     Comic::Out::SvgPerLanguage::_flip_language_layers($comic, 'English');
 

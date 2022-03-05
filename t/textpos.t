@@ -83,3 +83,30 @@ sub different_frames : Tests {
     is_deeply([make_texts(0, 110, 10, 10)->texts_in_language("Deutsch")],
         ["Text 10 / 10", "Text 0 / 110"]);
 }
+
+
+sub language_layers : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => "Beer!", },
+        $MockComic::XML => <<'XML',
+    <g inkscape:groupmode="layer" inkscape:label="English">
+        <text x="0" y="0"><tspan>normal</tspan></text>
+    </g>
+    <g inkscape:groupmode="layer" inkscape:label="MetaEnglish">
+        <text x="1" y="0"><tspan>meta</tspan></text>
+    </g>
+    <g inkscape:groupmode="layer" inkscape:label="HintergrundEnglish">
+        <text x="2" y="0"><tspan>bg</tspan></text>
+    </g>
+    <g inkscape:groupmode="layer" inkscape:label="TextHintergrundEnglish">
+        <text x="3" y="0"><tspan>bg text</tspan></text>
+    </g>
+    <g inkscape:groupmode="layer" inkscape:label="SomethingElse">
+        <text x="4" y="0"><tspan>not in an English layer, ignore me</tspan></text>
+    </g>
+XML
+    );
+    $comic->{settings}->{LayerNames}->{NoTranscriptPrefix} = 'Hintergrund';
+
+    is_deeply([$comic->texts_in_language('English')], ['normal', 'meta', 'bg text']);
+}

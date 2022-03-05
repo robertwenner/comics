@@ -99,7 +99,7 @@ Inkscape files must have layer names describing the layer's purpose:
 Any layer that has a trailing language name is considered for that language
 and only for that language.
 
-If a C<LayerNames> section exists and has a C<ExtraTranscriptPrefix>, any
+If a C<LayerNames> section exists and has a C<TranscriptOnlyPrefix>, any
 layer where the name starts that prefix is considered a transcript layer for
 the language (trailing language as above).
 
@@ -134,7 +134,7 @@ sub generate {
 sub _flip_language_layers {
     my ($comic, $language) = @ARG;
 
-    my $transcript_layer = $comic->{settings}->{'LayerNames'}->{'ExtraTranscriptPrefix'};
+    my $transcript_layer = $comic->{settings}->{'LayerNames'}->{'TranscriptOnlyPrefix'};
 
     my $had_lang = 0;
     foreach my $layer ($comic->get_all_layers()) {

@@ -19,16 +19,12 @@ sub set_up : Test(setup) {
 }
 
 
-sub accepts_meta_prefix : Tests {
+sub accepts_meta_prefix_from_comic : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => "funny comic" },
-        $MockComic::XML => <<'XML',
-    <g
-        inkscape:groupmode="layer"
-        inkscape:label="TranscriptorEnglish"/>
-XML
+        $MockComic::XML => '<g inkscape:groupmode="layer" inkscape:label="TranscriptorEnglish"/>',
     );
-    $comic->{settings}->{LayerNames}->{ExtraTranscriptPrefix} = 'Transcriptor';
+    $comic->{settings}->{LayerNames}->{TranscriptOnlyPrefix} = 'Transcriptor';
 
     $check->check($comic);
 
@@ -44,20 +40,20 @@ sub bails_out_if_no_meta_prefix_configured : Tests {
     };
     like($@, qr{\bconfigured\b}, 'should say what is wrong');
     like($@, qr{\bLayerNames\b}, 'should include top level configuration element');
-    like($@, qr{\bExtraTranscriptPrefix\b}, 'should include configuration element');
+    like($@, qr{\bTranscriptOnlyPrefix\b}, 'should include configuration element');
 }
 
 
 sub bails_out_if_meta_prefix_is_empty : Tests {
     my $comic = MockComic::make_comic();
-    $comic->{settings}->{LayerNames}->{ExtraTranscriptPrefix} = '';
+    $comic->{settings}->{LayerNames}->{TranscriptOnlyPrefix} = '';
 
     eval {
         $check->check($comic);
     };
     like($@, qr{\bempty\b}, 'should say what is wrong');
     like($@, qr{\bLayerNames\b}, 'should include top level configuration element');
-    like($@, qr{\bExtraTranscriptPrefix\b}, 'should include configuration element');
+    like($@, qr{\bTranscriptOnlyPrefix\b}, 'should include configuration element');
 }
 
 
@@ -65,7 +61,7 @@ sub no_meta_layer_checks_other_languages : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::PUBLISHED_WHEN => '3000-01-01',
     );
-    $comic->{settings}->{LayerNames}->{ExtraTranscriptPrefix} = 'Meta';
+    $comic->{settings}->{LayerNames}->{TranscriptOnlyPrefix} = 'Meta';
 
     $check->check($comic);
 
@@ -85,7 +81,7 @@ sub no_text_in_meta_layer : Tests {
         inkscape:label="MetaEnglish"/>
 XML
     );
-    $comic->{settings}->{LayerNames}->{ExtraTranscriptPrefix} = 'Meta';
+    $comic->{settings}->{LayerNames}->{TranscriptOnlyPrefix} = 'Meta';
 
     $check->check($comic);
 
@@ -108,13 +104,13 @@ sub first_text_must_be_from_meta_layer : Tests {
     <g
         inkscape:groupmode="layer"
         inkscape:label="MetaEnglish">
-        <text x="0" y="-100">
+        <text x="10" y="-10">
             <tspan>top meta</tspan>
         </text>
     </g>
 XML
     );
-    $comic->{settings}->{LayerNames}->{ExtraTranscriptPrefix} = 'Meta';
+    $comic->{settings}->{LayerNames}->{TranscriptOnlyPrefix} = 'Meta';
 
     $check->check($comic);
 
@@ -131,7 +127,7 @@ sub first_text_must_be_from_meta_layer_no_texts : Tests {
     <g inkscape:groupmode="layer" inkscape:label="MetaEnglish"/>
 XML
     );
-    $comic->{settings}->{LayerNames}->{ExtraTranscriptPrefix} = 'Meta';
+    $comic->{settings}->{LayerNames}->{TranscriptOnlyPrefix} = 'Meta';
 
     $check->check($comic);
 
@@ -154,13 +150,13 @@ sub does_not_rely_on_order_in_xml : Tests {
     <g
         inkscape:groupmode="layer"
         inkscape:label="MetaEnglish">
-        <text x="0" y="0">
+        <text x="5" y="-10">
             <tspan>meta top</tspan>
         </text>
     </g>
 XML
     );
-    $comic->{settings}->{LayerNames}->{ExtraTranscriptPrefix} = 'Meta';
+    $comic->{settings}->{LayerNames}->{TranscriptOnlyPrefix} = 'Meta';
 
     $check->check($comic);
 
@@ -183,7 +179,7 @@ sub all_good : Tests {
     </g>
 XML
     );
-    $comic->{settings}->{LayerNames}->{ExtraTranscriptPrefix} = 'Meta';
+    $comic->{settings}->{LayerNames}->{TranscriptOnlyPrefix} = 'Meta';
 
     $check->check($comic);
 

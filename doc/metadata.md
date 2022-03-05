@@ -1,18 +1,18 @@
 # Meta data
 
 The Comic modules assume that the comic and all its data is in the Inkscape
-`.svg` file, as opposed to e.g., having a separate database for additional
-information on a comic.
+`.svg` file, as opposed to e.g., having a separate file for the transcript
+or even a database for additional information on a comic.
 
-The meta data of a comic needs to be in the "Description" field. In
+The meta data of a comic needs to be in the Inkscape's Description field. In
 Inkscape, click the "File" menu, then "Document Properties...", or press
 Ctrl + Alt + D. Go to the "Metadata" tab, then scroll down to the
 "Description" field.
 
 While some other fields in the meta data like author and date could be used,
 most of them like title don't support multiple languages. Hence the Comic
-modules ignore all meta data and instead only work with (you could say
-abuses) the description.
+modules ignore all Inkscape meta data and instead only work with (you could
+say abuse) the description.
 
 The description must be a [JSON](https://www.json.org/json-en.html) object.
 That means it must be included in curly braces, and then the meta data is

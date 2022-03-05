@@ -3,33 +3,59 @@
 The Comic modules use layer names to know what layers to export, what layers
 have special meanings, and how to treat such layers.
 
-There are 3 kinds of layers:
+The Comic modules distinguish these layers:
 
-- Language layers hold language-dependent information. Their names must end in
-  the language (uppercase), e.g., `English`, or `BackgroundEnglish`.
+- Language layers hold language-dependent information, usually the texts in
+  a comic, or drawings that are only applicable in that language. Their
+  names must end in the language (starting with an uppercase letter), e.g.,
+  `English`, or `BackgroundEnglish` are recognized as layers for the English
+  language..
 
-- Transcript layers: the `Comic::Out::Transcript` module generates a
-  transcript of the comic. It gets the texts from the language layers, plus
-  an extra layer named as the configured `ExtraTranscriptPrefix` plus the
-  language name (uppercase), e.g., `MetaEnglish` if `ExtraTranscriptPrefix`
-  is `Meta`.
+- Extra transcript layers: the `Comic::Out::Transcript` module generates a
+  transcript of the comic. It gets the texts from the language layers (as
+  above). For a better transcript, you can add an extra layer per language
+  that has texts describing what is going on in the comic. Naturally you
+  don't want to export that layer in the image. To mark a layer as
+  contributing to the transcript but not meant for the image, configure a
+  `TranscriptOnlyPrefix`, then name these layers to start with that prefix
+  and end in their language (as above).
+
+- Background layers that don't contribute to the transcript: this is for
+  per-language texts in the image that should not make it into the transcript.
 
 - Frames layer: used by some checks and the transcript generator to figure
   out in which order texts should appear in the transcript.
 
 All other layers (i.e., that don't end in a language or don't start with a
-configured prefix or have a configured special name) are considered part of
-the image and are left untouched.
+configured prefix) are considered part of the image and are left untouched.
 
 Here is an example configuration:
 
 ```json
 {
     "Layers": {
-        "ExtraTranscriptPrefix": "Meta"
+        "TranscriptOnlyPrefix": "Meta"
+        "NoTranscriptPrefix": "Background"
     }
 }
 
 ```
 
-Any layer where the name starts with `Meta` will be hidden and not exported.
+In the above example, any layer where the name starts with `Meta` will be
+hidden and not exported, but will be used for the transcript. Any layer
+starting with `Background` will be exported as usual, but its texts won't
+show up in the transcript.
+
+Note that text outside of layers will be ignored for the transcript, but
+will get exported to the comic image if the layer is visible. This is
+probably not what you want, so the advice is to keep all text in
+language-specific layers.
+
+
+You can use nested layers, e.g., have a layer named "English" and inside
+that a layer for English text, English extra transcript texts, English
+backgrounds, and so on, but the inner layer names must still also end in
+"English" or they won't be enabled automatically. Even though the code won't
+pick nested layers up for a language automatically (it just looks at layer
+names without regards to their nesting), the outer nested layers are helpful
+to quickly switch a language on or off in Inkscape.
