@@ -35,8 +35,8 @@ Each comic can override the globally configured checks; see the
 [metadata](metadata.md) documentation.
 
 When a comic is checked, each Check can report problems to that particular
-comic, which can then print them and / or store them and make them available
-to templates.
+comic, which can then print them, or store them and make them available to
+templates.
 
 
 ## `Comic::Check::Actors`
@@ -46,7 +46,7 @@ forgotten to enter a name) and that each language has the same number of
 actors (assuming the comic is the same in different languages, it should
 also have the same number of actors in each language).
 
-Actors meta data is expected to be an array at `who` -> `language`.
+Actors metadata is expected to be an array at `who` -> `language`.
 
 In the following example you'll get an error because the English character
 list has less items than the others.
@@ -65,16 +65,16 @@ list has less items than the others.
 
 Checks that comics are not published on the same day in the same location.
 
-For regularly published comics you may want to avoid publishing multiple
-comics on the same date. However, it's probably fine to publish a comic in
-different locations on the same day, or different comics in different
+For regularly published comics you may want to avoid publishing more than
+one comics on the same date. However, it's probably fine to publish a comic
+in different locations on the same day, or different comics in different
 languages on the same day.
 
 Dates need to be in [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601)
 format, without time.
 
 `Comic::Check::DateCollision` will fail if you have two comics with the same
-languages and this meta data:
+languages and this metadata:
 
 ```json
 {
@@ -95,8 +95,8 @@ published date.
 
 ## `Comic::Check::DontPublish`
 
-Checks the comics for special markers. If any of the special markers is
-found in any text in the comic, the comic is flagged with a warning.
+Checks the comics for special markers. If any of the special markers appears
+in any text in the comic, the comic is flagged with a warning.
 
 The idea is that you can leave yourself reminders (to do items) in the comic
 for things you want to get back to before it's published. The idea comes
@@ -142,7 +142,7 @@ For example:
 ```
 
 Any text that looks like a speaker introduction (i.e., ends in a colon) is
-allowed do be duplicated as well, so that characters can have the same names
+allowed to be duplicated as well, so that characters can have the same names
 in different languages without having to define an `allow-duplicated`
 exception each time.
 
@@ -239,7 +239,7 @@ Checks the given comic's series meta information to catch copy and paste
 errors or when a comic belongs to a series in one language but not in
 another (which seems odd).
 
-Your comic needs to have meta data like this following:
+Your comic needs to have metadata like this following:
 
 ```json
 {
@@ -258,7 +258,7 @@ could be a typo, or it could be ok (first comic in a series).
 
 Spellchecks the given comic. Inkscape has built-in spell checking, but
 doesn't know which texts are in which language. Inkscape also doesn't check
-comic meta data. Hence this check.
+comic metadata. Hence this check.
 
 You can configure words to be ignored either in the spell checker (so that
 they are ignored whenever you spellcheck anything; see below), in the main
@@ -327,7 +327,7 @@ Repeat for other languages using the language's code.
 ## `Comic::Check::Tag`
 
 This flags comics that contain tags that differ from previously seen tags in
-case or white space only. This may help with case- and white space sensitive
+case or whitespace only. This may help with case- and whitespace sensitive
 tag clouds.
 
 You need to configure this Check and pass the tags you want to check. For
@@ -341,7 +341,7 @@ example, to check `tag` and a `who`, put this in your settings:
 }
 ```
 
-This check expects comic meta data like this:
+This check expects comic metadata like this:
 
 ```json
 {
@@ -372,13 +372,13 @@ the English one has Max and Paul.
 
 Checks a comic's title to prevent duplicate titles. Duplicate titles make it
 impossible to uniquely refer to a particular comic by title and could lead
-to file name and URL clashes when the title is used for the output image and
-HTML page file names.
+to filename and URL clashes when the title is used for the output image and
+HTML page filenames.
 
 This check is done per language, so you can have e.g., an English and a
 German comic named "Pale Ale".
 
-The title is expected in the comic meta data like this:
+The title is expected in the comic metadata like this:
 
 ```json
 {
@@ -403,7 +403,7 @@ Texts are ordered for comparison per frames row from top to bottom and from
 left to right.
 
 This assumes that you have a layer per language, and within that the actual
-text and meta data layers.
+text and metadata layers.
 
 
 ## `Comic::Check::Weekday`
@@ -427,7 +427,7 @@ for Tuesday and Friday.
 }
 ```
 
-The following meta data fragment would make this check fail, cause Halloween
+The following metadata fragment would make this check fail, cause Halloween
 2020 was on a Saturday:
 
 ```json

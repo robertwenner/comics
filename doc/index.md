@@ -28,7 +28,7 @@ That said, there are still a few basic assumptions on how things work:
 - Everything is in the comic. The Inkscape `.svg` file is the "single source
   of truth". Everything needed for a comic is in that file, not in other
   files, not in version control, not in a database of some sort, not in a
-  micro service, and not in the block chain. Settings that are not specific
+  micro service, and not in the block chain. Most settings that are not specific
   to a particular comic are configured in global [settings](settings.md) and
   the templates used to generate outputs (see below).
 

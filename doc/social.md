@@ -4,7 +4,7 @@ The `Comic::Social::...` modules post today's comic for each language on
 social networks.
 
 If you have multiple comics for today, for example, one only in English and
-one only in German, the social media code will post all.
+one only in German, the social media code will post both.
 
 Some social networks are more painful to automate than others, in particular
 Facebook. (I hate Facebook, for various reasons, and their finicky API did
