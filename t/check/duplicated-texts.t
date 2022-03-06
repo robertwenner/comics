@@ -40,7 +40,9 @@ sub duplicated_text_in_other_language_ignores_text_order : Tests {
         $MockComic::TEXTS => {
             $MockComic::DEUTSCH => ['a', 'b', 'c'],
             $MockComic::ENGLISH => ['z', 'x', 'a'],
-    });
+        },
+        $MockComic::FRAMES => [0, 0, 100, 100],
+    );
 
     $check->check($comic);
 
@@ -53,7 +55,9 @@ sub duplicated_text_in_other_language_ignores_names : Tests {
         $MockComic::TEXTS => {
             $MockComic::DEUTSCH => ['Max:', 'guck mal', ' Paul:', 'was?'],
             $MockComic::ENGLISH => ['Max:', 'look at this', 'Paul: ', 'what?'],
-        });
+        },
+        $MockComic::FRAMES => [0, 0, 100, 100],
+    );
 
     $check->check($comic);
 

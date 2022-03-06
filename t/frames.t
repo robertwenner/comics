@@ -20,7 +20,7 @@ sub set_up : Test(setup) {
 
 my $comic;
 
-sub make_frames {
+sub frame_tops {
     $comic = MockComic::make_comic($MockComic::FRAMES => [@_]);
     $comic->_find_frames();
     return $comic->{frame_tops};
@@ -39,19 +39,19 @@ sub assert_frames_xy {
 
 
 sub no_frame : Tests {
-    is_deeply([], make_frames());
+    is_deeply([], frame_tops());
 }
 
 
 sub single_frame : Tests {
-    is_deeply([0], make_frames(
+    is_deeply([0], frame_tops(
         # height, width, x, y
         0, 0, 0, 0));
 }
 
 
 sub frames_same_height : Tests {
-    is_deeply([0], make_frames(
+    is_deeply([0], frame_tops(
         # height, width, x, y
         0, 0, 0, 0,
         0, 0, 0, 0));
@@ -59,7 +59,7 @@ sub frames_same_height : Tests {
 
 
 sub frames_almost_same_height : Tests {
-    is_deeply([0], make_frames(
+    is_deeply([0], frame_tops(
         # height, width, x, y
         0, 0, 0, 0,
         0, 0, 0, $Comic::Consts::FRAME_TOLERANCE - 1,
@@ -68,7 +68,7 @@ sub frames_almost_same_height : Tests {
 
 
 sub two_rows_of_frames : Tests {
-    is_deeply([0, 100], make_frames(
+    is_deeply([0, 100], frame_tops(
         # height, width, x, y
         0, 0, 0, 0,
         0, 0, 0, 0,
@@ -78,7 +78,7 @@ sub two_rows_of_frames : Tests {
 
 
 sub three_rows_of_frames : Tests {
-    is_deeply([0, 100, 200], make_frames(
+    is_deeply([0, 100, 200], frame_tops(
         # height, width, x, y
         0, 0, 0, 0,
         0, 0, 0, 200,
@@ -87,7 +87,7 @@ sub three_rows_of_frames : Tests {
 
 
 sub pos_to_frame : Tests {
-    make_frames(
+    frame_tops(
         # height, width, x, y
         0, 0, 0, 0,
         0, 0, 0, 100,
@@ -103,7 +103,7 @@ sub pos_to_frame : Tests {
 
 
 sub sorting_y : Tests {
-    make_frames(
+    frame_tops(
         # height, width, x, y
         0, 0, 0,   0,
         0, 0, 0,  10,
@@ -113,7 +113,7 @@ sub sorting_y : Tests {
 
 
 sub sorting_negative_y : Tests {
-    make_frames(
+    frame_tops(
         # height, width, x, y
         0, 0, 0, -500,
         0, 0, 0, -300,
@@ -124,7 +124,7 @@ sub sorting_negative_y : Tests {
 
 
 sub sorting_x : Tests {
-    make_frames(
+    frame_tops(
         # height, width, x, y
         0, 0,   0, 0,
         0, 0, -10, 0,
@@ -134,7 +134,7 @@ sub sorting_x : Tests {
 
 
 sub sorting_xy : Tests {
-    make_frames(
+    frame_tops(
         # height, width, x, y
         0, 0,   0,   0,
         0, 0,  10,  10,
@@ -147,7 +147,7 @@ sub sorting_xy : Tests {
 
 
 sub bottom_right_corner : Tests {
-    make_frames(
+    frame_tops(
         # height, width, x, y
         10, 10,  0,   0,
         10, 10, 15,   0,
@@ -160,7 +160,7 @@ sub bottom_right_corner : Tests {
 
 
 sub sorts_numerically_ints : Tests {
-    make_frames(
+    frame_tops(
         100, 100, 535, 680,
         100, 100, 845, 680,
         100, 100, 90, 680);
@@ -171,10 +171,64 @@ sub sorts_numerically_ints : Tests {
 
 
 sub sorts_numerically_floats : Tests {
-    make_frames(
+    frame_tops(
         100, 100, 535.66895, 679.83606,
         100, 100, 845.66669, 679.8938,
         100, 100, 90.664955, 680.06812);
     my @sorted = map { $_->getAttribute('x') } $comic->all_frames_sorted();
     is_deeply([@sorted], [90.664955, 535.66895, 845.66669]);
+}
+
+
+sub uses_default_frame_layer_name_if_not_configured : Tests {
+    my $comic = MockComic::make_comic($MockComic::XML => <<XML);
+        <g inkscape:groupmode="layer" inkscape:label="Frames">
+            <rect width="100" height="100" x="0" y="0"/>
+        </g>
+XML
+    $comic->{settings}->{LayerNames}->{Frames} = undef;
+
+    my @frames = $comic->all_frames_sorted();
+
+    is_deeply([@frames], ['<rect width="100" height="100" x="0" y="0"/>']);
+}
+
+
+sub configure_frame_layer_name : Tests {
+    my $comic = MockComic::make_comic($MockComic::XML => <<XML);
+        <g inkscape:groupmode="layer" inkscape:label="Panels">
+            <rect width="100" height="100" x="0" y="0"/>
+        </g>
+XML
+    $comic->{settings}->{LayerNames}->{Frames} = 'Panels';
+
+    my @frames = $comic->all_frames_sorted();
+
+    is_deeply([@frames], ['<rect width="100" height="100" x="0" y="0"/>']);
+}
+
+
+sub rejects_empty_frame_layer_name : Tests {
+    my $comic = MockComic::make_comic();
+    $comic->{settings}->{LayerNames}->{Frames} = '';
+
+    eval {
+        $comic->all_frames_sorted();
+    };
+    like($@, qr{empty}, 'should mention what the problem is');
+    like($@, qr{LayerNames\.Frames}, 'should mention where the problem is');
+}
+
+
+sub complains_if_no_frame_layer_found : Tests {
+    my $comic = MockComic::make_comic();
+    $comic->{settings}->{LayerNames}->{Frames} = 'Panels';
+
+    my @frames = $comic->all_frames_sorted();
+    # Check that the comic doesn't get flooded in the no frame layer warning
+    $comic->all_frames_sorted();
+    $comic->all_frames_sorted();
+
+    is_deeply([@frames], []);
+    is_deeply($comic->{warnings}, ["No 'Panels' layer"]);
 }

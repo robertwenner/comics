@@ -178,12 +178,14 @@ sub make_comic {
 
     my $checks = $args{$CHECKS} || [];
     my %settings = %{$args{$SETTINGS}};
+    $settings{'LayerNames'}{'Frames'} = 'Rahmen';
     my $comic = Comic->new(\%settings, $checks);
     $comic->load($args{$IN_FILE});
     foreach my $language ($comic->languages()) {
         $comic->{height}{$language} = $args{$HEIGHT};
         $comic->{width}{$language} = $args{$WIDTH};
     }
+
     return $comic;
 }
 

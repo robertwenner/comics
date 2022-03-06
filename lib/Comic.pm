@@ -590,15 +590,22 @@ sub _exists {
 =head2 all_frames_sorted
 
 Returns all frames in this Comic, sorted from top left to bottom right.
-Only considers objects in the C<Rahmen> layer.
+Only considers objects in the configured C<Frames> layer.
 
 =cut
 
 sub all_frames_sorted {
     my ($self) = @ARG;
 
+    my $frames = $self->{settings}{LayerNames}{'Frames'};
+    croak('LayerNames.Frames cannot be empty') if (defined $frames && $frames eq '');
+    $frames ||= 'Frames';
+    if (!$self->has_layer($frames)) {
+        $self->warning("No '$frames' layer");
+    }
+
     ## no critic(ValuesAndExpressions::RequireInterpolationOfMetachars)
-    my $frame_xpath = _build_xpath('g[@inkscape:label="Rahmen"]', 'rect');
+    my $frame_xpath = _build_xpath('g[@inkscape:label="' . $frames . '"]', 'rect');
     ## use critic
     # Needs the extra @sorted array cause the behavior of sort in scalar context
     # is undefined. (WTF?!)

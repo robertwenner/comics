@@ -71,7 +71,7 @@ sub aligned_no_frame : Tests {
 
     $check->check($comic);
 
-    is_deeply($comic->{warnings}, []);
+    is_deeply($comic->{warnings}, ["No 'Rahmen' layer"]);
 }
 
 

@@ -212,6 +212,7 @@ sub checks_text_layers_per_language : Tests {
         $MockComic::TAGS => {},
         $MockComic::PUBLISHED_WHEN => "3000-01-01",
         $MockComic::XML => <<'XML',
+    <g inkscape:groupmode="layer" inkscape:label="Rahmen"/>
     <g inkscape:groupmode="layer" inkscape:label="English">
         <text x="0" y="0"><tspan>no typpo here</tspan></text>
         <text x="0" y="0"><tspan>other typpo</tspan></text>

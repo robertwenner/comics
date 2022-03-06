@@ -9,7 +9,7 @@ The Comic modules distinguish these layers:
   a comic, or drawings that are only applicable in that language. Their
   names must end in the language (starting with an uppercase letter), e.g.,
   `English`, or `BackgroundEnglish` are recognized as layers for the English
-  language..
+  language.
 
 - Extra transcript layers: the `Comic::Out::Transcript` module generates a
   transcript of the comic. It gets the texts from the language layers (as
@@ -21,10 +21,15 @@ The Comic modules distinguish these layers:
   and end in their language (as above).
 
 - Background layers that don't contribute to the transcript: this is for
-  per-language texts in the image that should not make it into the transcript.
+  per-language texts in the image that should not make it into the
+  transcript. If you configure a `NoTranscriptPrefix`, the transcript
+  collecting code will ignore all layers where the name starts with that
+  prefix will that prefix. If you don't configure this prefix, all layers
+  contribute to the transcript.
 
 - Frames layer: used by some checks and the transcript generator to figure
-  out in which order texts should appear in the transcript.
+  out in which order texts should appear in the transcript. You can
+  configure this with the `Frames` layer name setting. Defaults to "Frames".
 
 All other layers (i.e., that don't end in a language or don't start with a
 configured prefix) are considered part of the image and are left untouched.
@@ -34,8 +39,9 @@ Here is an example configuration:
 ```json
 {
     "Layers": {
-        "TranscriptOnlyPrefix": "Meta"
-        "NoTranscriptPrefix": "Background"
+        "TranscriptOnlyPrefix": "Meta",
+        "NoTranscriptPrefix": "Background",
+        "Frames": "Frames"
     }
 }
 
@@ -44,7 +50,8 @@ Here is an example configuration:
 In the above example, any layer where the name starts with `Meta` will be
 hidden and not exported, but will be used for the transcript. Any layer
 starting with `Background` will be exported as usual, but its texts won't
-show up in the transcript.
+show up in the transcript. When ordering the texts, the code will look at
+the rectangles in the `Frames` layer.
 
 Note that text outside of layers will be ignored for the transcript, but
 will get exported to the comic image if the layer is visible. This is
