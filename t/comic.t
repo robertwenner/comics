@@ -54,6 +54,34 @@ sub catches_json_syntax_error : Tests {
 }
 
 
+sub parses_json_relaxed : Tests {
+    my $xml = <<"HEADER";
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns="http://www.w3.org/2000/svg">
+   <metadata id="metadata7">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:description>{"a": "b",}</dc:description>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+</svg>
+HEADER
+    MockComic::fake_file('some-comic.svg', $xml);
+
+    my $comic = Comic->new({}, []);
+    eval {
+        $comic->load('some-comic.svg');
+    };
+    is($@, '', 'should not report an error');
+    is($comic->{meta_data}->{a}, 'b', 'should have the value from json');
+}
+
+
 sub text_in_top_level_layer : Tests {
     my $comic = MockComic::make_comic($MockComic::XML => <<XML);
     <g inkscape:groupmode="layer" id="layer19" inkscape:label="English">

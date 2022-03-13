@@ -133,8 +133,10 @@ sub load {
     $self->{xpath}->registerNs($DEFAULT_NAMESPACE, 'http://www.w3.org/2000/svg');
     my $meta_xpath = _build_xpath('metadata/rdf:RDF/cc:Work/dc:description/text()');
     my $meta_data = _unhtml(join ' ', $self->{xpath}->findnodes($meta_xpath));
+    my $parser = JSON->new();
+    $parser->relaxed(1);
     eval {
-        $self->{meta_data} = from_json($meta_data);
+        $self->{meta_data} = $parser->decode($meta_data);
     } or $self->keel_over("Error in JSON for: $EVAL_ERROR");
 
     # modified is used in <meta name="last-modified" content="..."/> and sitemap.xml
