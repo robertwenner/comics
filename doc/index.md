@@ -42,13 +42,14 @@ That said, there are still a few basic assumptions on how things work:
 
 - Generate everything. Since everything is in the comic's `.svg`, take that
   as input and generate whatever is needed: web pages, RSS feed, transcript,
-  and so on. This is described in the [outputs chapter](outputs.md).
+  and so on. This is described in the [outputs chapter](outputs.md). Lot of
+  the generated output depends on the [templates](templates.md) you write.
 
 - Have the computer help check. If a computer already processes each comic,
   have it also check for e.g., spelling errors. This is described in the
   [checks chapter](checks.md).
 
-- Publish the comics. The assumption is that you have your own web site and
+- Publish the comics. The assumption is that you have your own site and
   push a new comic e.g., every week. You don't need to run the web server on
   your own hardware, but have one you can access as you see fit. I don't
   recommend just tweeting or posting the comics to e.g., reddit. Being in

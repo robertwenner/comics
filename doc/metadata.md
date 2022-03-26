@@ -42,3 +42,7 @@ you're ready to go, add the titles.
 Different [check](checks.md) and [output](outputs.md) modules will use
 different metadata fields; see the respective documentation on what they
 expect.
+
+You are free to create metadata as needed. However, avoid names that have
+characters other than english letters, digits, and underscores. Perl's
+[toolkit](templates.md) may get confused.

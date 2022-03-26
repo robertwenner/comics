@@ -41,9 +41,6 @@
 - feature: email current comic when publishing; email list management should
   not be part of this
 
-- feature: add "previously published in ..." link to the bottom of the page
-  for comics that didn't appear on the web page initially
-
 - feature: support a comics by series pages / links (can a comic be in more
   than one series? (why not?))
 
