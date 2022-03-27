@@ -29,8 +29,9 @@ Should not be used directly.
 
 All Comic::Out modules should derive from this class.
 
-Generators are configured in the configuration file. They are called in the
-order they are defined in.
+Generators are configured in the configuration file. Since generators can
+depend on each other, they are called in a special order; see the C<order>
+function below.
 
 A generator can use one or both methods of generating output:
 
@@ -335,8 +336,8 @@ Parameters:
 
 =item B<$name> setting name.
 
-=item B<$type> expected type. Pass '' for scalars, 'ARRAY' for arrays, or
-    'HASH' for hashes.
+=item B<$type> expected type. Pass '' or 'scalar' for scalars, 'ARRAY' for
+    arrays, or 'HASH' for hashes.
 
     Pass 'array-or-scalar' for a settig that can be either a scalar or an
     array. It will be converted in an array. If the argument was not given,

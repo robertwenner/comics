@@ -239,10 +239,6 @@
 
 - feature: use relative links for HtmlLink for easy offline use
 
-- doc: more dev documentation: how to add a new check, output generator, or
-  social media poster; how Comic as a value object ties everything together,
-  the role of Comics as a simple entry point
-
 - doc: add example comic project with comics, templates, cron script,
   settings.json
 

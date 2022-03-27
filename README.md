@@ -17,7 +17,8 @@ Perl script, and still has a bunch of hard-coded names and assumptions.
 I'm slowly cleaning those up as I'm splitting the code into multiple
 modules, and then I'll also add more features. That said, it's a bit slow as
 the code works for me (no urgent need), so don't be surprised to see months
-without commits.
+without commits. The interfaces are also not stable, in particular
+configuration file entries may change.
 
 
 ## Dependencies
@@ -46,7 +47,7 @@ sudo make install
 ## Documentation
 
 See the [comic author / artist documentation](doc/index.md) or the Perl
-developer documentation in the respective modules.
+[developer documentation](doc/developers.md).
 
 
 ## Copyright & License
