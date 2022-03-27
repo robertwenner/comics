@@ -1,15 +1,12 @@
 - cleanup hard-coded names, e.g., "Rahmen" or even "Meta", "generated"
 
-- rework variables available for templates: standardize names, pick decent
-  names, DRY up them up, generate them in one place, document them
+- cleanup: rework variables available for templates: standardize names, pick
+  decent names, DRY up them up, generate them in one place, document them
 
 - should the names in the JSON configuration file be case-insensitive? Could
   be confusing when case actually matters, e.g., for Perl modules.
   If case matters, make sure it's used consistently. Language names are
   still used inconsistently.
-
-- cleanup: move more vars variables into the comics, for better scoping and
-  to allow multiple generators to contribute
 
 - refact: Perl: use feature qw(signatures); no warnings
   qw(experimental::signatures); or Function::Parameters, Method::Signatures
@@ -41,10 +38,10 @@
 - feature: email current comic when publishing; email list management should
   not be part of this
 
-- feature: support a comics by series pages / links (can a comic be in more
-  than one series? (why not?))
+- feature: series: support a comics by series pages / links (can a comic be
+  in more than one series? (why not?))
 
-- feature: prev next first last buttons per series
+- feature: series: prev next first last buttons per series
 
 - feature: tags under each comics, as hyperlinks to the tag cloud
   (see https://www.w3.org/TR/html5/common-idioms.html#tag-clouds) or comics
@@ -57,7 +54,8 @@
 
 - feature: minimize svg file sizes (e.g., with svgo), if svg export is supported
 
-- feature: generate latex code for pdf, or generarte pdf right away
+- feature: generate latex code for pdf, or generate pdf right away (this may
+  be just a templating issue)
 
 - feature: liner notes with comments in pdf, suck in other interesting
   documentation. This can pull stats per comics from git: how long between
@@ -140,13 +138,13 @@
 - defect: does it treat text outside of a meta layer as speaker label just
   because it ends in a colon (motivation.svg)? it probably should not.
 
-- check if meta text is not in a meta layer? by checking for colons? but
-  trailig colons should be ok.
-
 - feature (defect?): transcript check needs to not just grab all texts in
   order but also respect layers: don't treat regular text as speaker
   indicator just because it ends in a colon (could be a before / after style
   comic).
+
+- check if meta text is not in a meta layer? by checking for colons? but
+  trailig colons should be ok.
 
 - feature: upload to e.g., imgur.com and then post a link to that on reddit.
   This may be interesting for people not running their own website, and for
@@ -164,7 +162,7 @@
   like "Check" vs "Checks"
 
 - clean out backlog: when a comic goes from backlog to published, remove its
-  html file from the backlog
+  html file and qr code image from the backlog
 
 - feature: check text positions as double, so that you can move texts
   minimally to control the transcript without visual impact
@@ -173,9 +171,6 @@
   (other languages, turned invisible in Inkscape) instead of switching them
   to hidden? Files would be smaller (is disk space an issue anyway?), but
   would converting them be faster?
-
-- feature: make tags configurable instead of using hard-coded "who",
-  "series", and "tags"; for backlog as well as various comics-by-x overviews
 
 - replace vars{'tags'} and vars{'tagsOrder'} in backlog with an ordered hash
   if Template supports this nicely
@@ -218,10 +213,6 @@
 
 - feature: deduct output path from fragments, like outdir / base dir plus
   language placeholders, for less repetitive configuration files
-
-- feature: spellcheck: specify a comics specific word list, allow ignoring
-  #hashtags, allow ignoring words with non-letters, ignoring case, passing
-  hypenated German words as one word
 
 - feature: warnings as errors
 
