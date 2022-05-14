@@ -50,7 +50,7 @@ Parameters:
 
 =back
 
-The passed settings need to specify the L<Toolkit> template file(s) and the
+The passed settings need to specify the L<Template::Toolkit> template file(s) and the
 output files. If you only pass one template, that's used for all languages.
 The output file is always per language.
 
@@ -67,7 +67,7 @@ For example:
         },
     );
 
-The C<template> defines the L<Toolkit> template to use.
+The C<template> defines the L<Template::Toolkit> template to use.
 
 The C<outfile> where the output should go.
 
@@ -186,7 +186,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2016 - 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2016 - 2022, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or
