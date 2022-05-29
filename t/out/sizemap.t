@@ -106,6 +106,7 @@ sub aggregate_sizes_many : Tests {
     my @comics = (
         make_comic(100, 500),
         make_comic(200, 600),
+        make_comic(100, 500),
         make_comic(300, 400),
     );
     my %aggregated = Comic::Out::Sizemap::_aggregate_comic_sizes(@comics);
@@ -118,7 +119,7 @@ sub aggregate_sizes_many : Tests {
         width => {
             min => 100,
             max => 300,
-            avg => 200,
+            avg => 175,
         },
     });
 }
