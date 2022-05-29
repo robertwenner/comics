@@ -103,7 +103,7 @@ Parameters:
 
 =back
 
-This places these variables in the given comic:
+Makes these variables available in the template:
 
 =over 4
 

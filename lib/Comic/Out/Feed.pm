@@ -124,6 +124,25 @@ Parameters:
 
 =back
 
+Makes these variables available in the template:
+
+=over 4
+
+=item * B<@comics> array of all published comics in all languages.
+
+=item * B<&notFor> function the template needs to call on each comic,
+    passing the language. If that function returns C<true>, the comic should be
+    skipped. This maps to C<&Comic::not_for>.
+
+=item * B<$max> How many comics to include in the feed. This is the C<max>
+    configuration value, so that the template doesn't need to hard-code
+    configuration.
+
+=item * B<$updated> the current data and time, in RFC3339 format, for the
+    atom C<updated> element.
+
+=back
+
 =cut
 
 sub generate_all {
@@ -238,7 +257,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2016 - 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2016 - 2022, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or

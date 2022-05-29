@@ -15,7 +15,7 @@ use version; our $VERSION = qv('0.0.3');
 
 =encoding utf8
 
-=for stopwords Wenner merchantability perlartistic Scalable
+=for stopwords Wenner merchantability perlartistic Scalable svg
 
 
 =head1 NAME
@@ -108,6 +108,15 @@ Parameters:
 =over 4
 
 =item * B<$comic> Comic for which to write the F<.svg> files.
+
+=back
+
+Makes these variables available in the template:
+
+=over 4
+
+=item * B<%svgFile> hash of language to svg image file (path relative to
+    main output directory).
 
 =back
 

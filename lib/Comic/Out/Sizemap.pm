@@ -27,7 +27,7 @@ Readonly my $MIN_SIZE_SENTINEL => 9_999_999;
 
 =encoding utf8
 
-=for stopwords Wenner merchantability perlartistic notFor
+=for stopwords Wenner merchantability perlartistic notFor svg
 
 
 =head1 NAME
@@ -117,6 +117,36 @@ Parameters:
 =over 4
 
 =item * B<@comics> Comics to include in the size map.
+
+=back
+
+Makes these variables available in the template:
+
+=over 4
+
+=item * B<$minwidth> Minimum width (x) of all comics, i.e., how wide the
+    smallest comic is (in pixels).
+
+=item * B<$maxwidth> Maximum width (x) of all comics, i.e., how wide the
+    widest comic is (in pixels).
+
+=item * B<$avgwidth> Average width of all comics (in pixels).
+
+=item * B<$minheight> Minimum height of all comics, i.e., how high the
+    smallest comic is (in pixels).
+
+=item * B<$maxheight> Maximum height of all comics, i.e., how high the
+    tallest comic is (in pixels).
+
+=item * B<$avgheight> Average height of all comics (in pixels).
+
+=item * B<@comics_by_width> Sorted (smallest first) array of all comics.
+
+=item * B<@comics_by_height> Sorted array (smallest first) array of all
+    comics.
+
+=item * B<$svg> The svg image of the size map, i.e., the colored rectangles
+    symbolizing comic sizes.
 
 =back
 
@@ -285,7 +315,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2016 - 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2016 - 2022, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or

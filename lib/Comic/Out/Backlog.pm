@@ -116,7 +116,30 @@ Parameters:
 
 =back
 
-See the user documentation for the variables defined for the template.
+Makes these variables available in the template:
+
+=over 4
+
+=item * B<@comics> array of all unpublished comics in all languages, sorted
+    from sooner to later scheduled.
+
+=item * B<@languages> all languages that have at least 1 comic (published or
+    not); with first letter in upper case and the rest in lower case, e.g.,
+    "English".
+
+=item * B<@publishers> Array for published locations, taken from the
+    C<published.where> comic metadata. Any configured C<toplocation> will go
+    first, entries after that will be in alphabetical order.
+
+=item * for each of the configured C<collect> items: a hash of collected
+    values to the number of occurrences. For example, if "tags" was
+    collected, the template can access a C<tagsOrder> array (sorted by
+    frequency, then by found tag name) and a C<tags> hash of keyword to
+    count, e.g., tag "beer" was seen 5 times. Having the array for sorting
+    is a workaround for Perl hashes not having a defined order. (This should
+    probably be replaced with a tied hash.)
+
+=back
 
 =cut
 
@@ -202,8 +225,9 @@ sub _populate_vars {
                     # Then sort by name, case insensitive, so that e.g., m and M
                     # get sorted together (Branch true cannot be covered: cmp
                     # always returns non-zero cause we only have each term only
-                    # once as a hash key.) uncoverable condition true
-                    $cmp = lc $a cmp lc $b;
+                    # once as a hash key.)
+                    $cmp = lc $a cmp lc $b; # uncoverable condition true
+
                 }
                 if (!$cmp) {
                     # Lastly sort by name, case sensitive, to avoid names

@@ -95,6 +95,18 @@ Parameters:
 
 =back
 
+Makes these variables available in the template:
+
+=over  4
+
+=item * B<@comics> array of all comics (published and unpublished).
+
+=item * B<&notFor> function the template needs to call on each comic,
+    passing the language. If that function returns C<true>, the comic should be
+    skipped. This maps to C<&Comic::not_published_on_the_web>.
+
+=back
+
 =cut
 
 sub generate_all {
@@ -159,7 +171,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2016 - 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2016 - 2022, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or

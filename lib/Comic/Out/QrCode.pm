@@ -101,9 +101,14 @@ Parameters:
 
 =back
 
-This also defines a new hash named C<qrcode> on the given comic, with the
-comic's languages as keys pointing to the generated QR code image file name
-(path relative to the general output directory).
+Makes these variables available in the template:
+
+=over 4
+
+=item * B<%qrcode> hash of language to the generated qr code image file name
+    (path relative to the general output directory).
+
+=back
 
 =cut
 
@@ -173,7 +178,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2018 - 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2018 - 2022, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or

@@ -13,7 +13,7 @@ use base('Comic::Out::Generator');
 
 =encoding utf8
 
-=for stopwords Wenner merchantability perlartistic svg html metadata
+=for stopwords Wenner merchantability perlartistic svg html metadata url
 
 
 =head1 NAME
@@ -86,7 +86,14 @@ Parameters:
 
 =back
 
-Adds a new field to each Comic that wants to link somewhere:
+Makes these variables available in the template:
+
+=over 4
+
+=item * B<%htmllink> A hash of language to a hash of link text to the link
+target (url).
+
+For example:
 
     {
         "htmllink" => {
@@ -107,6 +114,8 @@ If a Comic does not refer to others, this module won't add the C<htmllink>
 at all. Templates can check its existence to decide whether to print a
 prologue, then iterate over the languages and within the languages over the
 link text / link target pairs.
+
+=back
 
 =cut
 
@@ -191,7 +200,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2016 - 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2016 - 2022, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or
