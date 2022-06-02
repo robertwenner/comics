@@ -1072,8 +1072,8 @@ sub _text_from_path {
     my ($self, $node) = @ARG;
 
     my @text_path = $node->getChildrenByTagName('textPath');
-    $self->keel_over('No X/Y and no textPath child element') if (@text_path == 0);
-    $self->keel_over('No X/Y and multiple textPath child elements') if (@text_path > 1);
+    $self->keel_over("No X/Y and no textPath child element on $node->{id}") if (@text_path == 0);
+    $self->keel_over("No X/Y and multiple textPath child elements on $node->{id}") if (@text_path > 1);
     my $path_id = $text_path[0]->getAttribute('xlink:href');
     $path_id =~ s{^#}{};
     my $xpath = "//$DEFAULT_NAMESPACE:ellipse[\@id='$path_id']";
