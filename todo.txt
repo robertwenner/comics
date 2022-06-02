@@ -249,3 +249,6 @@
 - feature: allow putting a ssh key for rsync in the config, so that a dumb scp
   doesn't skip a .ssh directory or .ssh-key.pem file (when switching between
   computers)
+
+- feature: decouple archive comic pages from index.html; this could make for
+  easier templates if the main page differs a lot from each comic's page
