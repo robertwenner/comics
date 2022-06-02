@@ -339,9 +339,8 @@ While processing the templates, these variables are available:
 Generates a HTML reference ("see that other comic") from comic metadata.
 This assume you use the `Comic::Out::HtmlPage` module as well.
 
-This is only for linking to another of your comics; to include a hyperlink
-to any other web site just add it to your comic's metadata and have the
-template do whatever it needs to do.
+This is only for linking to another of your comics; see below to  include a
+hyperlink to any other web site.
 
 This module does not take any configuration.
 
@@ -400,6 +399,7 @@ this in your comic:
         }
     }
 }
+```
 
 Then use something like this in the comic page template:
 

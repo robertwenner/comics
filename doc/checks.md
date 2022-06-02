@@ -52,6 +52,7 @@ In the following example you'll get an error because the English character
 list has less items than the others.
 
 ```json
+{
     "who": {
         "english": ["Paul", "Max"],
         "deutsch": ["Paul", "Max", "sprechendes Bierfaß"],

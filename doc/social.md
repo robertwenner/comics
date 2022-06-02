@@ -30,8 +30,8 @@ The configuration looks like this:
 
 ```json
 {
-    "Social":
-        "Comic::Social::Reddit":
+    "Social": {
+        "Comic::Social::Reddit": {
             "username": "your reddit name",
             "password": "secret",
             "client_id": "...",

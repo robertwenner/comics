@@ -24,8 +24,8 @@ The Comic modules distinguish these layers:
   per-language texts in the image that should not make it into the
   transcript. If you configure a `NoTranscriptPrefix`, the transcript
   collecting code will ignore all layers where the name starts with that
-  prefix will that prefix. If you don't configure this prefix, all layers
-  contribute to the transcript.
+  prefix. If you don't configure this prefix, all layers contribute to the
+  transcript.
 
 - Frames layer: used by some checks and the transcript generator to figure
   out in which order texts should appear in the transcript. You can
