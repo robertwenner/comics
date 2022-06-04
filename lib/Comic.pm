@@ -169,7 +169,7 @@ sub load {
             $base = $self->{backlogPath}{$language};
         }
         else {
-            $base = 'web/' . lc $language . '/comics';
+            $base = 'generated/web/' . lc $language . '/comics';
         }
 
         $self->{titleUrlEncoded}{$language} = uri_encode($self->{meta_data}->{title}->{$language}, %uri_encoding_options);
@@ -720,8 +720,6 @@ Parameters:
 
 sub make_dir {
     my $dir = shift;
-
-    $dir = "generated/$dir" if ($dir !~ m{^generated/});
     File::Path::make_path($dir);
     return $dir;
 }
