@@ -87,6 +87,9 @@ sub parses_inkscape_version : Tests {
     is(Comic::Out::PngInkscape::_parse_inkscape_version($comic, "Inkscape 0.92.5 (2060ec1f9f, 2020-04-08)\n"), "0.9");
     is(Comic::Out::PngInkscape::_parse_inkscape_version($comic, "Inkscape 1.0 (4035a4fb49, 2020-05-01)\n"), "1.0");
     is(Comic::Out::PngInkscape::_parse_inkscape_version($comic, "Inkscape 1.0.2 (e86c870879, 2021-01-15)\n"), "1.0");
+    is(Comic::Out::PngInkscape::_parse_inkscape_version($comic, "Inkscape 1.1 (e86c870879, 2021-01-15)\n"), "1.1");
+    is(Comic::Out::PngInkscape::_parse_inkscape_version($comic, "Inkscape 1.1.2 (0a00cf5339, 2022-02-04)\n"), "1.1");
+    is(Comic::Out::PngInkscape::_parse_inkscape_version($comic, "Inkscape 1.2 (dc2aedaf03, 2022-05-15)\n"), "1.2");
     is(Comic::Out::PngInkscape::_parse_inkscape_version($comic, "Inkscape 10.0.0 (abcdef, 2200-01-01)\n"), "10.0");
 
     eval {
@@ -94,6 +97,12 @@ sub parses_inkscape_version : Tests {
     };
     like($@, qr{Cannot figure out}i);
     like($@, qr{Whatever 2020}i);
+
+    eval {
+        Comic::Out::PngInkscape::_parse_inkscape_version($comic, "Inkscape 1,3 (whenever)");
+    };
+    like($@, qr{Cannot figure out}i);
+    like($@, qr{Inkscape 1,3}i);
 }
 
 
@@ -163,6 +172,30 @@ sub export_command_line_inkscape1_1 : Tests {
     no warnings qw/redefine/;
     local *Comic::Out::PngInkscape::_get_inkscape_version = sub {
         return "1.1";
+    };
+    use warnings;
+
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+    );
+
+    $png->_svg_to_png($comic, $MockComic::ENGLISH, 'latest-comic.svg', 'latest-comic.png');
+
+    like($command_lines[0], qr{^inkscape }, 'inkscape call');
+    unlike($command_lines[0], qr{ --without-gui }, 'old suppresses GUI flag');
+    like($command_lines[0], qr{ --export-type=png\b}, 'png file type');
+    like($command_lines[0], qr{ --export-filename=\S*\blatest-comic.png\b}, 'png file name');
+    like($command_lines[0], qr{\blatest-comic.svg$}, 'input svg file');
+    like($command_lines[0], qr{ --export-area-drawing }, 'export area');
+    like($command_lines[0], qr{ --export-background=#ffffff}, 'background color');
+    is_deeply($comic->{warnings}, []);
+}
+
+
+sub export_command_line_inkscape1_2 : Tests {
+    no warnings qw/redefine/;
+    local *Comic::Out::PngInkscape::_get_inkscape_version = sub {
+        return "1.2";
     };
     use warnings;
 
