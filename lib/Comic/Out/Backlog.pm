@@ -226,7 +226,7 @@ sub _populate_vars {
                     # get sorted together (Branch true cannot be covered: cmp
                     # always returns non-zero cause we only have each term only
                     # once as a hash key.)
-                    $cmp = lc $a cmp lc $b; # uncoverable condition true
+                    $cmp = lc $a cmp lc $b; # uncoverable branch true
 
                 }
                 if (!$cmp) {

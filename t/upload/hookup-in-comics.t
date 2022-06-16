@@ -30,6 +30,28 @@ sub set_up : Test(setup) {
 }
 
 
+sub loads_uploaders_none_configured : Tests {
+    $comics = Comics->new();
+    $comics->load_uploaders();
+    is_deeply($comics->{uploaders}, []);
+}
+
+
+sub loads_uploaders_and_passes_ctor_args : Tests {
+    $comics = Comics->new();
+
+    MockComic::fake_file('config.json',
+        '{"' . $Comic::Settings::UPLOADERS . '": {"DummyUploader": {"foo": "bar"}}}');
+    $comics->load_settings('config.json');
+
+    $comics->load_uploaders();
+
+    my @uploaders = @{$comics->{uploaders}};
+    is(@uploaders, 1, 'should have one Uploader');
+    $uploaders[0]->assert_constructed('foo', 'bar');
+}
+
+
 sub no_comics_still_calls_uploader : Tests {
     $comics->upload_all_comics();
 
