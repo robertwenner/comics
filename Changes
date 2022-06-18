@@ -1,5 +1,8 @@
 Revision history for Comic
 
+0.0.3   2022-12-24
+        Frst production use of modularized code.
+
 0.0.2   2015-11-27
         Initial MakeMaker module.
 

@@ -52,7 +52,7 @@ WriteMakefile(
         %test_dependencies,
     },
     MIN_PERL_VERSION => 5.22.0,
-    LICENSE => 'Perl',
+    LICENSE => 'perl_5',
     META_ADD => {
         "meta-spec" => { version => 2 },
         resources => {
