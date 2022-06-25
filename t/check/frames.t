@@ -5,6 +5,7 @@ use base 'Test::Class';
 use Test::More;
 use lib 't';
 use MockComic;
+use Comic::Consts;
 use Comic::Check::Frames;
 
 __PACKAGE__->runtests() unless caller;
@@ -36,6 +37,56 @@ sub try_comic {
     my $comic = MockComic::make_comic($MockComic::FRAMES => [@_]);
     $check->check($comic);
     return $comic;
+}
+
+
+
+sub uses_defaults : Tests {
+    $check = Comic::Check::Frames->new();
+    is($check->{'FRAME_ROW_HEIGHT'}, $Comic::Consts::FRAME_ROW_HEIGHT, 'wrong frame row height');
+    is($check->{'FRAME_SPACING'}, $Comic::Consts::FRAME_SPACING, 'wrong frame spacing');
+    is($check->{'FRAME_SPACING_TOLERANCE'}, $Comic::Consts::FRAME_SPACING_TOLERANCE, 'wrong spacing tolerance');
+    is($check->{'FRAME_TOLERANCE'}, $Comic::Consts::FRAME_TOLERANCE, 'wrong frame tolerance');
+    is($check->{'FRAME_WIDTH'}, $Comic::Consts::FRAME_WIDTH, 'wrong frame width');
+    is($check->{'FRAME_WIDTH_DEVIATION'}, $Comic::Consts::FRAME_WIDTH_DEVIATION, 'wrong frame width deviation');
+}
+
+
+sub override_defaults : Tests {
+    $check = Comic::Check::Frames->new(
+        'FRAME_ROW_HEIGHT' => 100,
+        'FRAME_SPACING' => 200,
+        'FRAME_SPACING_TOLERANCE' => 300,
+        'FRAME_TOLERANCE' => 400,
+        'FRAME_WIDTH' => 500,
+        'FRAME_WIDTH_DEVIATION' => 500,
+    );
+    is($check->{'FRAME_ROW_HEIGHT'}, 100, 'wrong frame row height');
+    is($check->{'FRAME_SPACING'}, 200, 'wrong frame spacing');
+    is($check->{'FRAME_SPACING_TOLERANCE'}, 300, 'wrong spacing tolerance');
+    is($check->{'FRAME_TOLERANCE'}, 400, 'wrong frame tolerance');
+    is($check->{'FRAME_WIDTH'}, 500, 'wrong frame width');
+    is($check->{'FRAME_WIDTH_DEVIATION'}, 500, 'wrong frame width deviation');
+}
+
+
+sub bad_svg_no_stroke : Tests {
+    my $frame = <<"FRAME";
+  <g
+     inkscape:groupmode="layer"
+     inkscape:label="Rahmen">
+    <rect
+       style="display:inline;fill:none;stroke:#000000;stroke-opacity:1"
+       id="rect6486"
+       width="100"
+       height="100"
+       x="0"
+       y="0"/>
+  </g>
+FRAME
+    my $comic = MockComic::make_comic($MockComic::XML => $frame);
+    $check->check($comic);
+    like(${$comic->{warnings}}[0], qr{Cannot find width});
 }
 
 
@@ -117,16 +168,24 @@ sub aligned_right_same_row : Tests {
 
 
 sub misaligned_left_next_row : Tests {
-    assert_bad(qr{align},
+    assert_bad(qr{left.+align},
         100, 100,   0,   0,
         100, 100,   2, 110);
 }
 
 
-sub misaligned_right_next_row : Tests {
-    assert_bad(qr{align},
+sub misaligned_right_middle_row : Tests {
+    assert_bad(qr{right.+align},
         100, 100,   0,   0,
-        102, 100, 110, 110);
+        102, 100,   0, 110,
+        100, 100,   0, 220);
+}
+
+
+sub misaligned_right_last_row : Tests {
+    assert_bad(qr{right.+align},
+        100, 100,   0,   0,
+        102, 100,   0, 110);
 }
 
 
@@ -266,9 +325,9 @@ sub double : Tests {
 }
 
 
-sub aligned_left_multiple_columns : Tests {
-    assert_ok(
+sub two_small_frames_next_to_each_other_one_wide_frame : Tests {
+    assert_ok( # width height x y
         100, 100, 0, 0,
         100, 100, 110, 0,
-        100, 210, 0, 110);
+        210, 100, 0, 110);
 }

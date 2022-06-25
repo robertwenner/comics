@@ -91,12 +91,18 @@ sub new {
     my ($class, %args) = @ARG;
     my $self = $class->SUPER::new();
 
-    $self->{'FRAME_ROW_HEIGHT'} = $args{'FRAME_ROW_HEIGHT'} || $Comic::Consts::FRAME_ROW_HEIGHT;
-    $self->{'FRAME_SPACING'} = $args{'FRAME_SPACING'} || $Comic::Consts::FRAME_SPACING;
-    $self->{'FRAME_SPACING_TOLERANCE'} = $args{'FRAME_SPACING_TOLERANCE'} || $Comic::Consts::FRAME_SPACING_TOLERANCE;
-    $self->{'FRAME_TOLERANCE'} = $args{'FRAME_TOLERANCE'} || $Comic::Consts::FRAME_TOLERANCE;
-    $self->{'FRAME_WIDTH'} = $args{'FRAME_WIDTH'} || $Comic::Consts::FRAME_WIDTH;
-    $self->{'FRAME_WIDTH_DEVIATION'} = $args{'FRAME_WIDTH_DEVIATION'} || $FRAME_WIDTH_DEVIATION;
+    my %default_args = (
+        'FRAME_ROW_HEIGHT' => $Comic::Consts::FRAME_ROW_HEIGHT,
+        'FRAME_SPACING' => $Comic::Consts::FRAME_SPACING,
+        'FRAME_SPACING_TOLERANCE' => $Comic::Consts::FRAME_SPACING_TOLERANCE,
+        'FRAME_TOLERANCE' => $Comic::Consts::FRAME_TOLERANCE,
+        'FRAME_WIDTH' => $Comic::Consts::FRAME_WIDTH,
+        'FRAME_WIDTH_DEVIATION' => $Comic::Consts::FRAME_WIDTH_DEVIATION,
+        %args,
+    );
+    foreach my $arg (keys %default_args) {
+        $self->{$arg} = $default_args{$arg};
+    }
 
     return $self;
 }
@@ -121,8 +127,8 @@ sub check {
 
     # frame coordinate is top left corner of a rectangle
     # higher y means lower on the page, higher x means further to the right
-    my $prev_bottom;
     my $prev_top;
+    my $prev_bottom;
     my $prev_right;
 
     my $left_most;
@@ -130,60 +136,38 @@ sub check {
 
     my $first_row = 1;
 
-    foreach my $f ($comic->all_frames_sorted()) {
+    my @frames = $comic->all_frames_sorted();
+    foreach my $f (@frames) {
         $self->_check_frame_style($comic, $f);
 
-        my $top = $f->getAttribute('y') * 1.0;
-        my $bottom = $top + $f->getAttribute('height') * 1.0;
-        my $left_side = $f->getAttribute('x') * 1.0;
+        my ($top, $bottom, $left_side, $right_side) = _frame_sides($f);
         $left_most = $left_side unless (defined $left_most);
 
-        my $right_side = $left_side + $f->getAttribute('width') * 1.0;
         my $next_row = defined($prev_bottom) && _more_off($prev_bottom, $bottom, $self->{FRAME_ROW_HEIGHT});
         $first_row = 0 if ($next_row);
         $right_most = $right_side if ($first_row);
+
         if (defined $prev_bottom) {
             if ($next_row) {
-                if ($prev_bottom > $top) {
-                    $self->warning($comic, "Frames overlap y at $prev_bottom and $top");
-                }
-                if ($prev_bottom + $self->{FRAME_SPACING} > $top) {
-                    $self->warning($comic, 'Frames too close y (' . ($prev_bottom - $self->{FRAME_SPACING} - $top) . ") at $prev_bottom and $top");
-                }
-                if ($prev_bottom + $self->{FRAME_SPACING} + $self->{FRAME_SPACING_TOLERANCE} < $top) {
-                    $self->warning($comic, "Frames too far y at $prev_bottom and $top");
-                }
-
-                if (_more_off($left_most, $left_side, $self->{FRAME_TOLERANCE})) {
-                    $self->warning($comic, "Frame left side not aligned: $left_most and $left_side");
-                }
-                if (_more_off($prev_right, $right_most, $self->{FRAME_TOLERANCE})) {
-                    $self->warning($comic, "Frame right side not aligned: $right_side and $right_most");
-                }
+                $self->_check_new_row_against_previous_row($comic, $prev_bottom, $top);
+                $self->_check_row_side_alignment($comic, $left_most, $left_side, $prev_right, $right_most);
             }
             else {
-                if (_more_off($prev_bottom, $bottom, $self->{FRAME_TOLERANCE})) {
-                    $self->warning($comic, "Frame bottoms not aligned: $prev_bottom and $bottom");
-                }
-                if (_more_off($prev_top, $top, $self->{FRAME_TOLERANCE})) {
-                    $self->warning($comic, "Frame tops not aligned: $prev_top and $top");
-                }
-
-                if ($prev_right > $left_side) {
-                    $self->warning($comic, "Frames overlap x at $prev_right and $left_side");
-                }
-                if ($prev_right + $self->{FRAME_SPACING} > $left_side) {
-                    $self->warning($comic, "Frames too close x at $prev_right and $left_side");
-                }
-                if ($prev_right + $self->{FRAME_SPACING} + $self->{FRAME_SPACING_TOLERANCE} < $left_side) {
-                    $self->warning($comic, 'Frames too far x (' . ($left_side - ($prev_right + $self->{FRAME_SPACING} + $self->{FRAME_SPACING_TOLERANCE})) . ") at $prev_right and $left_side");
-                }
+                $self->_check_frame_top_bottom_alignment_in_row($comic, $prev_bottom, $bottom, $prev_top, $top);
+                $self->_check_no_frame_overlap_in_row($comic, $prev_right, $left_side);
             }
         }
 
         $prev_bottom = $bottom;
         $prev_top = $top;
         $prev_right = $right_side;
+    }
+
+    if (@frames) {
+        # Check last row's right alignment
+        if (_more_off($prev_right, $right_most, $self->{FRAME_TOLERANCE})) {
+            $self->warning($comic, "Frame right side not aligned: $prev_right and $right_most");
+        }
     }
     return;
 }
@@ -204,6 +188,79 @@ sub _check_frame_style {
     }
     else {
         $self->warning($comic, "Cannot find width in '$style'");
+    }
+    return;
+}
+
+
+sub _frame_sides {
+    my ($frame) = @ARG;
+
+    my $top = $frame->getAttribute('y') * 1.0;
+    my $bottom = $top + $frame->getAttribute('height') * 1.0;
+    my $left_side = $frame->getAttribute('x') * 1.0;
+    my $right_side = $left_side + $frame->getAttribute('width') * 1.0;
+
+    return ($top, $bottom, $left_side, $right_side);
+}
+
+
+sub _check_new_row_against_previous_row {
+    my ($self, $comic, $prev_bottom, $top) = @ARG;
+
+    if ($prev_bottom > $top) {
+        $self->warning($comic, "Frames overlap y at $prev_bottom and $top");
+    }
+    if ($prev_bottom + $self->{FRAME_SPACING} > $top) {
+        $self->warning($comic, 'Frames too close y (' . ($prev_bottom - $self->{FRAME_SPACING} - $top) . ") at $prev_bottom and $top");
+    }
+    if ($prev_bottom + $self->{FRAME_SPACING} + $self->{FRAME_SPACING_TOLERANCE} < $top) {
+        $self->warning($comic, "Frames too far y at $prev_bottom and $top");
+    }
+    return;
+}
+
+
+sub _check_row_side_alignment {
+    my ($self, $comic, $left_most, $left_side, $prev_right, $right_most) = @ARG;
+
+    if (_more_off($left_most, $left_side, $self->{FRAME_TOLERANCE})) {
+        $self->warning($comic, "Frame left side not aligned: $left_most and $left_side");
+    }
+    if (_more_off($prev_right, $right_most, $self->{FRAME_TOLERANCE})) {
+        # Compares $prev_right because we want to only make sure the right-most frame
+        # in a row of frames is aligned, not e.g., the middle one in a row with three
+        # frames.
+        $self->warning($comic, "Frame right side not aligned: $prev_right and $right_most");
+    }
+    return;
+}
+
+
+sub _check_frame_top_bottom_alignment_in_row {
+    my ($self, $comic, $prev_bottom, $bottom, $prev_top, $top) = @ARG;
+
+    if (_more_off($prev_bottom, $bottom, $self->{FRAME_TOLERANCE})) {
+        $self->warning($comic, "Frame bottoms not aligned: $prev_bottom and $bottom");
+    }
+    if (_more_off($prev_top, $top, $self->{FRAME_TOLERANCE})) {
+        $self->warning($comic, "Frame tops not aligned: $prev_top and $top");
+    }
+    return;
+}
+
+
+sub _check_no_frame_overlap_in_row {
+    my ($self, $comic, $prev_right, $left_side) = @ARG;
+
+    if ($prev_right > $left_side) {
+        $self->warning($comic, "Frames overlap x at $prev_right and $left_side");
+    }
+    if ($prev_right + $self->{FRAME_SPACING} > $left_side) {
+        $self->warning($comic, "Frames too close x at $prev_right and $left_side");
+    }
+    if ($prev_right + $self->{FRAME_SPACING} + $self->{FRAME_SPACING_TOLERANCE} < $left_side) {
+        $self->warning($comic, 'Frames too far x (' . ($left_side - ($prev_right + $self->{FRAME_SPACING} + $self->{FRAME_SPACING_TOLERANCE})) . ") at $prev_right and $left_side");
     }
     return;
 }
@@ -252,7 +309,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2015 - 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2015 - 2022, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or
