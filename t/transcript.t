@@ -243,3 +243,155 @@ XML
          'meta top left', 'text top left', 'meta top right', 'text top right',
          'meta bottom left', 'text bottom left', 'meta bottom right', 'text bottom right']);
 }
+
+
+sub bad_transcript_value : Tests {
+    my $json = <<'JSON';
+&quot;title&quot;: {
+    &quot;English&quot;: &quot;Beer&quot;
+},
+&quot;Transcript&quot;: &quot;whatever&quot;
+JSON
+    my $comic = MockComic::make_comic($MockComic::JSON => $json);
+    eval {
+        $comic->get_transcript('English');
+    };
+    like($@, qr{\bTranscript\b}i, 'should mention setting');
+    like($@, qr{\bunknown\b}i, 'should say what is wrong');
+}
+
+
+sub from_order_transcript_value : Tests {
+    my $json = <<'JSON';
+&quot;title&quot;: {
+    &quot;English&quot;: &quot;Beer&quot;
+},
+&quot;Transcript&quot;: &quot;left-to-right&quot;
+JSON
+    my $comic = MockComic::make_comic(
+        $MockComic::JSON => $json,
+        $MockComic::TEXTS => {
+            'MetaDeutsch' => [
+                {'x' => 0, 'y' => 0, 't' => 'Max'},
+                {'x' => 10, 'y' => 0, 't' => 'Paul'},
+            ],
+            'Deutsch' => [
+                {'x' => 5, 'y' => 0, 't' =>'Bier?'},
+                {'x' => 15, 'y' => 0, 't' => 'Nein danke!'},
+            ],
+        }
+    );
+    my @transcript = $comic->get_transcript('Deutsch');
+    is_deeply([@transcript], [ 'Max', 'Bier?', 'Paul', 'Nein danke!']);
+}
+
+
+sub from_numeric_ids : Tests {
+    my $json = <<'JSON';
+&quot;title&quot;: {
+    &quot;English&quot;: &quot;Beer&quot;
+},
+&quot;Transcript&quot;: &quot;from-ids&quot;
+JSON
+    my $layers = <<'XML';
+<g inkscape:groupmode="layer" inkscape:label="English">
+    <text id="3" x="0" y="0">
+        <tspan>three</tspan>
+    </text>
+    <text id="2" x="10" y="0">
+        <tspan>two</tspan>
+    </text>
+    <text id="1" x="20" y="0">
+        <tspan>one</tspan>
+    </text>
+</g>
+XML
+    my $comic = MockComic::make_comic($MockComic::JSON => $json, $MockComic::XML => $layers);
+
+    my @transcript = $comic->get_transcript('English');
+
+    is_deeply(\@transcript, ['one', 'two', 'three']);
+}
+
+
+sub from_alphanumeric_ids : Tests {
+    my $json = <<'JSON';
+&quot;title&quot;: {
+    &quot;English&quot;: &quot;Beer&quot;
+},
+&quot;Transcript&quot;: &quot;from-ids&quot;
+JSON
+    my $layers = <<'XML';
+<g inkscape:groupmode="layer" inkscape:label="English">
+    <text id="text3" x="0" y="0">
+        <tspan>three</tspan>
+    </text>
+    <text id="text2" x="10" y="0">
+        <tspan>two</tspan>
+    </text>
+    <text id="text1" x="20" y="0">
+        <tspan>one</tspan>
+    </text>
+</g>
+XML
+    my $comic = MockComic::make_comic($MockComic::JSON => $json, $MockComic::XML => $layers);
+
+    my @transcript = $comic->get_transcript('English');
+
+    is_deeply(\@transcript, ['one', 'two', 'three']);
+}
+
+
+sub reports_duplicate_ids : Tests {
+    my $json = <<'JSON';
+&quot;title&quot;: {
+    &quot;English&quot;: &quot;Beer&quot;
+},
+&quot;Transcript&quot;: &quot;from-ids&quot;
+JSON
+    my $layers = <<'XML';
+<g inkscape:groupmode="layer" inkscape:label="English">
+    <text id="12345" x="0" y="0">
+        <tspan>three</tspan>z
+    </text>
+    <text id="12345" x="20" y="0">
+        <tspan>one</tspan>
+    </text>
+</g>
+XML
+    my $comic = MockComic::make_comic($MockComic::JSON => $json, $MockComic::XML => $layers);
+
+    $comic->get_transcript('English');
+
+    like($comic->{warnings}[0], qr{\bduplicated id\b}i, 'should say what is wrong');
+    like($comic->{warnings}[0], qr{\b12345\b}i, 'should say the id');
+    like($comic->{warnings}[0], qr{\bthree\b}i, 'should say the first text');
+    like($comic->{warnings}[0], qr{\bone\b}i, 'should say the second text');
+}
+
+
+sub reports_numeric_alphanumeric_id_mix : Tests {
+    my $json = <<'JSON';
+&quot;title&quot;: {
+    &quot;English&quot;: &quot;Beer&quot;
+},
+&quot;Transcript&quot;: &quot;from-ids&quot;
+JSON
+    my $layers = <<'XML';
+<g inkscape:groupmode="layer" inkscape:label="English">
+    <text id="1" x="0" y="0">
+        <tspan>three</tspan>z
+    </text>
+    <text id="text12345" x="20" y="0">
+        <tspan>one</tspan>
+    </text>
+</g>
+XML
+    my $comic = MockComic::make_comic($MockComic::JSON => $json, $MockComic::XML => $layers);
+
+    $comic->get_transcript('English');
+
+    like($comic->{warnings}[0], qr{\balpha}i, 'should say what is wrong');
+    like($comic->{warnings}[0], qr{\btext12345\b}i, 'should say the id');
+    like($comic->{warnings}[0], qr{\bone\b}i, 'should say the text');
+}

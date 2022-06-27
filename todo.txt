@@ -216,10 +216,6 @@
 
 - feature: warnings as errors
 
-- feature: allow manually ordering frames by naming them (ids) with numbers
-  to tell the transcript collector in which order to process frames (and
-  with that texts), may be needed for panels that cover multiple rows
-
 - feature: allow manually ordering texts by naming them (ids) with numbers
   to force transcript order in more elaborate cartoons (often single panel)
 

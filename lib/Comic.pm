@@ -517,9 +517,15 @@ sub check {
 =head2 get_transcript
 
 Gets this Comic's transcript. The transcript is ordered text from this
-Comic's transcript and real text layers, ordered from top left to bottom
-right by frames. Usually it consists of speaker indicators and actual speech
-texts, plus maybe some background texts.
+Comic's transcript and real text layers. Usually the transcript consists of
+speaker indicators and actual speech texts, plus maybe some background
+texts.
+
+The Comic can define a C<Transcript> field. If that field is C<from-ids>,
+the ids of the texts define the order (from lowest to highest).
+
+If C<Transcript> is C<from-order> or not given, the texts are taken from top
+left to bottom right by frame rows.
 
 Parameters:
 
@@ -921,8 +927,49 @@ sub texts_in_language {
     }
 
     my @found = $self->_text_nodes_in_layers(keys %needed_layers);
+
+    my $sorter;
+    my $mode = $self->{meta_data}->{Transcript} || 'left-to-right';
+    if ($mode eq 'left-to-right') {
+        $sorter = sub { $self->_text_pos_sort($a, $b) };
+    }
+    elsif ($mode eq 'from-ids') {
+        $sorter = sub {
+            if ($a->{id} =~ m{^\d+$} && $b->{id} =~ m{^\d+$}) {
+                return $a->{id} <=> $b->{id};
+            }
+            return $a->{id} cmp $b->{id};
+        };
+
+        # Warn about duplicated ids. Inkscape changes the id if it's not
+        # unique, but if you manually edit the comic Inkscape may never see
+        # it, and then we could get confusing behavior (unexpected order, or
+        # texts changing order between runs).
+        # Also warn about mixing numeric and alphanumeric ids: this could
+        # happen if Inkscape changes a duplicate id back to an alphanumeric
+        # name, so if we see a mix of numeric and alphanumeric ids, warn.
+        my %ids;
+        my $only_numeric = 0;
+        foreach my $text (@found) {
+            my $id = $text->{id};
+
+            if (defined $ids{$id}) {
+                $self->warning("Duplicated id $id: $ids{$id} and " . _text_content($text));
+            }
+            $ids{$id} = _text_content($text);
+
+            $only_numeric++ if ($id =~ m/^\d+$/);
+            if ($id =~ m{[[:lower:]]}i && $only_numeric) {
+                $self->warning("Mix of numeric and alphanumeric ids in $id with " . _text_content($text));
+            }
+        }
+    }
+    else {
+        $self->keel_over("Unknown Transcript value $mode, use left-to-right or from-ids");
+    }
+
     my @texts;
-    foreach my $node (sort { $self->_text_pos_sort($a, $b) } @found) {
+    foreach my $node (sort $sorter @found) {
         push @texts, _text_content($node);
     }
 

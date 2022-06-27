@@ -49,6 +49,40 @@ This also means that a configuration change, e.g., for the
 delete the output directory to force re-creating everything.
 
 
+## Transcript
+
+The Comic module collects the transcript of the comic, per language. The
+transcript is all texts in the comic. It can be placed in the comic's page
+for search engines and people with screen readers.
+
+Each comic can define a variable named `Transcript` in its metadata. If that
+variable is not defined or has the value `left-to-right`, the comics texts
+(from left to right) make up the transcript. Each row of frames is taken
+separately. Anything above the first row of frames goes first (place an
+introductory text there), then the first row from left to right, then the
+second, and so on. Any text under the last row of frames is considered to
+belong to the last row. Text positions depend on alignment: if a text is left
+aligned, its position is the left side, centered text uses the center x
+position, and right aligned text uses the right-most coordinate of that text.
+
+If `Transcript` is `from-ids`, the texts will be ordered by their ids, from
+lowest to highest. This is meant for complex drawings that don't go in
+classic left to right, top to bottom order. To set the id on a text element,
+open the XML editor in Inkscape (Edit menu), then show attributes (if they
+aren't visible by default). Select each text, click `id` in the attributes, and
+enter a value. I recommend numbers, and leaving gaps: a group of texts get
+e.g., 1 to 4, then the next group gets 10 to 13. That way you can easily
+squeeze in more texts without having to renumber everything. For the same
+reason, do numbering only when you are done with the comic's texts.
+Ids *must* be unique per document; even across layers. If you try to use an
+id that's already in use, Inkscape will automatically change the id of the
+previous element to a generated id, so be careful. While you can pick
+anything for ids, I recommend numbers. Inkscape genertes ids like "text"
+plus a number. If you go with numeric ids, the code can warn about a mix of
+numeric and alphanumeric ids, which could indicate that Inkscape replaced a
+duplicate id with a generated one.
+
+
 ## `Comic::Out::Backlog`
 
 Generates an overview of the comics in the queue, plus the tags, character
@@ -456,6 +490,9 @@ use:
 * `isLatestPublished`: this variable is only defined on the last published
   comic in each language. The template can query this flag and change the
   page for the last published comic.
+
+* `transcript`: object with languages as keys and texts of the comic as
+  values.
 
 When the template is processed, these variables are also available:
 
