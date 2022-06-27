@@ -340,7 +340,7 @@ sub load_generators {
     # hash is per definition unordered, but we need the modules in the right
     # order as some depend on the output of others.
     #
-    # There are two solutions to this problem: push it onto the user to now
+    # There are two solutions to this problem: push it onto the user to know
     # and define dependencies, or figure out the dependencies in code.
     #
     # Pushing it onto the user is certainly not terribly user-friendly. It
