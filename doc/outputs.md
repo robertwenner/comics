@@ -300,7 +300,7 @@ unchanged files again.
 
 The configuration looks like this:
 
-```
+```json
 {
     "Out": {
         "Comic::Out::FileCopy": {
@@ -331,8 +331,8 @@ probably need to install Cygwin tools on Windows.
 
 ## `Comic::Out::HtmlArchivePage`
 
-Generates a per-language HTML page with all published comics comics in
-chronological order.
+Generates a per-language HTML page with all published comics in chronological
+order.
 
 The configuration takes a template and an output file. You can pass a single
 template for all languages, or one for each language. The output file is
@@ -371,7 +371,7 @@ While processing the templates, these variables are available:
 ## `Comic::Out::HtmlLink`
 
 Generates a HTML reference ("see that other comic") from comic metadata.
-This assume you use the `Comic::Out::HtmlPage` module as well.
+This assume you use the `Comic::Out::HtmlComicPage` module as well.
 
 This is only for linking to another of your comics; see below to  include a
 hyperlink to any other web site.
@@ -382,7 +382,7 @@ Actual linking is triggered by comic meta data within a `see` object. This
 is language specific (link texts vary by language), so it needs a nested
 language object with a link text as key and a `.svg` file as value.
 
-```
+```json
 {
     "see": {
         "English": {
