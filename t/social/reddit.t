@@ -275,10 +275,10 @@ sub post : Tests {
     );
     $comic->{url}{$MockComic::ENGLISH} = 'https://beercomics.com/comics/make-beer.html';
     my $message = $reddit->post($comic);
-    is("Posted '[OC] make beer' (https://beercomics.com/comics/make-beer.html) to comics (redditID1234) at https://...",
+    is("Posted 'make beer' (https://beercomics.com/comics/make-beer.html) to comics (redditID1234) at https://...",
         $message, "wrong message");
     is($subreddit, "comics", "wrong subreddit");
-    is($title, "[OC] make beer", "wrong title");
+    is($title, "make beer", "wrong title");
     is($url, "https://beercomics.com/comics/make-beer.html", "wrong url");
     is($got_link, "redditID1234", "tried to get wrong link");
 }
@@ -391,4 +391,69 @@ sub wait_for_limit_no_error : Tests {
 
     my $message = Comic::Social::Reddit::_wait_for_reddit_limit($comic, "");
     is($message, "");
+}
+
+
+sub title_prefix  : Tests {
+    my $title;
+
+    no warnings qw/redefine/;
+    local *Reddit::Client::submit_link = sub {
+        my ($self, %args) = @_;
+        $title = $args{"title"};
+        return "redditID1234";
+    };
+    local *Reddit::Client::get_link = sub {
+        my ($self, $link) = @_;
+        return {"permalink" => "https://..."};
+    };
+    use warnings;
+
+    $reddit = Comic::Social::Reddit->new(
+        'username' => 'me',
+        'password' => 'pass',
+        'client_id' => 'client',
+        'secret' => 'very secret',
+        'default_subreddit' => '/r/comics',
+        'title_prefix' =>  'PREFIX ',
+    );
+
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => "make beer" }
+    );
+    $comic->{url}{$MockComic::ENGLISH} = 'https://beercomics.com/comics/make-beer.html';
+    $reddit->post($comic);
+    is($title, "PREFIX make beer", "wrong title");
+}
+
+sub title_suffix  : Tests {
+    my $title;
+
+    no warnings qw/redefine/;
+    local *Reddit::Client::submit_link = sub {
+        my ($self, %args) = @_;
+        $title = $args{"title"};
+        return "redditID1234";
+    };
+    local *Reddit::Client::get_link = sub {
+        my ($self, $link) = @_;
+        return {"permalink" => "https://..."};
+    };
+    use warnings;
+
+    $reddit = Comic::Social::Reddit->new(
+        'username' => 'me',
+        'password' => 'pass',
+        'client_id' => 'client',
+        'secret' => 'very secret',
+        'default_subreddit' => '/r/comics',
+        'title_suffix' =>  ' SUFFIX',
+    );
+
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => "make beer" }
+    );
+    $comic->{url}{$MockComic::ENGLISH} = 'https://beercomics.com/comics/make-beer.html';
+    $reddit->post($comic);
+    is($title, "make beer SUFFIX", "wrong title");
 }

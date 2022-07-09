@@ -195,8 +195,6 @@
   and in comic meta data (support meta data single value for backward
   compatibility)
 
-- feature: make configurable prefix / suffix for Reddit titles
-
 - feature: Comic::Social::Twitter needs a svg mode
 
 - performance: write everything needed to publish to a cache file

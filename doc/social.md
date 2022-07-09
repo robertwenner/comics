@@ -36,7 +36,9 @@ The configuration looks like this:
             "password": "secret",
             "client_id": "...",
             "secret": "...",
-            "default_subreddit": "comics"
+            "default_subreddit": "comics",
+            "title_prefix": "[OC] ",
+            "title_suffix": " [OC]",
         }
     }
 }
@@ -56,6 +58,15 @@ These values are:
   "/r/comics". This is language-independent. If there is no default
   subreddit and the comic doesn't specify subreddits either, it won't be
   posted to Reddit at all.
+
+* `title_prefix` is a placed in front of the comic's title when posting. It
+  defaults to nothing (i.e., nothing will be inserted in front of the
+  title). You can place e.g., `[OC]` in there to indicate original content.
+  Make sure to include a space after the prefix text so that the prefix is
+  not glued right onto the title.
+
+* `title_suffix` is like `title_prefix`, except that it goes after the comic's
+  title. Start the suffix text with a space if you use it.
 
 
 ## `Comic::Social::Twitter`
@@ -106,7 +117,7 @@ truncated.
 
 For example, if the given Comic has this meta data:
 
-```
+```json
 {
     "title": {
         "english": "Brewing my own beer!",

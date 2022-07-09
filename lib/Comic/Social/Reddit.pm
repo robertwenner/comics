@@ -71,6 +71,12 @@ Arguments:
 =item * B<client_settings> any other arguments to pass to the L<Reddit::Client>
     constructor. (For experts only.)
 
+=item * B<title_prefix> Optional prefix to use in the post's title. Will be
+    placed in front of the comic's title. Defaults to empty.
+
+=item * B<title_suffix> Optional suffix to use in the post's title. Will be
+    placed after the comic's title. Defaults to empty.
+
 =back
 
 =cut
@@ -102,6 +108,9 @@ sub new {
     @{$self->{settings}->{default_subreddit}} = ();
     my $def_srs = $settings{'default_subreddit'};
     push @{$self->{settings}->{'default_subreddit'}}, _subreddits('Reddit.default_subreddit', $def_srs);
+
+    $self->{title_prefix} = $settings{'title_prefix'} || '';
+    $self->{title_suffix} = $settings{'title_suffix'} || '';
 
     return $self;
 }
@@ -224,7 +233,7 @@ sub _subreddits_from_comic_meta_data {
 sub _post {
     my ($self, $comic, $language, $subreddit) = @ARG;
 
-    my $title = "[OC] $comic->{meta_data}->{title}{$language}";
+    my $title = "$self->{title_prefix}$comic->{meta_data}->{title}{$language}$self->{title_suffix}";
     $subreddit = _normalize_subreddit($subreddit);
 
     my $full_name = 0;
