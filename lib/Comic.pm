@@ -676,24 +676,15 @@ sub has_layer {
 
 
 sub _all_layers_xpath {
-    # Builds an XPath expression to find all Inkscape layers (i.e., below
-    # the svg element) with the given name(s) or all layers if no name is
+    # Builds an XPath expression to find all Inkscape top level (i.e., below
+    # the svg element) layers with the given name or all layers if no name is
     # given.
-    my (@labels) = @ARG;
+    my ($label) = @ARG;
 
     my $xpath = "/$DEFAULT_NAMESPACE:svg//$DEFAULT_NAMESPACE:g[\@inkscape:groupmode='layer'";
-    my $had_labels = 0;
-    foreach my $l (@labels) {
-        if ($had_labels == 0) {
-            $xpath .= ' and (';
-        }
-        else {
-            $xpath .= ' or ';
-        }
-        $xpath .= "\@inkscape:label='$l'";
-        $had_labels++;
+    if ($label) {
+        $xpath .= " and \@inkscape:label='$label'";
     }
-    $xpath .= ')' if ($had_labels > 0);
     $xpath .= ']';
     return $xpath;
 }
