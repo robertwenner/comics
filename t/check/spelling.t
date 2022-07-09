@@ -6,6 +6,7 @@ use base 'Test::Class';
 use Test::More;
 use lib 't';
 use MockComic;
+use Carp;
 use Comic::Check::Spelling;
 
 
@@ -451,6 +452,75 @@ XML
     is_deeply(
         \@asked_to_check,
         ['Title at www.example.org', 'secure ', 'plain ', 'path ', 'query ']);
+}
+
+
+sub user_dictionary_not_a_hash : Tests {
+    eval {
+        Comic::Check::Spelling->new('user_dictionary' => 'file');
+    };
+    like($@, qr{\buser_dictionary\b}, 'should mention setting');
+    like($@, qr{\blanguage .+ file\b}, 'should say what it needs');
+
+    eval {
+        Comic::Check::Spelling->new('user_dictionary' => ['file']);
+    };
+    like($@, qr{\buser_dictionary\b}, 'should mention the setting');
+    like($@, qr{\blanguage .+ file\b}, 'should say what it needs');
+}
+
+
+sub user_dictionary_not_found : Tests {
+    no warnings qw/redefine/;
+    *File::Slurper::read_lines = sub {
+        my ($filename) = @_;
+        croak "Couldn't open $filename: file not found";
+    };
+    use warnings;
+
+    eval {
+        Comic::Check::Spelling->new('user_dictionary' => {
+            'English' => 'does-not-exist.txt'
+        });
+    };
+    like($@, qr{\buser_dictionary\b}, 'should mention the setting');
+    like($@, qr{\bfile not found\b}, 'should say what is wrong');
+    like($@, qr{\bEnglish\b}, 'should say the language');
+    like($@, qr{\bdoes-not-exist\.txt\b}, 'should say the file name');
+}
+
+
+sub ignores_user_dictionary_words_per_language : Tests {
+    no warnings qw/redefine/;
+    *File::Slurper::read_lines = sub {
+        my ($name) = @_;
+        return ('one', 'two', 'three');
+    };
+    use warnings;
+
+    $check = Comic::Check::Spelling->new('user_dictionary' => {
+        'English' => 'user-dict.txt'
+    });
+    is_deeply(
+        $check->{ignore}{English},
+        ['one', 'two', 'three']);
+}
+
+
+sub trims_whitespace_from_user_dictionary_words : Tests {
+    no warnings qw/redefine/;
+    *File::Slurper::read_lines = sub {
+        my ($name) = @_;
+        return (' one', '  two ', "\n", "\r\n", '', "\tthree  ", 'and four');
+    };
+    use warnings;
+
+    $check = Comic::Check::Spelling->new('user_dictionary' => {
+        'English' => 'user-dict.txt'
+    });
+    is_deeply(
+        $check->{ignore}{English},
+        ['one', 'two', 'three', 'and four']);
 }
 
 

@@ -264,7 +264,8 @@ comic metadata. Hence this check.
 You can configure words to be ignored either in the spell checker (so that
 they are ignored whenever you spellcheck anything; see below), in the main
 configuration file (to always ignore them when checking your comics), or in
-the comic (to only ignore them in that particular comic):
+the comic (to only ignore them in that particular comic), or with a user
+defined dictionary:
 
 ```json
 {
@@ -272,6 +273,9 @@ the comic (to only ignore them in that particular comic):
         "Comic::Check::Spelling": {
             "ignore": {
                 "English": [ "word", "otherword" ]
+            },
+            "user_dictionary": {
+                "English": "path/to/dictionary"
             },
             "print_unknown_quoted": true,
             "print_unknown_xml": true,
@@ -309,11 +313,20 @@ If you don't install a needed language, all words will be flagged as typos
 when trying to spellcheck that language.
 
 The `Comic::Check::Spelling` only *reports* unknown words. It's not
-interactive: you cannot add unknown words and you cannot enter corrections.
-To do the later, edit your comic in Inkscape (or in an XML editor if you're
-brave or hate the tiny input dialog in Inkscape; `.svg` is XML after all).
-To do the former, either add the word to the comic's ignore list as
-described above, or add them to the global (per-user) word list:
+interactive: you cannot add unknown words to the dictionary on he fly and
+you cannot enter corrections.
+
+You have three ways to deal with unknown words that are not typos:
+
+* Add them to your general dictionary.
+
+* Add them to a user-defined dictionary.
+
+* Add them to the comic's ignore list.
+
+Adding the to your general dictionary means to add the words to a plain text
+file and run the spellchecker interactively on that file, accepting all
+unknown words. Here is an example for `aspell`:
 
 ```shell
 echo word > en.txt
@@ -323,6 +336,23 @@ rm en.txt
 ```
 
 Repeat for other languages using the language's code.
+
+All words so added are always known in that spell checker. Do this for
+common words.
+
+Adding words to a user-defined dictionary means to place the words to ignore
+in a plain text file, each on a line on its own. Pass that file in the
+`user_dictionary` option. If you put that option in your main configuration
+file, all comics will us it, but any other spell checking on your system
+will not.
+
+To add  words to the comic's ignore list edit your comic in Inkscape
+(or in an XML editor if you're brave or hate the tiny input dialog in
+Inkscape; `.svg` is XML after all) and add a `Check` section with the
+words to ignore to the comic's metadata. The syntax is as above for the
+configuration file. Use this option for words that are specific to open
+particular comics. These words will still be flagged as typos in other
+comics.
 
 
 ## `Comic::Check::Tag`

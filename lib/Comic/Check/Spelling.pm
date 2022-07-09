@@ -7,6 +7,7 @@ use Carp;
 use English '-no_match_vars';
 use String::Util 'trim';
 use Text::SpellChecker;
+use File::Slurper;
 
 use Comic::Check::Check;
 use base('Comic::Check::Check');
@@ -62,6 +63,9 @@ Parameters:
     be lowercase and start with a capital letter. Ignored words are not
     case-sensitive.
 
+=item * B<%user_dictionary> Hash of language to file name. The file needs to
+    have a word per line. These words are ignored in that language.
+
 =item * B<$print_unknown_xml> Whether to print the unknown words in
     XML-syntax, like C<&quot;unknown&quot;> to easily copy into the comic's
     ignore list when editing the source directly in a text editor.
@@ -100,6 +104,24 @@ sub new {
             }
         }
     }
+    if ($args{user_dictionary}) {
+        unless (ref $args{user_dictionary} eq ref {}) {
+            croak('user_dictionary must be a hash of language to words file');
+        }
+        foreach my $language (keys %{$args{user_dictionary}}) {
+            my $file_name = $args{user_dictionary}{$language};
+            eval {
+                foreach my $line (File::Slurper::read_lines($file_name)) {
+                    $line =~ s{^\s+}{}mgx;
+                    $line =~ s{\s+$}{}mgx;
+                    push @{$self->{ignore}{$language}}, $line if ($line);
+                }
+                1;
+            }
+            or croak("Error reading $language user_dictionary from $file_name: $EVAL_ERROR");
+        }
+    }
+
     $self->{print_unknown_xml} = $args{print_unknown_xml};
     $self->{print_unknown_quoted} = $args{print_unknown_quoted};
     $self->{print_unknown_lines} = $args{print_unknown_lines};
