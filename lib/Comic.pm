@@ -71,10 +71,6 @@ Reads a comic as an Inkscape SVG file and serves as a value object for the comic
 # XPath default namespace name.
 Readonly my $DEFAULT_NAMESPACE => 'defNs';
 
-# What date to use for sorting unpublished comics.
-Readonly my $UNPUBLISHED => '3000-01-01';
-
-
 my %language_code_cache;
 
 
@@ -781,10 +777,15 @@ sub not_yet_published {
         # Adding 7 week days (going one week further) makes sure next Friday is
         # in the valid dates range.
     }
-    # Devel::Coverage doesn't see that $UNPUBLISHED is always defined.
-    # uncoverable branch false
-    my $published = $self->{meta_data}->{published}->{when} || $UNPUBLISHED;
-    return ($published cmp $till->ymd) > 0;
+    return ($self->_published_when() cmp $till->ymd) > 0;
+}
+
+
+sub _published_when {
+    my ($self) = @ARG;
+
+    # Pick a date far in the future for unpublished comics.
+    return $self->{meta_data}->{published}->{when} || '3000-01-01';
 }
 
 
@@ -799,8 +800,7 @@ sub is_published_today {
 
     my $today = _now();
     $today->set_time_zone(_get_tz());
-    my $published = $self->{meta_data}->{published}->{when} || $UNPUBLISHED;
-    return ($published cmp $today->ymd) == 0;
+    return ($self->_published_when cmp $today->ymd) == 0;
 }
 
 
@@ -836,11 +836,12 @@ sub _is_for {
 
 =head2 not_published_on_the_web
 
-Returns whether this Comic is not (yet) published on the web.
+Returns whether this Comic is not (yet) published on the web in the given language.
 
 =cut
 
 sub not_published_on_the_web {
+    # This is mapped to the notFor function in the sitemap template.
     my ($self, $language) = @ARG;
     return !$self->_is_for($language) || $self->not_yet_published();
 }
@@ -1214,8 +1215,8 @@ For use with Perl's C<sort> function.
 #
 sub from_oldest_to_latest($$) {
 ## use critic
-    my $pub_a = $_[0]->{meta_data}->{published}{when} || $UNPUBLISHED;
-    my $pub_b = $_[1]->{meta_data}->{published}{when} || $UNPUBLISHED;
+    my $pub_a = $_[0]->_published_when();
+    my $pub_b = $_[1]->_published_when();
     return $pub_a cmp $pub_b;
 }
 

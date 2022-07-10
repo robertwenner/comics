@@ -186,12 +186,17 @@ sub no_published_date : Tests {
 
 
 sub wrong_language : Tests {
-    assert_wrote_no_comic(make_comic('2016-01-01', 'web', 'Deutsch'));
+    my $comic = make_comic('2016-01-01', 'web', 'Deutsch');
+    assert_wrote_no_comic($comic);
+    ok($comic->not_published_on_the_web('English'));
+    ok(!$comic->not_published_on_the_web('Deutsch'));
 }
 
 
 sub not_on_my_page : Tests {
-    assert_wrote_no_comic(make_comic('2016-01-01', 'biermag', 'English'));
+    my $comic = make_comic('2016-01-01', 'biermag', 'English');
+    assert_wrote_no_comic($comic);
+    ok($comic->not_published_on_the_web('English'));
 }
 
 
