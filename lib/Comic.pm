@@ -1087,11 +1087,13 @@ sub _transformed {
     my ($self, $node) = @ARG;
 
     my ($x, $y) = ($node->getAttribute('x'), $node->getAttribute('y'));
+    # uncoverable condition right
     if (!defined $x || !defined $y) {
+        # If a node doesn't have coordinates, it may be on a path which provides the coordinates.
         ($x, $y) = _text_from_path($self, $node);
+        # We ususally either habe both x and y, or neither. Anything else sounds like invalid SVG.
+        # Which could happen when people manually edit the XML.
     }
-    $self->keel_over('no x') unless(defined $x);
-    $self->keel_over('no y') unless(defined $y);
 
     my $transform = $node->getAttribute('transform');
     if ($transform) {
@@ -1108,17 +1110,45 @@ sub _text_from_path {
     my ($self, $node) = @ARG;
 
     my @text_path = $node->getChildrenByTagName('textPath');
-    $self->keel_over("No X/Y and no textPath child element on $node->{id}") if (@text_path == 0);
-    $self->keel_over("No X/Y and multiple textPath child elements on $node->{id}") if (@text_path > 1);
     my $path_id = $text_path[0]->getAttribute('xlink:href');
     $path_id =~ s{^#}{};
-    my $xpath = "//$DEFAULT_NAMESPACE:ellipse[\@id='$path_id']";
+    my $xpath = "//$DEFAULT_NAMESPACE:*[\@id='$path_id']";
     my @path_nodes = $self->{xpath}->findnodes($xpath);
-    $self->keel_over("$xpath not found") if (@path_nodes == 0);
-    $self->keel_over("More than one node with ID $path_id") if (@path_nodes > 1);
+
+    # This is probably invalid SVG and could only happen if people edit ids by hand.
+    # But since that can easily happen when manually specifying text order, it should get
+    # flagged as clearly and noisily as possible.
+    $self->keel_over("Path $path_id not found, referenced from $node->{id}") if (@path_nodes == 0);
+    $self->keel_over("Duplicated ID $path_id referenced from $node->{id}") if (@path_nodes > 1);
+
     my $type = $path_nodes[0]->nodeName;
-    $self->keel_over("Cannot handle $type nodes") unless ($type eq 'ellipse');
-    return ($path_nodes[0]->getAttribute('cx'), $path_nodes[0]->getAttribute('cy'));
+    if ($type eq 'circle') {
+        # Circle has cx, cy, and r (radius)
+        return ($path_nodes[0]->getAttribute('cx'), $path_nodes[0]->getAttribute('cy'));
+    }
+    elsif ($type eq 'ellipse') {
+        # Circle has cx, cy and rx, ry (radius)
+        return ($path_nodes[0]->getAttribute('cx'), $path_nodes[0]->getAttribute('cy'));
+    }
+    elsif ($type eq 'path') {
+        # Path has a d (data) attribute, which consists of a 'm' (move) command plus some
+        # drawing command coordinates.
+        # Details: https://www.w3.org/TR/SVG/paths.html#TheDProperty
+        if ($path_nodes[0]->getAttribute('d') =~ m{^m (\d+[.]\d+),(\d+[.]\d+)}i) {
+            return ($1, $2);
+        }
+        else {
+            # Fail noisily if I misunderstood the SVG spec.
+            $self->keel_over("Cannot parse x/y coordinates from path $path_nodes[0]->{id}");
+        }
+    }
+    else {
+        # Fail noisily if I missed other things texts can go on.
+        $self->keel_over("Cannot handle text on a $type (in $node->{id})");
+    }
+
+    $self->keel_over("Can't coordinates for $node->{id}");
+    return;
 }
 
 
