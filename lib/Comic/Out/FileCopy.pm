@@ -16,7 +16,7 @@ use base('Comic::Out::Generator');
 
 =encoding utf8
 
-=for stopwords Wenner merchantability perlartistic outdir cron Cygwin
+=for stopwords Wenner merchantability perlartistic outdir cron Cygwin templating
 
 
 =head1 NAME

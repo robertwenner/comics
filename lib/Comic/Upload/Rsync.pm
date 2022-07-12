@@ -91,8 +91,8 @@ line.
 C<keyfile> is optional. When given, it's passed to C<rsync> as an ssh option
 like this: C<--rsh="ssh -i path/to/your/ssh-key.id_rsa">.
 
-C<options> is an optional array of no-arg options for rsync. See the rsync
-man page for details. Defaults to checksum, compress, delete, recursive,
+C<options> is an optional array of no-argument options for rsync. See the
+rsync man page for details. Defaults to checksum, compress, delete, recursive,
 times, and update if not given.
 
 C<check> (optional) means to check that the URLs of the comic(s) passed to

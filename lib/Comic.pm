@@ -1250,7 +1250,7 @@ summary.
 
 If this Comic is already published, a warning is treated as error, and the
 Comic keels over. The intention is that most warnings should be addressed
-(or the Check that causes them should be disabled), and it's ok only for
+(or the Check that causes them should be disabled), and it's okay only for
 comics in progress to have pending warnings.
 
 Parameters:

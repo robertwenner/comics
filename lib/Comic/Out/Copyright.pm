@@ -19,7 +19,7 @@ Readonly my $STYLE => 'color:#000000;font-size:10px;line-height:125%;font-family
 
 =encoding utf8
 
-=for stopwords Wenner merchantability perlartistic Inkscape px
+=for stopwords Wenner merchantability perlartistic Inkscape px SVG
 
 
 =head1 NAME

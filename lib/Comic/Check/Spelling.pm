@@ -17,7 +17,7 @@ use version; our $VERSION = qv('0.0.3');
 
 =encoding utf8
 
-=for stopwords Inkscape Wenner merchantability perlartistic MetaEnglish BackgroundEnglish Englishtest
+=for stopwords Inkscape Wenner merchantability perlartistic MetaEnglish BackgroundEnglish Englishtest SVG
 
 
 =head1 NAME

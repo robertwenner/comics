@@ -12,7 +12,7 @@ use version; our $VERSION = qv('0.0.3');
 
 =encoding utf8
 
-=for stopwords html Wenner merchantability perlartistic png html svg acyclic yaml toml ebook
+=for stopwords html Wenner merchantability perlartistic png html svg acyclic yaml toml ebook RSS Gradle Inkscape
 
 
 =head1 NAME
