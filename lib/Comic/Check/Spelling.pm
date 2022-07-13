@@ -114,7 +114,7 @@ sub new {
                 foreach my $line (File::Slurper::read_lines($file_name)) {
                     $line =~ s{^\s+}{}mgx;
                     $line =~ s{\s+$}{}mgx;
-                    push @{$self->{ignore}{$language}}, $line if ($line);
+                    $self->{ignore}{$language}{lc $line} = 1 if ($line);
                 }
                 1;
             }

@@ -494,6 +494,28 @@ sub ignores_user_dictionary_words_per_language : Tests {
     no warnings qw/redefine/;
     *File::Slurper::read_lines = sub {
         my ($name) = @_;
+        return ('dict');
+    };
+    use warnings;
+
+    $check = Comic::Check::Spelling->new(
+        'ignore' => {
+            'English' => 'ignored',
+        },
+        'user_dictionary' => {
+            'English' => 'user-dict.txt'
+        }
+    );
+    is_deeply(
+        $check->{ignore}{English},
+        {'dict' => 1, 'ignored' => 1});
+}
+
+
+sub user_dictionary_plus_ignore_words : Tests {
+    no warnings qw/redefine/;
+    *File::Slurper::read_lines = sub {
+        my ($name) = @_;
         return ('one', 'two', 'three');
     };
     use warnings;
@@ -503,7 +525,7 @@ sub ignores_user_dictionary_words_per_language : Tests {
     });
     is_deeply(
         $check->{ignore}{English},
-        ['one', 'two', 'three']);
+        {'one' => 1, 'two' => 1, 'three' => 1});
 }
 
 
@@ -520,7 +542,7 @@ sub trims_whitespace_from_user_dictionary_words : Tests {
     });
     is_deeply(
         $check->{ignore}{English},
-        ['one', 'two', 'three', 'and four']);
+        {'one' => 1, 'two' => 1, 'three' => 1, 'and four', => 1});
 }
 
 
