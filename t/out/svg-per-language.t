@@ -55,7 +55,7 @@ sub generate_ok : Tests {
 sub generate_does_nothing_if_svg_is_cached: Tests {
     no warnings qw/redefine/;
     local *Comic::up_to_date = sub {
-        my ($source, $target) = @_;
+        my ($self, $target) = @_;
         return $target =~ m/\.svg$/;
     };
     use warnings;

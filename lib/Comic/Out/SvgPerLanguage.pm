@@ -130,7 +130,7 @@ sub generate {
         my $svg_file = Comic::make_dir($dir) . "$comic->{baseName}{$language}.svg";
         $comic->{svgFile}{$language} = $svg_file;
 
-        next if (Comic::up_to_date($comic->{srcFile}, $svg_file));
+        next if ($comic->up_to_date($svg_file));
 
         _drop_top_level_layers($comic->{dom}, @{$self->{settings}->{'drop_layers'}});
         _flip_language_layers($comic, $language);

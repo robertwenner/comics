@@ -14,11 +14,14 @@ sub no_png : Tests {
     local *Comic::_exists = sub {
         return 0;
     };
-    is(Comic::up_to_date("comic.svg", "comic.png"), 0);
+    my $comic = Comic->new({}, []);
+    $comic->{srcFile} = 'comic.svg';
+
+    is($comic->up_to_date("comic.png"), 0);
 }
 
 
-sub svg_older : Tests {
+sub svg_newer : Tests {
     local *Comic::_exists = sub {
         return 1;
     };
@@ -30,11 +33,14 @@ sub svg_older : Tests {
         my ($file) = @_;
         return $mtime{$file};
     };
-    is(!1, Comic::up_to_date("comic.svg", "comic.png"));
+    my $comic = Comic->new({}, []);
+    $comic->{srcFile} = 'comic.svg';
+
+    is($comic->up_to_date("comic.png"), 0);
 }
 
 
-sub svg_newer : Tests {
+sub svg_older : Tests {
     local *Comic::_exists = sub {
         return 1;
     };
@@ -46,5 +52,8 @@ sub svg_newer : Tests {
         my ($file) = @_;
         return $mtime{$file};
     };
-    is(1, Comic::up_to_date("comic.svg", "comic.png"));
+    my $comic = Comic->new({}, []);
+    $comic->{srcFile} = 'comic.svg';
+
+    ok($comic->up_to_date("comic.png"));
 }

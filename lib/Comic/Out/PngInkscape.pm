@@ -134,11 +134,11 @@ sub generate {
         # detail of this module?
         my $backlog_png = "$comic->{backlogPath}{$language}/$comic->{baseName}{$language}.png";
 
-        if (Comic::up_to_date($comic->{srcFile}, $backlog_png)) {
+        if ($comic->up_to_date($backlog_png)) {
             _move($backlog_png, $published_png) or $comic->keel_over("Comic::Out::PngInkscape: Cannot move $backlog_png to $published_png: $OS_ERROR");
         }
 
-        unless (Comic::up_to_date($comic->{srcFile}, $published_png)) {
+        unless ($comic->up_to_date($published_png)) {
             $self->_svg_to_png($comic, $language, $comic->{svgFile}{$language}, $published_png);
             _optimize_png($comic, $published_png);
         }

@@ -379,7 +379,7 @@ sub moves_from_backlog : Tests {
 
     no warnings qw/redefine/;
     local *Comic::up_to_date = sub {
-        my ($source, $target) = @_;
+        my ($self, $target) = @_;
         return $target =~ m/\.png$/;
     };
     local *Comic::Out::PngInkscape::_move = sub {
@@ -404,7 +404,7 @@ sub moves_from_backlog : Tests {
 sub moves_from_backlog_fails : Tests {
     no warnings qw/redefine/;
     local *Comic::up_to_date = sub {
-        my ($source, $target) = @_;
+        my ($self, $target) = @_;
         return $target =~ m/\.png$/;
     };
     local *Comic::Out::PngInkscape::_move = sub {
@@ -428,8 +428,8 @@ sub does_not_generate_if_png_is_up_to_date : Tests {
 
     no warnings qw/redefine/;
     local *Comic::up_to_date = sub {
-        my ($source, $target) = @_;
-        push @checked_up_to_date, $source, $target;
+        my ($self, $target) = @_;
+        push @checked_up_to_date, $target;
         return $target !~ m/backlog/ && $target =~ m/\.png$/;
     };
     local *Comic::Out::PngInkscape::_svg_to_png = sub {
@@ -452,8 +452,7 @@ sub does_not_generate_if_png_is_up_to_date : Tests {
     is_deeply($comic->{height}, {'English' => 'png height'}, 'wrong height');
     is_deeply($comic->{width}, {'English' => 'png width'}, 'wrong width');
     is_deeply(\@checked_up_to_date,
-        ['some_comic.svg', 'generated/backlog/english/latest-comic.png',
-        'some_comic.svg', 'generated/web/english/comics/latest-comic.png'],
+        ['generated/backlog/english/latest-comic.png', 'generated/web/english/comics/latest-comic.png'],
         'checked wrong files');
 }
 

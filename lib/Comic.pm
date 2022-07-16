@@ -545,10 +545,9 @@ sub get_transcript {
 
 =head2 up_to_date
 
-Checks whether the given target file is up to date from the given source
-file's point of view. A target file is up to date if both source and target
-files exist and the target has a last modification time later than the
-source file.
+Checks whether the given file is up to date compared to this Comic's source
+file. If the given file exists and was modified after this Comic's source
+file, it's considered up to date.
 
 This allows simple file modification based check to skip potentially
 expensive tasks when nothing has changed and hence the output will be the
@@ -558,8 +557,6 @@ Parameters:
 
 =over 4
 
-=item * B<$source> source file, usually a Comic's C<.svg> file.
-
 =item * B<$target> target file, usually something derived / created from the
     source file.
 
@@ -568,18 +565,19 @@ Parameters:
 =cut
 
 sub up_to_date {
-    my ($source, $target) = @ARG;
+    my ($self, $target) = @ARG;
 
     # Cannot cache more, in particular cannot cache the transcript or frame
     # positions. This is because output generators need to be able to work
     # with the svg, e.g., Comic::Out::Copyright modifies it, and it does not
     # have a direct output file, so there is no easy up-to-date check.
 
+    my $source = $self->{srcFile};
     my $up_to_date = 0;
     if (_exists($source) && _exists($target)) {
         my $source_mod = _mtime($source);
         my $target_mod = _mtime($target);
-        $up_to_date = $target_mod > $source_mod;
+        $up_to_date = 1 if ($target_mod > $source_mod);
     }
     return $up_to_date;
 }
