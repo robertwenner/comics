@@ -84,10 +84,6 @@ sub set_up {
 
 sub mock_methods {
     no warnings qw/redefine/;
-    *Comic::_exists = sub {
-        my ($name) = @_;
-        return exists $files_read{$name} && defined($files_read{$name});;
-    };
 
     *Comics::_exists = sub {
         my ($name) = @_;

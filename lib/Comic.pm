@@ -135,11 +135,12 @@ sub load {
         $self->{meta_data} = $parser->decode($meta_data);
     } or $self->keel_over("Error in JSON for: $EVAL_ERROR");
 
+    $self->{mtimes}{$file} = _mtime($file);
     # modified is used in <meta name="last-modified" content="..."/> and sitemap.xml
     # Does it need to be in RFC3339 format like that HTTP header?
     # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Last-Modified
     # Or is that HTML tag obsolete anyway?
-    my $modified = DateTime->from_epoch(epoch => _mtime($file));
+    my $modified = DateTime->from_epoch(epoch => $self->{mtimes}{$file});
     $modified->set_time_zone(_get_tz());
     $self->{modified} = $modified->ymd;
     my $pub = trim($self->{meta_data}->{published}->{when});
@@ -384,6 +385,7 @@ sub _mtime {
     my ($file) = @ARG; # uncoverable statement
 
     Readonly my $MTIME => 9; # uncoverable statement
+    # stat returns an empty array if the file does not exist
     return (stat $file)[$MTIME]; # uncoverable statement
 }
 
@@ -571,21 +573,13 @@ sub up_to_date {
     # positions. This is because output generators need to be able to work
     # with the svg, e.g., Comic::Out::Copyright modifies it, and it does not
     # have a direct output file, so there is no easy up-to-date check.
-
-    my $source = $self->{srcFile};
-    my $up_to_date = 0;
-    if (_exists($source) && _exists($target)) {
-        my $source_mod = _mtime($source);
-        my $target_mod = _mtime($target);
-        $up_to_date = 1 if ($target_mod > $source_mod);
+    my $source_mod = $self->{mtimes}{$self->{srcFile}};
+    unless ($self->{mtimes}{$target}) {
+        $self->{mtimes}{$target} = _mtime($target);
     }
-    return $up_to_date;
-}
+    my $target_mod = $self->{mtimes}{$target} || 0;
 
-
-sub _exists {
-    # uncoverable subroutine
-    return -r shift; # uncoverable statement
+    return $target_mod > $source_mod ? 1 : 0;
 }
 
 

@@ -12,18 +12,15 @@ use Comic::Modules;
 __PACKAGE__->runtests() unless caller;
 
 my %faked_files;
-my %asked_exists;
 my $comics;
 
 
 sub set_up : Test(setup) {
     %faked_files = ();
-    %asked_exists = ();
 
     no warnings qw/redefine/;
     *Comics::_exists = sub {
         my ($file) = @_;
-        $asked_exists{$file}++;
         return defined $faked_files{$file};
     };
     *Comics::_is_directory = sub {

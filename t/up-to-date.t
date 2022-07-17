@@ -6,54 +6,71 @@ use base 'Test::Class';
 use Test::More;
 use DateTime;
 use Comic;
+use lib 't';
+use MockComic;
 
 __PACKAGE__->runtests() unless caller;
 
 
+sub set_up : Test(setup) {
+    MockComic::set_up();
+}
+
+
 sub no_png : Tests {
-    local *Comic::_exists = sub {
-        return 0;
+    local *Comic::_mtime = sub {
+        my ($file) = @_;
+        if ($file =~ m{\.svg$}) {
+            return 12345;
+        }
+        return undef;
     };
-    my $comic = Comic->new({}, []);
-    $comic->{srcFile} = 'comic.svg';
+    my $comic = MockComic::make_comic();
 
     is($comic->up_to_date("comic.png"), 0);
 }
 
 
 sub svg_newer : Tests {
-    local *Comic::_exists = sub {
-        return 1;
-    };
     my %mtime = (
-        "comic.svg" => 100,
-        "comic.png" => 50
+        "some_comic.svg" => 100,
+        "some_comic.png" => 50
     );
     local *Comic::_mtime = sub {
         my ($file) = @_;
         return $mtime{$file};
     };
-    my $comic = Comic->new({}, []);
-    $comic->{srcFile} = 'comic.svg';
+    my $comic = MockComic::make_comic();
 
-    is($comic->up_to_date("comic.png"), 0);
+    is($comic->up_to_date("some_comic.png"), 0);
 }
 
 
 sub svg_older : Tests {
-    local *Comic::_exists = sub {
-        return 1;
-    };
     my %mtime = (
-        "comic.svg" => 100,
+        "some_comic.svg" => 100,
         "comic.png" => 200
     );
     local *Comic::_mtime = sub {
         my ($file) = @_;
         return $mtime{$file};
     };
-    my $comic = Comic->new({}, []);
-    $comic->{srcFile} = 'comic.svg';
+    my $comic = MockComic::make_comic();
 
     ok($comic->up_to_date("comic.png"));
+}
+
+
+sub caches_mtime : Tests {
+    my @mtime_calls;
+    local *Comic::_mtime = sub {
+        my ($file) = @_;
+        push @mtime_calls, $file;
+        return 123;
+    };
+    my $comic = MockComic::make_comic();
+
+    $comic->up_to_date("comic.png");
+    $comic->up_to_date("comic.png");
+    is_deeply(\@mtime_calls, ['some_comic.svg', 'comic.png']);
 }
