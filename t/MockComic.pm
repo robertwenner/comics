@@ -50,7 +50,7 @@ my %files_read;
 my @made_dirs;
 my %file_written;
 my $now;
-my $mtime;
+my %mtime;
 
 
 my %defaultArgs = (
@@ -67,7 +67,7 @@ my %defaultArgs = (
         $Comic::Settings::CHECKS => [],
     },
     $IN_FILE => 'some_comic.svg',
-    $MTIME => 0,
+    $MTIME => {},
     $HEIGHT => 200,
     $WIDTH => 600,
     $PUBLISHED_WHEN => '2016-08-01',
@@ -97,7 +97,8 @@ sub mock_methods {
     };
 
     *Comic::_mtime = sub {
-        return $mtime;
+        my ($file) = @_;
+        return $mtime{$file} || 0;
     };
 
     *File::Path::make_path = sub {
@@ -169,7 +170,7 @@ HEADER
 sub make_comic {
     my %args = (%defaultArgs, @_);
 
-    $mtime = $args{$MTIME};
+    %mtime = %{$args{$MTIME}} if ($args{$MTIME});
     fake_file($args{$IN_FILE}, fake_comic(%args));
 
     my $checks = $args{$CHECKS} || [];

@@ -296,8 +296,7 @@ sub from_comic : Tests {
         $MockComic::TAGS => {
             $MockComic::DEUTSCH => [ "Bier", "Saufen", "Craft" ],
         },
-        $MockComic::MTIME => DateTime->new(
-            year => 2016, month => 1, day => 1, time_zone => '-05:00')->epoch,
+        $MockComic::MTIME => { 'some_comic.svg' => 1451624400 }, # 2016-01-01 00:00:00 -05:00
     );
 
     MockComic::fake_file('templates/deutsch/sitemap-xml.templ', '...');

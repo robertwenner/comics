@@ -67,8 +67,7 @@ sub make_comic {
         },
         $MockComic::PUBLISHED_WHEN => $published_when,
         $MockComic::PUBLISHED_WHERE => ($published_where || 'web'),
-        $MockComic::MTIME => DateTime->new(
-            year => 2016, month => 1, day => 1, time_zone => '-05:00')->epoch,
+        $MockComic::MTIME => { 'some_comic.svg' => 1451624400 }, # 2016-01-01 00:00:00 -05:00
     );
     $comic->{pngFile}{$language} = "drinking-beer.png";
     $comic->{htmlFile}{$language} = "drinking-beer.html";
