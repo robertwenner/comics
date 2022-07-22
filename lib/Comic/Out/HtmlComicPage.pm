@@ -90,6 +90,19 @@ sub new {
 }
 
 
+=head2 up_to_date
+
+See the  Generator method's documentation.
+
+=cut
+
+sub up_to_date {
+    my ($self, $comic, $language) = @ARG;
+
+    return $comic->up_to_date("$comic->{dirName}{$language}/$comic->{htmlFile}{$language}");
+}
+
+
 =head2 generate
 
 Places HTML specific variables for the given comic in the given comic.

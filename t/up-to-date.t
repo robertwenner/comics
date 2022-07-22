@@ -17,7 +17,7 @@ sub set_up : Test(setup) {
 }
 
 
-sub no_png : Tests {
+sub comic_output_file_does_not_exist : Tests {
     local *Comic::_mtime = sub {
         my ($file) = @_;
         if ($file =~ m{\.svg$}) {
@@ -31,7 +31,7 @@ sub no_png : Tests {
 }
 
 
-sub svg_newer : Tests {
+sub comic_svg_newer : Tests {
     my %mtime = (
         "some_comic.svg" => 100,
         "some_comic.png" => 50
@@ -46,7 +46,7 @@ sub svg_newer : Tests {
 }
 
 
-sub svg_older : Tests {
+sub comic_svg_older : Tests {
     my %mtime = (
         "some_comic.svg" => 100,
         "comic.png" => 200
@@ -61,7 +61,7 @@ sub svg_older : Tests {
 }
 
 
-sub caches_mtime : Tests {
+sub comic_caches_mtime : Tests {
     my @mtime_calls;
     local *Comic::_mtime = sub {
         my ($file) = @_;

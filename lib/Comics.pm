@@ -119,16 +119,15 @@ sub generate {
     # and pass them to each Comic so that the Comic can copy and adjust them
     # based on its meta data.
     $comics->load_checks();
+    $comics->load_generators();
 
     foreach my $file (@files) {
         my $comic = Comic->new($comics->{settings}->clone()->{settings}, $comics->{checks});
         $comic->load($file);
         push @{$comics->{comics}}, $comic;
     }
-
     $comics->run_all_checks();
 
-    $comics->load_generators();
     $comics->generate_all();
 
     return $comics;
@@ -504,7 +503,7 @@ sub _is_directory {
 
 =head2 run_all_checks
 
-Runs all configured checks for all loaded Comics.
+Runs all configured checks for all loaded Comics that have been modified.
 
 =cut
 
@@ -512,12 +511,33 @@ sub run_all_checks {
     my ($self) = @ARG;
 
     foreach my $comic (@{$self->{comics}}) {
+        # Don't check comics if they are up to date, i.e., the input file
+        # has not changed since last run. This works as all checks only look
+        # at one comic at a time. The drawback is that errors and warnings in
+        # previous runs would disappear; since the comics won't get chicked
+        # again.
+        # For my 350 comics, this cuts comic processing time from ~95s to
+        # ~46s when only has one comic has changed, and to ~41s if nothing
+        # has changed.
+        next if ($self->_up_to_date($comic));
         # Ask each comic to run its checks, which may be the ones configured
         # globally or overridden in the comic.
         $comic->check();
     }
 
     return;
+}
+
+
+sub _up_to_date {
+    my ($self, $comic) = @ARG;
+
+    foreach my $gen (@{$self->{generators}}) {
+        foreach my $language($comic->languages()) {
+            return 0 unless ($gen->up_to_date($comic, $language));
+        }
+    }
+    return 1;
 }
 
 

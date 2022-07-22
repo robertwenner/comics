@@ -6,9 +6,11 @@ use Test::More;
 use Test::Output;
 use lib 't';
 use MockComic;
-use lib 't/check';
 use Comic::Settings;
+use lib 't/check';
 use DummyCheck;
+use lib 't/out';
+use DummyGenerator;
 
 use Comics;
 use Comic::Check::Check;
@@ -197,6 +199,8 @@ sub run_all_checks_runs_only_checks_for_comic : Tests {
     my $comics = Comics->new();
     my $global_check = DummyCheck->new();
     push @{$comics->{checks}}, $global_check;
+    my $dummy_generator = DummyGenerator->new();
+    push @{$comics->{generators}}, $dummy_generator;
 
     my $called_comic_check = 0;
     no warnings qw/redefine/;
@@ -205,7 +209,11 @@ sub run_all_checks_runs_only_checks_for_comic : Tests {
     };
     use warnings;
 
-    my $comic = MockComic::make_comic();
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => "drink beer",
+        },
+    );
     push @{$comics->{comics}}, $comic;
 
     $comics->run_all_checks();

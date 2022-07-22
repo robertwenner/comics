@@ -526,3 +526,43 @@ sub different_image_dimensions_per_language : Tests {
         {'Deutsch' => 'width 1', 'English' => 'width 2'},
         'wrong width');
 }
+
+
+sub is_up_to_date_backlog : Tests {
+    my @asked;
+
+    no warnings qw/redefine/;
+    local *Comic::up_to_date = sub {
+        my $self = shift;
+        push @asked, @_;
+        return 1;
+    };
+    use warnings;
+
+    my $comic = MockComic::make_comic(
+        $MockComic::PUBLISHED_WHEN => '4000-01-01',
+    );
+    $png->up_to_date($comic, 'English');
+
+    is_deeply(\@asked, ["$comic->{backlogPath}{English}/$comic->{baseName}{English}.png"]);
+}
+
+
+sub is_up_to_date_published : Tests {
+    my @asked;
+
+    no warnings qw/redefine/;
+    local *Comic::up_to_date = sub {
+        my $self = shift;
+        push @asked, @_;
+        return 1;
+    };
+    use warnings;
+
+    my $comic = MockComic::make_comic(
+        $MockComic::PUBLISHED_WHEN => '2000-01-01',
+    );
+    $png->up_to_date($comic, 'English');
+
+    is_deeply(\@asked, ["$comic->{dirName}{English}/$comic->{baseName}{English}.png"]);
+}

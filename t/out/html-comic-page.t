@@ -67,6 +67,25 @@ sub generate_everything {
 }
 
 
+sub is_up_to_date : Tests {
+    my @passed;
+
+    no warnings qw/redefine/;
+    local *Comic::up_to_date = sub {
+        my $self = shift;
+        push @passed, @_;
+    };
+    use warnings;
+
+    my $comic = MockComic::make_comic();
+    my $hcp = make_generator();
+
+    $hcp->up_to_date($comic, 'English');
+
+    is_deeply(["generated/backlog/english/drinking-beer.html"], \@passed);
+}
+
+
 sub fails_on_missing_configuration : Tests {
     eval {
         Comic::Out::HtmlComicPage->new();

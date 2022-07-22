@@ -85,6 +85,19 @@ sub new {
 }
 
 
+=head2 up_to_date
+
+See the  Generator method's documentation.
+
+=cut
+
+sub up_to_date {
+    my ($self, $comic, $language) = @ARG;
+
+    return $comic->up_to_date("$comic->{dirName}{$language}/$comic->{baseName}{$language}.png");
+}
+
+
 =head2 generate
 
 Generates the F<.png>s for all language-specific F<.svg> files of the given

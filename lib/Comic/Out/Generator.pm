@@ -479,6 +479,37 @@ sub all_languages {
 }
 
 
+
+=head2 up_to_date
+
+Checks if the given comic is up to date, i.e., it has not changed and would
+not produce new output files.
+
+This is a performance optimization: it allows to skip C<Checks> if the input
+comic C<.svg> hasn't changed. Any Generator that has an opinion on whether
+checks should run should implement this method, e.g., by comparing input and
+output file modification times.
+
+All generators will be called no matter what to produce their output. This
+is B<only> for skipping C<Checks>.
+
+Parameters:
+
+=over 4
+
+=item * B<@comics> what comics to check.
+
+=item * B<language> for what language to check.
+
+=back
+
+=cut
+
+sub up_to_date {
+    return 1;
+}
+
+
 =head2 generate
 
 Generate whatever output this Generator wants to generate for a given Comic.

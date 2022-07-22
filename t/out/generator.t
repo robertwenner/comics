@@ -261,3 +261,9 @@ sub handles_json_boolean : Tests {
     ok($gen->{settings}{'T'});
     ok(!$gen->{settings}{'F'});
 }
+
+
+sub base_generator_is_up_to_date : Tests {
+    my $gen = Comic::Out::Generator->new();
+    ok($gen->up_to_date());
+}
