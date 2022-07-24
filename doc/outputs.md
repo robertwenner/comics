@@ -77,10 +77,10 @@ reason, do numbering only when you are done with the comic's texts.
 Ids *must* be unique per document; even across layers. If you try to use an
 id that's already in use, Inkscape will automatically change the id of the
 previous element to a generated id, so be careful. While you can pick
-anything for ids, I recommend numbers. Inkscape genertes ids like "text"
+anything for ids, I recommend numbers. Inkscape generates ids like "text"
 plus a number. If you go with numeric ids, the code can warn about a mix of
 numeric and alphanumeric ids, which could indicate that Inkscape replaced a
-duplicate id with a generated one.
+duplicated id with a generated one.
 
 
 ## `Comic::Out::Backlog`
