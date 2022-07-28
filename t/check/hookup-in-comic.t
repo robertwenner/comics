@@ -222,6 +222,37 @@ sub run_all_checks_runs_only_checks_for_comic : Tests {
 }
 
 
+sub run_all_checks_skips_up_to_date_comic : Tests {
+    my $comics = Comics->new();
+    my $global_check = DummyCheck->new();
+    push @{$comics->{checks}}, $global_check;
+    my $dummy_generator = DummyGenerator->new();
+    $dummy_generator->{up_to_date} = 0;
+    push @{$comics->{generators}}, $dummy_generator;
+
+    my $called_comic_check = 0;
+    no warnings qw/redefine/;
+    local *Comic::check = sub {
+        $called_comic_check++;
+    };
+    use warnings;
+
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => "drink beer",
+        },
+    );
+    push @{$comics->{comics}}, $comic;
+
+    $comics->run_all_checks();
+    is($called_comic_check, 1, 'should have called Comic::check');
+
+    $dummy_generator->{up_to_date} = 1;
+    $comics->run_all_checks();
+    is($called_comic_check, 1, 'should not have called Comic::check again');
+}
+
+
 sub prints_warnings_from_unpublished_comic : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::PUBLISHED_WHEN => undef,
