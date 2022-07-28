@@ -26,7 +26,6 @@ use JSON;
 use HTML::Entities;
 use Image::ExifTool qw(:Public);
 use Image::SVG::Transform;
-use URI::Encode qw(uri_encode);
 
 use Comic::Consts;
 use Comic::Settings;
@@ -169,7 +168,6 @@ sub load {
             $base = 'generated/web/' . lc $language . '/comics';
         }
 
-        $self->{titleUrlEncoded}{$language} = uri_encode($self->{meta_data}->{title}->{$language}, %uri_encoding_options);
         $self->{dirName}{$language} = make_dir($base);
         $self->{baseName}{$language} = $self->_normalized_title($language);
 

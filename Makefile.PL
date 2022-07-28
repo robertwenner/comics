@@ -27,7 +27,6 @@ my %dependencies = (
     'Template' => 0,
     'Template::Plugin::JSON' => 0,
     'Text::SpellChecker' => 0,
-    'URI::Encode' => 0,
     'XML::LibXML' => 0,
     'XML::LibXML::XPathContext' => 0,
     'version' => 0,

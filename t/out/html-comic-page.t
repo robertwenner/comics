@@ -37,7 +37,6 @@ sub make_comic {
     # clear out some dummy values MockComic sets; the code under tests needs to provide them
     $comic->{url} = {};
     $comic->{href} = {};
-    $comic->{urlUrlEncoded} = {};
     return $comic;
 }
 

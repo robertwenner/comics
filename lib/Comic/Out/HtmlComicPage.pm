@@ -8,7 +8,6 @@ use English '-no_match_vars';
 use Carp;
 use Readonly;
 use Clone qw(clone);
-use URI::Encode qw(uri_encode);
 
 use Comic::Out::Template;
 use Comic::Out::Generator;
@@ -139,7 +138,6 @@ sub generate {
         $comic->{href}{$language} = 'comics/' . $html_file;
         my $domain = $comic->{settings}->{'Domains'}{$language};
         $comic->{url}{$language} = "https://$domain/$comic->{href}{$language}";
-        $comic->{urlUrlEncoded}{$language} = uri_encode($comic->{url}{$language}, %uri_encoding_options);
     }
     return;
 }
@@ -418,7 +416,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2016 - 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2016 - 2022, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or
