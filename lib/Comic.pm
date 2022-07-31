@@ -154,7 +154,6 @@ sub load {
         $self->{rfc3339pubDate} = DateTime::Format::RFC3339->new()->format_datetime($published);
     }
 
-    my %uri_encoding_options = (encode_reserved => 1);
     foreach my $language ($self->languages()) {
         my $domain = ${$self->{settings}->{Domains}}{$language};
         $self->keel_over("No domain for $language") unless ($domain);
