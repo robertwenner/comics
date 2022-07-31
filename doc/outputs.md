@@ -512,7 +512,8 @@ When the template is processed, these variables are also available:
 
 * `canonicalUrl` full URL of the comic.
 
-* `comicsPath` path to comics, relative to the server root, e.g., `comics/`.
+* `siteComicsPath` path to comics, relative to the server root, with a
+  trailing slash, e.g., `comics/`.
 
 * `indexAdjust`: prefix for paths / URLs to other comics, so that navigation linking
   works in published an non-published comics.

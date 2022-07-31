@@ -5,9 +5,9 @@ The Comics module accepts settings / configuration in relaxed
 configuration files where settings in later ones override settings in
 earlier ones.
 
-This document describes the available settings. Settings are case-sensitive
-(i.e., "Checks" and "checks" are *not* the same). Unknown settings are
-silently ignored.
+Settings are case-sensitive (i.e., "Checks" and "checks" are *not* the
+same). Currently, unknown settings are silently ignored, but this may change
+in future versions.
 
 The configuration has a top-level JSON object. Any settings are children of
 this top-level object.
@@ -31,6 +31,30 @@ For example:
     "Copyright": "CC BY-NC-ND  4.0"
 }
 ```
+
+`Paths` configures where generated files are placed.
+
+```json
+{
+    "Paths": {
+        "siteComics": "c"
+    }
+}
+```
+
+In the example above, the `siteComics` gives the folder (relative to the web
+site root) where generated comics should be saved, here in the `c` folder.
+The default value is "comics".
+
+```json
+{
+    "LayerNames": {
+        "TranscriptOnlyPrefix": "Meta"
+    }
+}
+
+Configures layer names to indicate which layer has which information. See
+the [checks](checks.md) chapter on how these are used.
 
 
 ## Checks

@@ -154,6 +154,24 @@ sub load {
         $self->{rfc3339pubDate} = DateTime::Format::RFC3339->new()->format_datetime($published);
     }
 
+    $self->{siteComicsPath} = 'comics/';
+    if (defined $self->{settings}->{Paths}) {
+        if (ref $self->{settings}->{Paths} eq 'HASH') {
+            if (defined ${$self->{settings}->{Paths}}{'siteComics'}) {
+                if (ref ${$self->{settings}->{Paths}}{'siteComics'} eq '') {
+                    $self->{siteComicsPath} = ${$self->{settings}->{Paths}}{'siteComics'};
+                    $self->{siteComicsPath} .= q{/} unless ($self->{siteComicsPath} =~ m{/$}x);
+                }
+                else {
+                    $self->keel_over('Paths.siteComics must be a single value');
+                }
+            }
+        }
+        else {
+            $self->keel_over('Paths setting must be a hash');
+        }
+    }
+
     foreach my $language ($self->languages()) {
         my $domain = ${$self->{settings}->{Domains}}{$language};
         $self->keel_over("No domain for $language") unless ($domain);
@@ -175,7 +193,7 @@ sub load {
         # domain, path, and file.
         my $html_file = "$self->{baseName}{$language}.html";
         $self->{htmlFile}{$language} = $html_file;
-        $self->{href}{$language} = 'comics/' . $html_file;
+        $self->{href}{$language} = $self->{siteComicsPath} . $html_file;
         $self->{url}{$language} = "https://$domain/$self->{href}{$language}";
     }
 

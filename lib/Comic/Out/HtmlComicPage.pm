@@ -135,7 +135,7 @@ sub generate {
     foreach my $language ($comic->languages()) {
         my $html_file = "$comic->{baseName}{$language}.html";
         $comic->{htmlFile}{$language} = $html_file;
-        $comic->{href}{$language} = 'comics/' . $html_file;
+        $comic->{href}{$language} = $comic->{siteComicsPath} . $html_file;
         my $domain = $comic->{settings}->{'Domains'}{$language};
         $comic->{url}{$language} = "https://$domain/$comic->{href}{$language}";
     }
@@ -255,8 +255,7 @@ sub _set_vars {
     $vars{'year'} = substr $comic->{meta_data}->{published}->{when}, 0, $DIGITS_YEAR;
     $vars{'canonicalUrl'} = $comic->{url}{$language};
 
-    # By default, use normal path with comics in comics/
-    $vars{'comicsPath'} = 'comics/';
+    $vars{'siteComicsPath'} = $comic->{siteComicsPath};
     $vars{'indexAdjust'} = '';
     $vars{'see'} = $comic->{'htmllink'} || {};
     my $path = '../';
@@ -270,7 +269,7 @@ sub _set_vars {
         # Adjust the path for top-level index.html: the comics are in their own
         # folder, but index.html is in that folder's parent folder.
         $path = '';
-        $vars{'indexAdjust'} = $vars{'comicsPath'};
+        $vars{'indexAdjust'} = $vars{'siteComicsPath'};
         foreach my $l (keys %{$vars{'languageurls'}}) {
             # On index.html, link to the other language's index.html, not to
             # the canonical URL of the comic. Google trips over that and thinks

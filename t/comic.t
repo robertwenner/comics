@@ -127,3 +127,80 @@ XML
     my @inner_texts = $comic->texts_in_layer('English');
     is_deeply(\@inner_texts, ['down here'], 'wrong inner layer texts');
 }
+
+
+sub sets_comic_path_from_config_ok : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::SETTINGS => {
+            'Paths' => {
+                'siteComics' => 'theComicPath',
+            },
+            $MockComic::DOMAINS => {
+                $MockComic::ENGLISH => 'beercomics.com',
+                $MockComic::DEUTSCH => 'biercomics.de',
+            },
+        },
+    );
+    is($comic->{siteComicsPath}, 'theComicPath/', 'wrong path');
+}
+
+
+sub no_comics_path_in_config_defaults_to_comics : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::SETTINGS => {
+            'Paths' => {},
+            $MockComic::DOMAINS => {
+                $MockComic::ENGLISH => 'beercomics.com',
+                $MockComic::DEUTSCH => 'biercomics.de',
+            },
+        },
+    );
+    is($comic->{siteComicsPath}, 'comics/', 'wrong path');
+
+    $comic = MockComic::make_comic(
+        $MockComic::SETTINGS => {
+            $MockComic::DOMAINS => {
+                $MockComic::ENGLISH => 'beercomics.com',
+                $MockComic::DEUTSCH => 'biercomics.de',
+            },
+        },
+    );
+    is($comic->{siteComicsPath}, 'comics/', 'wrong path');
+}
+
+
+sub complains_if_comics_path_not_a_scalar : Tests {
+    eval {
+        MockComic::make_comic(
+            $MockComic::SETTINGS => {
+                'Paths' => {
+                    'siteComics' => {},
+                },
+                $MockComic::DOMAINS => {
+                    $MockComic::ENGLISH => 'beercomics.com',
+                    $MockComic::DEUTSCH => 'biercomics.de',
+                },
+            },
+        );
+    };
+    like($@, qr{\bPaths\b}, 'should mention the top level setting');
+    like($@, qr{\bsiteComics\b}, 'should mention the actual setting');
+    like($@, qr{\bsingle value\b}, 'should say what is wrong');
+
+    eval {
+        MockComic::make_comic(
+            $MockComic::SETTINGS => {
+                'Paths' => {
+                    'siteComics' => [],
+                },
+                $MockComic::DOMAINS => {
+                    $MockComic::ENGLISH => 'beercomics.com',
+                    $MockComic::DEUTSCH => 'biercomics.de',
+                },
+            },
+        );
+    };
+    like($@, qr{\bPaths\b}, 'should mention the top level setting');
+    like($@, qr{\bsiteComics\b}, 'should mention the actual setting');
+    like($@, qr{\bsingle value\b}, 'should say what is wrong');
+}
