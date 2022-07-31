@@ -52,6 +52,7 @@ The default value is "comics".
         "TranscriptOnlyPrefix": "Meta"
     }
 }
+```
 
 Configures layer names to indicate which layer has which information. See
 the [checks](checks.md) chapter on how these are used.
