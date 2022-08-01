@@ -133,6 +133,22 @@ sub sets_comic_path_from_config_ok : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::SETTINGS => {
             'Paths' => {
+                'siteComics' => 'theComicPath/',
+            },
+            $MockComic::DOMAINS => {
+                $MockComic::ENGLISH => 'beercomics.com',
+                $MockComic::DEUTSCH => 'biercomics.de',
+            },
+        },
+    );
+    is($comic->{siteComicsPath}, 'theComicPath/', 'wrong path');
+}
+
+
+sub sets_comic_path_from_config_ok_adds_trailing_slash : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::SETTINGS => {
+            'Paths' => {
                 'siteComics' => 'theComicPath',
             },
             $MockComic::DOMAINS => {
@@ -166,6 +182,23 @@ sub no_comics_path_in_config_defaults_to_comics : Tests {
         },
     );
     is($comic->{siteComicsPath}, 'comics/', 'wrong path');
+}
+
+
+sub complains_if_paths_is_not_a_hash : Tests {
+    eval {
+        MockComic::make_comic(
+            $MockComic::SETTINGS => {
+                'Paths' => [],
+                $MockComic::DOMAINS => {
+                    $MockComic::ENGLISH => 'beercomics.com',
+                    $MockComic::DEUTSCH => 'biercomics.de',
+                },
+            },
+        );
+    };
+    like($@, qr{\bPaths\b}, 'should mention the top level setting');
+    like($@, qr{\bhash\b}, 'should say what is wrong');
 }
 
 
