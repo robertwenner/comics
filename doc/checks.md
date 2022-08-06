@@ -441,7 +441,8 @@ text and metadata layers.
 
 Checks a comic's published date is always on certain weekdays. For regularly
 published comics, it may make sense to check that a comic is always
-scheduled for a certain weekday, e.g., every Friday.
+scheduled on the same weekdays, e.g., every Friday, or every Monday and
+Friday.
 
 To use this check, configure the weekday(s). Use 1 for Monday, 2 for
 Tuesday, and so on. If no weekday is given, this check is effectively

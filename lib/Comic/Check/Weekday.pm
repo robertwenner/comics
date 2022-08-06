@@ -54,7 +54,7 @@ Parameters:
 
 =over 4
 
-=item * B<weekday> Weekday when comics are published. Pass 1 for Monday, 2
+=item * B<weekday> Weekday(s) when comics are published. Pass 1 for Monday, 2
     for Tuesday, and so on. If no weekday is given, this check is
     effectively disabled.
 
@@ -65,16 +65,18 @@ Parameters:
 
 
 sub new {
-    my ($class, $weekday) = @ARG;
+    my ($class, @weekday) = @ARG;
     my $self = $class->SUPER::new();
 
-    if (defined $weekday) {
-        ## no critic(ValuesAndExpressions::ProhibitMagicNumbers)
-        croak("Bad weekday $weekday, use 1 (Mon) - 7 (Sun)") if ($weekday < 1 || $weekday > 7);
-        ## use critic
+    if (@weekday) {
+        @{$self->{weekday}} = @weekday;
+        foreach my $weekday (@weekday) {
+            ## no critic(ValuesAndExpressions::ProhibitMagicNumbers)
+            croak("Bad weekday $weekday, use 1 (Mon) - 7 (Sun)") if ($weekday < 1 || $weekday > 7);
+            ## use critic
+        }
     }
 
-    $self->{weekday} = $weekday;
     return $self;
 }
 
@@ -104,9 +106,12 @@ sub check {
     return unless($published_when);
     my $published_date = DateTime::Format::ISO8601->parse_datetime($published_when);
 
-    if ($published_date->day_of_week() != $self->{weekday}) {
-        $self->warning($comic, 'Scheduled for ' . $published_date->day_name());
+    foreach my $weekday (@{$self->{weekday}}) {
+        if ($published_date->day_of_week() == $weekday) {
+            return;
+        }
     }
+    $self->warning($comic, 'Scheduled for ' . $published_date->day_name());
 
     return;
 }
@@ -149,7 +154,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2015 - 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2015 - 2022, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or

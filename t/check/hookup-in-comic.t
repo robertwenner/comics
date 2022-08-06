@@ -115,7 +115,7 @@ sub comic_add_same_type_check_replaces_original : Tests {
     );
     is(@{$comic->{checks}}, 1, 'should have one check');
     ok(${$comic->{checks}}[0]->isa("Comic::Check::Weekday"), 'wrong kind of check');
-    is_deeply(${$comic->{checks}}[0]->{weekday}, 2, 'still has old check');
+    is_deeply(${$comic->{checks}}[0]->{weekday}, [2], 'still has old check');
 }
 
 
