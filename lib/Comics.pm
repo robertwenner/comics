@@ -5,6 +5,7 @@ use warnings;
 use utf8;
 use autodie;
 
+use Readonly;
 use English '-no_match_vars';
 use open ':std', ':encoding(UTF-8)'; # to handle e.g., umlauts correctly
 use Carp;
@@ -688,6 +689,54 @@ sub post_to_social_media {
     }
 
     return @posted;
+}
+
+
+=head2 next_publish_day
+
+Finds the next publish day from today and returns that date in ISO8601
+format. Publish days are taken from the C<Comic::Check::Weekday>
+configuration. If called on a day where a comic usually gets published,
+it picks that day. For example, when publishing on Fridays, when called on
+Friday 1st, will pick Friday 1st. When publishing on Mondays and Fridays,
+and called on Saturday 2nd, will pick Monday 4th.
+
+=cut
+
+sub next_publish_day {
+    my ($self) = @ARG;
+    Readonly my $DAYS_PER_WEEK => 7;
+
+    my $weekday_settings = $self->{settings}->{settings}->{Checks}->{'Comic::Check::Weekday.pm'};
+    croak('Comic::Check::Weekday configuration not found or empty') if (!$weekday_settings);
+    my @publish_days;
+    if (ref $weekday_settings eq '') {
+        @publish_days = ($weekday_settings);
+    }
+    elsif (ref $weekday_settings eq 'ARRAY') {
+        @publish_days = @{$weekday_settings};
+    }
+    else {
+        croak('Comic::Check::Weekday must be scalar or array');
+    }
+
+    my $now = _now();
+    my $todays_week_day = $now->day_of_week();
+    my $next_pub_in = $DAYS_PER_WEEK;
+    foreach my $pub_week_day (@publish_days) {
+        my $next = $pub_week_day - $todays_week_day;
+        $next += $DAYS_PER_WEEK if ($next < 0);
+        $next_pub_in = $next if ($next < $next_pub_in);
+    }
+
+    my $target = $now + DateTime::Duration->new(days => $next_pub_in);
+    return $target->format_cldr('yyyy-MM-dd');
+}
+
+
+sub _now {
+    # uncoverable subroutine
+    return DateTime->now; # uncoverable statement
 }
 
 
