@@ -721,16 +721,34 @@ sub next_publish_day {
     }
 
     my $now = _now();
-    my $todays_week_day = $now->day_of_week();
-    my $next_pub_in = $DAYS_PER_WEEK;
-    foreach my $pub_week_day (@publish_days) {
-        my $next = $pub_week_day - $todays_week_day;
-        $next += $DAYS_PER_WEEK if ($next < 0);
-        $next_pub_in = $next if ($next < $next_pub_in);
+    my @future_comics = grep {
+        $_->{meta_data}->{published}->{when} || '1000-01-01' ge $now->format_cldr('yyyy-MM-dd')
+    } @{$self->{comics}};
+    my $next_date;
+    my $date_taken = 1;
+    while ($date_taken) {
+        my $todays_week_day = $now->day_of_week();
+        my $next_pub_in = $DAYS_PER_WEEK;
+        foreach my $pub_week_day (@publish_days) {
+            my $next = $pub_week_day - $todays_week_day;
+            $next += $DAYS_PER_WEEK if ($next < 0);
+            $next_pub_in = $next if ($next < $next_pub_in);
+        }
+
+        my $target = $now + DateTime::Duration->new(days => $next_pub_in);
+        $next_date = $target->format_cldr('yyyy-MM-dd');
+
+        $date_taken = 0;
+        foreach my $comic (@future_comics) {
+            next unless ($comic->{meta_data}->{published}->{when});
+            $date_taken = 1 if ($comic->{meta_data}->{published}->{when} eq $next_date);
+        }
+        if ($date_taken) {
+            $now = $now + DateTime::Duration->new(days => 1);
+        }
     }
 
-    my $target = $now + DateTime::Duration->new(days => $next_pub_in);
-    return $target->format_cldr('yyyy-MM-dd');
+    return $next_date;
 }
 
 

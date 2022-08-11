@@ -124,3 +124,27 @@ sub schedule_for_multiple_days : Tests {
         is($scheduled_for, $today_to_next_friday{$today}, "Wrong publishing day from $today");
     }
 }
+
+
+sub schedule_skips_dates_taken : Tests {
+    #     August 2022
+    # Su Mo Tu We Th Fr Sa
+    #     1  2  3  4  5  6
+    #  7  8  9 10 11 12 13
+    # 14 15 16 17 18 19 20
+    # 21 22 23 24 25 26 27
+    # 28 29 30 31
+    $now = DateTime::Format::ISO8601->parse_datetime("2022-08-03T00:00:00"); # Wed
+    my $comics = Comics->new();
+    push @{$comics->{comics}},
+        MockComic::make_comic($MockComic::PUBLISHED_WHEN => '2022-08-05'),
+        MockComic::make_comic($MockComic::PUBLISHED_WHEN => '2022-08-12'),
+        MockComic::make_comic($MockComic::PUBLISHED_WHEN => ''),
+        MockComic::make_comic($MockComic::PUBLISHED_WHEN => '2022-08-26');
+
+    @{$comics->{settings}->{settings}->{Checks}->{'Comic::Check::Weekday.pm'}} = (5); # Fri
+
+    my $scheduled_for = $comics->next_publish_day();
+
+    is($scheduled_for, '2022-08-19', "Wrong publishing day");
+}
