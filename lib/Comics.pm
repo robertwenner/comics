@@ -698,8 +698,8 @@ Finds the next publish day from today and returns that date in ISO8601
 format. Publish days are taken from the C<Comic::Check::Weekday>
 configuration. If called on a day where a comic usually gets published,
 it picks that day. For example, when publishing on Fridays, when called on
-Friday 1st, will pick Friday 1st. When publishing on Mondays and Fridays,
-and called on Saturday 2nd, will pick Monday 4th.
+Friday 1, will pick Friday 1. When publishing on Mondays and Fridays,
+and called on Saturday 2, will pick Monday 4.
 
 =cut
 
