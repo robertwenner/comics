@@ -969,10 +969,39 @@ sub texts_in_language {
 
     my @texts;
     foreach my $node (sort $sorter @found) {
-        push @texts, _text_content($node);
+        my $text = _text_content($node);
+
+        if ($text eq '') {
+            my $layer = _layer_of($node);
+            $self->warning("Empty text in $language in layer $layer in " . $node->getAttribute('id'));
+        }
+
+        push @texts, $text if ($text);
     }
 
     return @texts;
+}
+
+
+sub _layer_of {
+    my ($node) = @ARG;
+
+    my $n = $node;
+    while (defined $n) {
+        if (_is_layer($n)) {
+            return $n->getAttribute('inkscape:label');
+        }
+        $n = $n->parentNode;
+    }
+    return '(top level)'; # uncoverable statement
+}
+
+
+sub _is_layer {
+    my ($node) = @ARG;
+
+    my $group_is_layer = ($node->getAttribute('inkscape:groupmode') || '') eq 'layer';
+    return $node->localname eq 'g' && $group_is_layer;
 }
 
 
@@ -981,8 +1010,8 @@ sub texts_in_language {
 Gets the normalized texts in the given layers, ordered by frames and then
 from left to right.
 
-Normalized means line breaks are removed and multiple consecutive spaces are
-reduced to one.
+Normalized means line breaks are replaced with spaces and multiple
+consecutive spaces are reduced to one.
 
 If a text is in a layer within another layer, it is only reported for that
 inner layer, not for its parent layer(s).
@@ -991,7 +1020,7 @@ Parameters:
 
 =over 4
 
-=item * B<layer> Inkscape layer name(s) from which to collect texts.
+=item * B<@layers> Inkscape layer name(s) from which to collect texts.
 
 =back
 
@@ -1023,15 +1052,19 @@ sub _text_nodes_in_layers {
             # layers, the xpath would not match them. Still, this loop condition looks better
             # to me than an infinite loop.
             while ($parent->localname ne 'svg') {
-                my $group_is_layer = ($parent->getAttribute('inkscape:groupmode') || '') eq 'layer';
-                if ($parent->localname eq 'g' && $group_is_layer) {
+                if (_is_layer($parent)) {
                     # Skip if this is inside another layer than we're looking for.
                     next TEXT_NODE if ($parent->getAttribute('inkscape:label') ne $layer);
                     last;
                 }
                 $parent = $parent->parentNode;
             }
-            push @found, $node;
+            if ($node->hasChildNodes()) {
+                push @found, $node;
+            }
+            else {
+                $self->warning("Empty text in layer $layer in " .$node->getAttribute('id'));
+            }
         }
     }
     return @found;
@@ -1043,18 +1076,18 @@ sub _text_content {
     # <tspan> for each line. This function returns all these tspans
     # together. It also cleans up whitespace (replaces line breaks with
     # spaces, replaces multiple spaces with one, and trims).
+    # Sometimes in empty texts a <text> may have no nested <tspan>.
     my ($node) = @ARG;
 
     my XML::LibXML::Node $tspan = $node->firstChild();
     my $text = '';
-    do {
+    while ($tspan) {
         $text .= $tspan->textContent() . ' ';
         $tspan = $tspan->nextSibling();
     }
-    while ($tspan);
     $text =~ s/-\s+/-/mg;
     $text =~ s/ +/ /mg;
-    $text = trim ($text);
+    $text = trim($text);
     return $text;
 }
 
