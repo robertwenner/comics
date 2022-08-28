@@ -1235,6 +1235,7 @@ sub write_file {
 
     open my $F, '>', $file_name; # uncoverable statement
     # uncoverable statement
+    # uncoverable branch true
     # uncoverable branch false
     print {$F} $contents or croak("Cannot write to $file_name: $OS_ERROR");
     close $F; # uncoverable statement

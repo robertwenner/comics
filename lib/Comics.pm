@@ -740,7 +740,6 @@ sub next_publish_day {
 
         $date_taken = 0;
         foreach my $comic (@future_comics) {
-            next unless ($comic->{meta_data}->{published}->{when});
             $date_taken = 1 if ($comic->{meta_data}->{published}->{when} eq $next_date);
         }
         if ($date_taken) {
