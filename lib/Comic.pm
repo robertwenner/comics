@@ -321,8 +321,8 @@ sub _adjust_checks {
 
         elsif ($keyword eq 'remove') {
             my $removing = $check_config->{'remove'};
-            if (ref $removing ne ref []) {
-                $self->keel_over('Must pass an array to "remove"');
+            if (ref $removing ne ref [] && ref $removing ne '') {
+                $self->keel_over('Must pass an array or single value to "remove"');
             }
             $self->_remove_checks($removing);
         }
@@ -338,16 +338,24 @@ sub _adjust_checks {
 
 # Converts an array ref to a hash ref (with elements pointing to empty array
 # references) to easily add Checks without arguments (where the Check then
-# falls back on default arguments). If the passed reference is already a
-# hash reference, return it.
+# falls back on default arguments).
+# If the passed reference is already a hash reference, return it.
+# If the passed thingie is a scalar, returns an empty array ref.
 sub _array_ref_to_hash_ref {
-    my ($array_or_hash_ref) = @ARG;
+    my ($thingie) = @ARG;
 
-    if (ref $array_or_hash_ref eq ref []) {
-        $array_or_hash_ref = { map { $_ => [] } @{$array_or_hash_ref} };
+    if (ref $thingie eq ref []) {
+        # array
+        return { map { $_ => [] } @{$thingie} };
     }
-
-    return $array_or_hash_ref;
+    elsif (ref $thingie eq ref {}) {
+        # hash
+        return $thingie;
+    }
+    else {
+        # scalar
+        return { $thingie => [] };
+    }
 }
 
 
@@ -357,7 +365,7 @@ sub _add_checks {
 
     $checks = _array_ref_to_hash_ref($checks);
     foreach my $name (keys %{$checks}) {
-        my $args = ${$checks}{$name} || [];
+        my $args = ${$checks}{$name};
         push @{$self->{checks}}, Comic::Modules::load_module($name, $args);
     }
 

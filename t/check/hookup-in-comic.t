@@ -66,6 +66,16 @@ sub comic_overrides_main_config_checks_as_array : Tests {
 }
 
 
+sub comic_overrides_main_config_checks_as_scalar : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::JSON => '"Checks": { "use": "DummyCheck" }',
+    );
+    is(@{$comic->{checks}}, 1, 'should have one check');
+    ok(${$comic->{checks}}[0]->isa("DummyCheck"), 'created wrong check');
+    is_deeply(${$comic->{checks}}[0]->{args}, [], 'passed wrong ctor args');
+}
+
+
 sub comic_adds_main_config_checks_as_object : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::SETTINGS => {
@@ -102,6 +112,24 @@ sub comic_adds_to_main_config_as_array : Tests {
 }
 
 
+sub comic_adds_to_main_config_as_scalar : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::SETTINGS => {
+            $MockComic::DOMAINS => {
+                $MockComic::DEUTSCH => "biercomics.de",
+                $MockComic::ENGLISH => "beercomics.com",
+            },
+        },
+        $MockComic::CHECKS => [ Comic::Check::Actors->new() ],
+        $MockComic::JSON => '"Checks": { "add": "DummyCheck" }',
+    );
+    is(@{$comic->{checks}}, 2, 'should have two checks');
+    ok(${$comic->{checks}}[0]->isa("Comic::Check::Actors"), 'modified existing check');
+    ok(${$comic->{checks}}[1]->isa("DummyCheck"), 'created wrong check');
+    is_deeply(${$comic->{checks}}[1]->{args}, [], 'passed wrong ctor args');
+}
+
+
 sub comic_add_same_type_check_replaces_original : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::SETTINGS => {
@@ -119,7 +147,7 @@ sub comic_add_same_type_check_replaces_original : Tests {
 }
 
 
-sub comic_remove_from_config : Tests {
+sub comic_remove_from_config_as_array : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::SETTINGS => {
             $MockComic::DOMAINS => {
@@ -134,13 +162,28 @@ sub comic_remove_from_config : Tests {
 }
 
 
+sub comic_remove_from_config_as_scalar : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::SETTINGS => {
+            $MockComic::DOMAINS => {
+                $MockComic::DEUTSCH => "biercomics.de",
+                $MockComic::ENGLISH => "beercomics.com",
+            },
+        },
+        $MockComic::CHECKS => [ Comic::Check::Weekday->new(1) ],
+        $MockComic::JSON => '"Checks": { "remove": "Comic/Check/Weekday.pm" }',
+    );
+    is(@{$comic->{checks}}, 0, 'should have no checks');
+}
+
+
 sub comic_remove_from_config_as_hash_gets_nice_error_message : Tests {
     eval {
         MockComic::make_comic(
             $MockComic::JSON => '"Checks": { "remove": { "DummyCheck": 1 } }',
         );
     };
-    like($@, qr{must pass an array to "remove"}i);
+    like($@, qr{must pass an array or single value to "remove"}i);
 }
 
 
