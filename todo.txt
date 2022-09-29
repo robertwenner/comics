@@ -246,3 +246,11 @@
 
 - feature: decouple archive comic pages from index.html; this could make for
   easier templates if the main page differs a lot from each comic's page
+
+- feature; on the publish day: warn (email, ...) if there is no comic
+  scheduled for today (maybe only if there are comics in the backlog)
+
+- feature: caldav support to show planned comics in a calendar
+
+- feature: calendar widget in backlog to show for which days a comic is
+  scheduled and where holes are
