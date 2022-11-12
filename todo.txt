@@ -254,3 +254,6 @@
 
 - feature: calendar widget in backlog to show for which days a comic is
   scheduled and where holes are
+
+- feature: cli tool to add a new language to an existing comic: language
+  layers as in another language, empty JSON attributes for meta data
