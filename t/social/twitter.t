@@ -59,6 +59,29 @@ sub complains_about_bad_mode : Tests {
 }
 
 
+sub passes_arguments_but_not_mode_to_twitter_client : Tests {
+    $twitter = Test::MockModule->new('Net::Twitter');
+    $twitter->redefine('new', sub {
+        (undef, my @args) = @_;
+        $twitter_args{'new'} = {@args};
+        return $twitter->original('new')->(@_);
+    });
+
+    Comic::Social::Twitter->new(
+        'mode' => 'png',
+        'arg' => 'value',
+    );
+    is_deeply(
+        $twitter_args{'new'},
+        {
+            'traits' => [qw/API::RESTv1_1/],
+            'ssl' => 1,
+            'arg' => 'value',
+        }
+    );
+}
+
+
 sub tweet_png : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
