@@ -102,7 +102,7 @@ sub new {
     unless ($self->{mode} eq 'png' || $self->{mode} eq 'html') {
         croak("Unknown twitter mode '$self->{mode}'");
     }
-    $args{'mode'} = undef; # to pass the rest on to Net::Twitter->new
+    delete $args{'mode'}; # to pass only the rest on to Net::Twitter->new
 
     my %settings = (
         traits => [qw/API::RESTv1_1/],
