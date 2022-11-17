@@ -295,13 +295,13 @@ sub from_numeric_ids : Tests {
 JSON
     my $layers = <<'XML';
 <g inkscape:groupmode="layer" inkscape:label="English">
-    <text id="3" x="0" y="0">
+    <text id="250" x="0" y="0">
         <tspan>three</tspan>
     </text>
-    <text id="2" x="10" y="0">
+    <text id="30" x="10" y="0">
         <tspan>two</tspan>
     </text>
-    <text id="1" x="20" y="0">
+    <text id="5" x="20" y="0">
         <tspan>one</tspan>
     </text>
 </g>
