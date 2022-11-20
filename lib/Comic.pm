@@ -915,25 +915,8 @@ Parameters:
 sub texts_in_language {
     my ($self, $language) = @ARG;
 
-    my $ignore_prefix = $self->{settings}->{LayerNames}->{NoTranscriptPrefix};
-
-    # Collect needed layers in a hash, so that duplicted layer names are queried only once.
-    # The code that collects the nodes from layers will pick up all duplicates, but it should
-    # just run once per name. (Inkscape doesn't care about duplicated layer names.)
-    my %needed_layers;
-    foreach my $layer ($self->{xpath}->findnodes(_all_layers_xpath())) {
-        my $name = $layer->getAttribute('inkscape:label');
-
-        # Ignore layers without a name (no idea what they are for, probably drawing, and we'd
-        # get an undefined warning from Perl), any layers which don't end in the language we
-        # need, and any layers that start with the no-transcript prefix.
-        next unless ($name);
-        next unless ($name =~ m{$language$}x);
-        next if ($ignore_prefix && $name =~ m{^$ignore_prefix}x);
-        $needed_layers{$name}++;
-    }
-
-    my @found = $self->_text_nodes_in_layers(keys %needed_layers);
+    my @layers = $self->text_layers_for_language($language);
+    my @text_nodes = $self->text_nodes_in_layers(@layers);
 
     my $sorter;
     my $mode = $self->{meta_data}->{Transcript} || 'left-to-right';
@@ -957,17 +940,17 @@ sub texts_in_language {
         # name, so if we see a mix of numeric and alphanumeric ids, warn.
         my %ids;
         my $only_numeric = 0;
-        foreach my $text (@found) {
+        foreach my $text (@text_nodes) {
             my $id = $text->{id};
 
             if (defined $ids{$id}) {
-                $self->warning("Duplicated id $id: $ids{$id} and " . _text_content($text));
+                $self->warning("Duplicated id $id: $ids{$id} and " . text_content($text));
             }
-            $ids{$id} = _text_content($text);
+            $ids{$id} = text_content($text);
 
             $only_numeric++ if ($id =~ m/^\d+$/);
             if ($id =~ m{[[:lower:]]}i && $only_numeric) {
-                $self->warning("Mix of numeric and alphanumeric ids in $id with " . _text_content($text));
+                $self->warning("Mix of numeric and alphanumeric ids in $id with " . text_content($text));
             }
         }
     }
@@ -976,32 +959,52 @@ sub texts_in_language {
     }
 
     my @texts;
-    foreach my $node (sort $sorter @found) {
-        my $text = _text_content($node);
-
-        if ($text eq '') {
-            my $layer = _layer_of($node);
-            $self->warning("Empty text in $language in layer $layer in " . $node->getAttribute('id'));
-        }
-
-        push @texts, $text if ($text);
+    foreach my $node (sort $sorter @text_nodes) {
+        push @texts, text_content($node);
     }
 
     return @texts;
 }
 
 
-sub _layer_of {
-    my ($node) = @ARG;
+=head2 text_layers_for_language
 
-    my $n = $node;
-    while (defined $n) {
-        if (_is_layer($n)) {
-            return $n->getAttribute('inkscape:label');
-        }
-        $n = $n->parentNode;
+Gets the names of all Inkscape layers that can hold text for the given
+language.
+
+Parameters:
+
+=over 4
+
+=item * B<$language> For which language (e.g., "English") to get the layer
+    names.
+
+=back
+
+=cut
+
+sub text_layers_for_language {
+    my ($self, $language) = @ARG;
+
+    my $ignore_prefix = $self->{settings}->{LayerNames}->{NoTranscriptPrefix};
+
+    # Collect needed layers in a hash, so that duplicted layer names are queried only once.
+    # The code that collects the nodes from layers will pick up all duplicates, but it should
+    # just run once per name. (Inkscape doesn't care about duplicated layer names.)
+    my %needed_layers;
+    foreach my $layer ($self->{xpath}->findnodes(_all_layers_xpath())) {
+        my $name = $layer->getAttribute('inkscape:label');
+
+        # Ignore layers without a name (no idea what they are for, probably drawing, and we'd
+        # get an undefined warning from Perl), any layers which don't end in the language we
+        # need, and any layers that start with the no-transcript prefix.
+        next unless ($name);
+        next unless ($name =~ m{$language$}x);
+        next if ($ignore_prefix && $name =~ m{^$ignore_prefix}x);
+        $needed_layers{$name}++;
     }
-    return '(top level)'; # uncoverable statement
+
+    return keys %needed_layers;
 }
 
 
@@ -1037,21 +1040,44 @@ Parameters:
 sub texts_in_layer {
     my ($self, @layers) = @ARG;
 
-    my @nodes = $self->_text_nodes_in_layers(@layers);
+    my @nodes = $self->text_nodes_in_layers(@layers);
     my @texts;
     foreach my $node (sort { $self->_text_pos_sort($a, $b) } @nodes) {
-        push @texts, _text_content($node);
+        push @texts, text_content($node);
     }
 
     return @texts;
 }
 
 
-sub _text_nodes_in_layers {
-    my ($self, @needed_layers) = @ARG;
+=head2 text_nodes_in_layers
 
-    my @found;
-    foreach my $layer (@needed_layers) {
+Gets the normalized text nodes in the given layers, order is undefined.
+
+Normalized means line breaks are replaced with spaces and multiple
+consecutive spaces are reduced to one.
+
+If a text is in a layer within another layer, it is only reported for that
+inner layer, not for its parent layer(s).
+
+This is for Checks that need to know the layer; all other code should
+probably use C<texts_in_layer> instead.
+
+Parameters:
+
+=over 4
+
+=item * B<@layers> Inkscape layer name(s) from which to collect texts.
+
+=back
+
+=cut
+
+sub text_nodes_in_layers {
+    my ($self, @layers) = @ARG;
+
+    my @text_nodes;
+    foreach my $layer (@layers) {
         my $text_nodes = _all_layers_xpath($layer) . "//$DEFAULT_NAMESPACE:text";
         my @nodes = $self->{xpath}->findnodes($text_nodes);
         TEXT_NODE: foreach my $node (@nodes) {
@@ -1067,19 +1093,29 @@ sub _text_nodes_in_layers {
                 }
                 $parent = $parent->parentNode;
             }
-            if ($node->hasChildNodes()) {
-                push @found, $node;
-            }
-            else {
-                $self->warning("Empty text in layer $layer in " .$node->getAttribute('id'));
-            }
+            push @text_nodes, $node;
         }
     }
-    return @found;
+    return @text_nodes;
 }
 
 
-sub _text_content {
+=head2 text_content
+
+Gets the normalized text content from th given XML C<text> node(s).
+
+Normalized means line breaks are replaced with spaces and multiple
+consecutive spaces are reduced to one.
+
+=over 4
+
+=item * B<@nodes> Inkscape layer name(s) from which to collect texts.
+
+=back
+
+=cut
+
+sub text_content {
     # Inkscape has a <text> for the whole text block, and within that a
     # <tspan> for each line. This function returns all these tspans
     # together. It also cleans up whitespace (replaces line breaks with
@@ -1196,7 +1232,7 @@ sub _text_from_path {
         $self->keel_over("Cannot handle text on a $type (in $node->{id})");
     }
 
-    $self->keel_over("Can't coordinates for $node->{id}");
+    $self->keel_over("Can't get coordinates for $node->{id}");
     return;
 }
 

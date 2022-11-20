@@ -395,28 +395,3 @@ XML
     like($comic->{warnings}[0], qr{\btext12345\b}i, 'should say the id');
     like($comic->{warnings}[0], qr{\bone\b}i, 'should say the text');
 }
-
-
-sub warns_about_text_without_tspan : Tests {
-    my $comic = MockComic::make_comic(
-        $MockComic::TITLE => { $MockComic::ENGLISH => "Beer!", },
-        $MockComic::XML => <<'XML',
-    <g inkscape:groupmode="layer" inkscape:label="English">
-        <text xml:space="preserve" id="text93244-72" style="font-size:18.6667px"/>
-    </g>
-    <g inkscape:groupmode="layer" inkscape:label="English">
-        <text xml:space="preserve" id="text93244-0" transform="translate(-0.358763,2.190002)"/>
-    </g>
-XML
-    );
-
-    is_deeply([$comic->texts_in_language('English')], []);
-
-    like(${$comic->{warnings}}[0], qr{Empty text}i, 'Should say what is wrong');
-    like(${$comic->{warnings}}[0], qr{English}i, 'Should mention the layer');
-    like(${$comic->{warnings}}[0], qr{text93244-72}i, 'Should mention the id');
-
-    like(${$comic->{warnings}}[1], qr{Empty text}i, 'Should say what is wrong');
-    like(${$comic->{warnings}}[1], qr{English}i, 'Should mention the layer');
-    like(${$comic->{warnings}}[1], qr{text93244-0}i, 'Should mention the id');
-}

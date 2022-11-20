@@ -70,9 +70,12 @@ sub check {
     my ($self, $comic) = @ARG;
 
     foreach my $language ($comic->languages()) {
-        foreach my $text ($comic->texts_in_language($language)) {
-            if ($text eq '') {
-                $self->warning($comic, "Empty text in $language");
+        foreach my $layer ($comic->text_layers_for_language($language)) {
+            foreach my $node ($comic->text_nodes_in_layers($layer)) {
+                my $text = Comic::text_content($node);
+                if ($text eq '') {
+                    $comic->warning("Empty text in $language in layer $layer with id " . $node->getAttribute('id'));
+                }
             }
         }
     }
