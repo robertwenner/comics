@@ -1102,7 +1102,7 @@ sub text_nodes_in_layers {
 
 =head2 text_content
 
-Gets the normalized text content from th given XML C<text> node(s).
+Gets the normalized text content from the given XML C<text> node(s).
 
 Normalized means line breaks are replaced with spaces and multiple
 consecutive spaces are reduced to one.
