@@ -75,7 +75,7 @@
   schedule a xmas or Fri 13 comic ahead of time and then have holes and
   that's ok); warn in backlog if no comic for next Friday
 
-- feature: more social media: Mastodon, Openbook, Ello, Diaspora, inrupt.com
+- feature: more social media: Openbook, Ello, Diaspora, inrupt.com
   (via Zapier?)
 
 - feature: use inkscape shell to export in bulk (could be faster than

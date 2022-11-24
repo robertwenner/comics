@@ -15,6 +15,67 @@ it up to a free [Zapier](https://zapier.com) account to spread the joy.
 All `Comic::Social::...` configuration must be within the `Social` object.
 
 
+## `Comic::Social::Mastodon`
+
+To have the `Comic::Social::Mastodon` module toot for you, you must
+configure your Mastodon account. This is a one time setup. Log in to your
+Mastodon account, then go to development and click [New
+Application](https://mstdn.io/settings/applications/new) at the top right.
+
+* enter any name, like "comic updater"
+
+* enter any website (or use [https://github.com/robertwenner/comics](https://github.com/robertwenner/comics))
+
+* check the `write:media` and `write:statuses` permissions
+
+* save the page, then click your new app in the app list to reveal the details
+
+* from that details page, copy client key, client secret, and access token
+  to your configuration file
+
+Configure your comic settings like this:
+
+```json
+{
+    "Social": {
+        "Comics::Social::Mastodon": {
+            "client_key": "from the Mastodon app page",
+            "client_secret": "from the Mastodon app page",
+            "access_token": "from the Mastodon app page",
+            "instance": "mastodon.social",
+            "mode": "png"
+        }
+    }
+}
+```
+
+The instance is the mastodon server where you have your account. If you don't
+specify an instance, it will probably be `mastodon.social`, which is what
+[Mastodon::Client](https://metacpan.org/pod/Mastodon::Client) uses by
+default.
+
+The `Comic::Check::Mastodon` module also uses the Twitter hashtags in the
+Comic's metadata; see below under `Comic::Social::Twitter` for full details.
+
+```json
+{
+    "twitter": {
+        "English": ["#beer"],
+        "Deutsch": ["#Bier"]
+    }
+}
+```
+
+If `mode` is png, the tooted message is the comic's title, its description,
+and the given twitter tags, plus the actual comic `png` file; separated by
+newlines. If the mode is `html`, the comic's page URL is added to the
+message as well.
+
+Because Twitter only uses `@username` where Mastodon uses
+`@username@instance` (or assumes the current instance), mentioning people in
+tags is probably going to work only either for Twitter or Mastodon.
+
+
 ## `Comic::Social::Reddit`
 
 Posts the current comic to [reddit.com](https://reddit.com).
