@@ -7,6 +7,7 @@ use Scalar::Util qw/blessed/;
 use English '-no_match_vars';
 use Carp;
 use Readonly;
+use String::Util 'trim';
 use Net::Twitter;
 
 use Comic::Social::Social;
@@ -165,16 +166,18 @@ sub post {
 
     my @result;
     foreach my $language ($comic->languages()) {
+        my $title = $comic->{meta_data}->{title}->{$language};
         my $description = $comic->{meta_data}->{description}->{$language};
         my @tags = Comic::Social::Social::collect_hashtags($comic, $language, 'twitter');
-        my $tags = '';
-        $tags = join(' ', @tags) . ' ' if (@tags);
-        my $text = _shorten("$tags$description");
+        my $tags = join ' ', @tags;
+
+        my $text = _shorten(trim(join "\n", $title, $description, $tags));
 
         my $status;
         eval {
             if ($self->{mode} eq 'html') {
-                $status = $self->{twitter}->update($comic->{url}{$language});
+                $text .= "\n" . $comic->{url}{$language};
+                $status = $self->{twitter}->update($text);
             }
             else {
                 $status = $self->{twitter}->update_with_media($text, [
