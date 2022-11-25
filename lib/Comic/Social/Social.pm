@@ -65,6 +65,43 @@ sub post {
 }
 
 
+=head2 collect_hashtags
+
+Collects the given Comic's hashtags in the given language.
+
+Parameters:
+
+=over 4
+
+=item * B<$comic> Comic from which to collect hashtags.
+
+=item * B<$language> For which language to collect hashtags.
+
+=item * B<$metatags> Names in the Comic's metadata from which to collect
+    hashtags. Only specify social network specific names. Do not include
+    C<hashtags>, as this is picked first automatically.
+
+=back
+
+Returns all hashtags found in order, starting with the ones from
+C<hashtags>.
+
+=cut
+
+sub collect_hashtags {
+    my ($comic, $language, @metatags) = @ARG;
+
+    my @hashtags;
+    foreach my $loc ('hashtags', @metatags) {
+        my $hashtags = $comic->{meta_data}->{$loc}->{$language};
+        if ($hashtags) {
+            push @hashtags, @{$hashtags};
+        }
+    }
+    return @hashtags;
+}
+
+
 =head1 VERSION
 
 0.0.3
@@ -102,7 +139,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2015 - 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2015 - 2022, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or

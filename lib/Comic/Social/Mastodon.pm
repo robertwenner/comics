@@ -168,7 +168,7 @@ sub post {
     my $me = ref $self;
     my @result;
     foreach my $language ($comic->languages()) {
-        my @tags = _collect_hashtags($comic, $language);
+        my @tags = Comic::Social::Social::collect_hashtags($comic, $language, 'mastodon');
         my $description = _build_message(
             $comic->{meta_data}->{title}->{$language},
             $comic->{meta_data}->{description}->{$language},
@@ -212,20 +212,6 @@ sub post {
     }
 
     return join "\n", @result;
-}
-
-
-sub _collect_hashtags {
-    my ($comic, $language) = @ARG;
-
-    my @tags;
-    foreach my $loc (qw(hashtags mastodon)) {
-        my $hashtags = $comic->{meta_data}->{$loc}->{$language};
-        if ($hashtags) {
-            push @tags, @{$hashtags};
-        }
-    }
-    return @tags;
 }
 
 

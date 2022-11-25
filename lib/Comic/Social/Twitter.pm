@@ -166,13 +166,9 @@ sub post {
     my @result;
     foreach my $language ($comic->languages()) {
         my $description = $comic->{meta_data}->{description}->{$language};
+        my @tags = Comic::Social::Social::collect_hashtags($comic, $language, 'twitter');
         my $tags = '';
-        if ($comic->{meta_data}->{hashtags}->{$language}) {
-            $tags .= join(' ', @{$comic->{meta_data}->{hashtags}->{$language}}) . ' ';
-        }
-        if ($comic->{meta_data}->{twitter}->{$language}) {
-            $tags .= join(' ', @{$comic->{meta_data}->{twitter}->{$language}}) . ' ';
-        }
+        $tags = join(' ', @tags) . ' ' if (@tags);
         my $text = _shorten("$tags$description");
 
         my $status;
