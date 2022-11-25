@@ -126,7 +126,9 @@ sub hashtags_from_meta : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
         $MockComic::DESCRIPTION => { $MockComic::ENGLISH => 'Funny stuff' },
-        $MockComic::TWITTER => { $MockComic::ENGLISH => ['#beer', '#craftbeer', '@you'] },
+        $MockComic::HASH_TAGS => { $MockComic::ENGLISH => ['#beer', '#craftbeer'] },
+        $MockComic::TWITTER => { $MockComic::ENGLISH => ['@you'] },
+        $MockComic::MASTODON => { $MockComic::ENGLISH => ['@ignore'] },
     );
     $comic->{pngFile}{'English'} = "latest-comic.png";
     my $cs_twitter = Comic::Social::Twitter->new();

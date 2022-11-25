@@ -167,8 +167,11 @@ sub post {
     foreach my $language ($comic->languages()) {
         my $description = $comic->{meta_data}->{description}->{$language};
         my $tags = '';
+        if ($comic->{meta_data}->{hashtags}->{$language}) {
+            $tags .= join(' ', @{$comic->{meta_data}->{hashtags}->{$language}}) . ' ';
+        }
         if ($comic->{meta_data}->{twitter}->{$language}) {
-            $tags = join(' ', @{$comic->{meta_data}->{twitter}->{$language}}) . ' ';
+            $tags .= join(' ', @{$comic->{meta_data}->{twitter}->{$language}}) . ' ';
         }
         my $text = _shorten("$tags$description");
 
@@ -243,7 +246,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2015 - 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2015 - 2022, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or

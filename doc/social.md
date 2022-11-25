@@ -54,26 +54,28 @@ specify an instance, it will probably be `mastodon.social`, which is what
 [Mastodon::Client](https://metacpan.org/pod/Mastodon::Client) uses by
 default.
 
-The `Comic::Check::Mastodon` module also uses the Twitter hashtags in the
-Comic's metadata; see below under `Comic::Social::Twitter` for full details.
+The `Comic::Check::Mastodon` module adds any hashtags from `hashtags` and
+`mastodon` (in that order) from the Comic's metadata to the posted message.
+Use the `hashtags` for general hashtags and `mastodon` for Mastodon-specific ones
+like mentions.
 
 ```json
 {
-    "twitter": {
+    "hashtags": {
         "English": ["#beer"],
         "Deutsch": ["#Bier"]
+    },
+    "mastodon": {
+        "English": ["@you"],
+        "Deutsch": ["@other@instance"]
     }
 }
 ```
 
 If `mode` is png, the tooted message is the comic's title, its description,
-and the given twitter tags, plus the actual comic `png` file; separated by
+and the given twitter hashtags, plus the actual comic `png` file; separated by
 newlines. If the mode is `html`, the comic's page URL is added to the
 message as well.
-
-Because Twitter only uses `@username` where Mastodon uses
-`@username@instance` (or assumes the current instance), mentioning people in
-tags is probably going to work only either for Twitter or Mastodon.
 
 
 ## `Comic::Social::Reddit`
@@ -171,10 +173,15 @@ The fields are:
 * `access_token_secret` from your Twitter app settings.
 
 Tweeting the comic means to tweet it in each of its languages. The text for
-the tweet will be made from the comic's title, description, and twitter meta
-data (i.e., hashtags). Twitter hashtags can be passed in the Comic's
-`twitter -> language` array. If the combined text is too long, it will be
-truncated.
+the tweet will be made from the comic's title, description, and the hashtags
+and twitter meta data (i.e., hashtags). Twitter hashtags can be passed in
+the Comic's `hashtags -> language` and `twitter -> language` arrays, where
+`hashtags` will be used for other social media networks that use hashtags
+(like Mastodon) as well and `twitter` hashtags are only used for Twitter.
+Use the former for general purpose hashtags, and the latter for network
+specific ones like mentions.
+
+If the combined text is too long, it will be truncated.
 
 For example, if the given Comic has this meta data:
 
@@ -188,12 +195,16 @@ For example, if the given Comic has this meta data:
         "english": "Because I can!",
         "deutsch": "Weil ich's kann!"
     },
+    "hashtags": {
+        "#homebrewing"
+    },
     "twitter": {
-        "english": [ "#beer", "#brewing" ],
-        "deutsch": [ "#Bier", "#brauen" ]
+        "english": [ "@brewery" ],
+        "deutsch": [ "@person" ]
     }
 }
 ```
 
-This will be tweeted in English as "Brewing my own beer! Because I can! #beer #brewing"
-and in German as "Ich braue mein eigenes Bier! Weil ich's kann! #Bier #brauen".
+This will be tweeted in English as "Brewing my own beer! Because I
+can! #homebrewing @brewery" and in German as "Ich braue mein eigenes
+Bier! Weil ich's kann! #homebrewing @person".

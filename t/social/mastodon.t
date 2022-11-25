@@ -221,7 +221,9 @@ sub shortens_tooted_text : Tests {
 sub includes_hashtags_from_comic_meta_data : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
-        $MockComic::TWITTER => { $MockComic::ENGLISH => ['#beer', '#craftbeer', '@you'] },
+        $MockComic::HASH_TAGS => { $MockComic::ENGLISH => ['#general'] },
+        $MockComic::MASTODON => { $MockComic::ENGLISH => ['@mastodon'] },
+        $MockComic::TWITTER => { $MockComic::ENGLISH => ['#ignore'] },
     );
     $mastodon_return_post_status = Mastodon::Entity::Status->new(
         'account' => Mastodon::Entity::Account->new('acct' => 'my-account', 'avatar' => 'my-avatar'),
@@ -235,7 +237,7 @@ sub includes_hashtags_from_comic_meta_data : Tests {
 
     is_deeply(
         $mastodon_called_with{'post_status'},
-        ["Latest comic\n#beer #craftbeer \@you\nhttps://beercomics.com/comics/latest-comic.html", {}]);
+        ["Latest comic\n#general \@mastodon\nhttps://beercomics.com/comics/latest-comic.html", {}]);
 }
 
 

@@ -42,6 +42,8 @@ our Readonly $WIDTH = 'width';
 our Readonly $DOMAINS = 'Domains';
 our Readonly $SEE = 'see';
 our Readonly $TWITTER = 'twitter';
+our Readonly $HASH_TAGS = 'hashtags';
+our Readonly $MASTODON = 'mastodon';
 our Readonly $SETTINGS = "settings";
 our Readonly $CHECKS = 'checks';
 
@@ -197,7 +199,7 @@ sub _build_json {
     # Could check whether a scalar or array was passed and then generate
     # the JSON as needed, but this way it's easier to fail fast if a test
     # tries to build a JSON structure that would not exist in real life.
-    $json = _array_per_language_json($json, \%args, $TAGS, $WHO, $TWITTER);
+    $json = _array_per_language_json($json, \%args, $TAGS, $WHO, $HASH_TAGS, $TWITTER, $MASTODON);
     $json = _hash_per_language_json($json, \%args, $SEE);
 
     # Meta info: value, language independent
