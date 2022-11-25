@@ -102,6 +102,72 @@ sub collect_hashtags {
 }
 
 
+=head2 build_message
+
+Builds a message for social media for the given Comic.
+
+Parameters:
+
+=over 4
+
+=item * B<max_len> To how many characters to limit the message.
+
+=item * B<$len_func> Function that takes a text and returns its length.
+
+=item * B<$title> Comic title.
+
+=item * B<$description> Comic description.
+
+=item * B<$url> Comic's URL for linking to the comic (vs posting an image).
+
+=item * B<@tags> Any hashtags to include.
+
+=back
+
+Fits the title, description, URL (if any), and tags (if any) into the
+platform's character limit, truncating the description and even he title as
+needed.
+
+The assumption here is that any URL or hash tags are more important than
+preserving overly long titles and descriptions. Croaking would also be an
+option, I guess, but with the current code the error would happen at publish
+time, not at check time. Another Check module could deal with this.
+
+=cut
+
+sub build_message {
+    my ($max_len, $len_func, $title, $description, $url, @tags) = @ARG;
+
+    my $pre = '';
+
+    $pre .= "$title" if ($title);
+
+    if ($description) {
+        $pre .= "\n" if ($pre);
+        $pre .= "$description";
+    }
+
+    my $post = '';
+    if (@tags) {
+        $post .= join ' ', @tags;
+    }
+
+    if ($url) {
+        $post .= "\n" if ($post);
+        $post .= $url;
+    }
+    $post = "\n$post" if ($pre && $post);
+
+    my $used = &{$len_func}($post);
+    my $available = $max_len - $used;
+    $pre = substr $pre, 0, $available;
+
+    return "$pre$post";
+}
+
+
+
+
 =head1 VERSION
 
 0.0.3

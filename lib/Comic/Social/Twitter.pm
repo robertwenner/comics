@@ -166,21 +166,23 @@ sub post {
 
     my @result;
     foreach my $language ($comic->languages()) {
-        my $title = $comic->{meta_data}->{title}->{$language};
-        my $description = $comic->{meta_data}->{description}->{$language};
         my @tags = Comic::Social::Social::collect_hashtags($comic, $language, 'twitter');
-        my $tags = join ' ', @tags;
-
-        my $text = _shorten(trim(join "\n", $title, $description, $tags));
+        my $description = Comic::Social::Social::build_message(
+            $MAX_LEN,
+            \&_textlen,
+            $comic->{meta_data}->{title}->{$language},
+            $comic->{meta_data}->{description}->{$language},
+            $self->{mode} eq 'html' ? $comic->{url}->{$language} : '',
+            @tags,
+        );
 
         my $status;
         eval {
             if ($self->{mode} eq 'html') {
-                $text .= "\n" . $comic->{url}{$language};
-                $status = $self->{twitter}->update($text);
+                $status = $self->{twitter}->update($description);
             }
             else {
-                $status = $self->{twitter}->update_with_media($text, [
+                $status = $self->{twitter}->update_with_media($description, [
                     "$comic->{dirName}{$language}/$comic->{pngFile}{$language}",
                 ]);
             }
@@ -201,10 +203,10 @@ sub post {
 }
 
 
-sub _shorten {
+sub _textlen {
     my $text = shift;
 
-    return substr $text, 0, $MAX_LEN;
+    return length $text;
 }
 
 

@@ -169,7 +169,9 @@ sub post {
     my @result;
     foreach my $language ($comic->languages()) {
         my @tags = Comic::Social::Social::collect_hashtags($comic, $language, 'mastodon');
-        my $description = _build_message(
+        my $description = Comic::Social::Social::build_message(
+            $MAX_LEN,
+            \&_textlen,
             $comic->{meta_data}->{title}->{$language},
             $comic->{meta_data}->{description}->{$language},
             $self->{mode} eq 'html' ? $comic->{url}->{$language} : '',
@@ -212,44 +214,6 @@ sub post {
     }
 
     return join "\n", @result;
-}
-
-
-sub _build_message {
-    # Fit the title, description, url (if any), and tags (if any) into the
-    # platform's character limit, truncating the description and even he
-    # title as needed. The assumption is that any URL or hash tags are more
-    # important than preserving overly long titles and descriptions.
-    # Croaking would also be an option, I guess, but with the current code
-    # the error would happen at publish time, not at check time.
-    # Another Check module could deal with this.
-    my ($title, $description, $url, @tags) = @ARG;
-
-    my $pre = '';
-
-    $pre .= "$title" if ($title);
-
-    if ($description) {
-        $pre .= "\n" if ($pre);
-        $pre .= "$description";
-    }
-
-    my $post = '';
-    if (@tags) {
-        $post .= join ' ', @tags;
-    }
-
-    if ($url) {
-        $post .= "\n" if ($post);
-        $post .= $url;
-    }
-    $post = "\n$post" if ($pre && $post);
-
-    my $used = _textlen($post);
-    my $available = $MAX_LEN - $used;
-    $pre = substr $pre, 0, $available;
-
-    return "$pre$post";
 }
 
 

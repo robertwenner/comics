@@ -12,53 +12,63 @@ use Comic::Social::Mastodon;
 __PACKAGE__->runtests() unless caller;
 
 
+sub _build_message {
+    return Comic::Social::Social::build_message(500, \&_length, @_);
+}
+
+
+sub _length {
+    return length shift;
+}
+
+
 sub only_title : Tests {
-    is(Comic::Social::Mastodon::_build_message('title'), 'title');
+    is(_build_message('title'), 'title');
 }
 
 
 sub only_description : Tests {
-    is(Comic::Social::Mastodon::_build_message(undef, 'description'), 'description');
+    is(_build_message(undef, 'description'), 'description');
 }
 
 
 sub only_tags : Tests {
     is(
-        Comic::Social::Mastodon::_build_message('', '', '', '#tag1', '#tag2'),
+        _build_message('', '', '', '#tag1', '#tag2'),
         '#tag1 #tag2');
 }
 
 
 sub only_url : Tests {
     is(
-        Comic::Social::Mastodon::_build_message('', '', 'example.org'),
+        _build_message('', '', 'example.org'),
         'example.org');
 }
 
 
 sub title_description_tags : Tests {
     is(
-        Comic::Social::Mastodon::_build_message('title', 'description', undef, '#tag1', '#tag2', '#tag3'),
+        _build_message('title', 'description', undef, '#tag1', '#tag2', '#tag3'),
         "title\ndescription\n#tag1 #tag2 #tag3");
 }
 
 
 sub with_all_fields : Tests {
     is(
-        Comic::Social::Mastodon::_build_message('title', 'description', 'example.org', '#tag1'),
+        _build_message('title', 'description', 'example.org', '#tag1'),
         "title\ndescription\n#tag1\nexample.org");
 }
 
 
 sub shortens_too_long_description : Tests {
-    my $shortened = Comic::Social::Mastodon::_build_message('title', '.' x 1000);
+    my $shortened = _build_message('title', '.' x 1000);
     is(length($shortened), 500);
     is($shortened, "title\n" . ('.' x 494));
 }
 
 
 sub shortens_description_if_maximum_length_is_exceeded : Tests {
-    my $shortened = Comic::Social::Mastodon::_build_message('title', '.' x 1000, 'comics.com', '#tag1', '#tag2');
+    my $shortened = _build_message('title', '.' x 1000, 'comics.com', '#tag1', '#tag2');
     is(length($shortened), 500);
     # title + nl = 6, nl after description, tags = 2 * 5 + space + nl = 12, url = 10 => 29
     is($shortened, "title\n" . ('.' x (500 - 29)) . "\n#tag1 #tag2\ncomics.com");
@@ -66,14 +76,14 @@ sub shortens_description_if_maximum_length_is_exceeded : Tests {
 
 
 sub shortens_title_already_too_long : Tests {
-    my $shortened = Comic::Social::Mastodon::_build_message('x' x 1000, 'y' x 200);
+    my $shortened = _build_message('x' x 1000, 'y' x 200);
     is(length($shortened), 500);
     like($shortened, qr{^x{500}$});
 }
 
 
 sub shortens_title_under_limit_with_tags_over : Tests {
-    my $shortened = Comic::Social::Mastodon::_build_message('x' x 490, 'y' x 200, '', '#tag1', '#tag2', '#tag3');
+    my $shortened = _build_message('x' x 490, 'y' x 200, '', '#tag1', '#tag2', '#tag3');
     is(length($shortened), 500);
     like($shortened, qr{^x+\n#tag1 #tag2 #tag3$});
 }
@@ -110,7 +120,8 @@ sub shortens_using_mastodon_special_rules : Tests {
     my $has_room_for = 500 - (12 + 1 + 1 + 23 + 1 + 4); # 1 for each \n in between
     my $description = 'x' x 1000;
 
-    my $shortened = Comic::Social::Mastodon::_build_message($title, $description, $url, @tags);
+    my $shortened = Comic::Social::Social::build_message(
+        500, \&Comic::Social::Mastodon::_textlen, $title, $description, $url, @tags);
 
     like($shortened, qr{
         ^
