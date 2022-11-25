@@ -250,11 +250,26 @@ sub _build_message {
     }
     $post = "\n$post" if ($pre && $post);
 
-    my $used = length $post;
+    my $used = _textlen($post);
     my $available = $MAX_LEN - $used;
     $pre = substr $pre, 0, $available;
 
     return "$pre$post";
+}
+
+
+sub _textlen {
+    my ($text) = @ARG;
+
+    return 0 unless ($text);
+
+    # A link always counts as 23 characters; see https://docs.joinmastodon.org/user/posting/#links
+    $text =~ s{https?://\S+}{12345678901234567890123}mg;
+    # Mentioning someone does not count the instance name against the character limit, only the
+    # local name; see https://docs.joinmastodon.org/user/posting/#mentions
+    $text =~ s{(@[^@\s]+)@\S+}{$1}mg;
+
+    return length $text;
 }
 
 

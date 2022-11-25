@@ -211,7 +211,7 @@ sub shortens_tooted_text : Tests {
     $mastodon->post($comic);
 
     my $text = $mastodon_called_with{'post_status'}[0];
-    is(length($text), 500);
+    is(length($text), 524);
     like($text, qr{Latest comic}, 'title not posted');
     like($text, qr{\bxxxxx}, 'description not posted');
     like($text, qr{\bhttps://beercomics.com/comics/latest-comic.html\b}, 'link not posted');
