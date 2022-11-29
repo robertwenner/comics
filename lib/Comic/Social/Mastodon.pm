@@ -22,7 +22,7 @@ Readonly my $MAX_LEN => 500;
 
 =encoding utf8
 
-=for stopwords Wenner merchantability perlartistic html Prost auf mich
+=for stopwords Wenner merchantability perlartistic html Prost auf mich png
 
 
 =head1 NAME
