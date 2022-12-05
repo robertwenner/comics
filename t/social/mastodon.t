@@ -19,7 +19,7 @@ __PACKAGE__->runtests() unless caller;
 
 my %secrets;
 my $mastodon;
-my $mastodon_error;
+my @mastodon_error;
 my $mastodon_latest;
 my %mastodon_called_with;
 my $mastodon_return_upload_media;
@@ -36,7 +36,7 @@ sub set_up : Test(setup) {
     );
 
     %mastodon_called_with = ();
-    $mastodon_error = undef;
+    @mastodon_error = ();
     $mastodon_latest = undef;
 
     $mastodon = Test::MockModule->new('Mastodon::Client');
@@ -54,7 +54,8 @@ sub set_up : Test(setup) {
     $mastodon->redefine('post_status', sub {
         shift @_;
         $mastodon_called_with{'post_status'} = [@_];
-        die($mastodon_error) if ($mastodon_error);
+        my $should_fail = pop @mastodon_error;
+        die($should_fail) if ($should_fail);
         return $mastodon_return_post_status;
     });
     $mastodon->redefine('latest_response', sub {
@@ -154,9 +155,9 @@ sub toot_html : Tests {
     );
 
     my $mastodon = Comic::Social::Mastodon->new(%secrets, 'mode' => 'html');
-    my @results = $mastodon->post($comic);
+    my $results = $mastodon->post($comic);
 
-    is_deeply(\@results, ['Comic::Social::Mastodon posted: tooted html fine']);
+    is($results, 'Comic::Social::Mastodon posted: tooted html fine');
     is($mastodon_called_with{'update_with_media'}, undef);
     is_deeply(
         $mastodon_called_with{'post_status'},
@@ -183,9 +184,9 @@ sub toot_png : Tests {
     );
 
     my $mastodon = Comic::Social::Mastodon->new(%secrets, 'mode' => 'png');
-    my @results = $mastodon->post($comic);
+    my $results = $mastodon->post($comic);
 
-    is_deeply(\@results, ['Comic::Social::Mastodon posted: tooted png fine']);
+    is_deeply($results, 'Comic::Social::Mastodon posted: tooted png fine');
     is_deeply(
         $mastodon_called_with{'upload_media'},
         ['generated/web/english/comics/latest-comic.png', {'description' => 'Latest comic'}]);
@@ -246,7 +247,7 @@ sub reports_error_no_latest_from_mastodon : Tests {
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
     );
 
-    $mastodon_error = "Oops";
+    push @mastodon_error, "Oops";
 
     my $mastodon = Comic::Social::Mastodon->new(%secrets, mode => 'html');
     my $message = $mastodon->post($comic);
@@ -261,7 +262,7 @@ sub reports_error_with_latest_string_from_mastodon : Tests {
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
     );
 
-    $mastodon_error = "Oops";
+    push @mastodon_error, "Oops";
     $mastodon_latest = "latest mastodon details";
 
     my $mastodon = Comic::Social::Mastodon->new(%secrets, mode => 'html');
@@ -277,7 +278,7 @@ sub reports_error_latest_http_response_from_mastodon : Tests {
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
     );
 
-    $mastodon_error = "Oops";
+    push @mastodon_error, "Oops";
     $mastodon_latest = HTTP::Response->new(
         401, "Unauthorized", undef, "error body"
     );
@@ -288,4 +289,60 @@ sub reports_error_latest_http_response_from_mastodon : Tests {
     like($message, qr{\bmastodon\b}i, 'should say what module had the error');
     like($message, qr{\b401 Unauthorized\b}, 'should have http error line');
     like($message, qr{\berror body\b}, 'should have http content');
+}
+
+
+sub rejects_bad_retry400_argument : Tests {
+    eval {
+        Comic::Social::Mastodon->new(%secrets, retry400 => 'yes!');
+    };
+    like($@, qr(Comic::Social::Mastodon)i, 'should say the module name');
+    like($@, qr(retry400)i, 'should mention the argument');
+    like($@, qr(\bnumber\b)i, 'should say what is wrong');
+}
+
+
+sub logs_400_and_retries_if_configured_till_it_succeeds : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+    );
+
+    push @mastodon_error, "Oops";
+    $mastodon_latest = HTTP::Response->new(
+        400, "Bad Request", undef, "error body"
+    );
+
+    my $mastodon = Comic::Social::Mastodon->new(%secrets, mode => 'html', retry400 => 1);
+    my $message = $mastodon->post($comic);
+
+    like($message, qr{\bmastodon\b}i, 'should say what module had the error');
+    like($message, qr{\b400 Bad Request\b}, 'should have http error line');
+    like($message, qr{\berror body\b}, 'should have http content');
+    like($message, qr{\bRetry 1 of 1\b}m, 'should say it is retrying');
+    like($message, qr{\btooted\b}m, 'should have said it worked');
+    ok($message !~ m{\bRetry 2\b}m, 'should not have retried again');
+}
+
+
+sub logs_400_and_retries_if_configured_till_max_retries : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+    );
+
+    push @mastodon_error, ("Oops", "still not", "nope", "no dice today");
+    $mastodon_latest = HTTP::Response->new(
+        400, "Bad Request", undef, "error body"
+    );
+
+    my $mastodon = Comic::Social::Mastodon->new(%secrets, mode => 'html', retry400 => 3);
+    my $message = $mastodon->post($comic);
+
+    like($message, qr{\bmastodon\b}i, 'should say what module had the error');
+    like($message, qr{\b400 Bad Request\b}, 'should have http error line');
+    like($message, qr{\berror body\b}, 'should have http content');
+    like($message, qr{\bRetry 1 of 3\b}m, 'should say it is retrying');
+    like($message, qr{\bRetry 2 of 3\b}m, 'should say it is retrying');
+    like($message, qr{\bRetry 3 of 3\b}m, 'should say it is retrying');
+    ok($message !~ m{\bRetry 4\b}m, 'should not have retried again');
+    ok($message !~ m{\btooted\b}m, 'should not say it tooted');
 }

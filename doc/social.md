@@ -33,6 +33,9 @@ Application](https://mstdn.io/settings/applications/new) at the top right.
 * from that details page, copy client key, client secret, and access token
   to your configuration file
 
+You can enable two-factor authentication in Mastodon and this code can still
+toot for you.
+
 Configure your comic settings like this:
 
 ```json
@@ -53,6 +56,13 @@ The instance is the mastodon server where you have your account. If you don't
 specify an instance, it will probably be `mastodon.social`, which is what
 [Mastodon::Client](https://metacpan.org/pod/Mastodon::Client) uses by
 default.
+
+There is an optional argument, `retry400` that takes a number. I had issues
+with my first toot failing with a HTTP 400 error. Normally this indicates a
+client error and should not be retried, but this only happened on the first
+language of the day, not on the second. By setting this you can retry HTTP
+400 errors (and only HTTP 400 errors) for n times. By default there won't be
+any retries.
 
 The `Comic::Check::Mastodon` module adds any hashtags from `hashtags` and
 `mastodon` (in that order) from the Comic's metadata to the posted message.
