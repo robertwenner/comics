@@ -293,6 +293,7 @@ sub _parse_inkscape_version {
     # Inkscape 1.0 (4035a4fb49, 2020-05-01)
     # Inkscape 1.0.2 (e86c870879, 2021-01-15)
     # Inkscape 1.1 (ce6663b3b7, 2021-05-25)
+    # Inkscape 1.1.2 (0a00cf5339, 2022-02-04)
     # Inkscape 1.2 (dc2aedaf03, 2022-05-15)
     if ($inkscape_output =~ m/^Inkscape\s+(\d+[.]\d)/) {
         return $1;
@@ -318,7 +319,7 @@ sub _build_inkscape_command {
     my ($comic, $svg_file, $png_file, $version) = @ARG;
 
     if ($version eq '0.9') {
-        return 'inkscape --g-fatal-warnings --without-gui ' .
+        return 'inkscape --without-gui ' .
             "--file=$svg_file --export-png=$png_file " .
             '--export-area-drawing --export-background=#ffffff';
     }
@@ -326,7 +327,7 @@ sub _build_inkscape_command {
         $comic->warning("Comic::Out::PngInkscape: Don't know Inkscape $version, hoping it's compatible to 1.1");
     }
 
-    return 'inkscape --g-fatal-warnings ' .
+    return 'inkscape ' .
         "--export-type=png --export-filename=$png_file " .
         "--export-area-drawing --export-background=#ffffff $svg_file";
 }
