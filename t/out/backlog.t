@@ -1,5 +1,6 @@
 use strict;
 use warnings;
+use utf8;
 
 use base 'Test::Class';
 use Test::More;
@@ -39,7 +40,7 @@ sub make_comic {
     return MockComic::make_comic(
         $MockComic::TITLE => { $lang => $title },
         $MockComic::PUBLISHED_WHEN => $published_when,
-        $MockComic::PUBLISHED_WHERE => ($published_where || "web"));
+        $MockComic::PUBLISHED_WHERE => $published_where);
 }
 
 
@@ -110,6 +111,31 @@ sub generate_all_no_comics_processes_template : Tests {
     MockComic::fake_file("backlog.templ", '<h1>Backlog</h1>');
     $backlog->generate_all();
     MockComic::assert_wrote_file('generated/backlog.html', qr{<h1>Backlog</h1>}m);
+}
+
+
+sub populates_fields_includes_published_comic_counts_per_language_for_web : Tests {
+    my @comics = (
+        make_comic('1', 'English', '2000-01-01', 'web'),
+        make_comic('2', 'Deutsch', '2000-01-01', 'web'),
+        make_comic('3', 'Deutsch', '2000-01-01', 'other'),
+        make_comic('4', 'English', '3333-03-03', 'unbpublished'),
+        make_comic('5', 'English', '2000-01-01', 'web'),
+        make_comic('6', 'Español', '2000-01-01', 'web'),
+        make_comic('7', 'English', '2000-01-01', undef),
+    );
+
+    my %vars = $backlog->_populate_vars(@comics);
+
+    is_deeply($vars{'published_counts'},
+        {
+            'web' => {
+                'Deutsch' => 1,
+                'English' => 2,
+                'Español' => 1,
+            },
+        },
+    );
 }
 
 
@@ -248,7 +274,7 @@ sub populates_fields_collect_scalar_one_comic_in_backlog : Tests {
 
 
 sub populates_fields_no_collect_one_comic_in_backlog : Tests {
-    my $comic = make_comic('eins', 'Deutsch', '3016-01-01');
+    my $comic = make_comic('eins', 'Deutsch', '3016-01-01', 'web');
 
     $backlog = Comic::Out::Backlog->new(
         'template' => 'backlog.templ',
@@ -268,7 +294,7 @@ sub populates_fields_collects_published_comics : Tests {
     my $unpub = make_comic('unpub', 'English', '3000-01-01', 'web');
     my $latest = make_comic('latest', 'English', '2022-01-01', 'web');
 
-    my % vars = $backlog->_populate_vars($first, $unpub, $latest);
+    my %vars = $backlog->_populate_vars($first, $unpub, $latest);
 
     is_deeply($vars{unpublished_comics}, [$unpub]);
     is_deeply($vars{published_comics}, [$latest, $first]);
