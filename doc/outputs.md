@@ -85,9 +85,10 @@ duplicated id with a generated one.
 
 ## `Comic::Out::Backlog`
 
-Generates an overview of the comics in the queue, plus the tags, character
-names, and series used in all comics. This should help when creating a new
-comic to look up what keywords (tags) other comics used.
+Generates an overview of the comics in the queue, and the published comics,
+plus the tags, character names, and series used in all comics. This should
+help when creating a new comic to look up what keywords (tags) other comics
+used.
 
 ```json
 {
@@ -142,8 +143,14 @@ comic to look up what keywords (tags) other comics used.
 
 When the template is processed, these variables are available:
 
-* `comics` array of all comics in the backlog, with any meta data or
+* `unpublished_comics` array of all comics in the backlog, with any meta
+  data or information from other output generators that already ran
+  available. Sorted from next to be published to later scheduled comics.
+  Comics not yet scheduled go last.
+
+* `published_comics` array of all published comics, with any meta data or
   information from other output generators that already ran available.
+  Sorted from latest to earliest.
 
 * `languages`: array of names of all languages in all comics (published or
    not).

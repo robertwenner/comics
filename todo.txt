@@ -23,10 +23,6 @@
   (complicated, needs to know on which dates comics are published, and would
   still mess up comics that need to stay in place for e.g., holidays)
 
-- feature: internal archive with published dates and (source svg) file names
-  and comic counts (maybe a matter of the template only); backlog only shows
-  unpublished ones
-
 - feature: allow adding (invisible) watermarks
 
 - feature: transcript needs to check all frames for ordering, not just rows;

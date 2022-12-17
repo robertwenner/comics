@@ -161,6 +161,9 @@ sub _populate_vars {
     my @unpublished = sort Comic::from_oldest_to_latest grep {
          $_->not_yet_published()
     } @comics;
+    my @published = reverse sort Comic::from_oldest_to_latest grep {
+        not $_->not_yet_published();
+    } @comics;
 
     my @to_collect = @{$self->{settings}->{collect}};
     my %collected;
@@ -201,7 +204,8 @@ sub _populate_vars {
 
     my %vars;
     $vars{'languages'} = [Comic::Out::Generator::all_languages(@comics)];
-    $vars{'comics'} = \@unpublished;
+    $vars{'unpublished_comics'} = \@unpublished;
+    $vars{'published_comics'} = \@published;
     $vars{'publishers'} = $self->_publishers(@comics);
 
     foreach my $want (@to_collect) {

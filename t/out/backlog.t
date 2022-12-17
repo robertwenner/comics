@@ -20,7 +20,7 @@ sub set_up : Test(setup) {
     MockComic::fake_file("backlog.templ", <<'TEMPL');
 <h1>Backlog</h1>
 [% FOREACH publisher IN publishers %][% END %]
-[% FOREACH c IN comics %][% END %]
+[% FOREACH c IN unpublished_comics %][% END %]
 [% FOREACH l IN languages %][% END %]
 [% FOREACH t IN tags %][% END %]
 [% FOREACH t IN tagOrder %][% END %]
@@ -194,7 +194,8 @@ sub populates_fields_empty_backlog : Tests {
 
     is_deeply($vars{publishers}, []);
     is_deeply($vars{languages}, []);
-    is_deeply($vars{comics}, []);
+    is_deeply($vars{unpublished_comics}, []);
+    is_deeply($vars{published_comics}, []);
     is_deeply($vars{tagsOrder}, []);
     is_deeply($vars{tags}, {});
     is_deeply($vars{whoOrder}, []);
@@ -216,7 +217,7 @@ sub populates_fields_collect_array_one_comic_in_backlog : Tests {
 
     is_deeply($vars{publishers}, ['web']);
     is_deeply($vars{languages}, ['Deutsch']);
-    is_deeply($vars{comics}, [$comic]);
+    is_deeply($vars{unpublished_comics}, [$comic]);
     is_deeply($vars{tagsOrder}, ['Bier (Deutsch)', 'Craft (Deutsch)']);
     is_deeply($vars{tags}, {'Bier (Deutsch)' => 1, 'Craft (Deutsch)' => 1});
     is_deeply($vars{whoOrder}, []);
@@ -238,7 +239,7 @@ sub populates_fields_collect_scalar_one_comic_in_backlog : Tests {
 
     is_deeply($vars{publishers}, ['web']);
     is_deeply($vars{languages}, ['Deutsch']);
-    is_deeply($vars{comics}, [$comic]);
+    is_deeply($vars{unpublished_comics}, [$comic]);
     is_deeply($vars{tagsOrder}, ['Bier (Deutsch)', 'Craft (Deutsch)']);
     is_deeply($vars{tags}, {'Bier (Deutsch)' => 1, 'Craft (Deutsch)' => 1});
     is($vars{who}, undef);
@@ -257,7 +258,20 @@ sub populates_fields_no_collect_one_comic_in_backlog : Tests {
 
     is_deeply($vars{publishers}, ['web']);
     is_deeply($vars{languages}, ['Deutsch']);
-    is_deeply($vars{comics}, [$comic]);
+    is_deeply($vars{unpublished_comics}, [$comic]);
+    is_deeply($vars{published_comics}, []);
+}
+
+
+sub populates_fields_collects_published_comics : Tests {
+    my $first = make_comic('first', 'English', '2000-01-01', 'web');
+    my $unpub = make_comic('unpub', 'English', '3000-01-01', 'web');
+    my $latest = make_comic('latest', 'English', '2022-01-01', 'web');
+
+    my % vars = $backlog->_populate_vars($first, $unpub, $latest);
+
+    is_deeply($vars{unpublished_comics}, [$unpub]);
+    is_deeply($vars{published_comics}, [$latest, $first]);
 }
 
 
@@ -278,7 +292,7 @@ sub two_languages : Tests {
 
     is_deeply($vars{publishers}, ['web']);
     is_deeply($vars{languages}, ['Deutsch', 'English']);
-    is_deeply($vars{comics}, [$comic]);
+    is_deeply($vars{unpublished_comics}, [$comic]);
     is_deeply($vars{tagsOrder}, ['dtag (Deutsch)', 'etag (English)']);
     is_deeply($vars{tags}, {'dtag (Deutsch)' => 1, 'etag (English)' => 1});
 }
@@ -291,7 +305,7 @@ sub comic_not_published_on_my_page : Tests {
 
     is_deeply($vars{publishers}, ['some beer magazine']);
     is_deeply($vars{languages}, ['Deutsch']);
-    is_deeply($vars{comics}, [$comic]);
+    is_deeply($vars{unpublished_comics}, [$comic]);
 }
 
 
