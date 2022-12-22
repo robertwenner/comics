@@ -159,8 +159,7 @@ sub load {
         if (ref $self->{settings}->{Paths} eq 'HASH') {
             if (defined ${$self->{settings}->{Paths}}{'siteComics'}) {
                 if (ref ${$self->{settings}->{Paths}}{'siteComics'} eq '') {
-                    $self->{siteComicsPath} = ${$self->{settings}->{Paths}}{'siteComics'};
-                    $self->{siteComicsPath} .= q{/} unless ($self->{siteComicsPath} =~ m{/$}x);
+                    $self->{siteComicsPath} = _slashed(${$self->{settings}->{Paths}}{'siteComics'});
                 }
                 else {
                     $self->keel_over('Paths.siteComics must be a single value');
@@ -176,13 +175,15 @@ sub load {
         my $domain = ${$self->{settings}->{Domains}}{$language};
         $self->keel_over("No domain for $language") unless ($domain);
 
-        $self->{backlogPath}{$language} = 'generated/backlog/' . lc $language;
+        my $backlog_path = _slashed(${$self->{settings}->{Paths}}{'unpublished'} || 'generated/backlog/');
+        $self->{backlogPath}{$language} = $backlog_path . lc $language;
         my $base;
         if ($self->not_yet_published()) {
             $base = $self->{backlogPath}{$language};
         }
         else {
-            $base = 'generated/web/' . lc $language . '/' . $self->{siteComicsPath};
+            my $dir = _slashed(${$self->{settings}->{Paths}}{'published'} || 'generated/web/');
+            $base = $dir . lc $language . q{/} . $self->{siteComicsPath};
             $base =~ s{/$}{};
         }
 
@@ -201,6 +202,13 @@ sub load {
     $self->_adjust_checks($self->{meta_data}->{$Comic::Settings::CHECKS});
 
     return;
+}
+
+
+sub _slashed {
+    my ($path) = @ARG;
+    $path .= q{/} unless ($path =~ m{/$}x);
+    return $path;
 }
 
 
@@ -450,10 +458,11 @@ sub outdir {
 
     my $outdir;
     if ($self->not_published_on_the_web($language)) {
-        $outdir = 'generated/backlog/';
+        $outdir = _slashed(${$self->{settings}->{Paths}}{'unpublished'} || 'generated/backlog/');
     }
     else {
-        $outdir = 'generated/web/' . lc($language) . q{/};
+        my $path = _slashed(${$self->{settings}->{Paths}}{'published'} || 'generated/web/');
+        $outdir = _slashed($path . lc $language);
     }
     return make_dir($outdir);
 }

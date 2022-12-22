@@ -37,14 +37,21 @@ For example:
 ```json
 {
     "Paths": {
-        "siteComics": "c"
+        "siteComics": "c",
+        "published": "generated/web",
+        "unpublished": "generated/backlog"
     }
 }
 ```
 
-In the example above, the `siteComics` gives the folder (relative to the web
-site root) where generated comics should be saved, here in the `c` folder.
-The default value is "comics".
+* `siteComics` gives the folder (relative to the web site root) where
+  generated comics should be saved, in the example above in the `c` folder.
+  The default value is "comics".
+* `published` is the folder where published comics should be placed, in the
+  example above in `generated/web` (this is also the default).
+* `unpublished` is the folder where to place not yet published comics, in
+  the example above to `gnerated/backlog`. This is also the default.
+
 
 ```json
 {

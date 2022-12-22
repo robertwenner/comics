@@ -237,3 +237,65 @@ sub complains_if_comics_path_not_a_scalar : Tests {
     like($@, qr{\bsiteComics\b}, 'should mention the actual setting');
     like($@, qr{\bsingle value\b}, 'should say what is wrong');
 }
+
+
+sub published_path_from_config : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::SETTINGS => {
+            'Paths' => {
+                'published' => '/path/for/published/comics',
+            },
+            $MockComic::DOMAINS => {
+                $MockComic::ENGLISH => 'beercomics.com',
+                $MockComic::DEUTSCH => 'beercomics.de',
+            },
+        },
+        $MockComic::PUBLISHED_WHEN => '2020-01-01',
+    );
+    is($comic->outdir('English'), '/path/for/published/comics/english/', 'wrong path');
+}
+
+
+sub published_path_not_given_falls_back_to_default : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::SETTINGS => {
+            $MockComic::DOMAINS => {
+                $MockComic::ENGLISH => 'beercomics.com',
+                $MockComic::DEUTSCH => 'beercomics.de',
+            },
+        },
+        $MockComic::PUBLISHED_WHEN => '2020-01-01',
+    );
+    is($comic->outdir('English'), 'generated/web/english/', 'wrong path');
+}
+
+
+sub unpublished_path_from_config : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::SETTINGS => {
+            'Paths' => {
+                'unpublished' => '/path/for/unpublished/comics',
+            },
+            $MockComic::DOMAINS => {
+                $MockComic::ENGLISH => 'beercomics.com',
+                $MockComic::DEUTSCH => 'beercomics.de',
+            },
+        },
+        $MockComic::PUBLISHED_WHEN => '3000-01-01',
+    );
+    is($comic->outdir('English'), '/path/for/unpublished/comics/', 'wrong path');
+}
+
+
+sub unpublished_path_not_given_falls_back_to_default : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::SETTINGS => {
+            $MockComic::DOMAINS => {
+                $MockComic::ENGLISH => 'beercomics.com',
+                $MockComic::DEUTSCH => 'beercomics.de',
+            },
+        },
+        $MockComic::PUBLISHED_WHEN => '3000-01-01',
+    );
+    is($comic->outdir('English'), 'generated/backlog/', 'wrong path');
+}
