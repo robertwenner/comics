@@ -1,4 +1,6 @@
-- cleanup hard-coded names, e.g., "Rahmen" or even "Meta", "generated"
+- cleanup hard-coded names: "web", "backlog", "generated", THURSDAY in
+  Comic::not_yet_published; Comic::not_yet_published should not consider web
+  or other locations
 
 - cleanup: rework variables available for templates: standardize names, pick
   decent names, DRY up them up, generate them in one place, document them
@@ -8,7 +10,7 @@
   If case matters, make sure it's used consistently. Language names are
   still used inconsistently.
 
-- refact: Perl: use feature qw(signatures); no warnings
+- refactor: Perl: use feature qw(signatures); no warnings
   qw(experimental::signatures); or Function::Parameters, Method::Signatures
 
 - defect: twitter with @someone does not get tweeted for some reason
@@ -100,13 +102,10 @@
   svg files (1 thread per comic, then wait till all are done; reuse threads
   for writing per-comic pages, when all next/prev links are known)
 
-- performance: cache more data, like png sizes, transcript, and frame
-  positions? use a database / key-value store?
-
 - feature: verbose and debug flags to print what's going on (helpful for
   configurable checks and actions)
 
-- refact: switch Twitter module to Twitter::API
+- refactor: switch Twitter module to Twitter::API
 
 - feature: check 2FA for Reddit and Twitter
 
@@ -114,11 +113,6 @@
   comic), don't recreate all html pages (only if the latest comic file name
   (title) changes, links need to get updated). This should speed up final
   touches on the latest comic
-
-- performance: add a function to Comic to check if it's up to date, and
-  allow checks and converters to return immediately if a comic has not
-  changed. This would speed up e.g., spell checking, at the cost of losing
-  old error messages, even for unpublished comics.
 
 - defect: frame detection for text outside of a single frame (comic title)
   does not seem to treat that text as after anything within the frame. The
@@ -158,7 +152,7 @@
   like "Check" vs "Checks"
 
 - clean out backlog: when a comic goes from backlog to published, remove its
-  html file and qr code image from the backlog
+  html file and qr code image from the backlog directory
 
 - feature: check text positions as double, so that you can move texts
   minimally to control the transcript without visual impact
@@ -176,8 +170,8 @@
   template gets more complicated (one more nested loop), on the other hand
   it's cleaner and would allow to show / hide tags or series per language
 
-- refact: break up Comic::Out::Backlog into the actual backlog part and meta
-  data (e.g., tags) aggregation overview
+- refactor: break up Comic::Out::Backlog into the actual backlog part and
+  meta data (e.g., tags) aggregation overview
 
 - feature: support aggregating meta data that's not per-language in the
   backlog (author, contrib, published when / where)
@@ -193,9 +187,10 @@
 
 - feature: Comic::Social::Twitter needs a svg mode
 
-- performance: write everything needed to publish to a cache file
-  (database?) so that publishing code doesn´t need to scan all comics again
-  (may be tricky with generating pages for archive, tags, etc)
+- performance: write everything needed to publish (png dimensions,
+  transcript), to a cache file (database?) so that publishing code doesn´t
+  need to scan all comics again (may be tricky with generating pages for
+  archive, tags, etc)
 
 - feature: see meta data should try to resolve path relative to current
   comic
@@ -209,9 +204,6 @@
   language placeholders, for less repetitive configuration files
 
 - feature: warnings as errors
-
-- feature: allow manually ordering texts by naming them (ids) with numbers
-  to force transcript order in more elaborate cartoons (often single panel)
 
 - feature: warn about spellcheck ignore words defined in the comic but not
   used
@@ -243,7 +235,7 @@
 - feature: decouple archive comic pages from index.html; this could make for
   easier templates if the main page differs a lot from each comic's page
 
-- feature; on the publish day: warn (email, ...) if there is no comic
+- feature: on the publish day: warn (email, ...) if there is no comic
   scheduled for today (maybe only if there are comics in the backlog)
 
 - feature: caldav support to show planned comics in a calendar
