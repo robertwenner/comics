@@ -30,7 +30,7 @@ sub many_languages : Tests {
         $MockComic::TITLE => {
             'English' => 'Drinking beer',
             'Deutsch' => 'Bier trinken',
-            'Español' => 'Tomar cerveca',
+            'Español' => 'Tomar cerveza',
         },
     );
     is_deeply([sort $comic->languages()], ['Deutsch', 'English', 'Español']);

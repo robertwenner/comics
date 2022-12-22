@@ -154,7 +154,7 @@ sub load {
         $self->{rfc3339pubDate} = DateTime::Format::RFC3339->new()->format_datetime($published);
     }
 
-    $self->{siteComicsPath} = 'comics/';
+    $self->{siteComicsPath} = 'comics/'; # default
     if (defined $self->{settings}->{Paths}) {
         if (ref $self->{settings}->{Paths} eq 'HASH') {
             if (defined ${$self->{settings}->{Paths}}{'siteComics'}) {
@@ -182,7 +182,8 @@ sub load {
             $base = $self->{backlogPath}{$language};
         }
         else {
-            $base = 'generated/web/' . lc $language . '/comics';
+            $base = 'generated/web/' . lc $language . '/' . $self->{siteComicsPath};
+            $base =~ s{/$}{};
         }
 
         $self->{dirName}{$language} = make_dir($base);
