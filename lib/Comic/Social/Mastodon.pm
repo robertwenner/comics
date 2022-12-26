@@ -19,9 +19,6 @@ use version; our $VERSION = qv('0.0.3');
 # Maximum length of a toot in characters, as defined by Mastodon.
 Readonly my $MAX_LEN => 500;
 
-# HTTP error code to retry
-Readonly my $RETRY_HTTP_CODE => 400;
-
 
 =encoding utf8
 
@@ -82,8 +79,6 @@ The settings hash needs to have these keys:
 =item * B<mode> Either 'png' or 'html': whether to post the comic's image or
     a link to the comic.
 
-=item * B<retry400> How often to retry HTTP 400 errors.
-
 =back
 
 Any additional arguments are passed on to the Mastodon client; see
@@ -101,9 +96,6 @@ sub new {
     croak("$me: client_secret missing") unless ($args{'client_secret'});
     croak("$me: access_token missing") unless ($args{'access_token'});
     croak("$me: cannot specify client_id, use client_key instead") if ($args{'client_id'});
-
-    $self->{retry400} = $args{'retry400'} || 0;
-    croak("$me: retry400 must be the number of retries") if ($self->{'retry400'} !~ m/^\d+$/);
 
     $self->{mode} = $args{'mode'} || 'png';
     unless ($self->{mode} eq 'png' || $self->{mode} eq 'html') {
@@ -185,21 +177,13 @@ sub post {
             @tags,
         );
 
-        my $tries = 1;
-        my $need_to_retry = 0;
-        do {
-            eval {
-                $need_to_retry = 0;
-                push @result, $self->_toot($comic, $language, $description);
-           }
-           or do {
-               my ($should_retry, @errors) = $self->_mastodon_error($tries, $EVAL_ERROR);
-               $need_to_retry = $should_retry;
-               push @result, @errors;
-           };
-           $tries++;
+        eval {
+            push @result, $self->_toot($comic, $language, $description);
         }
-        while ($need_to_retry);
+        or do {
+            my @errors = $self->_mastodon_error($EVAL_ERROR);
+            push @result, @errors;
+        };
     }
 
     return join "\n", @result;
@@ -242,10 +226,9 @@ sub _toot {
 
 
 sub _mastodon_error {
-    my ($self, $tries, $eval_error) = @ARG;
+    my ($self, $eval_error) = @ARG;
 
     my $me = ref $self;
-    my $need_to_retry = 0;
     my @result;
     # May not have details (server reply) when it didn't even talk to a
     # Mastodon server yet, like when a local file to upload was not found.
@@ -262,16 +245,12 @@ sub _mastodon_error {
         # information and may even add a noisy stack trace.
         $details = $details->status_line . ' ' . $details->content;
         push @result, "$me error: $details";
-        if ($code == $RETRY_HTTP_CODE) {
-            $need_to_retry = $tries <= $self->{retry400};
-            push @result, "Retry $tries of $self->{retry400}" if ($need_to_retry);
-        }
     }
     else {
         push @result, "$me error: $details";
     }
 
-    return ($need_to_retry, @result);
+    return @result;
 }
 
 
