@@ -19,22 +19,22 @@ All `Comic::Social::...` configuration must be within the `Social` object.
 
 To have the `Comic::Social::Mastodon` module toot for you, you must
 configure your Mastodon account. This is a one time setup. Log in to your
-Mastodon account, then go to development and click [New
+Mastodon account, then go to development in the left hand menu and click [New
 Application](https://mstdn.io/settings/applications/new) at the top right.
 
 * enter any name, like "comic updater"
 
 * enter any website (or use [https://github.com/robertwenner/comics](https://github.com/robertwenner/comics))
 
-* check the `write:media` and `write:statuses` permissions
+* check the `write:media` and `write:statuses` permissions; everything else
+  can be unchecked
 
 * save the page, then click your new app in the app list to reveal the details
 
-* from that details page, copy client key, client secret, and access token
-  to your configuration file
+* from that details page, copy the access token to your configuration file as
+  described below
 
-You can enable two-factor authentication in Mastodon and this code can still
-toot for you.
+This module should work with Mastodon servers version 3.1.3 or later.
 
 Configure your comic settings like this:
 
@@ -42,20 +42,20 @@ Configure your comic settings like this:
 {
     "Social": {
         "Comics::Social::Mastodon": {
-            "client_key": "from the Mastodon app page",
-            "client_secret": "from the Mastodon app page",
             "access_token": "from the Mastodon app page",
             "instance": "mastodon.social",
-            "mode": "png"
+            "mode": "png",
+            "visibility": "public"
         }
     }
 }
 ```
 
-The instance is the mastodon server where you have your account. If you don't
-specify an instance, it will probably be `mastodon.social`, which is what
-[Mastodon::Client](https://metacpan.org/pod/Mastodon::Client) uses by
-default.
+The instance is the mastodon server where you have your account, e.g.,
+`mstdn.io`. Don't include e.g., `https://` or a path after the name.
+
+The `visibility` is optional. If not given, it defaults to the visibility in
+your account settings. You can override the visibility here for testing.
 
 The `Comic::Check::Mastodon` module adds any hashtags from `hashtags` and
 `mastodon` (in that order) from the Comic's metadata to the posted message.
@@ -76,9 +76,14 @@ like mentions.
 ```
 
 If `mode` is png, the tooted message is the comic's title, its description,
-and the given twitter hashtags, plus the actual comic `png` file; separated by
-newlines. If the mode is `html`, the comic's page URL is added to the
-message as well.
+and the hashtags from the comic (separated by newlines); plus the actual
+comic `png` file. If the mode is `html`, the comic's page URL is added to
+the message as well, but the image is not included.
+
+All posts will use your account's default visibility, e.g., "public".
+
+You can enable two-factor authentication in Mastodon and this code can still
+toot for you.
 
 
 ## `Comic::Social::Reddit`

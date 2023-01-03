@@ -7,7 +7,9 @@ use English '-no_match_vars';
 use Carp;
 use String::Util 'trim';
 use Readonly;
-use Mastodon::Client;
+use HTTP::Tiny;
+use File::Slurper;
+use JSON;
 
 use Comic::Social::Social;
 use base('Comic::Social::Social');
@@ -18,6 +20,8 @@ use version; our $VERSION = qv('0.0.3');
 
 # Maximum length of a toot in characters, as defined by Mastodon.
 Readonly my $MAX_LEN => 500;
+# HTTP::Tiny reports e.g., DNS errors with code 599.
+Readonly my $HTTP_TINY_ERROR => 599;
 
 
 =encoding utf8
@@ -67,22 +71,22 @@ The settings hash needs to have these keys:
 
 =over 4
 
-=item * B<client-key> Mastodon client key from the application's page in Mastodon.
+=item * B<access-token> Mastodon access token from the application's page in
+    Mastodon. This assumes that the authorization token is valid until revoked.
+    I didn't find anything on how long the token is valid. So far, mine works
+    for a month.
 
-=item * B<client-secret> Mastodon client secret from the application's page in Mastodon.
-
-=item * B<access-token> Mastodon access token from the application's page in Mastodon.
-
-=item * B<instance> Name of the Mastodon instance to toot to, defaults to whatever
-    L<Mastodon::Client> uses as default.
+=item * B<instance> Name of the Mastodon instance to toot to.
 
 =item * B<mode> Either 'png' or 'html': whether to post the comic's image or
     a link to the comic.
 
+=item * B<visibility> optional visibility (e.g., "public" or "private"),
+    defaults to the visibility configured in the account settings.
+
 =back
 
-Any additional arguments are passed on to the Mastodon client; see
-L<Mastodon::Client> for supported arguments.
+This module should work with Mastodon API versions 3.1.3 or later.
 
 =cut
 
@@ -90,30 +94,17 @@ sub new {
     my ($class, %args) = @ARG;
     my $self = bless{}, $class;
 
-    my $me = ref $self;
-    croak("$me: configuration missing") unless (%args);
-    croak("$me: client_key missing") unless ($args{'client_key'});
-    croak("$me: client_secret missing") unless ($args{'client_secret'});
-    croak("$me: access_token missing") unless ($args{'access_token'});
-    croak("$me: cannot specify client_id, use client_key instead") if ($args{'client_id'});
-
-    $self->{mode} = $args{'mode'} || 'png';
-    unless ($self->{mode} eq 'png' || $self->{mode} eq 'html') {
-        croak("$me: unknown mastodon mode '$self->{mode}'");
+    $self->{me} = ref $self;
+    croak("$self->{me}: configuration missing") unless (%args);
+    croak("$self->{me}: instance missing") unless ($args{'instance'});
+    croak("$self->{me}: instance name cannot contain slashes") if ($args{'instance'} =~ m{/});
+    croak("$self->{me}: access_token missing") unless ($args{'access_token'});
+    croak("$self->{me}: mode missing, use png or html") unless ($args{'mode'});
+    unless ($args{'mode'} eq 'png' || $args{'mode'} eq 'html') {
+        croak("$self->{me}: unknown posting mode '$args{'mode'}'");
     }
-    delete $args{'mode'}; # to pass only the rest on to Mastodon::Client's constructor
 
-    my %settings = (
-        'name' => "$me $VERSION",
-        'website' => 'https://github.com/robertwenner/comics',
-        'coerce_entities' => 1,
-        # Mastodon's application page calls it the client key, but Mastodon::Client
-        # uses client-id, so keep the lingo close to what the end user sees on the
-        # Mastodon page and translate it here.
-        'client_id' => delete $args{'client_key'},
-        %args,
-    );
-    $self->{mastodon} = Mastodon::Client->new(%settings);
+    $self->{settings} = \%args;
 
     return $self;
 }
@@ -165,28 +156,62 @@ Returns any messages from Mastodon, separated by newlines.
 sub post {
     my ($self, $comic) = @ARG;
 
+    $self->{http} = HTTP::Tiny->new(verify_SSL => 1);
+
+    # Get an authentication token from client id and client secret.
+    #
+    # curl -X POST \
+    #   --form 'client_id=...' \
+    #   --form 'client_secret=...' \
+    #   --form 'redirect_uri=urn:ietf:wg:oauth:2.0:oob' \
+    #   --form 'grant_type=client_credentials' \
+    #   --form 'scope=write:media write:statuses' \
+    #   "https://$instance/oauth/token" \
+    # | jq .access_token
+    #
+    # See https://docs.joinmastodon.org/client/token/
+
+    my %language_codes = $comic->language_codes();
     my @result;
     foreach my $language ($comic->languages()) {
-        my @tags = Comic::Social::Social::collect_hashtags($comic, $language, 'mastodon');
-        my $description = Comic::Social::Social::build_message(
-            $MAX_LEN,
-            \&_textlen,
-            $comic->{meta_data}->{title}->{$language},
-            $comic->{meta_data}->{description}->{$language},
-            $self->{mode} eq 'html' ? $comic->{url}->{$language} : '',
-            @tags,
-        );
+        my $description = _build_message($comic, $language, $self->{settings}->{mode});
 
-        eval {
-            push @result, $self->_toot($comic, $language, $description);
+        my $media_id;
+        if ($self->{settings}->{mode} eq 'png') {
+            my @messages;
+            ($media_id, @messages) = $self->_upload_media(
+                "$comic->{dirName}{$language}/$comic->{pngFile}{$language}",
+                $description,
+            );
+            push @result, @messages;
+            unless ($media_id) {
+                # Didn't get a media id for whatever reason. If the server is
+                # down or premissions are not correct, the next call will
+                # fail as well. Try if Mastodon just doesn't like that image
+                # for some reason but accepts a link.
+                push @result, "$self->{me}: posting comic link instead";
+                $description = _build_message($comic, $language, 'html');
+            }
         }
-        or do {
-            my @errors = $self->_mastodon_error($EVAL_ERROR);
-            push @result, @errors;
-        };
+        push @result, $self->_post_status($description, $language_codes{$language}, $media_id);
     }
 
     return join "\n", @result;
+}
+
+
+sub _build_message {
+    my ($comic, $language, $mode) = @ARG;
+
+    my @tags = Comic::Social::Social::collect_hashtags($comic, $language, 'mastodon');
+    return Comic::Social::Social::build_message(
+        $MAX_LEN,
+        \&_textlen,
+        $comic->{meta_data}->{title}->{$language},
+        $comic->{meta_data}->{description}->{$language},
+        $mode eq 'html' ? $comic->{url}->{$language} : '',
+        @tags,
+    );
 }
 
 
@@ -205,52 +230,121 @@ sub _textlen {
 }
 
 
-sub _toot {
-    my ($self, $comic, $language, $description) = @ARG;
+sub _upload_media {
+    my ($self, $local_file, $description) = @ARG;
 
-    my $me = ref $self;
-    my %params;
-    if ($self->{mode} eq 'png') {
-        my $attachment = $self->{mastodon}->upload_media(
-            "$comic->{dirName}{$language}/$comic->{pngFile}{$language}",
-            {
-                'description' => $description,
-            },
-        );
-        $params{'media_ids'} = [$attachment->{id}];
+    # Upload media to refer to it when posting a status.
+    #
+    # curl --silent -X POST \
+    #   --header "Authorization: Bearer $token" \
+    #   --form 'file=@some.png' \
+    #   --form 'description=...' \
+    #   "https://$instance/api/v2/media" \
+    # | jq .id
+    #
+    # See https://docs.joinmastodon.org/methods/media/#v2
+
+    my $url = "https://$self->{settings}->{instance}/api/v2/media";
+    my %form_data = (
+        'file' => File::Slurper::read_binary($local_file),
+        'description' => $description,
+    );
+    my %options = (
+        'headers' => {
+            'Authorization' => "Bearer $self->{settings}->{access_token}",
+        },
+    );
+
+    my $reply = $self->{http}->post_form($url, \%form_data, \%options);
+
+    my $id;
+    if ($reply->{success}) {
+        return ($id, "$self->{me}: error: no content in media reply") unless ($reply->{content});
+        my $parsed;
+        eval {
+            $parsed = decode_json($reply->{content});
+        } or do {
+            return ($id, "$self->{me}: cannot parse media JSON reply: $EVAL_ERROR");
+        };
+        $id = $parsed->{id};
+        if ($id) {
+            return ($id, "$self->{me} uploaded $local_file, returned media id is $id");
+        }
+        return ($id, "$self->{me}: uploaded $local_file but got no media id");
     }
+    return ($id, $self->_mastodon_error($reply));
+}
 
-    my $result = $self->{mastodon}->post_status($description, \%params);
-    return "$me posted: " . $result->content;
+
+sub _post_status {
+    my ($self, $description, $lang_code, $media_id) = @ARG;
+
+    # Post a status, optionally referring to previously uploaded media.
+    #
+    # curl -X POST \
+    #   --header "Authorization: Bearer $token" \
+    #   --form 'status=...' \
+    #   --form "media_ids[]=$id" \
+    #   --form 'language=de' \
+    #   --form 'visibility=private' \
+    #   "https://$instance/api/v1/statuses"
+    #
+    # See https://docs.joinmastodon.org/methods/statuses/#create
+    my $url = "https://$self->{settings}->{instance}/api/v1/statuses";
+    my %form_data = (
+        'status' => $description,
+        'language' => $lang_code,
+    );
+    if ($self->{settings}->{visibility}) {
+        $form_data{'visibility'} = $self->{settings}->{visibility};
+    }
+    if ($media_id) {
+       $form_data{'media_ids[]'} = $media_id;
+    }
+    my %options = (
+        'headers' => {
+            'Authorization' => "Bearer $self->{settings}->{access_token}",
+        },
+    );
+
+    my $reply = $self->{http}->post_form($url, \%form_data, \%options);
+
+    if ($reply->{success}) {
+        return "$self->{me}: error: no content in status reply" unless ($reply->{content});
+        my $parsed;
+        eval {
+            $parsed = decode_json($reply->{content});
+        } or do {
+            return "$self->{me}: cannot parse status JSON reply: $EVAL_ERROR";
+        };
+        my $id = $parsed->{id} || '(no id)';
+        my $timestamp = $parsed->{created_at} || '(no timestamp)';
+        my $language = $parsed->{language} || '(no language)';
+        my $content = $parsed->{content} || '(no content)';
+        my $result = "$self->{me} posted on $timestamp in $language with id $id: $content";
+        if ($parsed->{media_attachments}) {
+            my $attachment = $parsed->{media_attachments}[0];
+            if ($attachment) {
+                $result .= " referring $attachment->{type} id $attachment->{id}";
+            }
+        }
+        return $result;
+    }
+    return $self->_mastodon_error($reply);
 }
 
 
 sub _mastodon_error {
-    my ($self, $eval_error) = @ARG;
+    my ($self, $reply) = @ARG;
 
-    my $me = ref $self;
-    my @result;
-    # May not have details (server reply) when it didn't even talk to a
-    # Mastodon server yet, like when a local file to upload was not found.
-    my $details = $self->{mastodon}->latest_response();
-    # $eval_error is always set or this function wouldn't get called, but
-    # Devel::Cover doesn't see that, and the uncoverable code comments are
-    # too finicky.
-    $details = $eval_error unless ($details);
-    if (ref $details eq 'HTTP::Response') {
-        my $code = $details->code;
-        # If there is an actual HTTP response, use it's body as well, to get
-        # more error detail than what Mastodon::Client reports. Ignore
-        # $EVAL_ERROR in that case, as it certainly has less useful
-        # information and may even add a noisy stack trace.
-        $details = $details->status_line . ' ' . $details->content;
-        push @result, "$me error: $details";
+    my $http_details = "$self->{me}: ";
+    if ($reply->{status} == $HTTP_TINY_ERROR) {
+        $http_details .= $reply->{content};
     }
     else {
-        push @result, "$me error: $details";
+        $http_details .= "HTTP $reply->{status} $reply->{reason} -- $reply->{content}";
     }
-
-    return @result;
+    return $http_details;
 }
 
 

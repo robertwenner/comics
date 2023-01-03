@@ -5,66 +5,81 @@ use utf8;
 use base 'Test::Class';
 use Test::More;
 use Test::MockModule;
+use Capture::Tiny;
 use lib 't';
 use MockComic;
 
+use JSON;
 use Comic::Social::Mastodon;
-
-use Mastodon::Entity::Account;
-use Mastodon::Entity::Attachment;
-use Mastodon::Entity::Status;
 
 
 __PACKAGE__->runtests() unless caller;
 
-my %secrets;
-my $mastodon;
-my @mastodon_error;
-my $mastodon_latest;
-my %mastodon_called_with;
-my $mastodon_return_upload_media;
-my $mastodon_return_post_status;
+
+my %settings;
+my %media_reply;
+my %media_reply_payload;
+my %status_reply;
+my %status_reply_payload;
+my @posted;
 
 
 sub set_up : Test(setup) {
     MockComic::set_up();
 
-    %secrets = (
-        'client_key' => 'key',
-        'client_secret' => 'secret',
-        'access_token' => 'token',
+    %settings = (
+        'instance' => 'mastodon.example.org',
+        'access_token' => 'my-token',
+        'mode' => 'html',
     );
 
-    %mastodon_called_with = ();
-    @mastodon_error = ();
-    $mastodon_latest = undef;
+    %media_reply_payload = (
+        'id' => 'returned media id',
+        'type' => 'returned type',
+        'description' => 'returned description',
+    );
+    %media_reply = (
+        'content' => encode_json(\%media_reply_payload),
+        'status' => 200,
+        'success' => 'OK',
+    );
 
-    $mastodon = Test::MockModule->new('Mastodon::Client');
-    $mastodon->redefine('new', sub {
-        my $mast = $mastodon->original('new')->(@_);
-        shift @_;
-        $mastodon_called_with{'new'} = {@_};
-        return $mast;
-    });
-    $mastodon->redefine('upload_media', sub {
-        shift @_;
-        $mastodon_called_with{'upload_media'} = [@_];
-        return $mastodon_return_upload_media;
-    });
-    $mastodon->redefine('post_status', sub {
-        shift @_;
-        $mastodon_called_with{'post_status'} = [@_];
-        my $should_fail = pop @mastodon_error;
-        die($should_fail) if ($should_fail);
-        return $mastodon_return_post_status;
-    });
-    $mastodon->redefine('latest_response', sub {
-        return $mastodon_latest;
-    });
+    %status_reply_payload = (
+        'id' => 'returned status id',
+        'created_at' => 'returned time stamp',
+        'language' => 'returned language code',
+        'content' => 'returned content',
+    );
+    %status_reply = (
+        'content' => encode_json(\%status_reply_payload),
+        'status' => 200,
+        'success' => 'OK',
+    );
+
+    @posted = ();
 }
 
 
-sub fails_on_missing_configuration : Tests {
+sub mocked_replies {
+    my ($self, $url, $form_data, $options) = @_;
+
+    push @posted, { 'url' => $url, 'form_data' => $form_data };
+
+    is_deeply($options, {
+        'headers' => { 'Authorization' => 'Bearer my-token' },
+    }, 'should always pass the authorization header');
+
+    if ($url eq 'https://mastodon.example.org/api/v2/media') {
+        return \%media_reply;
+    }
+    if ($url eq 'https://mastodon.example.org/api/v1/statuses') {
+        return \%status_reply;
+    }
+    die "Posted to unknown url $url";
+}
+
+
+sub complains_about_missing_configuration : Tests {
     eval {
         Comic::Social::Mastodon->new();
     };
@@ -73,145 +88,186 @@ sub fails_on_missing_configuration : Tests {
 
     eval {
         Comic::Social::Mastodon->new(
-            'client_key' => 'key',
-            'access_token' => 'token',
+            'instance' => 'i',
+            'mode' => 'png',
         );
     };
     like($@, qr(Comic::Social::Mastodon)i, 'should say the module name');
-    like($@, qr(client_secret missing)i, 'should say what is wrong');
+    like($@, qr(\baccess_token\b), 'should say what is missing');
 
     eval {
         Comic::Social::Mastodon->new(
-            'client_secret' => 'secret',
             'access_token' => 'token',
+            'mode' => 'png',
         );
     };
     like($@, qr(Comic::Social::Mastodon)i, 'should say the module name');
-    like($@, qr(client_key missing)i, 'should say what is wrong');
+    like($@, qr(\binstance\b), 'should say what is missing');
 
     eval {
         Comic::Social::Mastodon->new(
-            'client_key' => 'me',
-            'client_secret' => 'secret',
+            'access_token' => 'token',
+            'instance' => 'i',
         );
     };
     like($@, qr(Comic::Social::Mastodon)i, 'should say the module name');
-    like($@, qr(access_token missing)i, 'should say what is wrong');
+    like($@, qr(\bmode\b), 'should say what is missing');
+}
+
+
+sub complains_about_bad_instance : Tests {
+    eval {
+        Comic::Social::Mastodon->new('instance' => 'https://mstd.example.org/my/account');
+    };
+    like($@, qr{Comic::Social::Mastodon}, 'should say the modulename');
+    like($@, qr{\binstance\b}, 'should say the bad setting');
+    like($@, qr{\bslash}i, 'should say what is wrong');
 }
 
 
 sub accepts_good_modes : Tests {
-    Comic::Social::Mastodon->new(%secrets, mode => 'png');
-    Comic::Social::Mastodon->new(%secrets, mode => 'html');
-    Comic::Social::Mastodon->new(%secrets);
-    ok(1);
+    Comic::Social::Mastodon->new(%settings, mode => 'png');
+    Comic::Social::Mastodon->new(%settings, mode => 'html');
+    Comic::Social::Mastodon->new(%settings);
+    ok(1);  # would have died if it failed
 }
 
 
 sub complains_about_bad_mode : Tests {
     eval {
-        Comic::Social::Mastodon->new(%secrets, 'mode' => 'whatever');
+        Comic::Social::Mastodon->new(%settings, 'mode' => 'whatever');
     };
-    like($@, qr(Unknown mastodon mode 'whatever')i);
-}
-
-
-sub passes_config_to_mastodon_client : Tests {
-    Comic::Social::Mastodon->new(%secrets, 'instance' => 'my mastodon', 'mode' => 'png');
-    is_deeply(
-        $mastodon_called_with{'new'},
-        {
-            'client_id' => 'key',
-            'client_secret' => 'secret',
-            'access_token' => 'token',
-            'instance' => 'my mastodon',
-            'name' => 'Comic::Social::Mastodon 0.0.3',
-            'website' => 'https://github.com/robertwenner/comics',
-            'coerce_entities' => 1,
-        });
-}
-
-
-sub complains_about_manually_specified_client_id : Tests {
-    eval {
-        Comic::Social::Mastodon->new(%secrets, 'client_id' => 'id');
-    };
-    like($@, qr(Comic::Social::Mastodon)i, 'should say the module name');
-    like($@, qr(\bclient_id\b)i, 'should say what is wrong');
-    like($@, qr(\bclient_key\b)i, 'should say how to configure this instead');
+    like($@, qr{Comic::Social::Mastodon}, 'should say the modulename');
+    like($@, qr{\bmode\b}, 'should say the bad setting');
+    like($@, qr{\bwhatever\b}, 'should say the bad value');
 }
 
 
 sub toot_html : Tests {
+    my $client = Test::MockModule->new(ref(HTTP::Tiny->new()));
+    $client->redefine('post_form', \&mocked_replies);
+
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
     );
     $comic->{url}{'English'} = "https://beercomics.com/comics/latest-comic.html";
-    $mastodon_return_post_status = Mastodon::Entity::Status->new(
-        'account' => Mastodon::Entity::Account->new('acct' => 'my-account', 'avatar' => 'my-avatar'),
-        'favourites_count' => 0,
-        'content' => 'tooted html fine',
-        'visibility' => 'public',
-    );
 
-    my $mastodon = Comic::Social::Mastodon->new(%secrets, 'mode' => 'html');
+    my $mastodon = Comic::Social::Mastodon->new(%settings, 'mode' => 'html');
     my $results = $mastodon->post($comic);
 
-    is($results, 'Comic::Social::Mastodon posted: tooted html fine');
-    is($mastodon_called_with{'update_with_media'}, undef);
-    is_deeply(
-        $mastodon_called_with{'post_status'},
-        ["Latest comic\nhttps://beercomics.com/comics/latest-comic.html", {}]);
+    is_deeply(\@posted, [
+        {
+            'url' => 'https://mastodon.example.org/api/v1/statuses',
+            'form_data' => {
+                status => "Latest comic\nhttps://beercomics.com/comics/latest-comic.html",
+                language => 'en',
+            },
+        }
+    ]);
+
+    like($results, qr{\bComic::Social::Mastodon\b}, 'should contain module name');
+    like($results, qr{\breturned language\b}, 'should have language code');
+    like($results, qr{\breturned time stamp\b}, 'should have time stamp');
+    like($results, qr{\breturned status id\b}, 'should have id');
+    like($results, qr{\breturned content\b}, 'should have content');
 }
 
 
 sub toot_png : Tests {
+    my $client = Test::MockModule->new(ref(HTTP::Tiny->new()));
+    $client->redefine('post_form', \&mocked_replies);
+    %status_reply_payload = (
+        %status_reply_payload,
+        'media_attachments' => [
+            {
+                "id" => "returned attachment id",
+                "type" => "returned type",
+                "url" => "returned url",
+            },
+        ],
+    );
+    %status_reply = (
+        %status_reply,
+        'content' => encode_json(\%status_reply_payload),
+    );
+
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
     );
     $comic->{pngFile}{'English'} = "latest-comic.png";
-    $mastodon_return_upload_media = Mastodon::Entity::Attachment->new(
-        'id' => '123',
-        'type' => 'image',
-        'url' => 'https://beercomics.com/comics/latest-comic.png',
-        'preview_url' => 'https://beercomics.com/comics/latest-comic.png',
-    );
-    $mastodon_return_post_status = Mastodon::Entity::Status->new(
-        'account' => Mastodon::Entity::Account->new('acct' => 'my-account', 'avatar' => 'my-avatar'),
-        'favourites_count' => 0,
-        'content' => 'tooted png fine',
-        'visibility' => 'public',
-    );
+    MockComic::fake_file("$comic->{dirName}{English}/$comic->{pngFile}{English}", 'png file contents');
 
-    my $mastodon = Comic::Social::Mastodon->new(%secrets, 'mode' => 'png');
+    my $mastodon = Comic::Social::Mastodon->new(%settings, 'mode' => 'png');
     my $results = $mastodon->post($comic);
 
-    is_deeply($results, 'Comic::Social::Mastodon posted: tooted png fine');
-    is_deeply(
-        $mastodon_called_with{'upload_media'},
-        ['generated/web/english/comics/latest-comic.png', {'description' => 'Latest comic'}]);
-    is_deeply(
-        $mastodon_called_with{'post_status'},
-        ['Latest comic', {'media_ids' => [123]}]);
+    is_deeply(\@posted, [
+        {
+            'url' => 'https://mastodon.example.org/api/v2/media',
+            'form_data' => {
+                'description' => "Latest comic",
+                'file' => 'png file contents',
+            },
+        },
+        {
+            'url' => 'https://mastodon.example.org/api/v1/statuses',
+            'form_data' => {
+                'status' => 'Latest comic',
+                'language' => 'en',
+                'media_ids[]' => 'returned media id',
+            },
+        },
+    ]);
+
+    like($results, qr{\bComic::Social::Mastodon\b}m, 'should contain module name');
+    like($results, qr{\bmedia\b}, 'should say it posted media');
+    like($results, qr{\breturned media id\b}, 'should have the returned image media id');
+
+    like($results, qr{\breturned language\b}, 'should have language code');
+    like($results, qr{\breturned time stamp\b}, 'should have time stamp');
+    like($results, qr{\breturned status id\b}, 'should have id');
+    like($results, qr{\breturned content\b}, 'should have content');
+    like($results, qr{\breturned media id\b}, 'should have the attachment id');
+}
+
+
+sub ignores_empty_media_attachments_array : Tests {
+    my $client = Test::MockModule->new(ref(HTTP::Tiny->new()));
+    $client->redefine('post_form', \&mocked_replies);
+    %status_reply_payload = (
+        %status_reply_payload,
+        'media_attachments' => [],
+    );
+    %status_reply = (
+        %status_reply,
+        'content' => encode_json(\%status_reply_payload),
+    );
+
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+    );
+    $comic->{pngFile}{'English'} = "latest-comic.png";
+    MockComic::fake_file("$comic->{dirName}{English}/$comic->{pngFile}{English}", 'png file contents');
+
+    my $mastodon = Comic::Social::Mastodon->new(%settings, 'mode' => 'png');
+    my $results = $mastodon->post($comic);
+
+    unlike($results, qr{\breferring\b}, 'should not have the attachment id');
 }
 
 
 sub shortens_tooted_text : Tests {
+    my $client = Test::MockModule->new(ref(HTTP::Tiny->new()));
+    $client->redefine('post_form', \&mocked_replies);
+
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
         $MockComic::DESCRIPTION => { $MockComic::ENGLISH => 'x' x 1000 },
     );
-    $mastodon_return_post_status = Mastodon::Entity::Status->new(
-        'account' => Mastodon::Entity::Account->new('acct' => 'my-account', 'avatar' => 'my-avatar'),
-        'favourites_count' => 0,
-        'content' => 'tooted html fine',
-        'visibility' => 'public',
-    );
 
-    my $mastodon = Comic::Social::Mastodon->new(%secrets, 'mode' => 'html');
+    my $mastodon = Comic::Social::Mastodon->new(%settings, 'mode' => 'html');
     $mastodon->post($comic);
 
-    my $text = $mastodon_called_with{'post_status'}[0];
+    my $text = $posted[0]->{form_data}->{status};
     is(length($text), 524);
     like($text, qr{Latest comic}, 'title not posted');
     like($text, qr{\bxxxxx}, 'description not posted');
@@ -220,73 +276,260 @@ sub shortens_tooted_text : Tests {
 
 
 sub includes_hashtags_from_comic_meta_data : Tests {
+    my $client = Test::MockModule->new(ref(HTTP::Tiny->new()));
+    $client->redefine('post_form', \&mocked_replies);
+
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
         $MockComic::HASH_TAGS => { $MockComic::ENGLISH => ['#general'] },
         $MockComic::MASTODON => { $MockComic::ENGLISH => ['@mastodon'] },
         $MockComic::TWITTER => { $MockComic::ENGLISH => ['#ignore'] },
     );
-    $mastodon_return_post_status = Mastodon::Entity::Status->new(
-        'account' => Mastodon::Entity::Account->new('acct' => 'my-account', 'avatar' => 'my-avatar'),
-        'favourites_count' => 0,
-        'content' => 'tooted html fine',
-        'visibility' => 'public',
-    );
 
-    my $mastodon = Comic::Social::Mastodon->new(%secrets, mode => 'html');
+    my $mastodon = Comic::Social::Mastodon->new(%settings, mode => 'html');
     $mastodon->post($comic);
 
-    is_deeply(
-        $mastodon_called_with{'post_status'},
-        ["Latest comic\n#general \@mastodon\nhttps://beercomics.com/comics/latest-comic.html", {}]);
+    my $text = $posted[0]->{form_data}->{status};
+    is("Latest comic\n#general \@mastodon\nhttps://beercomics.com/comics/latest-comic.html", $text);
 }
 
 
-sub reports_error_no_latest_from_mastodon : Tests {
+sub includes_visibility_if_configured : Tests {
+    my $client = Test::MockModule->new(ref(HTTP::Tiny->new()));
+    $client->redefine('post_form', \&mocked_replies);
+
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+    );
+    $comic->{url}{'English'} = "https://beercomics.com/comics/latest-comic.html";
+
+    my $mastodon = Comic::Social::Mastodon->new(%settings, 'mode' => 'html', 'visibility' => 'private');
+    my $results = $mastodon->post($comic);
+
+    is_deeply(\@posted, [
+        {
+            'url' => 'https://mastodon.example.org/api/v1/statuses',
+            'form_data' => {
+                status => "Latest comic\nhttps://beercomics.com/comics/latest-comic.html",
+                language => 'en',
+                visibility => 'private',
+            },
+        }
+    ]);
+}
+
+
+sub reports_missing_content_from_status_reply : Tests {
+    my $client = Test::MockModule->new(ref(HTTP::Tiny->new()));
+    $client->redefine('post_form', \&mocked_replies);
+    delete %status_reply{'content'};
+
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
     );
 
-    push @mastodon_error, "Oops";
+    my $mastodon = Comic::Social::Mastodon->new(%settings, mode => 'html');
+    my $results = $mastodon->post($comic);
 
-    my $mastodon = Comic::Social::Mastodon->new(%secrets, mode => 'html');
-    my $message = $mastodon->post($comic);
-
-    like($message, qr{\bmastodon\b}i, 'should say what module had the error');
-    like($message, qr{\bOops\b}, 'should have error message');
+    like($results, qr{\bComic::Social::Mastodon\b}, 'should contain module name');
+    like($results, qr{\bno content\b}, 'should not have content');
 }
 
 
-sub reports_error_with_latest_string_from_mastodon : Tests {
+sub reports_error_if_content_from_status_reply_is_unparsable : Tests {
+    my $client = Test::MockModule->new(ref(HTTP::Tiny->new()));
+    $client->redefine('post_form', \&mocked_replies);
+    %status_reply = (
+        %status_reply,
+        'content' => 'whatever',
+    );
+
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
     );
 
-    push @mastodon_error, "Oops";
-    $mastodon_latest = "latest mastodon details";
+    my $mastodon = Comic::Social::Mastodon->new(%settings, mode => 'html');
+    my $results = $mastodon->post($comic);
 
-    my $mastodon = Comic::Social::Mastodon->new(%secrets, mode => 'html');
-    my $message = $mastodon->post($comic);
-
-    like($message, qr{\bmastodon\b}i, 'should say what module had the error');
-    like($message, qr{latest mastodon details}i, 'should have error details');
+    like($results, qr{\bComic::Social::Mastodon\b}, 'should contain module name');
+    like($results, qr{\bJSON\b}i, 'should say what was wrong');
 }
 
 
-sub reports_error_latest_http_response_from_mastodon : Tests {
+sub uses_fallback_values_if_fields_from_status_reply_are_missing : Tests {
+    my $client = Test::MockModule->new(ref(HTTP::Tiny->new()));
+    $client->redefine('post_form', \&mocked_replies);
+    %status_reply = (
+        %status_reply,
+        'content' => '{}',
+    );
+
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
     );
 
-    push @mastodon_error, "Oops";
-    $mastodon_latest = HTTP::Response->new(
-        401, "Unauthorized", undef, "error body"
+    my $mastodon = Comic::Social::Mastodon->new(%settings, mode => 'html');
+    my $results = $mastodon->post($comic);
+
+    like($results, qr{\bComic::Social::Mastodon\b}, 'should contain module name');
+    like($results, qr{\bno id\b}, 'should not have content');
+    like($results, qr{\bno language\b}, 'should not have content');
+    like($results, qr{\bno timestamp\b}, 'should not have content');
+    like($results, qr{\bno content\b}, 'should not have content');
+}
+
+
+sub reports_missing_content_from_media_reply : Tests {
+    my $client = Test::MockModule->new(ref(HTTP::Tiny->new()));
+    $client->redefine('post_form', \&mocked_replies);
+    delete %media_reply{'content'};
+
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+    );
+    $comic->{pngFile}{'English'} = "latest-comic.png";
+    MockComic::fake_file("$comic->{dirName}{English}/$comic->{pngFile}{English}", 'png file contents');
+
+    my $mastodon = Comic::Social::Mastodon->new(%settings, mode => 'png');
+    my $results = $mastodon->post($comic);
+
+    like($results, qr{\bComic::Social::Mastodon\b}, 'should contain module name');
+    like($results, qr{\bno content\b}, 'should not have content');
+    is(scalar @posted, 2, 'should still have made both API calls');
+}
+
+
+sub reports_error_if_content_from_media_reply_is_unparsable : Tests {
+    my $client = Test::MockModule->new(ref(HTTP::Tiny->new()));
+    $client->redefine('post_form', \&mocked_replies);
+    %media_reply = (
+        %media_reply,
+        'content' => 'whatever',
     );
 
-    my $mastodon = Comic::Social::Mastodon->new(%secrets, mode => 'html');
-    my $message = $mastodon->post($comic);
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+    );
+    $comic->{pngFile}{'English'} = "latest-comic.png";
+    MockComic::fake_file("$comic->{dirName}{English}/$comic->{pngFile}{English}", 'png file contents');
 
-    like($message, qr{\bmastodon\b}i, 'should say what module had the error');
-    like($message, qr{\b401 Unauthorized\b}, 'should have http error line');
-    like($message, qr{\berror body\b}, 'should have http content');
+    my $mastodon = Comic::Social::Mastodon->new(%settings, mode => 'png');
+    my $results = $mastodon->post($comic);
+
+    like($results, qr{\bComic::Social::Mastodon\b}, 'should contain module name');
+    like($results, qr{\bJSON\b}i, 'should say what was wrong');
+}
+
+
+sub falls_back_to_posting_a_link_if_media_post_fails : Tests {
+    my $client = Test::MockModule->new(ref(HTTP::Tiny->new()));
+    $client->redefine('post_form', \&mocked_replies);
+    %media_reply = (
+        %media_reply,
+        'content' => '{}',
+    );
+
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+    );
+    $comic->{url}{'English'} = "https://beercomics.com/comics/latest-comic.html";
+    $comic->{pngFile}{'English'} = "latest-comic.png";
+    MockComic::fake_file("$comic->{dirName}{English}/$comic->{pngFile}{English}", 'png file contents');
+
+    my $mastodon = Comic::Social::Mastodon->new(%settings, mode => 'png');
+    my $results = $mastodon->post($comic);
+
+    like($results, qr{\bComic::Social::Mastodon\b}, 'should contain module name');
+    like($results, qr{\bno media id\b}, 'should not have a media id');
+    like($results, qr{\blink\b}, 'should say that it is falling back to posting a link');
+    like($posted[1]->{form_data}->{'status'}, qr{https://beercomics\.com/comics/latest-comic\.html}, 'should have posted the link');
+    is($posted[1]->{form_data}->{'media_ids[]'}, undef, 'should not have passed bad media id back');
+}
+
+
+sub reports_http_error_from_media_post : Tests {
+    my $client = Test::MockModule->new(ref(HTTP::Tiny->new()));
+    $client->redefine('post_form', \&mocked_replies);
+    %media_reply = (
+        %status_reply,
+        'success' => '',
+        'status' => 500,
+        'reason' => 'Internal server error',
+    );
+
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+    );
+    $comic->{pngFile}{'English'} = "latest-comic.png";
+    MockComic::fake_file("$comic->{dirName}{English}/$comic->{pngFile}{English}", 'png file contents');
+
+    my $mastodon = Comic::Social::Mastodon->new(%settings, mode => 'png');
+    my $results = $mastodon->post($comic);
+
+    like($results, qr{\bComic::Social::Mastodon\b}, 'should contain module name');
+    like($results, qr{\bHTTP 500\b}, 'should have error code');
+    like($results, qr{\bInternal server error\b}, 'should have error message ');
+}
+
+
+sub reports_http_error_from_status_post : Tests {
+    my $client = Test::MockModule->new(ref(HTTP::Tiny->new()));
+    $client->redefine('post_form', \&mocked_replies);
+    %status_reply = (
+        %status_reply,
+        'success' => '',
+        'status' => 500,
+        'reason' => 'Internal server error',
+    );
+
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+    );
+    $comic->{pngFile}{'English'} = "latest-comic.png";
+    MockComic::fake_file("$comic->{dirName}{English}/$comic->{pngFile}{English}", 'png file contents');
+
+    my $mastodon = Comic::Social::Mastodon->new(%settings, mode => 'html');
+    my $results = $mastodon->post($comic);
+
+    like($results, qr{\bComic::Social::Mastodon\b}, 'should contain module name');
+    like($results, qr{\bHTTP 500\b}, 'should have error code');
+    like($results, qr{\bInternal server error\b}, 'should have error message ');
+}
+
+
+sub reports_errors_unrelated_to_mastodon : Tests {
+    my $client = Test::MockModule->new(ref(HTTP::Tiny->new()));
+    $client->redefine('post_form', \&mocked_replies);
+    %status_reply = (
+        'content' => 'Host not found',
+        'reason' => "Internal Exception",
+        'status' => 599, # weird way for HTTP::Tiny to report an unknown host
+        'success' => "",
+        'url' => "https://mastodon.example.org/api/v1/statuses"
+    );
+
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+    );
+
+    my $mastodon = Comic::Social::Mastodon->new(%settings, mode => 'html');
+    my $results = $mastodon->post($comic);
+
+    like($results, qr{\bComic::Social::Mastodon\b}, 'should contain module name');
+    like($results, qr{\bHost not found\b}, 'should have error details');
+}
+
+
+sub tells_http_tiny_to_verify_the_server_certificate : Tests {
+    my $client = Test::MockModule->new(ref(HTTP::Tiny->new()));
+    $client->redefine('post_form', \&mocked_replies);
+
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+    );
+
+    my $mastodon = Comic::Social::Mastodon->new(%settings, mode => 'html');
+    $mastodon->post($comic);
+
+    ok($mastodon->{http}->{verify_SSL}, 'should have passed the verify flag');
 }

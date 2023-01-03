@@ -19,7 +19,6 @@ my %dependencies = (
     'Image::SVG::Transform' => 0,
     'JSON' => 0,
     'Locales' => 0,
-    'Mastodon::Client' => 0,
     'Net::Twitter' => 0,
     'Readonly' => 0,
     'Reddit::Client' => 0,
