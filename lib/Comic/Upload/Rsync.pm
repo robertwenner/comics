@@ -39,7 +39,20 @@ upload to a web server, for example.
 
 =head1 SYNOPSIS
 
-This class cannot be used directly.
+    my $rsync = Comic::Upload::Rsync->new({
+        "sites" => [
+            {
+                "source" => "generated/web/english",
+                "destination" => "you@your-host.example.com:english/",
+            },
+            {
+                "source" => "generated/web/deutsch",
+                "destination" => "you@your-host.example.com:deutsch/",
+            },
+        ],
+        "keyfile" => "path/to/your/ssh-key.id_rsa",
+    });
+    $rsync->upload(@comics);
 
 
 =head1 DESCRIPTION
@@ -266,7 +279,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2021 - 2022, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2021 - 2023, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or
