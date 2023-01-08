@@ -229,12 +229,8 @@ sub _aggregate_comic_sizes {
         $count++;
         foreach my $dim (qw(height width)) {
             foreach my $language ($comic->languages()) {
-                if ($aggregate{$dim}{'min'} > $comic->{$dim}{$language}) {
-                    $aggregate{$dim}{'min'} = $comic->{$dim}{$language};
-                }
-                if ($aggregate{$dim}{'max'} < $comic->{$dim}{$language}) {
-                    $aggregate{$dim}{'max'} = $comic->{$dim}{$language};
-                }
+                $aggregate{$dim}{'min'} = _min($aggregate{$dim}{'min'}, $comic->{$dim}{$language});
+                $aggregate{$dim}{'max'} = _max($aggregate{$dim}{'max'}, $comic->{$dim}{$language});
                 $aggregate{$dim}{'avg'} += $comic->{$dim}{$language};
             }
         }
@@ -272,9 +268,21 @@ sub _min_by_hash {
     my $val = $MIN_SIZE_SENTINEL;
     foreach my $language (keys %{$comic->{$field}}) {
         my $newval = $comic->{$field}{$language};
-        $val = $newval if ($newval < $val);
+        $val = _min($val, $newval);
     }
     return $val;
+}
+
+
+sub _min {
+    my ($a, $b) = @ARG;
+    return $a < $b ? $a : $b;
+}
+
+
+sub _max {
+    my ($a, $b) = @ARG;
+    return $a > $b ? $a : $b;
 }
 
 
@@ -315,7 +323,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2016 - 2022, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2016 - 2023, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or
