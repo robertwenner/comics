@@ -322,7 +322,7 @@ sub includes_visibility_if_configured : Tests {
 sub reports_missing_content_from_status_reply : Tests {
     my $client = Test::MockModule->new(ref(HTTP::Tiny->new()));
     $client->redefine('post_form', \&mocked_replies);
-    delete %status_reply{'content'};
+    delete $status_reply{'content'};
 
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
