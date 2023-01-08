@@ -382,7 +382,7 @@ sub uses_fallback_values_if_fields_from_status_reply_are_missing : Tests {
 sub reports_missing_content_from_media_reply : Tests {
     my $client = Test::MockModule->new(ref(HTTP::Tiny->new()));
     $client->redefine('post_form', \&mocked_replies);
-    delete %media_reply{'content'};
+    delete $media_reply{'content'};
 
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
