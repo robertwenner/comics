@@ -210,8 +210,6 @@
 
 - feature: specify qr code image size (e.g., in pixels)
 
-- feature: support https://www.indexnow.org/
-
 - feature: allow picking up Dublin core entities from Inkscape's document
   properties: Creator = Author and Artist, Rights = Copyright; use for PNG
   meta data and make available in templates

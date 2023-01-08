@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use utf8;
 use English '-no_match_vars';
+use Carp;
 
 use version; our $VERSION = qv('0.0.3');
 
@@ -61,7 +62,17 @@ Returns any messages from posting, separated by newlines.
 
 sub post {
     # uncoverable subroutine
-    croak('Comic::Social::Social::post should have been overridden'); # uncoverable statement
+    _croak('Comic::Social::Social::post should have been overridden'); # uncoverable statement
+    # PerlCritic doesn't know that this return is unreacchable:
+    return; # uncoverable statement
+}
+
+
+sub _croak {
+    my ($self, $message) = @ARG;
+
+    my $me = ref $self;
+    croak("$me: $message");
 }
 
 
@@ -164,8 +175,6 @@ sub build_message {
 
     return "$pre$post";
 }
-
-
 
 
 =head1 VERSION

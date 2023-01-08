@@ -15,6 +15,44 @@ it up to a free [Zapier](https://zapier.com) account to spread the joy.
 All `Comic::Social::...` configuration must be within the `Social` object.
 
 
+## `Comic::Social::IndexNow`
+
+Asks search engines that support the [index now](https://indexnow.org)
+standard to index the new comic page.
+
+To use this, you must first create a key, put that key into a file named
+like the key with a `.txt` extension, and put that file in your website's
+root directory.
+
+On Linux, you can use the `uuidgen` tool to create a key:
+
+```bash
+export key=$(uuidgen)
+echo $key > web/all/$key.txt
+```
+
+If you don't have that tool, just come up with some random numbers and
+letters (at least 8 characters), for example "test1234". Put "test1234" in a
+file named `test1234.txt` in your server.
+
+Then configure this module:
+
+```json
+    "Social": {
+        "Comic::Social::IndexNow": {
+            "key": "your key from above",
+            "url": "https://indexnow.org/indexnow"
+        }
+    }
+```
+
+The `key` is your somewhat secret made up key. You must use the same key for
+all languages / domains.
+
+The optional `url` is the URL that this module will tell about your new
+comic. If not given, it defaults to `https://api.indexnow.org/indexnow`.
+
+
 ## `Comic::Social::Mastodon`
 
 To have the `Comic::Social::Mastodon` module toot for you, you must
