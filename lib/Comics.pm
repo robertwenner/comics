@@ -164,7 +164,7 @@ sub upload {
     unless (@{$comics->{uploaders}}) {
         croak('No uploaders configured');
     }
-    $comics->upload_all_comics();
+    _print_all($comics->upload_all_comics());
 
     return $comics;
 }
@@ -211,13 +211,18 @@ sub publish_comic {
     }
 
     my @output = $comics->post_todays_comic_to_social_media();
-    foreach my $line (@output) {
+    _print_all(@output);
+    return;
+}
+
+
+sub _print_all {
+    foreach my $line (@ARG) {
         # It's probably safe to print to stdout...
         ## no critic(InputOutput::RequireCheckedSyscalls)
         print "$line\n";
         ## use critic
     }
-
     return;
 }
 
@@ -259,7 +264,7 @@ sub load_settings {
     my ($self, @files) = @ARG;
 
     foreach my $file (@files) {
-        _log("loading settings from $file");
+        _print_all("loading settings from $file");
         if (_is_directory($file)) {
             croak("Cannot read directory $file");
         }
@@ -427,7 +432,7 @@ sub _load_modules {
         croak($error_if_no_modules);
     }
 
-    _log("$type modules loaded: ", _pretty_refs(@loaded));
+    _print_all("$type modules loaded: ", _pretty_refs(@loaded));
     return @loaded;
 }
 
@@ -441,14 +446,6 @@ sub _pretty_refs {
         push @refs, ref $thing;
     }
     return join ', ', @refs;
-}
-
-
-sub _log {
-    ## no critic(InputOutput::RequireCheckedSyscalls)
-    print @ARG, "\n";
-    ## use critic
-    return;
 }
 
 
@@ -479,7 +476,7 @@ sub collect_files {
 
     my @collection;
     foreach my $fod (@files_or_dirs) {
-        _log("loading comics from $fod");
+        _print_all("loading comics from $fod");
         if (_is_directory($fod)) {
             File::Find::find(
                 sub {
@@ -597,19 +594,21 @@ sub generate_all {
 
 =head2 upload_all_comics
 
-Run all the configured uploaders to upload generated content somewhere.
+Run all the configured uploaders to upload generated content somewhere and
+returns the messages they returned.
 
 =cut
 
 sub upload_all_comics {
     my ($self) = @ARG;
+    my @messages;
 
     my @comics = _todays_comics(@{$self->{comics}});
     foreach my $uploader (@{$self->{uploaders}}) {
-        $uploader->upload(@comics);
+        push @messages, $uploader->upload(@comics);
     }
 
-    return;
+    return @messages;
 }
 
 
@@ -796,7 +795,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2020 - 2022, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2020 - 2023, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or

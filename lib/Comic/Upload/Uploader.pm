@@ -57,6 +57,8 @@ Parameters:
 
 =back
 
+Returns any messages collected during uploading.
+
 =cut
 
 sub upload {
@@ -113,7 +115,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2021 - 2023, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or

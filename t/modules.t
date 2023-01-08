@@ -165,5 +165,5 @@ sub croaks_on_wrong_config_syntax_modules_not_object : Tests {
 sub logs_loaded_modules : Tests {
     $faked_files{"settings.json"} = '{ "Checks": { "Comic::Check::Actors": [] } }';
     $comics->load_settings("settings.json");
-    stdout_like { $comics->load_checks(); } qr/^Checks modules loaded: Comic::Check::Actors\s*$/m;
+    stdout_like { $comics->load_checks(); } qr/^Checks modules loaded:\s+Comic::Check::Actors\s*$/m;
 }

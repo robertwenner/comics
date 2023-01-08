@@ -30,7 +30,7 @@ sub upload {
     my ($self, @args) = @_;
     $self->{called}++;
     push @{$self->{uploaded}}, @args;
-    return;
+    return 'DummyUploader uploaded';
 }
 
 

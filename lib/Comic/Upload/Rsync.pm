@@ -170,6 +170,8 @@ Parameters:
 
 sub upload {
     my ($self, @comics) = @ARG;
+    my $me = ref $self;
+    my @messages;
 
     my %options;
     # Preserve options order, first for easier testing, second in case it
@@ -200,6 +202,7 @@ sub upload {
             $problems .= join "\n", $rsync->out();
             $problems .= join "\n", $rsync->err();
         }
+        push @messages, "$me: rsync'd to $destination";
     }
 
     $self->_croak($problems) if ($problems);
@@ -208,11 +211,12 @@ sub upload {
         foreach my $comic (@comics) {
             foreach my $language ($comic->languages()) {
                 $self->_check_url($comic->{url}{$language});
+                push @messages, "$me: $comic->{url}{$language} is uploaded";
             }
         }
     }
 
-    return;
+    return @messages;
 }
 
 
