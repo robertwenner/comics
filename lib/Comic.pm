@@ -1242,7 +1242,6 @@ sub _text_from_path {
         $self->keel_over("Cannot handle text on a $type (in $node->{id})");
     }
 
-    $self->keel_over("Can't get coordinates for $node->{id}");
     return;
 }
 
