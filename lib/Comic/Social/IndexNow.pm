@@ -20,7 +20,7 @@ Readonly my $URL => 'https://api.indexnow.org/indexnow';
 
 =encoding utf8
 
-=for stopwords Wenner merchantability perlartistic uuid
+=for stopwords Wenner merchantability perlartistic uuid Uploader Uploaders
 
 
 =head1 NAME
