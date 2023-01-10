@@ -1237,12 +1237,8 @@ sub _text_from_path {
             $self->keel_over("Cannot parse x/y coordinates from path $path_nodes[0]->{id}");
         }
     }
-    else {
-        # Fail noisily if I missed other things texts can go on.
-        $self->keel_over("Cannot handle text on a $type (in $node->{id})");
-    }
-
-    return;
+    # Fail noisily if I missed other things texts can go on.
+    return $self->keel_over("Cannot handle text on a $type (in $node->{id})");
 }
 
 
@@ -1420,7 +1416,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2015 - 2022, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2015 - 2023, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or
