@@ -330,7 +330,7 @@ sub check_upload_bad_number_of_tries_passed : Tests {
 sub calls_check_for_all_comics_and_languages : Tests {
     my @urls;
     no warnings qw/redefine/;
-    local *Comic::Upload::Rsync::_check_url = sub {
+    local *Comic::Upload::Rsync::_check_language_url = sub {
         my ($self, $url) = @_;
         push @urls, $url;
     };
@@ -367,7 +367,7 @@ sub calls_check_for_all_comics_and_languages : Tests {
 
 sub does_not_call_check_if_none_configured : Tests {
     no warnings qw/redefine/;
-    local *Comic::Upload::Rsync::_check_url = sub {
+    local *Comic::Upload::Rsync::_check_language_url = sub {
         fail('should not have checked');
     };
     use warnings;
@@ -385,7 +385,7 @@ sub does_not_call_check_if_none_configured : Tests {
 
     $rsync->upload($comic1);
 
-    ok(1);  # would have failed in the mocked _check_url
+    ok(1);  # would have failed in the mocked _check_language_url
 }
 
 
@@ -412,9 +412,15 @@ sub check_upload_hits_url_ok : Tests {
         },
     );
 
-    $rsync->_check_url('https://beercomics.com/comics/beer-drinking.html');
 
-    is_deeply(['https://beercomics.com/comics/beer-drinking.html'], \@got_urls, 'checked wrong URLs');
+    $rsync->_check_urls(MockComic::make_comic());
+
+    is_deeply([
+            'https://biercomics.de/comics/bier-trinken.html',
+            'https://beercomics.com/comics/drinking-beer.html',
+        ],
+        \@got_urls,
+        'checked wrong URLs');
 }
 
 
@@ -446,7 +452,12 @@ sub check_upload_sleeps_and_retries_eventually_succeds : Tests {
         },
     );
 
-    $rsync->_check_url('https://beercomics.com/comics/beer-drinking.html');
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => 'Drink beer',
+        },
+    );
+    $rsync->_check_urls($comic);
 
     is(0, $tries, 'wromg number or retries');
     is_deeply([10, 10], \@slept, 'wrong sleep times');
@@ -481,11 +492,16 @@ sub check_upload_sleeps_and_retries_till_time_is_out : Tests {
         },
     );
 
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => 'Drink beer',
+        },
+    );
     eval {
-        $rsync->_check_url('https://beercomics.com/comics/beer-drinking.html');
+        $rsync->_check_urls($comic);
     };
     like($@, qr{could not get}i, 'should say what is wrong');
-    like($@, qr{https://beercomics\.com/comics/beer-drinking\.html}, 'should mention URL');
+    like($@, qr{https://beercomics\.com/comics/drink-beer\.html}, 'should mention URL');
 
     is($tries, 31, 'wrong number of retries');
     is($slept, 30, 'wrong sleep times');

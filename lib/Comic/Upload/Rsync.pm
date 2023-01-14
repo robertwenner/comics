@@ -206,11 +206,21 @@ sub upload {
     }
 
     $self->_croak($problems) if ($problems);
+    push @messages, $self->_check_urls(@comics);
+    return @messages;
+}
 
+
+sub _check_urls {
+    my ($self, @comics) = @ARG;
+
+    my $me = ref $self;
+    my @messages;
     if ($self->{settings}->{check}) {
+        $self->{http} = HTTP::Tiny->new();
         foreach my $comic (@comics) {
             foreach my $language ($comic->languages()) {
-                $self->_check_url($comic->{url}{$language});
+                $self->_check_language_url($comic->{url}{$language});
                 push @messages, "$me: $comic->{url}{$language} is uploaded";
             }
         }
@@ -220,12 +230,12 @@ sub upload {
 }
 
 
-sub _check_url {
+sub _check_language_url {
     my ($self, $url) = @ARG;
 
     my $tries = 0;
     while (1) {
-        my $response = HTTP::Tiny->new->get($url);
+        my $response = $self->{http}->get($url);
         last if ($response->{success});
 
         if ($tries == $self->{settings}->{check}->{tries}) {
