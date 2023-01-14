@@ -131,6 +131,7 @@ sub post {
             my %payload = (
                 'host' => $comic->{settings}->{Domains}{$language},
                 'key' => $self->{settings}{'key'},
+                # No need to encode the URLs when they are passed as form data.
                 'urlList' => [ $comic->{url}->{$language} ],
             );
             my $json = encode_json(\%payload);

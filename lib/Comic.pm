@@ -24,6 +24,8 @@ use XML::LibXML;
 use XML::LibXML::XPathContext;
 use JSON;
 use HTML::Entities;
+use Net::IDN::Encode;
+use URI::Escape;
 use Image::ExifTool qw(:Public);
 use Image::SVG::Transform;
 
@@ -190,13 +192,14 @@ sub load {
         $self->{dirName}{$language} = make_dir($base);
         $self->{baseName}{$language} = $self->_normalized_title($language);
 
-        # OLD_CODE_WORKAROUND: Remove this when the templates don't use the
-        # whole value (e.g., URL), but piece it together from parts like
-        # domain, path, and file.
         my $html_file = "$self->{baseName}{$language}.html";
         $self->{htmlFile}{$language} = $html_file;
         $self->{href}{$language} = $self->{siteComicsPath} . $html_file;
         $self->{url}{$language} = "https://$domain/$self->{href}{$language}";
+        $self->{urlEncoded}{$language} = 'https://' .
+            Net::IDN::Encode::domain_to_ascii($domain) .
+            "/$self->{siteComicsPath}" .
+            uri_escape_utf8($html_file);
     }
 
     $self->_adjust_checks($self->{meta_data}->{$Comic::Settings::CHECKS});

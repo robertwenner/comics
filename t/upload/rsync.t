@@ -347,17 +347,17 @@ sub calls_check_for_all_comics_and_languages : Tests {
     );
 
     my $comic1 = MockComic::make_comic();
-    $comic1->{url} = {'Deutsch' => 'comic1/de', 'English' => 'comic1/en'};
+    $comic1->{urlEncoded} = {'Deutsch' => 'comic1/de', 'English' => 'comic1/en'};
 
     my $comic2 = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::DEUTSCH => 'zwei' }
     );
-    $comic2->{url} = {'Deutsch' => 'comic2/de'};
+    $comic2->{urlEncoded} = {'Deutsch' => 'comic2/de'};
 
     my $comic3 = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => 'three' }
     );
-    $comic3->{url} = {'English' => 'comic3/en'};
+    $comic3->{urlEncoded} = {'English' => 'comic3/en'};
 
     $rsync->upload($comic1, $comic2, $comic3);
 
@@ -505,4 +505,41 @@ sub check_upload_sleeps_and_retries_till_time_is_out : Tests {
 
     is($tries, 31, 'wrong number of retries');
     is($slept, 30, 'wrong sleep times');
+}
+
+
+sub check_upload_encodes_url : Tests {
+    my @checked;
+
+    my $client = Test::MockModule->new(ref(HTTP::Tiny->new()));
+    $client->redefine('get', sub {
+        shift @_;
+        push @checked, @_;
+        return {success => 1};
+    });
+
+    my $rsync = Comic::Upload::Rsync->new(
+        'sites' => [
+            {
+                'source' => 'generated/comics/english',
+                'destination' => 'me@example.com/english',
+            },
+        ],
+        'check' => {},
+    );
+
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::DEUTSCH => 'Weißbier',
+        },
+        $MockComic::SETTINGS => {
+            $MockComic::DOMAINS => {
+                $MockComic::DEUTSCH => 'cömics.de',
+            },
+        },
+    );
+
+    $rsync->_check_urls($comic);
+
+    is_deeply(\@checked, ['https://xn--cmics-jua.de/comics/wei%C3%9Fbier.html'], 'checked wrong URL');
 }

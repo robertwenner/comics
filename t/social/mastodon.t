@@ -69,10 +69,10 @@ sub mocked_replies {
         'headers' => { 'Authorization' => 'Bearer my-token' },
     }, 'should always pass the authorization header');
 
-    if ($url eq 'https://mastodon.example.org/api/v2/media') {
+    if ($url =~ m{/api/v2/media}m) {
         return \%media_reply;
     }
-    if ($url eq 'https://mastodon.example.org/api/v1/statuses') {
+    if ($url =~ m{/api/v1/statuses}m) {
         return \%status_reply;
     }
     die "Posted to unknown url $url";
@@ -532,4 +532,27 @@ sub tells_http_tiny_to_verify_the_server_certificate : Tests {
     $mastodon->post($comic);
 
     ok($mastodon->{http}->{verify_SSL}, 'should have passed the verify flag');
+}
+
+
+sub encodes_instance_url : Tests {
+    my $client = Test::MockModule->new(ref(HTTP::Tiny->new()));
+    $client->redefine('post_form', \&mocked_replies);
+
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+    );
+    $comic->{url}{'English'} = "https://beercomics.com/comics/latest-comic.html";
+    $comic->{pngFile}{'English'} = "latest-comic.png";
+    MockComic::fake_file("$comic->{dirName}{English}/$comic->{pngFile}{English}", 'png file contents');
+
+    my $mastodon = Comic::Social::Mastodon->new(%settings, 'mode' => 'png', instance => 'mästödön.de');
+    my $results = $mastodon->post($comic);
+
+    my @urls = map { $_->{url} } @posted;
+    is_deeply(\@urls, [
+        # echo mästödön.de | idn
+        'https://xn--mstdn-gra2kb.de/api/v2/media',
+        'https://xn--mstdn-gra2kb.de/api/v1/statuses',
+    ]);
 }

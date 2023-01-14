@@ -113,7 +113,8 @@ In the template, you can display this information like so:
 
 ```html
 [% DEFAULT comic.meta_data.previouslyIn.$Language = 0 %]
-[% IF comic.meta_data.previouslyIn.$Language && comic.meta_data.previouslyIn.$Language.size > 0 %]
+[% IF comic.meta_data.previouslyIn.$Language
+   && comic.meta_data.previouslyIn.$Language.size > 0 %]
 <p>
 This comic was also published in
 [% FOREACH p IN comic.meta_data.previouslyIn.$Language %]
@@ -122,3 +123,31 @@ This comic was also published in
 </p>
 [% END %]
 ```
+
+## Metadata added by the main Comic module
+
+The main comic module defines these variables on each comic:
+
+- `modified`: the last modification time of the comic's source file, in
+  ISO8601 format (year hyphen month hyphen day, e.g., 2023-01-30).
+
+- `rfc822pubDate` (only available in comics that have a published data in
+  their metadata in `published.when`): comic's published date in RFC 822
+  format, e.g., `Fri, 13 Jan 2023 00:00:00 -0600`.
+
+- `rfc3339pubDate` (only available when the comic has a published date in
+  its metadata): comic's published date in RFC 3339 format, e.g.,
+  `2023-01-13T00:00:00-06:00`.
+
+- `siteComicsPath`: path from the root of the web server to the directory of
+  the comics; will have a trailing slash.
+
+- `url`: The comic's URL, in `utf-8` encoding, per language.
+
+- `urlEncoded`: The comic's URL, with the domain name puny-encoded and the
+  path URL-encoded, per language.
+
+- `htmlFile` the comic's HTML file, e.g., `my-comic.html`, per language.
+
+- `href`: the path from the server root to the comic's HTML file, e.g.,
+  `comics/my-comic.html`, per language.

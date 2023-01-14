@@ -220,8 +220,8 @@ sub _check_urls {
         $self->{http} = HTTP::Tiny->new();
         foreach my $comic (@comics) {
             foreach my $language ($comic->languages()) {
-                $self->_check_language_url($comic->{url}{$language});
-                push @messages, "$me: $comic->{url}{$language} is uploaded";
+                $self->_check_language_url($comic->{urlEncoded}{$language});
+                push @messages, "$me: $comic->{urlEncoded}{$language} is uploaded";
             }
         }
     }

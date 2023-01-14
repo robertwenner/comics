@@ -7,6 +7,7 @@ use English '-no_match_vars';
 use Carp;
 use String::Util 'trim';
 use Readonly;
+use Net::IDN::Encode;
 use HTTP::Tiny;
 use File::Slurper;
 use JSON;
@@ -105,6 +106,7 @@ sub new {
     }
 
     $self->{settings} = \%args;
+    $self->{settings}->{instance} = Net::IDN::Encode::domain_to_ascii($self->{settings}->{instance});
 
     return $self;
 }
@@ -385,7 +387,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2022, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2022 - 2023, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or
