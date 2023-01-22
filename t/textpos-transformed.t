@@ -22,7 +22,6 @@ sub assert_order {
 }
 
 
-
 sub simple_texts : Tests {
     assert_order(<<'SVG', 1, 2, 3);
   <g inkscape:groupmode="layer" inkscape:label="English">
@@ -233,5 +232,21 @@ SVG
         $comic->texts_in_language('English');
     };
     like($@, qr{cannot parse}i, 'should say what is wrong');
-    like($@, qr{thePath}, 'should give the id of the bas path');
+    like($@, qr{thePath}, 'should give the id of the base path');
+}
+
+
+sub complains_about_empty_text_node_without_tspan_and_coordinates : Tests {
+    my $svg = <<'SVG';
+<g inkscape:label="MetaEnglish" inkscape:groupmode="layer" id="layer1">
+    <text xml:space="preserve" id="text1884" style=""/>
+    <text xml:space="preserve" id="text1234" style="">
+        <tspan x="1" y="1">Needs more than one text so that sorting happens</tspan>
+    </text>
+</g>
+SVG
+    my $comic = MockComic::make_comic($MockComic::XML => $svg);
+    $comic->texts_in_language('English');
+    like($comic->{warnings}[0], qr{no coordinates}i, 'should say what is wrong');
+    like($comic->{warnings}[0], qr{text1884}, 'should give the id of the base path');
 }

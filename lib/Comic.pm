@@ -1208,6 +1208,10 @@ sub _text_from_path {
     my ($self, $node) = @ARG;
 
     my @text_path = $node->getChildrenByTagName('textPath');
+    if (@text_path == 0) {
+        $self->warning('No coordinates in text node with id ' . $node->getAttribute('id'));
+        return (0, 0);
+    }
     my $path_id = $text_path[0]->getAttribute('xlink:href');
     $path_id =~ s{^#}{};
     my $xpath = "//$DEFAULT_NAMESPACE:*[\@id='$path_id']";
