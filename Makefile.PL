@@ -83,6 +83,6 @@ cover :: pure_all
 	HARNESS_PERL_SWITCHES=-MDevel::Cover make test && cover -report html_basic
 
 atest :: pure_all
-	TEST_AUTHOR=1 make test
+	TEST_AUTHOR=1 prove t/author/*.t
 HERE
 }
