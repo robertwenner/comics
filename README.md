@@ -29,10 +29,14 @@ dependencies, and hope that it works. Or see [the makefile](Makefile.PL).
 You'll need [Inkscape](https://inkscape.org) in the `$PATH` to actually
 export your comics to `png`.
 
-You also need `Imager::File::PNG`, which in turn depends on `libpng-dev` and
-`optipng`. For spell checking, you need `ASpell` or `Hunspell` with the
-corresponding development libraries (e.g., `libaspell-dev`) plus
-dictionaries for the languages you want to use.
+You also need `Imager::File::PNG`, which in turn depends on `libpng-dev`.
+
+`optipng` is recommended to shrink exported png files.
+
+For spell checking, you need `ASpell` or `Hunspell` with the corresponding
+development libraries. I had a hard time with Hunspell and UTF8, so I prefer
+ASpell and its libraries `libaspell-dev` plus dictionaries for the languages
+you want to use (e.g., `aspell-de`, `aspell-en`, or `aspell-es`).
 
 
 ## Installation
@@ -52,7 +56,7 @@ See the [comic author / artist documentation](doc/index.md) or the Perl
 
 ## Copyright & License
 
-Copyright 2015 - 2022, Robert Wenner
+Copyright 2015 - 2023, Robert Wenner
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
