@@ -88,7 +88,7 @@ sub check {
 
         next unless($pub_when);
         foreach my $l ($comic->languages()) {
-            next if ($comic->_is_for($l) != $c->_is_for($l));
+            next if ($comic->not_for($l) != $c->not_for($l));
             if ($published_when eq $pub_when && $published_where eq $pub_where) {
                 $self->warning($comic, "Duplicated date with $c->{srcFile}");
             }

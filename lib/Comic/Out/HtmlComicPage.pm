@@ -366,7 +366,7 @@ sub _find_latest_published {
     my %latest_published;
     foreach my $language (Comic::Out::Generator::all_languages(@comics)) {
         my @sorted = (sort Comic::from_oldest_to_latest grep {
-            !$_->not_yet_published($_) && $_->_is_for($language)
+            !$_->not_yet_published($_) && !$_->not_for($language)
         } @comics);
         next if (@sorted == 0);
 

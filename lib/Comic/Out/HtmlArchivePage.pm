@@ -129,7 +129,7 @@ sub generate_all {
 
     foreach my $language (Comic::Out::Generator::all_languages(@comics)) {
         my @published = sort Comic::from_oldest_to_latest grep {
-            !$_->not_yet_published() && $_->_is_for($language)
+            !$_->not_yet_published() && !$_->not_for($language)
         } @comics;
         next if (!@published);
 

@@ -834,8 +834,8 @@ sub is_published_today {
 
 =head2 not_for
 
-Checks whether this Comic is for the given language. A Comic is considered
-for a language if it has a title for that language in its  meta data.
+Checks whether this Comic is not for the given language. A Comic is considered
+for a language if it has a title for that language in its meta data.
 
 Parameters:
 
@@ -849,16 +849,8 @@ Parameters:
 =cut
 
 sub not_for {
-    my ($self, @args) = @ARG;
-    # Cannot just use !$self->_is_for cause Perl's weird truthiness can turn
-    # the result into an empty text, and then tests trip over that.
-    return $self->_is_for(@args) == 1 ? 0 : 1;
-}
-
-
-sub _is_for {
     my ($self, $language) = @ARG;
-    return defined($self->{meta_data}->{title}->{$language}) ? 1 : 0;
+    return defined($self->{meta_data}->{title}->{$language}) ? 0 : 1;
 }
 
 
@@ -871,7 +863,7 @@ Returns whether this Comic is not (yet) published on the web in the given langua
 sub not_published_on_the_web {
     # This is mapped to the notFor function in the sitemap template.
     my ($self, $language) = @ARG;
-    return !$self->_is_for($language) || $self->not_yet_published();
+    return $self->not_for($language) || $self->not_yet_published();
 }
 
 
