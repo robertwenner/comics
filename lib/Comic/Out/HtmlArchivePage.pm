@@ -116,9 +116,12 @@ Makes these variables available during template processing:
 =item * B<$modified> last modification date of the latest comic, to be used in
     time stamps in e.g., HTML headers.
 
-=item * B<&notFor> function that takes a comic and a language and returns
-    whether the given comic is for the given language. This is useful if you
-    want just one template for all languages.
+=item * B<&notFor> function that takes a comic, a location, and a language
+    and returns whether the given comic is for the given location and
+    language. The location must match the `published.where` in the comic's
+    metadata. The language must match the comic's title. This is useful if
+    you want just one template for all languages and location and still
+    filter or sort on language or location.
 
 =back
 
