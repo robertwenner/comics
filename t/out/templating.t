@@ -223,44 +223,40 @@ sub object_member : Tests {
 
 sub object_function_code_ref : Tests {
     my $comic = make_comic();
-    MockComic::fake_file('file.templ', "[%notFor(comic, 'Pimperanto')%]");
-    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', (
-            "notFor" => \&Comic::not_for,
+    MockComic::fake_file('file.templ', "[%notFor(comic, 'web', 'Pimperanto')%]");
+    ok(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', (
+            "notFor" => \&Comic::not_published_on_in,
             "comic" => $comic,
-        )),
-        1);
-    MockComic::fake_file('file.templ', "[%notFor(comic, 'Deutsch')%]");
-    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', (
-            "notFor" => \&Comic::not_for,
+        )));
+    MockComic::fake_file('file.templ', "[%notFor(comic, 'web', 'Deutsch')%]");
+    ok(!Comic::Out::Template::templatize('comic.svg', 'file.templ', '', (
+            "notFor" => \&Comic::not_published_on_in,
             "comic" => $comic,
-        )),
-        0);
+        )));
 }
 
 
 sub object_function_wrapped : Tests {
     my $comic = make_comic();
-    MockComic::fake_file('file.templ', "[%notFor(comic, 'Pimperanto')%]");
-    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', (
-            "notFor" => sub { return Comic::not_for(@_); },
+    MockComic::fake_file('file.templ', "[%notFor(comic, 'web', 'Pimperanto')%]");
+    ok(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', (
+            "notFor" => sub { return Comic::not_published_on_in(@_); },
             "comic" => $comic,
-        )),
-        1);
-    MockComic::fake_file('file.templ', "[%notFor(comic, 'Deutsch')%]");
-    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '', (
-            "notFor" => sub { return Comic::not_for(@_); },
+        )));
+    MockComic::fake_file('file.templ', "[%notFor(comic, 'web', 'Deutsch')%]");
+    ok(!Comic::Out::Template::templatize('comic.svg', 'file.templ', '', (
+            "notFor" => sub { return Comic::not_published_on_in(@_); },
             "comic" => $comic,
-        )),
-        0);
+        )));
 
-    MockComic::fake_file('file.templ', "[%notFor('Pimperanto')%]");
-    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '',
-        ("notFor" => sub { return $comic->not_for(@_);})),
-        1);
-    MockComic::fake_file('file.templ', "[%notFor('Deutsch')%]");
-    is(Comic::Out::Template::templatize('comic.svg', 'file.templ', '',
-        ("notFor" => sub { return $comic->not_for(@_);})),
-        0);
+    MockComic::fake_file('file.templ', "[%notFor('web', 'Pimperanto')%]");
+    ok(Comic::Out::Template::templatize('comic.svg', 'file.templ', '',
+        ("notFor" => sub { return $comic->not_published_on_in(@_);}
+    )));
+    MockComic::fake_file('file.templ', "[%notFor('web', 'Deutsch')%]");
+    ok(!Comic::Out::Template::templatize('comic.svg', 'file.templ', '',
+        ("notFor" => sub { return $comic->not_published_on_in(@_);}
+    )));
 }
 
 

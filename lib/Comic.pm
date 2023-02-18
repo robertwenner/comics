@@ -460,7 +460,7 @@ sub outdir {
     my ($self, $language) = @ARG;
 
     my $outdir;
-    if ($self->not_published_on_the_web($language)) {
+    if ($self->not_published_on_in('web', $language)) {
         $outdir = _slashed(${$self->{settings}->{Paths}}{'unpublished'} || 'generated/backlog/');
     }
     else {
@@ -854,16 +854,19 @@ sub not_for {
 }
 
 
-=head2 not_published_on_the_web
+=head2 not_published_on_in
 
-Returns whether this Comic is not (yet) published on the web in the given language.
+Returns whether this Comic is not (yet) published on the given location
+(e.g., web) in the given language.
 
 =cut
 
-sub not_published_on_the_web {
-    # This is mapped to the notFor function in the sitemap template.
-    my ($self, $language) = @ARG;
-    return $self->not_for($language) || $self->not_yet_published();
+sub not_published_on_in {
+    # This is mapped to the notFor function in templates.
+    my ($self, $where, $language) = @ARG;
+    return ($self->{meta_data}->{published}->{where} || '') ne $where
+        || $self->not_for($language)
+        || $self->not_yet_published();
 }
 
 

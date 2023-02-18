@@ -17,7 +17,7 @@ sub set_up : Test(setup) {
     MockComic::set_up();
     MockComic::fake_file("templates/deutsch/archiv.templ", <<'TEMPL');
 [% FOREACH c IN comics %]
-[% NEXT IF notFor(c, 'Deutsch') %]
+[% NEXT IF notFor(c, 'web', 'Deutsch') %]
 <li><a href="[% c.href.Deutsch %]">[% c.meta_data.title.Deutsch %]</a></li>
 [% END %]
 [% modified %]
@@ -269,7 +269,7 @@ sub passes_language_to_templatize : Tests {
         is_deeply(\%vars, {
             'comics' => [$comic],
             'modified' => 'right now',
-            'notFor' => \&Comic::not_for,
+            'notFor' => \&Comic::not_published_on_in,
             'root' => '',
         }, 'wrong vars');
     };

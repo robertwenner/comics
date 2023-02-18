@@ -18,7 +18,7 @@ sub setup : Test(setup) {
     MockComic::set_up();
     MockComic::fake_file('templates/english/sitemap-xml.templ', <<'SITEMAP');
     [% FOREACH c IN comics %]
-    [% NEXT IF notFor(c, 'English') %]
+    [% NEXT IF notFor(c, 'web', 'English') %]
     <url>
         <loc>https://beercomics.com/comics/[% c.htmlFile.English %]</loc>
         <image:image>
@@ -32,7 +32,7 @@ sub setup : Test(setup) {
 SITEMAP
     MockComic::fake_file('templates/deutsch/sitemap-xml.templ', <<'SITEMAP');
     [% FOREACH c IN comics %]
-    [% NEXT IF notFor(c, 'Deutsch') %]
+    [% NEXT IF notFor(c, 'web', 'Deutsch') %]
     <url>
         <loc>https://biercomics.de/comics/[% c.htmlFile.Deutsch %]</loc>
         <image:image>
@@ -187,15 +187,15 @@ sub no_published_date : Tests {
 sub wrong_language : Tests {
     my $comic = make_comic('2016-01-01', 'web', 'Deutsch');
     assert_wrote_no_comic($comic);
-    ok($comic->not_published_on_the_web('English'));
-    ok(!$comic->not_published_on_the_web('Deutsch'));
+    ok($comic->not_published_on_in('web', 'English'));
+    ok(!$comic->not_published_on_in('web', 'Deutsch'));
 }
 
 
 sub not_on_my_page : Tests {
     my $comic = make_comic('2016-01-01', 'biermag', 'English');
     assert_wrote_no_comic($comic);
-    ok($comic->not_published_on_the_web('English'));
+    ok($comic->not_published_on_in('web', 'English'));
 }
 
 

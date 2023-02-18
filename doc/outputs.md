@@ -281,10 +281,12 @@ The `Comic::Out::Feed` module defines these variables for use in the template:
 
 * `max`: maximum number of feed items, as per configuration.
 
-* `notFor`: a function that takes a comic and a language and returns a Boolean
-  indicating whether the given comic is for the given language. This is used
-  for comics that don't exist in all languages and allow the template to
-  skip a comic that's not for the language being processed.
+* `notFor`: a function that takes a comic, a location,  and a language and
+  returns a Boolean indicating whether the given comic is for the given
+  location and language. The location must be the same as in the comic's
+  `published.where` metadata. This is used for comics that don't exist in
+  all languages or comics that aren't published yet. It allows the template
+  to skip these comics.
 
 * `updated`: current time stamp, in [RFC 3339](https://tools.ietf.org/html/rfc3339)
   format (needed in Atom format).

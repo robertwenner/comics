@@ -102,8 +102,8 @@ Makes these variables available in the template:
 =item * B<@comics> array of all comics (published and unpublished).
 
 =item * B<&notFor> function the template needs to call on each comic,
-    passing the language. If that function returns C<true>, the comic should be
-    skipped. This maps to C<&Comic::not_published_on_the_web>.
+    passing the language. If that function returns C<true>, the comic should
+    be skipped. This maps to C<&Comic::not_published_on_in>.
 
 =back
 
@@ -117,7 +117,7 @@ sub generate_all {
 
     my %vars;
     $vars{'comics'} = [ @sorted ];
-    $vars{'notFor'} = \&Comic::not_published_on_the_web;
+    $vars{'notFor'} = \&Comic::not_published_on_in;
 
     foreach my $language (Comic::Out::Generator::all_languages(@sorted)) {
         my $templ = $self->per_language_setting('template', $language);
@@ -171,7 +171,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2016 - 2022, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2016 - 2023, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or

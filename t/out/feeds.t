@@ -219,7 +219,7 @@ TEMPL
 sub provides_not_for_function : Tests {
     my $templ = << 'TEMPL';
 [% FOREACH c IN comics %]
-    [% IF NOT notFor(c, "English") %]
+    [% IF NOT notFor(c, "web", "English") %]
         blah
     [% END %]
 [% END %]
@@ -298,7 +298,7 @@ sub real_world_rss : Tests {
     MockComic::fake_file('rss.templ', <<"RSS");
 [% done = 0 %]
 [% FOREACH c IN comics %]
-    [% NEXT IF notFor(c, 'English') %]
+    [% NEXT IF notFor(c, 'web', 'English') %]
     [% LAST IF done == max %]
     [% done = done + 1 %]
     <item>
@@ -331,7 +331,7 @@ RSS
 sub real_world_atom : Tests {
     MockComic::fake_file('atom.templ', <<"ATOM");
 [% FOREACH c IN comics %]
-    [% NEXT IF notFor(c, "English") %]
+    [% NEXT IF notFor(c, "web", "English") %]
     <entry>
         <title>[% FILTER html %][% c.meta_data.title.English %][% END %]</title>
         <link href="https://beercomics.com/[% c.href.English %]"/>
