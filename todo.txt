@@ -1,6 +1,5 @@
-- cleanup hard-coded names: "web", "backlog", "generated", THURSDAY in
-  Comic::not_yet_published; Comic::not_yet_published should not consider web
-  or other locations
+- cleanup hard-coded names: "web", "backlog", "generated",
+  Comic::not_yet_published should not consider locations
 
 - cleanup: rework variables available for templates: standardize names, pick
   decent names, DRY up them up, generate them in one place, document them

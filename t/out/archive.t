@@ -228,20 +228,6 @@ sub ignores_unpublished : Tests {
 }
 
 
-sub thursday_gets_next_days_comic : Tests {
-    MockComic::fake_now(DateTime->new(year => 2016, month => 8, day => 11)); # Thur
-    my @comics = (
-        make_comic('eins', 'Deutsch', "2016-08-05"), # Fri
-        make_comic('zwei', 'Deutsch', "2016-08-12"), # Fri
-    );
-    generate(@comics);
-    MockComic::assert_wrote_file('generated/web/deutsch/archiv.html', qr{
-        <li><a\shref="comics/eins.html">eins</a></li>\s+
-        <li><a\shref="comics/zwei.html">zwei</a></li>\s+
-        }mx);
-}
-
-
 sub no_comics : Tests {
     generate();
     MockComic::assert_didnt_write_in_file('generated/web/deutsch/archiv.html');
