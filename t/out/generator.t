@@ -256,3 +256,28 @@ sub base_generator_is_up_to_date : Tests {
     my $gen = Comic::Out::Generator->new();
     ok($gen->up_to_date());
 }
+
+
+sub all_locations : Tests {
+    my $web = MockComic::make_comic($MockComic::PUBLISHED_WHERE => 'web');
+    my $kodt = MockComic::make_comic($MockComic::PUBLISHED_WHERE => 'kodt');
+    my $magazine = MockComic::make_comic($MockComic::PUBLISHED_WHERE => 'magazine');
+    my $empty = MockComic::make_comic($MockComic::PUBLISHED_WHERE => '');
+
+    is_deeply(
+        [Comic::Out::Generator::all_locations()],
+        [],
+        'should have no location from no comics');
+    is_deeply(
+        [Comic::Out::Generator::all_locations($web, $web)],
+        ['web'],
+        'should have one location');
+    is_deeply(
+        [Comic::Out::Generator::all_locations($web, $kodt, $magazine)],
+        ['kodt', 'magazine', 'web'],
+        'should have all location in alphabetical order');
+    is_deeply(
+        [Comic::Out::Generator::all_locations($empty)],
+        [],
+        'should ignore comic without location');
+}

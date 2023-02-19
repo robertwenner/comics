@@ -479,6 +479,36 @@ sub all_languages {
 }
 
 
+=head2 all_locations
+
+Static method to get all unique locations (from the `published.where`
+attribute in the comic's metadata) in the passed comics.
+
+Parameters:
+
+=over 4
+
+=item * B<@comics> From what comics to get the locations.
+
+=back
+
+Returns an alphabetically sorted array of locations.
+
+=cut
+
+sub all_locations {
+    my @comics = @ARG;
+    my %locations;
+    foreach my $comic (@comics) {
+        my $loc = $comic->{meta_data}->{published}->{where};
+        if ($loc) {
+            $locations{$loc}++;
+        }
+    }
+    my @locations = sort keys %locations;
+    return @locations;
+}
+
 
 =head2 up_to_date
 
@@ -591,7 +621,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2021 - 2022, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2021 - 2023, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or
