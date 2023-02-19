@@ -6,30 +6,19 @@ use JSON;
 use base 'Test::Class';
 use Test::More;
 
+use lib 't';
+use MockComic;
 use lib 't/out';
 use Comics;
 
 __PACKAGE__->runtests() unless caller;
 
 
-my %faked_files;
 my $comics;
 
 
 sub set_up : Test(setup) {
-    %faked_files = ();
-
-    no warnings qw/redefine/;
-    *Comics::_exists = sub {
-        my ($file) = @_;
-        return defined $faked_files{$file};
-    };
-    *File::Slurper::read_text = sub {
-        my ($file) = @_;
-        return $faked_files{$file};
-    };
-    use warnings;
-
+    MockComic::set_up();
     $comics = Comics->new();
 }
 
@@ -43,7 +32,7 @@ sub croaks_if_no_configuration : Tests {
 
 
 sub croaks_if_no_out_configuration : Tests {
-    $faked_files{'config.json'} = '{}';
+    MockComic::fake_file('config.json', '{}');
     $comics->load_settings('config.json');
     eval {
         $comics->load_generators();
@@ -53,7 +42,7 @@ sub croaks_if_no_out_configuration : Tests {
 
 
 sub croaks_if_out_configuration_is_empty : Tests {
-    $faked_files{'config.json'} = <<'JSON';
+    MockComic::fake_file('config.json', <<'JSON');
 {
     "Out": {
     }
@@ -68,7 +57,7 @@ JSON
 
 
 sub loads_generators : Tests {
-    $faked_files{'config.json'} = <<'JSON';
+    MockComic::fake_file('config.json', <<'JSON');
 {
     "Out": {
         "DummyGenerator": []
