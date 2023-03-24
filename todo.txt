@@ -4,6 +4,9 @@
 - cleanup: rework variables available for templates: standardize names, pick
   decent names, DRY up them up, generate them in one place, document them
 
+- cleanup: rework output generator dependencies, each generator should state
+  what others it needs to have run before
+
 - should the names in the JSON configuration file be case-insensitive? Could
   be confusing when case actually matters, e.g., for Perl modules.
   If case matters, make sure it's used consistently. Language names are
@@ -242,3 +245,5 @@
 
 - feature: cli tool to add a new language to an existing comic: language
   layers as in another language, empty JSON attributes for meta data
+
+- feature: multiple pages comics (for print or ebooks)
