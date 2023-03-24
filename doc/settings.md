@@ -5,7 +5,7 @@ The Comics module accepts settings / configuration in relaxed
 configuration files where settings in later ones override settings in
 earlier ones.
 
-Settings are case-sensitive (i.e., "Checks" and "checks" are *not* the
+All settings are case-sensitive (i.e., "Checks" and "checks" are *not* the
 same). Currently, unknown settings are silently ignored, but this may change
 in future versions.
 
@@ -20,8 +20,8 @@ You can configure these at the top level:
 * Artist: Your name, optionally with an email address. This is inserted into
   the `png`'s meta information.
 * Author: Like for Artist, in case these differ.
-* Copyright: The copyright or license for your comic. This is inserted into
-  the `png`'s meta information.
+* Copyright: The copyright or license for your comic. This is e.g., inserted
+  into the `png`'s meta information.
 
 For example:
 
@@ -37,7 +37,7 @@ For example:
 ```json
 {
     "Paths": {
-        "siteComics": "c",
+        "siteComics": "ccc",
         "published": "generated/web",
         "unpublished": "generated/backlog"
     }
@@ -45,8 +45,8 @@ For example:
 ```
 
 * `siteComics` gives the folder (relative to the web site root) where
-  generated comics should be saved, in the example above in the `c` folder.
-  The default value is "comics".
+  generated comics should be saved, in the example above in the `ccc`
+  folder. The default value is "comics".
 * `published` is the folder where published comics should be placed, in the
   example above in `generated/web` (this is also the default).
 * `unpublished` is the folder where to place not yet published comics, in
@@ -56,13 +56,29 @@ For example:
 ```json
 {
     "LayerNames": {
-        "TranscriptOnlyPrefix": "Meta"
+        "TranscriptOnlyPrefix": "Meta",
+        "NoTranscriptPrefix": "NoText",
+        "Frames": "Rahmen"
     }
 }
 ```
 
 Configures layer names to indicate which layer has which information. See
 the [checks](checks.md) chapter on how these are used.
+
+When the Comic modules process your comics, they run in this order: first,
+all checks run. (Checks may be skipped for comics that haven't changed, to
+speed up things.)
+
+Then all output generators run. They run in a predefined order, as some
+output generators need data from previous ones, for example, the HTML
+archive page generator can only run once the comic pages have been written.
+
+When all output generators have finished, the uploaders run, to get your
+comics published.
+
+After everything is uploaded, social media posters run, to let the world
+know about your latest comic.
 
 
 ## Checks
@@ -73,7 +89,7 @@ comic.
 ```json
 {
     "Checks": {
-        "Weekday": [5]
+        "Comic::Check::Weekday": [5]
     }
 }
 ```
@@ -81,9 +97,73 @@ comic.
 See the chapter on [checks](checks.md) for details.
 
 
-## Output
+## Output generators
 
-Under the Output section go any modules configuration that you want to use
+Under the Out section go any modules configuration that you want to use
 to generate some output files.
 
+```json
+{
+    "Out": {
+       "Comic::Out::SvgPerLanguage": {
+            "outdir": "generated/svg",
+        },
+        "Comic::Out::HtmlLink": {
+        },
+        "Comic::Out::PngInkscape": {
+            "outdir": "generated/web"
+        },
+        "Comic::Out::HtmlComicPage": {
+            "outdir": "generated/web",
+            "template": "templates/comic-page.templ"
+        }
+    }
+}
+```
+
 See the chapter on [outputs](outputs.md) for details.
+
+
+## Uploader
+
+Under the "Uploader" section go all modules that copy or upload your web
+comics somewhere.
+
+```json
+{
+   "Uploader": {
+        "Comic::Upload::Rsync": {
+            "sites": [
+                {
+                    "source": "generated/web/deutsch/",
+                    "destination": "you@youd-german-domain/comic-folder/"
+                },
+                {
+                    "source": "generated/web/english/",
+                    "destination": "you@your-english-domain/comic-folder"
+                }
+            ],
+        }
+    }
+}
+```
+
+
+## Social
+
+All modules that let the world know about your latest comics, e.g., social
+media posting modules, are configured under the "Social" section.
+
+```json
+{
+    "Social": {
+        "Comic::Social::Mastodon": {
+            "access_token": "...",
+            "instance": "mstdn.io",
+            "mode": "png"
+        }
+    }
+}
+```
+
+See the [social media posters](social.md) documentation for details.

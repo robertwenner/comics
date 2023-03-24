@@ -26,11 +26,12 @@ documentation.
 That said, there are still a few basic assumptions on how things work:
 
 - Everything is in the comic. The Inkscape `.svg` file is the "single source
-  of truth". Everything needed for a comic is in that file, not in other
+  of truth". Everything needed for a comic is in that file, not in any other
   files, not in version control, not in a database of some sort, not in a
-  micro service, and not in the block chain. Most settings that are not specific
-  to a particular comic are configured in global [settings](settings.md) and
-  the templates used to generate outputs (see below).
+  micro service, and not in the block chain. Most settings that are not
+  specific to a particular comic are configured in global
+  [settings](settings.md) and in the templates used to generate outputs (see
+  below).
 
 - Stuff needs to be in its place (layers and metadata). If everything is in
   the same file but needs to end up in different files per language, stuff
@@ -42,7 +43,7 @@ That said, there are still a few basic assumptions on how things work:
 
 - Generate everything. Since everything is in the comic's `.svg`, take that
   as input and generate whatever is needed: web pages, RSS feed, transcript,
-  and so on. This is described in the [outputs chapter](outputs.md). Lot of
+  and so on. This is described in the [outputs chapter](outputs.md). Most of
   the generated output depends on the [templates](templates.md) you write.
 
 - Have the computer help check. If a computer already processes each comic,
@@ -54,5 +55,15 @@ That said, there are still a few basic assumptions on how things work:
   your own hardware, but have one you can access as you see fit. I don't
   recommend just tweeting or posting the comics to e.g., reddit. Being in
   charge of the server gives you more control. See the [upload modules
-  chapter](upload.md) for details. You can still post to social media with
-  the [social media chapter](social.md).
+  chapter](upload.md) for details. You can let the modules in the [social
+  media modules](social.md) chapter post your comic to social media.
+
+The previous steps imply that it doesn't matter where you keep the comic
+on your hard drive. They can be in one folder or in many (maybe nested)
+folders. If you want to exclude comics from getting published on your web
+page, for example, when they were exclusively for a book or magazine, that
+information also needs to live in the [metadata](metadata.md). For
+example, to allow for different publication locations, the metadata
+supports a "published where" field. Generators may check for it and you
+can query that in templates (see the [outputs chapter](outputs.md) for
+details).
