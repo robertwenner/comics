@@ -762,6 +762,9 @@ sub _normalized_title {
 
 Gets an alphabetically sorted array of all languages used in this Comic.
 
+This is determined by the title meta data; a comic exists in a language if
+it has a non-empty title in that language.
+
 =cut
 
 sub languages {
@@ -769,6 +772,7 @@ sub languages {
 
     my @languages;
     push @languages, keys %{$self->{meta_data}->{title}};
+    @languages = grep { $self->{meta_data}->{title}->{$_} =~ m{\S}x } @languages;
     # Needs the extra @sorted array cause the behavior of sort in scalar context
     # is undefined. (WTF?!)
     # http://search.cpan.org/~thaljef/Perl-Critic/lib/Perl/Critic/Policy/Subroutines/ProhibitReturnSort.pm
@@ -835,7 +839,9 @@ Parameters:
 
 sub not_for {
     my ($self, $language) = @ARG;
-    return defined($self->{meta_data}->{title}->{$language}) ? 0 : 1;
+
+    my %languages = map { $_ => 1 } $self->languages();
+    return defined($languages{$language}) ? 0 : 1;
 }
 
 
@@ -866,7 +872,7 @@ sub language_codes {
     my ($self) = @_;
 
     my %codes;
-    LANG: foreach my $lang (keys %{$self->{meta_data}->{title}}) {
+    LANG: foreach my $lang ($self->languages()) {
         if ($language_code_cache{$lang}) {
             $codes{$lang} = $language_code_cache{$lang};
             next LANG;

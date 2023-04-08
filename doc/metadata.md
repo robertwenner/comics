@@ -32,12 +32,13 @@ given as keys and values, like this:
 ```
 
 The `title` is most important: if a comic doesn't have a title for a given
-language, it doesn't exist in that language. When code processes a comic, it
-always asks for the comic's language by looking at the `title` metadata.
-This is a convenient mechanism to keep a language out: When you want to
-support a new language, you can already translate and add everything except
-the title, and only when all comics are available in that language and
-you're ready to go, add the titles.
+language (or if the title is empty or contains only spaces), it doesn't
+exist in that language. When code processes a comic, it always asks for the
+comic's language by looking at the `title` metadata. This is a convenient
+mechanism to keep a language out: When you want to support a new language,
+you can already translate and add everything except the title, and only when
+all comics are available in that language and you're ready to go, add the
+titles.
 
 The `published.where` field tells where the comic is published. You can use
 any names you like. In particular, this should *not* be a domain name for a
