@@ -38,6 +38,11 @@ development libraries. I had a hard time with Hunspell and UTF8, so I prefer
 ASpell and its libraries `libaspell-dev` plus dictionaries for the languages
 you want to use (e.g., `aspell-de`, `aspell-en`, or `aspell-es`).
 
+For uploading via rsync, you need to install the `rsync` command.
+
+**MacOS users:*  if you are using [brew](https://brew.sh), just run `brew
+bundle` to install the dependencies.
+
 
 ## Installation
 
@@ -45,7 +50,7 @@ you want to use (e.g., `aspell-de`, `aspell-en`, or `aspell-es`).
 perl Makefile.PL
 make
 make test       # optional, may need Perl test modules
-sudo make install
+sudo make install   # optional, you can also refer to the lib/ folder here
 ```
 
 ## Documentation
