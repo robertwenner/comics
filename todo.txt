@@ -1,11 +1,14 @@
 - cleanup hard-coded names: "web", "backlog", "generated",
   Comic::not_yet_published should not consider locations
 
-- cleanup: rework variables available for templates: standardize names, pick
-  decent names, DRY up them up, generate them in one place, document them
+- defect: Mastodon 500 error when posting images
 
-- cleanup: rework output generator dependencies, each generator should state
-  what others it needs to have run before
+- cleanup: rework variables available for templates: standardize names, pick
+  decent names, DRY up them up, document them
+
+- feature: (output) modules dependency graph, to easily add new output
+  modules, and to decide to skip output (and check) modules based on their
+  dependencies being up to date
 
 - should the names in the JSON configuration file be case-insensitive? Could
   be confusing when case actually matters, e.g., for Perl modules.
@@ -87,11 +90,6 @@
   https://badge.fury.io/for/pl
 
 - feature: check that published date is >= created date (typo?)
-
-- performance: profile and fix slooooow handling of some (large?) svg files;
-  debug hiccups when it seems to stall for minutes (when cache is stale, but
-  looks like frame collection could be the problem, not actually calling
-  inkscape)
 
 - feature: check that speaker names all show up in the "who" meta data (but
   be careful about additional text, like "Paul, opening a beer:")
@@ -247,3 +245,17 @@
   layers as in another language, empty JSON attributes for meta data
 
 - feature: multiple pages comics (for print or ebooks)
+
+- feature: patreon integration: designate patreon only-comics, or upload to
+  patreon earlier than to web site
+
+- feature: substack integration
+
+- feature: blogger.com integration
+
+- feature: medium.com integration
+
+- feature: Wordpress integration
+
+- feature: github integration: host your comic on github? could commit to a
+  (separate?) repository, push changes
