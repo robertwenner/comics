@@ -131,9 +131,9 @@ sub generate_all {
     my ($self, @comics) = @ARG;
 
     foreach my $language (Comic::Out::Generator::all_languages(@comics)) {
-        my @published = sort Comic::from_oldest_to_latest grep {
-            !$_->not_yet_published() && !$_->not_for($language)
-        } @comics;
+        my @sorted = sort Comic::from_oldest_to_latest @comics;
+        my @published = grep { !$_->not_yet_published() } @sorted;
+        @published = grep { !$_->not_for($language) } @published;
         next if (!@published);
 
         my $templ_file = $self->per_language_setting('template', $language);
