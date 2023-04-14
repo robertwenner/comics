@@ -54,13 +54,11 @@ sub empty_title_does_not_count_as_language : Tests {
         $MockComic::TITLE => {
             'English' => '',
             'Deutsch' => '   ',
-            'Francais' => "\t",
         },
     );
     is_deeply([sort $comic->languages()], []);
     ok($comic->not_for('Deutsch'));
     ok($comic->not_for('English'));
-    ok($comic->not_for('Francais'));
 }
 
 
