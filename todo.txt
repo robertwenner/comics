@@ -259,3 +259,13 @@
 
 - feature: github integration: host your comic on github? could commit to a
   (separate?) repository, push changes
+
+- feature: warn about missing or bad meta data
+  description: not empty
+  published where: not empty? certain well-known locations ? (would only
+  make sense it these locations are configured somewhere, but most don't
+  need configuration)
+
+- build: switch to github actions
+
+- feature: die if a comic tries to tweak or disable an unknown check
