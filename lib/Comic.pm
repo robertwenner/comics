@@ -327,7 +327,7 @@ sub _adjust_checks {
 
         elsif ($keyword eq 'add') {
             my $adding = $check_config->{'add'};
-            $self->_remove_checks($adding);
+            $self->_remove_checks(0, $adding);
             $self->_add_checks($adding);
         }
 
@@ -336,7 +336,7 @@ sub _adjust_checks {
             if (ref $removing ne ref [] && ref $removing ne '') {
                 $self->keel_over('Must pass an array or single value to "remove"');
             }
-            $self->_remove_checks($removing);
+            $self->_remove_checks(1, $removing);
         }
 
         else {
@@ -387,11 +387,19 @@ sub _add_checks {
 
 # Removes the given check types from this Comic.
 sub _remove_checks {
-    my ($self, $checks) = @ARG;
+    my ($self, $fail_on_unknown_check, $checks) = @ARG;
 
     $checks = _array_ref_to_hash_ref($checks);
     foreach my $name (keys %{$checks}) {
-        @{$self->{checks}} = grep { ref $_ ne Comic::Modules::module_name($name) } @{$self->{checks}};
+        my $normalized_name = Comic::Modules::module_name($name);
+        my $removed = 0;
+        foreach my $check (@{$self->{checks}}) {
+            $removed++ if (ref $check eq $normalized_name);
+        }
+        if ($fail_on_unknown_check && !$removed) {
+            croak("Cannot remove unknown check $name as the comic doesn't have that");
+        }
+        @{$self->{checks}} = grep { ref $_ ne $normalized_name } @{$self->{checks}};
     }
 
     return;

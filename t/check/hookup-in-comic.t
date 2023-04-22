@@ -187,6 +187,17 @@ sub comic_remove_from_config_as_hash_gets_nice_error_message : Tests {
 }
 
 
+sub comic_remove_complains_about_bad_module : Tests {
+    eval {
+        MockComic::make_comic(
+            $MockComic::JSON => '"Checks": { "remove": "Whatever" }',
+        );
+    };
+    like($@, qr{\bunknown\b}i, 'should say what is wrong');
+    like($@, qr{\bWhatever\b}, 'should mention the module name');
+}
+
+
 sub comic_check_unknown_command : Tests {
     eval {
         MockComic::make_comic(

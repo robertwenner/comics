@@ -267,5 +267,3 @@
   need configuration)
 
 - build: switch to github actions
-
-- feature: die if a comic tries to tweak or disable an unknown check
