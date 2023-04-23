@@ -1,5 +1,5 @@
 [![License: Artistic-2.0](https://img.shields.io/badge/License-Perl-0298c3.svg)](https://opensource.org/licenses/Artistic-2.0)
-[![Build Status](https://app.travis-ci.com/robertwenner/comics.svg?branch=master)](https://app.travis-ci.com/robertwenner/comics.svg?branch=master)
+[![Build Status](https://app.travis-ci.com/robertwenner/comics.svg?branch=master)](https://app.travis-ci.com/robertwenner/comics)
 [![Coverage Status](https://coveralls.io/repos/github/robertwenner/comics/badge.svg?branch=master)](https://coveralls.io/github/robertwenner/comics?branch=master)
 
 
