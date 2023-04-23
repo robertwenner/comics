@@ -26,6 +26,15 @@ sub set_up : Test(setup) {
 }
 
 
+sub assert_check_count {
+    # Perl before 5.26 returns used and allocacted buckets; strip off the latter.
+    my ($comic, $expected, $message) = @_;
+    my $actual = scalar %{$comic->{checks}};
+    $actual =~ s{/\d+$}{}x;
+    is ($actual, $expected, $message);
+}
+
+
 sub find_checks : Tests {
     my @modules = Comic::Check::Check::find_all();
     my %modules = map {$_ => 1} @modules;
@@ -50,7 +59,7 @@ sub comic_overrides_main_config_checks_as_object : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::JSON => '"Checks": { "use": { "DummyCheck": ["from comic"] } }',
     );
-    is(scalar %{$comic->{checks}}, 1, 'should have one check');
+    assert_check_count($comic, 1, 'should have one check');
     ok($comic->{checks}->{"DummyCheck"}, 'created wrong check');
     is_deeply($comic->{checks}->{"DummyCheck"}->{args}, ["from comic"], 'passed wrong ctor args');
 }
@@ -60,7 +69,7 @@ sub comic_overrides_main_config_checks_as_array : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::JSON => '"Checks": { "use": [ "DummyCheck" ] }',
     );
-    is(scalar %{$comic->{checks}}, 1, 'should have one check');
+    assert_check_count($comic, 1, 'should have one check');
     ok($comic->{checks}->{"DummyCheck"}, 'created wrong check');
     is_deeply($comic->{checks}->{"DummyCheck"}->{args}, [], 'passed wrong ctor args');
 }
@@ -70,7 +79,7 @@ sub comic_overrides_main_config_checks_as_scalar : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::JSON => '"Checks": { "use": "DummyCheck" }',
     );
-    is(scalar %{$comic->{checks}}, 1, 'should have one check');
+    assert_check_count($comic, 1, 'should have one check');
     ok($comic->{checks}->{"DummyCheck"}, 'created wrong check');
     is_deeply($comic->{checks}->{"DummyCheck"}->{args}, [], 'passed wrong ctor args');
 }
@@ -87,7 +96,7 @@ sub comic_adds_main_config_checks_as_object : Tests {
         $MockComic::CHECKS => [ Comic::Check::Actors->new() ],
         $MockComic::JSON => '"Checks": { "add": { "DummyCheck": ["from comic"] } }',
     );
-    is(scalar %{$comic->{checks}}, 2, 'should have two checks');
+    assert_check_count($comic, 2, 'should have two checks');
     ok($comic->{checks}->{"Comic::Check::Actors"}, 'lost existing check');
     ok($comic->{checks}->{"DummyCheck"}, 'created wrong check');
     is_deeply($comic->{checks}->{"DummyCheck"}->{args}, ["from comic"], 'passed wrong ctor args');
@@ -105,7 +114,7 @@ sub comic_adds_to_main_config_as_array : Tests {
         $MockComic::CHECKS => [ Comic::Check::Actors->new() ],
         $MockComic::JSON => '"Checks": { "add": [ "DummyCheck" ] }',
     );
-    is(scalar %{$comic->{checks}}, 2, 'should have two checks');
+    assert_check_count($comic, 2, 'should have two checks');
     ok($comic->{checks}->{"Comic::Check::Actors"}, 'lost existing check');
     ok($comic->{checks}->{"DummyCheck"}, 'created wrong check');
     is_deeply($comic->{checks}->{"DummyCheck"}->{args}, [], 'passed wrong ctor args');
@@ -123,7 +132,7 @@ sub comic_adds_to_main_config_as_scalar : Tests {
         $MockComic::CHECKS => [ Comic::Check::Actors->new() ],
         $MockComic::JSON => '"Checks": { "add": "DummyCheck" }',
     );
-    is(scalar %{$comic->{checks}}, 2, 'should have two checks');
+    assert_check_count($comic, 2, 'should have two checks');
     ok($comic->{checks}->{"Comic::Check::Actors"}, 'lost existing check');
     ok($comic->{checks}->{"DummyCheck"}, 'created wrong check');
     is_deeply($comic->{checks}->{"DummyCheck"}->{args}, [], 'passed wrong ctor args');
@@ -141,7 +150,7 @@ sub comic_add_same_type_check_replaces_original : Tests {
         $MockComic::CHECKS => [ Comic::Check::Weekday->new(1) ],
         $MockComic::JSON => '"Checks": { "add": { "Comic::Check::Weekday": [2] } }',
     );
-    is(scalar %{$comic->{checks}}, 1, 'should have one check');
+    assert_check_count($comic, 1, 'should have one check');
     ok($comic->{checks}->{"Comic::Check::Weekday"}, 'wrong kind of check');
     is_deeply($comic->{checks}->{"Comic::Check::Weekday"}->{weekday}, [2], 'still has old check');
 }
