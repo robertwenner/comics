@@ -23,6 +23,9 @@ lines and almost unmaintainable. Over the years I broke it up into more
 manageable modules, added automated tests, and improved design and
 documentation.
 
+
+## Assumptions
+
 That said, there are still a few basic assumptions on how things work:
 
 - Everything is in the comic. The Inkscape `.svg` file is the "single source
@@ -67,3 +70,28 @@ example, to allow for different publication locations, the metadata
 supports a "published where" field. Generators may check for it and you
 can query that in templates (see the [outputs chapter](outputs.md) for
 details).
+
+
+## Workflow
+
+After installing the Perl modules, configure your [settings](settings.md)
+for all comics. Then run the conversion through the Comics main module:
+
+```perl
+# perl
+use strict;
+use warnings;
+use Comics;
+
+Comics::generate('path/to/your/settings.json', "path/to/your/comics");
+```
+
+If you don't want to install the comic modules, you can also point the
+script to them by adding a line after the other `use`s like this:
+
+```perl
+use lib "path/to/the/top-level/folder";
+```
+
+You can call that script e.g., from a Unix cron job to automatically publish
+your latest comic.

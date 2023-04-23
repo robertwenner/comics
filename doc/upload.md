@@ -5,6 +5,9 @@ other comic modules as a convenient way of generating, checking, and
 uploading the comics --- all in one place, when used from Comics'
 convenience functions, without extra scripting.
 
+The order in which these modules run is undefined, but they will only run
+after all [Output](output.md) modules have finished.
+
 
 ## `Comic::Upload::Rsync`
 

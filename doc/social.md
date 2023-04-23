@@ -1,4 +1,4 @@
-# Social media networks
+# Social media network modules
 
 The `Comic::Social::...` modules post today's comic for each language on
 social networks.
@@ -13,6 +13,9 @@ everything else, create a [RSS Feed](outputs.md#Comic::Out::Feed) and hook
 it up to a free [Zapier](https://zapier.com) account to spread the joy.
 
 All `Comic::Social::...` configuration must be within the `Social` object.
+
+The order in which these modules run is undefined, but they will only run
+after all [Upload](upload.md) modules have finished.
 
 
 ## `Comic::Social::IndexNow`

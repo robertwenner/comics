@@ -19,6 +19,8 @@ To disable a single check, don't include it in the `Checks` section.
 You can specify each check only once. If you specify a check more than once,
 only one will get used, but it's undefined which one.
 
+Checks run in random order, but each check only once per comic.
+
 Available checks are all Perl modules found on your system where the name
 starts with `Comic::Check::`.
 

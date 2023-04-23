@@ -15,13 +15,17 @@ name.
 ## Dependencies
 
 Some output modules depend on other output modules running first. For
-example, to export your comics as `.png`, you first need to export them as
-per-language `.svg`s, then the `Comic::Out::PngInkscape` module will work
-with the per-language `.svg`s.
+example, to export your comics as `.png`, the `Comic::Out::SvgPerLanguage`
+first need to export them as per-language `.svg`s, then the
+`Comic::Out::PngInkscape` module will turn the per-language `.svg`s into
+`.png`s.
 
 The code is smart enough to use the modules in the right order, but it
 cannot yet pull in missing modules. So to get `.png` output, you must
 configure the `Comic::Out::SvgPerLanguage` as well.
+
+The order in which these modules run is undefined, but they will only run
+after all [Check](check.md) modules have finished.
 
 
 ## Output Organization
