@@ -556,7 +556,8 @@ sub run_final_checks {
     }
 
     foreach my $comic (@{$self->{comics}}) {
-        foreach my $check (@{$comic->{checks}}) {
+        foreach my $name ( keys %{$comic->{checks}}) {
+            my $check = $comic->{checks}->{$name};
             $check->final_check() unless ($called{$check});
             $called{$check} = 1;
         }

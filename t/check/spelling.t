@@ -306,7 +306,7 @@ sub ignore_words_from_comic_meta_data : Tests {
 JSON
     my $comic = MockComic::make_comic($MockComic::JSON => $json);
 
-    $comic->{checks}[0]->check($comic);
+    $comic->{checks}->{'Comic::Check::Spelling'}->check($comic);
 
     is_deeply(\@asked_to_check, ["typpo"]);
     is_deeply($comic->{warnings}, []);

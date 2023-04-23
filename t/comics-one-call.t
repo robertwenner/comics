@@ -92,7 +92,7 @@ CONFIG
 
     my $comics = Comics::generate('config.json', 'comics/');
     my $comic = ${$comics->{comics}}[0];
-    is(ref $comic->{checks}[0], 'DummyCheck');
+    ok(ref $comic->{checks}->{'DummyCheck'});
 }
 
 
@@ -112,7 +112,7 @@ CONFIG
 
     my $comics = Comics::generate('config.json', 'comics/');
     my $comic = ${$comics->{comics}}[0];
-    is_deeply($comic->{checks}, [], 'should have no checks');
+    is_deeply($comic->{checks}, {}, 'should have no checks');
 }
 
 

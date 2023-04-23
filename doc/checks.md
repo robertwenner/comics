@@ -6,7 +6,7 @@ warns you if you specify a date that isn't a Friday. (Date calculations are
 hard!)
 
 If there is no Checks section in the configuration file(s), all Checks are
-used. To disable all Checks, define an empty "Checks":
+used. To disable all Checks, define an empty "Checks" section:
 
 ```json
 {
@@ -15,6 +15,9 @@ used. To disable all Checks, define an empty "Checks":
 ```
 
 To disable a single check, don't include it in the `Checks` section.
+
+You can specify each check only once. If you specify a check more than once,
+only one will get used, but it's undefined which one.
 
 Available checks are all Perl modules found on your system where the name
 starts with `Comic::Check::`.

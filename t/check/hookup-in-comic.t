@@ -38,7 +38,7 @@ sub check_comic : Tests {
     my $comic = MockComic::make_comic();
 
     my $check = DummyCheck->new();
-    @{$comic->{checks}} = ($check);
+    $comic->{checks}->{'DummyCheck'} = $check;
 
     $comic->check();
     is(${$check->{calls}}{'notify'}, 1, 'should have notified about comic');
@@ -50,9 +50,9 @@ sub comic_overrides_main_config_checks_as_object : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::JSON => '"Checks": { "use": { "DummyCheck": ["from comic"] } }',
     );
-    is(@{$comic->{checks}}, 1, 'should have one check');
-    ok(${$comic->{checks}}[0]->isa("DummyCheck"), 'created wrong check');
-    is_deeply(${$comic->{checks}}[0]->{args}, ["from comic"], 'passed wrong ctor args');
+    is(scalar %{$comic->{checks}}, 1, 'should have one check');
+    ok($comic->{checks}->{"DummyCheck"}, 'created wrong check');
+    is_deeply($comic->{checks}->{"DummyCheck"}->{args}, ["from comic"], 'passed wrong ctor args');
 }
 
 
@@ -60,9 +60,9 @@ sub comic_overrides_main_config_checks_as_array : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::JSON => '"Checks": { "use": [ "DummyCheck" ] }',
     );
-    is(@{$comic->{checks}}, 1, 'should have one check');
-    ok(${$comic->{checks}}[0]->isa("DummyCheck"), 'created wrong check');
-    is_deeply(${$comic->{checks}}[0]->{args}, [], 'passed wrong ctor args');
+    is(scalar %{$comic->{checks}}, 1, 'should have one check');
+    ok($comic->{checks}->{"DummyCheck"}, 'created wrong check');
+    is_deeply($comic->{checks}->{"DummyCheck"}->{args}, [], 'passed wrong ctor args');
 }
 
 
@@ -70,9 +70,9 @@ sub comic_overrides_main_config_checks_as_scalar : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::JSON => '"Checks": { "use": "DummyCheck" }',
     );
-    is(@{$comic->{checks}}, 1, 'should have one check');
-    ok(${$comic->{checks}}[0]->isa("DummyCheck"), 'created wrong check');
-    is_deeply(${$comic->{checks}}[0]->{args}, [], 'passed wrong ctor args');
+    is(scalar %{$comic->{checks}}, 1, 'should have one check');
+    ok($comic->{checks}->{"DummyCheck"}, 'created wrong check');
+    is_deeply($comic->{checks}->{"DummyCheck"}->{args}, [], 'passed wrong ctor args');
 }
 
 
@@ -87,10 +87,10 @@ sub comic_adds_main_config_checks_as_object : Tests {
         $MockComic::CHECKS => [ Comic::Check::Actors->new() ],
         $MockComic::JSON => '"Checks": { "add": { "DummyCheck": ["from comic"] } }',
     );
-    is(@{$comic->{checks}}, 2, 'should have two checks');
-    ok(${$comic->{checks}}[0]->isa("Comic::Check::Actors"), 'modified existing check');
-    ok(${$comic->{checks}}[1]->isa("DummyCheck"), 'created wrong check');
-    is_deeply(${$comic->{checks}}[1]->{args}, ["from comic"], 'passed wrong ctor args');
+    is(scalar %{$comic->{checks}}, 2, 'should have two checks');
+    ok($comic->{checks}->{"Comic::Check::Actors"}, 'lost existing check');
+    ok($comic->{checks}->{"DummyCheck"}, 'created wrong check');
+    is_deeply($comic->{checks}->{"DummyCheck"}->{args}, ["from comic"], 'passed wrong ctor args');
 }
 
 
@@ -105,10 +105,10 @@ sub comic_adds_to_main_config_as_array : Tests {
         $MockComic::CHECKS => [ Comic::Check::Actors->new() ],
         $MockComic::JSON => '"Checks": { "add": [ "DummyCheck" ] }',
     );
-    is(@{$comic->{checks}}, 2, 'should have two checks');
-    ok(${$comic->{checks}}[0]->isa("Comic::Check::Actors"), 'modified existing check');
-    ok(${$comic->{checks}}[1]->isa("DummyCheck"), 'created wrong check');
-    is_deeply(${$comic->{checks}}[1]->{args}, [], 'passed wrong ctor args');
+    is(scalar %{$comic->{checks}}, 2, 'should have two checks');
+    ok($comic->{checks}->{"Comic::Check::Actors"}, 'lost existing check');
+    ok($comic->{checks}->{"DummyCheck"}, 'created wrong check');
+    is_deeply($comic->{checks}->{"DummyCheck"}->{args}, [], 'passed wrong ctor args');
 }
 
 
@@ -123,10 +123,10 @@ sub comic_adds_to_main_config_as_scalar : Tests {
         $MockComic::CHECKS => [ Comic::Check::Actors->new() ],
         $MockComic::JSON => '"Checks": { "add": "DummyCheck" }',
     );
-    is(@{$comic->{checks}}, 2, 'should have two checks');
-    ok(${$comic->{checks}}[0]->isa("Comic::Check::Actors"), 'modified existing check');
-    ok(${$comic->{checks}}[1]->isa("DummyCheck"), 'created wrong check');
-    is_deeply(${$comic->{checks}}[1]->{args}, [], 'passed wrong ctor args');
+    is(scalar %{$comic->{checks}}, 2, 'should have two checks');
+    ok($comic->{checks}->{"Comic::Check::Actors"}, 'lost existing check');
+    ok($comic->{checks}->{"DummyCheck"}, 'created wrong check');
+    is_deeply($comic->{checks}->{"DummyCheck"}->{args}, [], 'passed wrong ctor args');
 }
 
 
@@ -141,9 +141,9 @@ sub comic_add_same_type_check_replaces_original : Tests {
         $MockComic::CHECKS => [ Comic::Check::Weekday->new(1) ],
         $MockComic::JSON => '"Checks": { "add": { "Comic::Check::Weekday": [2] } }',
     );
-    is(@{$comic->{checks}}, 1, 'should have one check');
-    ok(${$comic->{checks}}[0]->isa("Comic::Check::Weekday"), 'wrong kind of check');
-    is_deeply(${$comic->{checks}}[0]->{weekday}, [2], 'still has old check');
+    is(scalar %{$comic->{checks}}, 1, 'should have one check');
+    ok($comic->{checks}->{"Comic::Check::Weekday"}, 'wrong kind of check');
+    is_deeply($comic->{checks}->{"Comic::Check::Weekday"}->{weekday}, [2], 'still has old check');
 }
 
 
@@ -158,7 +158,7 @@ sub comic_remove_from_config_as_array : Tests {
         $MockComic::CHECKS => [ Comic::Check::Weekday->new(1) ],
         $MockComic::JSON => '"Checks": { "remove": [ "Comic/Check/Weekday.pm" ] }',
     );
-    is(@{$comic->{checks}}, 0, 'should have no checks');
+    is_deeply($comic->{checks}, {}, 'should have no checks');
 }
 
 
@@ -173,7 +173,7 @@ sub comic_remove_from_config_as_scalar : Tests {
         $MockComic::CHECKS => [ Comic::Check::Weekday->new(1) ],
         $MockComic::JSON => '"Checks": { "remove": "Comic/Check/Weekday.pm" }',
     );
-    is(@{$comic->{checks}}, 0, 'should have no checks');
+    is_deeply($comic->{checks}, {}, 'should have no checks');
 }
 
 
@@ -225,7 +225,7 @@ sub runs_per_comic_final_checks : Tests {
     my $comics = Comics->new();
     my $comic = MockComic::make_comic();
     my $check = DummyCheck->new();
-    push @{$comic->{checks}}, $check;
+    $comic->{checks}->{'DummyCheck'} = $check;
     push @{$comics->{comics}}, $comic;
 
     $comics->run_final_checks();
@@ -239,7 +239,7 @@ sub runs_each_final_check_only_once : Tests {
     my $global_check = DummyCheck->new();
     my $local_check = DummyCheck->new();
 
-    push @{$comic->{checks}}, $global_check, $local_check, $local_check;
+    $comic->{checks} = {%{$comic->{checks}}, 'global' => $global_check, 'local' => $local_check};
     push @{$comics->{checks}}, $global_check, $global_check;
     push @{$comics->{comics}}, $comic;
 
@@ -311,8 +311,7 @@ sub prints_warnings_from_unpublished_comic : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::PUBLISHED_WHEN => undef,
     );
-    my $check = DummyCheck->new("problem from check");
-    push @{$comic->{checks}}, $check;
+    $comic->{checks}->{dummy} = DummyCheck->new("problem from check");
 
     stdout_like {
         $comic->check();
@@ -322,8 +321,7 @@ sub prints_warnings_from_unpublished_comic : Tests {
 
 sub collect_warnings_from_one_check_published : Tests {
     my $comic = MockComic::make_comic();
-    my $check = DummyCheck->new("problem from check");
-    push @{$comic->{checks}}, $check;
+    $comic->{checks}->{'dummy'} = DummyCheck->new("problem from check");
 
     eval {
         $comic->check();
@@ -336,13 +334,13 @@ sub collect_warnings_from_one_check_published : Tests {
 sub collect_warnings_from_all_checks : Tests {
     my $comic = MockComic::make_comic();
     for (my $i = 0; $i < 3; $i++) {
-        my $check = DummyCheck->new("problem from check $i");
-        push @{$comic->{checks}}, $check;
+        $comic->{checks}->{"check $i"} = DummyCheck->new("problem from check $i");
     }
 
     eval {
         $comic->check();
     };
     like($@, qr{3 problems}i);
-    is_deeply($comic->{warnings}, ["problem from check 0", "problem from check 1", "problem from check 2"]);
+    my @actual = sort @{$comic->{warnings}};
+    is_deeply(\@actual, ["problem from check 0", "problem from check 1", "problem from check 2"]);
 }

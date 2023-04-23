@@ -9,6 +9,7 @@ use Readonly;
 use English '-no_match_vars';
 use Locales unicode => 1;
 use base qw(Exporter);
+use Scalar::Util qw(blessed);
 use POSIX qw(strftime floor);
 use Carp;
 use autodie;
@@ -99,7 +100,7 @@ sub new {
     my $self = bless{}, $class;
 
     $self->{settings} = $settings;
-    $self->{checks} = [@{$checks}];
+    $self->{checks} = { map { blessed($_) => $_ } @{$checks} };
     $self->{warnings} = [];
 
     return $self;
@@ -321,13 +322,14 @@ sub _adjust_checks {
 
     foreach my $keyword (keys %{$check_config}) {
         if ($keyword eq 'use') {
-            @{$self->{checks}} = ();
+            %{$self->{checks}} = ();
             $self->_add_checks($check_config->{'use'});
         }
 
         elsif ($keyword eq 'add') {
+            # Adding is replacing or adding.
             my $adding = $check_config->{'add'};
-            $self->_remove_checks(0, $adding);
+            $self->_remove_checks_ignoring_unknown($adding);
             $self->_add_checks($adding);
         }
 
@@ -336,7 +338,7 @@ sub _adjust_checks {
             if (ref $removing ne ref [] && ref $removing ne '') {
                 $self->keel_over('Must pass an array or single value to "remove"');
             }
-            $self->_remove_checks(1, $removing);
+            $self->_remove_checks($removing);
         }
 
         else {
@@ -378,7 +380,7 @@ sub _add_checks {
     $checks = _array_ref_to_hash_ref($checks);
     foreach my $name (keys %{$checks}) {
         my $args = ${$checks}{$name};
-        push @{$self->{checks}}, Comic::Modules::load_module($name, $args);
+        $self->{checks}->{$name} = Comic::Modules::load_module($name, $args);
     }
 
     return;
@@ -386,20 +388,30 @@ sub _add_checks {
 
 
 # Removes the given check types from this Comic.
-sub _remove_checks {
-    my ($self, $fail_on_unknown_check, $checks) = @ARG;
+sub _remove_checks_ignoring_unknown {
+    my ($self, $goners) = @ARG;
 
-    $checks = _array_ref_to_hash_ref($checks);
-    foreach my $name (keys %{$checks}) {
+    $goners = _array_ref_to_hash_ref($goners);
+    foreach my $name (keys %{$goners}) {
         my $normalized_name = Comic::Modules::module_name($name);
-        my $removed = 0;
-        foreach my $check (@{$self->{checks}}) {
-            $removed++ if (ref $check eq $normalized_name);
-        }
-        if ($fail_on_unknown_check && !$removed) {
+        delete $self->{checks}->{$normalized_name};
+    }
+
+    return;
+}
+
+
+# Removes the given check types from this Comic. Error if the check was not configured.
+sub _remove_checks {
+    my ($self, $goners) = @ARG;
+
+    $goners = _array_ref_to_hash_ref($goners);
+    foreach my $name (keys %{$goners}) {
+        my $normalized_name = Comic::Modules::module_name($name);
+        if (!$self->{checks}->{$normalized_name}) {
             croak("Cannot remove unknown check $name as the comic doesn't have that");
         }
-        @{$self->{checks}} = grep { ref $_ ne $normalized_name } @{$self->{checks}};
+        delete $self->{checks}->{$normalized_name};
     }
 
     return;
@@ -528,12 +540,12 @@ To disable all checks, configure an empty C<Check>:
 sub check {
     my ($self) = @_;
 
-    foreach my $check (@{$self->{checks}}) {
-        $check->notify($self);
+    foreach my $name (keys %{$self->{checks}}) {
+        $self->{checks}->{$name}->notify($self);
     }
 
-    foreach my $check (@{$self->{checks}}) {
-        $check->check($self);
+    foreach my $name (keys %{$self->{checks}}) {
+        $self->{checks}->{$name}->check($self);
     }
 
     my $warnings_count = scalar @{$self->{warnings}};
