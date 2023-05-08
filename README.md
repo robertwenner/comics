@@ -40,7 +40,7 @@ you want to use (e.g., `aspell-de`, `aspell-en`, or `aspell-es`).
 
 For uploading via rsync, you need to install the `rsync` command.
 
-**MacOS users:*  if you are using [brew](https://brew.sh), just run `brew
+*MacOS users:*  if you are using [brew](https://brew.sh), just run `brew
 bundle` to install the dependencies.
 
 
