@@ -605,7 +605,7 @@ templates or other generators:
 * `width`: map of language to width of the image in pixels.
 
 
-### `Comic::Out::QrCode`
+## `Comic::Out::QrCode`
 
 Generates a [QR code](https://en.wikipedia.org/wiki/Qr_code) with the comic
 page's URL for each comic in each language. You can then include this in the
@@ -627,7 +627,7 @@ respective languages. It will be stored in the comic in a `qrcode` hash with
 the languages as keys, for use in templates or other code.
 
 
-### `Comic::Out::Sitemap`
+## `Comic::Out::Sitemap`
 
 Generates a [sitemap](https://en.wikipedia.org/wiki/Sitemaps) per language.
 Sitemaps can tell search engines which pages they should crawl.
@@ -667,7 +667,7 @@ The generated file will always be placed in a per-language directory under
 the configured `outdir`, named `sitemap.xml`.
 
 
-### `Comic::Out::Sizemap`
+## `Comic::Out::Sizemap`
 
 Generates a size map showing all different overall sizes used in the comics.
 This can help figuring out what size works nicely for one's style.
@@ -719,7 +719,7 @@ The template can access these variables:
 * `comics_by_height`: list of all comics ordered by height (tallest first).
 
 
-### `Comic::Out::SvgPerLanguage`
+## `Comic::Out::SvgPerLanguage`
 
 Exports a `.svg` file per language in the comic. Each of these `.svg` files has
 only the layers that are common for all languages and the layers for the
