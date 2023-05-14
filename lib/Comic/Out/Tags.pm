@@ -175,9 +175,8 @@ sub generate_all {
             foreach my $tag (@{$self->{settings}{collect}}) {
                 foreach my $collect (@{$comic->{meta_data}{$tag}{$language}}) {
                     foreach my $title (keys %{$self->{tags}{$language}{$collect}}) {
-                        if ($comic->{meta_data}->{title}{$language} ne $title) {
-                            $comic->{tags}{$language}{$collect}{$title} = $self->{tags}{$language}{$collect}{$title};
-                        }
+                        next if ($comic->{meta_data}->{title}{$language} eq $title);
+                        $comic->{tags}{$language}{$collect}{$title} = $self->{tags}{$language}{$collect}{$title};
                     }
                 }
             }
