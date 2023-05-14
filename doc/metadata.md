@@ -40,6 +40,10 @@ you can already translate and add everything except the title, and only when
 all comics are available in that language and you're ready to go, add the
 titles.
 
+Titles must be unique in their languages, i.e., you cannot have two comics
+with the same title in the same language. It's ok to have the same comic
+have the same title in different languages.
+
 The `published.where` field tells where the comic is published. You can use
 any names you like. In particular, this should *not* be a domain name for a
 web comic, as you'd probably need a different one for each language. Just

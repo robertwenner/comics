@@ -25,7 +25,7 @@ cannot yet pull in missing modules. So to get `.png` output, you must
 configure the `Comic::Out::SvgPerLanguage` as well.
 
 The order in which these modules run is undefined, but they will only run
-after all [Check](check.md) modules have finished.
+after all [Check](checks.md) modules have finished.
 
 
 ## Output Organization
@@ -136,9 +136,9 @@ used.
     "who": {
         "English": [ "Max", "Paul" ]
     },
-    "tags": [
-        "brewing", "malt", "yeast"
-    ]
+    "tags": {
+        "English": ["brewing", "malt", "yeast"]
+    }
 }
 ```
 
@@ -756,3 +756,79 @@ Removing them here makes for smaller `.svg` files which in turn take less
 disk space and could speed up converting to other graphic formats like
 `png`. If you do want to publish `.svg` files, it's probably also good to
 remove that unneeded extra information and get faster downloads.
+
+
+## `Comic::Out::Tags`
+
+Collects tags from comics to provide tagging in comic pages, i.e., so that
+comics can refer to other comics that use the same tags ("see also"). Use
+tags so that readers can find all comics that feature a certain character,
+or all that deal with certain ideas (e.g., all comics where people drink
+ales).
+
+Tags are case-sensitive, i.e., a comic tagged "Beer" will not refer to one
+tagged "beer".
+
+These kinds of comics are ignored for tag processing:
+
+* Untitled comics (they are not considered to have any languages).
+
+* Comics that are not yet published.
+
+* Comics that are not published on the web.
+
+The `Comic::Out::Tags` module is configured like this:
+
+```json
+{
+    "Out": {
+        "Comic::Out::Tags": {
+            "collect": ["tags", "who"]
+        }
+    }
+}
+```
+
+The `collect` argument takes one or more names of tags in the comic's
+metadata. It defaults to just "tags" if not given.
+
+In the comics these tags to collect must be found as objects with languages
+referring to arrays of the actual tags, as top-level attributes in the
+comic's metadata.
+
+For example:
+
+```json
+"tags": {
+    "English": ["some value", "other value"]
+},
+"who": {
+    "English": ["Paul", "Max"]
+}
+```
+
+Passing "tags" for the "collect" parameter will pick the example values
+above, but won't make the character names from `who` available as tags.
+
+
+`Comic::Out::Tags` defines these variables in each comic for use in a comic
+page template:
+
+* `%tags` A hash of languages to hashes of comic titles to relative
+  comic URLs (`href`). The comic having these tags can turn those into links
+  to the other comics that use the same tags.
+
+For example, a comic may get these tags:
+
+```perl
+"tags" => {
+    "English" => {
+        "my tag" => {
+            "some other comic" => "link to that other comic",
+            "yet another comic" => "lint to yet another comic",
+        }
+    }
+}
+```
+
+No comic will refer to itself.
