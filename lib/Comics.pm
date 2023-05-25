@@ -707,7 +707,7 @@ sub next_publish_day {
     my ($self) = @ARG;
     Readonly my $DAYS_PER_WEEK => 7;
 
-    my $weekday_settings = $self->{settings}->{settings}->{Checks}->{'Comic::Check::Weekday.pm'};
+    my $weekday_settings = $self->{settings}->{settings}->{Checks}->{'Comic::Check::Weekday'};
     croak('Comic::Check::Weekday configuration not found or empty') if (!$weekday_settings);
     my @publish_days;
     if (ref $weekday_settings eq '') {
