@@ -62,29 +62,31 @@ for search engines and people with screen readers.
 Each comic can define a variable named `Transcript` in its metadata. If that
 variable is not defined or has the value `left-to-right`, the comics texts
 (from left to right) make up the transcript. Each row of frames is taken
-separately. Anything above the first row of frames goes first (place an
+separately . Anything above the first row of frames goes first (place an
 introductory text there), then the first row from left to right, then the
-second, and so on. Any text under the last row of frames is considered to
-belong to the last row. Text positions depend on alignment: if a text is left
-aligned, its position is the left side, centered text uses the center x
-position, and right aligned text uses the right-most coordinate of that text.
+second, and so on. Any text under the last row of frames is considered to be
+its own row, so that captions always go after the comic's texts. Text
+positions depend on alignment: if a text is left aligned, its position is
+the left side, centered text uses the center x position, and right aligned
+text uses the right-most coordinate of that text.
 
 If `Transcript` is `from-ids`, the texts will be ordered by their ids, from
 lowest to highest. This is meant for complex drawings that don't go in
 classic left to right, top to bottom order. To set the id on a text element,
 open the XML editor in Inkscape (Edit menu), then show attributes (if they
-aren't visible by default). Select each text, click `id` in the attributes, and
-enter a value. I recommend numbers, and leaving gaps: a group of texts get
-e.g., 1 to 4, then the next group gets 10 to 13. That way you can easily
+aren't visible by default). Select each text, click `id` in the attributes,
+and enter a value. I recommend numbers, and leaving gaps: a group of texts
+get e.g., 1 to 4, then the next group gets 10 to 13. That way you can easily
 squeeze in more texts without having to renumber everything. For the same
-reason, do numbering only when you are done with the comic's texts.
-Ids *must* be unique per document; even across layers. If you try to use an
-id that's already in use, Inkscape will automatically change the id of the
+reason, do numbering only when you are done with the comic's texts. Ids
+*must* be unique per document; even across layers. If you try to use an id
+that's already in use, Inkscape will automatically change the id of the
 previous element to a generated id, so be careful. While you can pick
 anything for ids, I recommend numbers. Inkscape generates ids like "text"
-plus a number. If you go with numeric ids, the code can warn about a mix of
-numeric and alphanumeric ids, which could indicate that Inkscape replaced a
-duplicated id with a generated one.
+plus a number. If you go with numeric ids, the Comic code will complain
+about a mix of numeric and alphanumeric ids, which probably indicates that
+Inkscape replaced a duplicated id with a generated one and now text order is
+off.
 
 
 ## `Comic::Out::Backlog`

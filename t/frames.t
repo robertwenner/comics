@@ -44,61 +44,61 @@ sub no_frame : Tests {
 
 
 sub single_frame : Tests {
-    is_deeply([0], frame_tops(
+    is_deeply([0, 100], frame_tops(
         # height, width, x, y
-        0, 0, 0, 0));
+        100, 100, 0, 0));
 }
 
 
 sub frames_same_height : Tests {
-    is_deeply([0], frame_tops(
+    is_deeply([0, 100], frame_tops(
         # height, width, x, y
-        0, 0, 0, 0,
-        0, 0, 0, 0));
+        100, 100, 0, 0,
+        100, 100, 0, 0));
 }
 
 
 sub frames_almost_same_height : Tests {
-    is_deeply([0], frame_tops(
+    is_deeply([0, 100], frame_tops(
         # height, width, x, y
-        0, 0, 0, 0,
-        0, 0, 0, $Comic::Consts::FRAME_TOLERANCE - 1,
-        0, 0, 0, -1 * $Comic::Consts::FRAME_TOLERANCE + 1));
+        100, 100, 0, 0,
+        100, 100, 0, $Comic::Consts::FRAME_TOLERANCE - 1,
+        100, 100, 0, -1 * $Comic::Consts::FRAME_TOLERANCE + 1));
 }
 
 
 sub two_rows_of_frames : Tests {
-    is_deeply([0, 100], frame_tops(
+    is_deeply([0, 100, 200], frame_tops(
         # height, width, x, y
-        0, 0, 0, 0,
-        0, 0, 0, 0,
-        0, 0, 0, 100,
-        0, 0, 0, 100));
+        100, 100, 0, 0,
+        100, 100, 0, 0,
+        100, 100, 0, 100,
+        100, 100, 0, 100));
 }
 
 
 sub three_rows_of_frames : Tests {
-    is_deeply([0, 100, 200], frame_tops(
+    is_deeply([0, 100, 200, 300], frame_tops(
         # height, width, x, y
-        0, 0, 0, 0,
-        0, 0, 0, 200,
-        0, 0, 0, 100));
+        100, 100, 0, 0,
+        100, 100, 0, 200,
+        100, 100, 0, 100));
 }
 
 
 sub pos_to_frame : Tests {
     frame_tops(
         # height, width, x, y
-        0, 0, 0, 0,
-        0, 0, 0, 100,
-        0, 0, 0, 200);
+        100, 100, 0, 0,
+        100, 100, 0, 100,
+        100, 100, 0, 200);
     is(0, $comic->_pos_to_frame(-1));
     is(1, $comic->_pos_to_frame(1));
     is(1, $comic->_pos_to_frame(99));
     is(2, $comic->_pos_to_frame(100));
     is(2, $comic->_pos_to_frame(199));
     is(3, $comic->_pos_to_frame(200));
-    is(3, $comic->_pos_to_frame(1000));
+    is(4, $comic->_pos_to_frame(1000));
 }
 
 

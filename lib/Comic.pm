@@ -1163,7 +1163,8 @@ sub _find_frames {
     # distance from each other are meant to be at the same x or y position,
     # respectively.
     my @frame_tops;
-    foreach my $f ($self->all_frames_sorted()) {
+    my @sorted_frames = $self->all_frames_sorted();
+    foreach my $f (@sorted_frames) {
         my $y = floor($f->getAttribute('y'));
         my $found = 0;
         foreach my $ff (@frame_tops) {
@@ -1171,7 +1172,16 @@ sub _find_frames {
         }
         push @frame_tops, $y unless($found);
     }
+
+    if (@sorted_frames) {
+        # If there are frames, add a dummy frame top under the last frame, so
+        # that captions don't get sucked into the last frame row.
+        my $lowest = $sorted_frames[-1];
+        push @frame_tops, $lowest->getAttribute('y') + $lowest->getAttribute('height');
+    }
+
     @{$self->{frame_tops}} = sort { $a <=> $b } @frame_tops;
+
     return;
 }
 

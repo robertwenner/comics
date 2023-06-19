@@ -174,7 +174,7 @@ sub wtfPositiveY : Tests {
 XML
     $comic->{settings}->{LayerNames}->{TranscriptOnlyPrefix} = 'Meta';
     $comic->_find_frames();
-    is_deeply($comic->{frame_tops}, [78, 338, 598], "frame tops");
+    is_deeply($comic->{frame_tops}, [78, 338, 598, 598 + 248], "frame tops");
     eval {
         $check->check($comic);
     };

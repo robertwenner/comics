@@ -395,3 +395,31 @@ XML
     like($comic->{warnings}[0], qr{\btext12345\b}i, 'should say the id');
     like($comic->{warnings}[0], qr{\bone\b}i, 'should say the text');
 }
+
+
+sub text_under_last_frame_is_its_own_row : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => "funny comic" },
+        $MockComic::FRAMES => [
+            # width, height, x, y; 0/0 is top left
+            100, 100, 0, 0,
+        ],
+        $MockComic::XML => <<'XML',
+    <g inkscape:groupmode="layer" inkscape:label="English">
+        <text x="0" y="-10">
+            <tspan>above</tspan>
+        </text>
+        <text x="50" y="50">
+            <tspan>inside</tspan>
+        </text>
+        <text x="0" y="120">
+            <tspan>below</tspan>
+        </text>
+    </g>
+XML
+    );
+
+    is_deeply(
+        [$comic->texts_in_language('English')],
+        ['above', 'inside', 'below']);
+}
