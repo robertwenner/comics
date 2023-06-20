@@ -118,9 +118,6 @@
   does not seem to treat that text as after anything within the frame. The
   whole frame handling code needs a close look.
 
-- defect: frame detection lumps text under the last row of frames in that
-  last row, breaking captions under comics
-
 - feature: should frame detection at the top of the comic use frames of the
   next (first) row? that would allow having a title above the frame, like
   "yesterday" and "today".
@@ -142,6 +139,11 @@
 
 - feature: a rss / atom feed module that doesn't require the user to provide
   a template and hence know the feed format.
+
+- feature: sitemap should work without people having to define a template
+
+- feature: if we keep the sitemap via template, filter the list passed to
+  each template instead of passing the filter notFor function for easier use
 
 - feature: allow comics to opt out of the feed. (use case?)
 
@@ -176,11 +178,6 @@
 - feature: support aggregating meta data that's not per-language in the
   backlog (author, contrib, published when / where)
 
-- feature: sitemap should work without people having to define a template
-
-- feature: if we keep the sitemap via template, filter the list passed to
-  each template instead of passing the filter notFor function for easier use
-
 - feature: default subreddits should be per language hash, both in config
   and in comic meta data (support meta data single value for backward
   compatibility)
@@ -197,8 +194,6 @@
 
 - feature: allow copying static files and pipe them through a Template to
   modify bits in mostly static files, like a copyright year in an index.html
-
-- defect: copyright placement is way off if frames x is not around -206?
 
 - feature: deduct output path from fragments, like outdir / base dir plus
   language placeholders, for less repetitive configuration files
