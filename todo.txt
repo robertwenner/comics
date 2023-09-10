@@ -1,6 +1,9 @@
 - cleanup hard-coded names: "web", "backlog", "generated",
   Comic::not_yet_published should not consider locations
 
+- cleanup: modules that need directories should create them, not Comic.pm;
+  may need to make paths (defaults) available easily
+
 - defect: Mastodon 500 error when posting images
 
 - cleanup: rework variables available for templates: standardize names, pick

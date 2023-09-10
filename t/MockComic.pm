@@ -434,8 +434,16 @@ TEXT
 }
 
 
-sub assert_made_dirs {
+sub assert_made_all_dirs {
     is_deeply([@made_dirs], [@_], 'Created wrong dirs');
+}
+
+
+sub assert_made_some_dirs {
+    my %made = map { $_ => 1 } @made_dirs;
+    foreach my $dir (@_) {
+        ok($made{$dir}, "Should have made directory $dir but made " . join(', ', @made_dirs));
+    }
 }
 
 
