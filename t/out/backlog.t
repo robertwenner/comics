@@ -467,3 +467,15 @@ sub collect_unsupported_stuff : Tests {
     like($@, qr{\bseries\b}i, 'mentions bad tag');
     like($@, qr{\bHASH\b}i, 'mentions what it found');
 }
+
+
+sub no_published_comics_initalizes_per_language_counts : Tests {
+    MockComic::fake_file("backlog.templ", <<'TEMPL');
+[% FOREACH l IN languages %]
+    [% l %] ([% published_counts.$publishers.0.$l %])
+[% END %]
+TEMPL
+    my $comic = make_comic('1', 'English', '3016-01-01', 'cbb');
+    $backlog->generate_all($comic);
+    MockComic::assert_wrote_file('generated/backlog.html', qr{English \(0\)}m);
+}

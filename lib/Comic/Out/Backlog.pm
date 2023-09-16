@@ -203,10 +203,16 @@ sub _populate_vars {
     }
 
     my %vars;
-    $vars{'languages'} = [Comic::Out::Generator::all_languages(@comics)];
+    my @languages = Comic::Out::Generator::all_languages(@comics);
+    $vars{'languages'} = \@languages;
     $vars{'unpublished_comics'} = \@unpublished;
     $vars{'published_comics'} = \@published;
-    $vars{'published_counts'} = _published_counts(@published);
+    if (@published) {
+        $vars{'published_counts'} = _published_counts(1, @published);
+    }
+    else {
+        $vars{'published_counts'} = _published_counts(0, @comics);
+    }
     $vars{'publishers'} = $self->_publishers(@comics);
 
     foreach my $want (@to_collect) {
@@ -277,13 +283,13 @@ sub _publishers {
 
 
 sub _published_counts {
-    my (@published) = @ARG;
+    my ($real, @published) = @ARG;
 
     my %published_counts;
     foreach my $comic (@published) {
         foreach my $language ($comic->languages()) {
             my $where = $comic->{meta_data}->{published}->{where};
-            $published_counts{$where}{$language}++;
+            $published_counts{$where}{$language} += ($real? 1 : 0);
         }
     }
 
