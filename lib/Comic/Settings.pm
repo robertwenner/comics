@@ -21,16 +21,29 @@ Readonly our $GENERATORS => 'Out';
 Readonly our $UPLOADERS => 'Uploader';
 Readonly our $SOCIAL_MEDIA_POSTERS => 'Social';
 
+# Default settings and paths.
+Readonly::Hash my %DEFAULT_SETTINGS => (
+    'Paths' => {
+        'siteComics' => 'comics/',
+        'published' => 'generated/web/',
+        'unpublished' => 'generated/backlog/',
+    },
+    'LayerNames' => {
+        'TranscriptOnlyPrefix' => 'Meta',
+        'NoTranscriptPrefix' => 'NoText',
+        'Frames' => 'Frames',
+    },
+);
+
 
 =encoding utf8
 
-=for stopwords JSON Wenner perlartistic MERCHANTABILITY
+=for stopwords JSON Wenner perlartistic MERCHANTABILITY hashref
 
 
 =head1 NAME
 
 Comic::Settings - Compiles settings from different sources.
-
 
 =head1 SYNOPSIS
 
@@ -38,17 +51,18 @@ Comic::Settings - Compiles settings from different sources.
     $settings->load("path/to/my/settings.json");
     $settings->load("{...}");
     ...
-    my $s = $settings->get();
-    if ($s{'top_level_key'} == 1) {
+    my $s = $settings->clone();
+    if ($s->{'top_level_key'} == 1) {
         ...
     }
 
 
 =head1 DESCRIPTION
 
-Compiles configuration settings. Configuration is read as JSON data. It can
-come from multiple sources, where later read settings override previously
-seen ones. This allows configuration files to override each other.
+Create one instance of this class, load any JSON configuration files through
+C<from_str>, then call C<clone> to get a merged hash of defaults and loaded
+settings to pass to each Comic. (Later loaded settings override earlier
+loaded ones.)
 
 =cut
 
@@ -59,16 +73,26 @@ seen ones. This allows configuration files to override each other.
 
 Creates a new empty Comic::Settings.
 
+Parameters:
+
+=over 4
+
+=item * B<%args> initial (optional) settings to override the defaults.
+
+=back
+
 =cut
 
 
 sub new {
-    my ($class) = @ARG;
+    my ($class, %settings) = @ARG;
     my $self = bless{}, $class;
+
     $self->{parser} = JSON->new();
     $self->{parser}->relaxed(1);
     $self->{merger} = Hash::Merge->new('RIGHT_PRECEDENT');
-    $self->{settings} = {};
+    $self->{settings} = $self->{merger}->merge(\%DEFAULT_SETTINGS, \%settings);
+
     return $self;
 }
 
@@ -76,7 +100,8 @@ sub new {
 =head2 load_str
 
 Load settings from the given string. Any previously set values with the same
-key are overwritten with the new values.
+key are overwritten with the new values. Validates and normalizes the new
+global settings (e.g., makes sure all paths have trailing slashes).
 
 Parameters:
 
@@ -95,6 +120,7 @@ sub load_str {
     my ($self, $json) = @ARG;
 
     my $new = $self->{parser}->decode($json);
+
     if (ref $new ne ref {}) {
         # The JSON parser is configured to validate relaxed to allow e.g.,
         # trailing commas for user friendliness. However, that also means
@@ -105,42 +131,49 @@ sub load_str {
         # users of this class to figure out what the array refers to anyway.
         croak('Must have an object; top level arrays are not supported');
     }
+
+    # Validate
+
+    # Paths, if given
+    if (exists $new->{Paths}) {
+        # is a hash
+        if (ref $new->{Paths} ne ref {}) {
+            croak('Paths must be a hash / object');
+        }
+        # is not empty; possibly a typo or attempt to clean the defaults?
+        unless (%{$new->{Paths}}) {
+            croak('Paths cannot be empty');
+        }
+        # hash elements are scalars
+        foreach my $path (keys %{$new->{Paths}}) {
+            croak("Paths.$path must be a single value") unless (ref ${$new->{Paths}}{$path} eq '');
+        }
+    }
+
+    # Merge
     $self->{settings} = $self->{merger}->merge($self->{settings}, $new);
+
+    # Normalize
+
+    # Make sure all paths have a trailing slash, for easy concatenation.
+    foreach my $path (keys %{$self->{settings}{Paths}}) {
+        ${$self->{settings}{Paths}}{$path} .= q{/} unless (${$self->{settings}->{Paths}}{$path} =~ m{/$}x);
+    }
 
     return;
 }
 
 
-=head2 get
-
-Gets all previously loaded settings in a hash reference. Any changes made to
-that hash reference reflect to this Settings. Use the C<clone> method to
-create a copy for modification.
-
-=cut
-
-sub get {
-    my ($self) = @ARG;
-
-    return $self->{settings};
-}
-
-
 =head2 clone
 
-Clones this Settings. The clone can be modified without changing the
-original.
+Clones this Settings, returning a hashref of actual settings.
 
 =cut
 
 sub clone {
     my ($self) = @ARG;
 
-    my $cloned = Comic::Settings->new();
-    $cloned->{settings} = Clone::clone($self->{settings});
-    $cloned->{parser} = $self->{parser};
-    $cloned->{merger} = $self->{merger};
-    return $cloned;
+    return Clone::clone($self->{settings});
 }
 
 
@@ -181,7 +214,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2020 - 2011, Robert Wenner C<< <rwenner@cpan.org> >>.
+Copyright (c) 2020 - 2023, Robert Wenner C<< <rwenner@cpan.org> >>.
 All rights reserved.
 
 This module is free software; you can redistribute it and/or

@@ -40,19 +40,19 @@ sub croaks_if_no_weekday_configuration : Tests {
 
 sub croaks_if_weekday_configuration_is_empty : Tests {
     my $comics = Comics->new();
-    $comics->{settings}->{settings}->{Checks}->{'Comic::Check::Weekday'} = ();
+    $comics->{settings}->load_str('{"Checks": { "Comic::Check::Weekday": [] } }');
 
     eval {
         $comics->next_publish_day();
     };
     like($@, qr{Comic::Check::Weekday}, 'should mention setting');
-    like($@, qr{\bnot found\b}, 'should say what is wrong');
+    like($@, qr{\bempty\b}, 'should say what is wrong');
 }
 
 
 sub croaks_if_next_publish_day_is_neither_array_nor_scalar : Tests {
     my $comics = Comics->new();
-    $comics->{settings}->{settings}->{Checks}->{'Comic::Check::Weekday'} = {};
+    $comics->{settings}->load_str('{ "Checks": { "Comic::Check::Weekday": {} } }');
 
     eval {
         $comics->next_publish_day();
@@ -82,7 +82,7 @@ sub schedule_for_one_day : Tests {
         '2022-08-08' => '2022-08-12',
     );
     my $comics = Comics->new();
-    $comics->{settings}->{settings}->{Checks}->{'Comic::Check::Weekday'} = 5; # Fri
+    $comics->{settings}->load_str('{ "Checks": { "Comic::Check::Weekday": 5 } }'); # Fri
 
     foreach my $today (keys %today_to_next_friday) {
         $now = DateTime::Format::ISO8601->parse_datetime("${today}T00:00:00");
@@ -114,7 +114,7 @@ sub schedule_for_multiple_days : Tests {
         '2022-08-09' => '2022-08-12',
     );
     my $comics = Comics->new();
-    @{$comics->{settings}->{settings}->{Checks}->{'Comic::Check::Weekday'}} = (1, 5); # Mon, Fri
+    $comics->{settings}->load_str('{ "Checks": { "Comic::Check::Weekday": [1, 5] } }'); # Mon, Fri
 
     foreach my $today (keys %today_to_next_friday) {
         $now = DateTime::Format::ISO8601->parse_datetime("${today}T00:00:00");
@@ -142,7 +142,7 @@ sub schedule_skips_dates_taken : Tests {
         MockComic::make_comic($MockComic::PUBLISHED_WHEN => ''),
         MockComic::make_comic($MockComic::PUBLISHED_WHEN => '2022-08-26');
 
-    @{$comics->{settings}->{settings}->{Checks}->{'Comic::Check::Weekday'}} = (5); # Fri
+    $comics->{settings}->load_str('{ "Checks": { "Comic::Check::Weekday": [5] } }'); # Fri
 
     my $scheduled_for = $comics->next_publish_day();
 

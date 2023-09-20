@@ -283,6 +283,11 @@ sub png_meta_information_from_settings : Tests {
                 $MockComic::ENGLISH => 'beercomics.com',
                 $MockComic::DEUTSCH => 'biercomics.de',
             },
+            'Paths' => {
+                'siteComics' => 'comics/',
+                'published' => 'generated/web/',
+                'unpublished' => 'generated/backlog/',
+            },
         },
     );
     $png->_svg_to_png($comic, $MockComic::ENGLISH, 'some-comic.svg', 'some-comic.png');
@@ -301,6 +306,11 @@ sub png_meta_information_from_comic_meta_data : Tests {
             $MockComic::DOMAINS => {
                 $MockComic::ENGLISH => 'beercomics.com',
                 $MockComic::DEUTSCH => 'biercomics.de',
+            },
+            'Paths' => {
+                'siteComics' => 'comics/',
+                'published' => 'generated/web/',
+                'unpublished' => 'generated/backlog/',
             },
         },
         $MockComic::JSON => <<'JSON',

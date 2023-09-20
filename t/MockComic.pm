@@ -66,6 +66,11 @@ my %defaultArgs = (
             $DEUTSCH => 'biercomics.de',
             $ESPAÑOL => 'cervezacomics.es',
         },
+        'Paths' => {
+            'siteComics' => 'comics/',
+            'published' => 'generated/web/',
+            'unpublished' => 'generated/backlog/',
+        },
         $Comic::Settings::CHECKS => [],
     },
     $IN_FILE => 'some_comic.svg',
@@ -182,8 +187,16 @@ sub make_comic {
     fake_file($args{$IN_FILE}, fake_comic(%args));
 
     my $checks = $args{$CHECKS} || [];
-    my %settings = %{$args{$SETTINGS}};
+
+    my %settings;
+    if ($args{$SETTINGS}) {
+        %settings = %{$args{$SETTINGS}};
+    }
+    else {
+        %settings = %{$defaultArgs{$SETTINGS}};
+    }
     $settings{'LayerNames'}{'Frames'} = 'Rahmen';
+
     my $comic = Comic->new(\%settings, $checks);
     $comic->load($args{$IN_FILE});
     foreach my $language ($comic->languages()) {

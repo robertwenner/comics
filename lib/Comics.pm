@@ -123,7 +123,7 @@ sub generate {
     $comics->load_generators();
 
     foreach my $file (@files) {
-        my $comic = Comic->new($comics->{settings}->clone()->{settings}, $comics->{checks});
+        my $comic = Comic->new($comics->{settings}->clone(), $comics->{checks});
         $comic->load($file);
         push @{$comics->{comics}}, $comic;
     }
@@ -409,7 +409,7 @@ sub load_social_media_posters {
 sub _load_modules {
     my ($self, $type, $get_default_modules, $error_if_no_modules) = @ARG;
 
-    my $actual_settings = $self->{settings}->get();
+    my $actual_settings = $self->{settings}->clone();
     my $wants_to_load;
     if (exists $actual_settings->{$type}) {
         $wants_to_load = $actual_settings->{$type};
@@ -707,14 +707,18 @@ sub next_publish_day {
     my ($self) = @ARG;
     Readonly my $DAYS_PER_WEEK => 7;
 
+    no autovivification;
     my $weekday_settings = $self->{settings}->{settings}->{Checks}->{'Comic::Check::Weekday'};
-    croak('Comic::Check::Weekday configuration not found or empty') if (!$weekday_settings);
+    use autovivification;
+    croak('Comic::Check::Weekday configuration not found') if (!$weekday_settings);
+
     my @publish_days;
     if (ref $weekday_settings eq '') {
         @publish_days = ($weekday_settings);
     }
     elsif (ref $weekday_settings eq 'ARRAY') {
         @publish_days = @{$weekday_settings};
+        croak('Comic::Check::Weekday configuration is empty') if (!@{$weekday_settings});
     }
     else {
         croak('Comic::Check::Weekday must be scalar or array');

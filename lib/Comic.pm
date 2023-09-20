@@ -55,11 +55,10 @@ This document refers to version 0.0.3.
 =head1 SYNOPSIS
 
     use Comic;
-    use Comic::Settings;
 
-    my $settings = Comic::Settings->new();
+    my %settings = {};
     foreach my $file (@ARGV) {
-        my $c = Comic->new($file, $settings);
+        my $c = Comic->new($file, \$settings);
     }
 
 
@@ -86,7 +85,8 @@ Parameters:
 
 =over 4
 
-=item * B<$settings> Comic::Settings object with settings for all comics.
+=item * B<$settings> Hash reference of settings for this Comic; the Comic
+    may modify its settings. Pass a cloned version of global settings.
 
 =item * B<$checks> Array reference of globally configured and loaded checks.
     These are actual C<Comic::Check::Check> instances.
@@ -157,35 +157,20 @@ sub load {
         $self->{rfc3339pubDate} = DateTime::Format::RFC3339->new()->format_datetime($published);
     }
 
-    $self->{siteComicsPath} = 'comics/'; # default
-    if (defined $self->{settings}->{Paths}) {
-        if (ref $self->{settings}->{Paths} eq 'HASH') {
-            if (defined ${$self->{settings}->{Paths}}{'siteComics'}) {
-                if (ref ${$self->{settings}->{Paths}}{'siteComics'} eq '') {
-                    $self->{siteComicsPath} = _slashed(${$self->{settings}->{Paths}}{'siteComics'});
-                }
-                else {
-                    $self->keel_over('Paths.siteComics must be a single value');
-                }
-            }
-        }
-        else {
-            $self->keel_over('Paths setting must be a hash');
-        }
-    }
+    $self->{siteComicsPath} = ${$self->{settings}->{Paths}}{'siteComics'};
 
     foreach my $language ($self->languages()) {
         my $domain = ${$self->{settings}->{Domains}}{$language};
         $self->keel_over("No domain for $language") unless ($domain);
 
-        my $backlog_path = _slashed(${$self->{settings}->{Paths}}{'unpublished'} || 'generated/backlog/');
+        my $backlog_path = ${$self->{settings}->{Paths}}{'unpublished'};
         $self->{backlogPath}{$language} = $backlog_path . lc $language;
         my $base;
         if ($self->not_yet_published()) {
             $base = $self->{backlogPath}{$language};
         }
         else {
-            my $dir = _slashed(${$self->{settings}->{Paths}}{'published'} || 'generated/web/');
+            my $dir = ${$self->{settings}->{Paths}}{'published'};
             $base = $dir . lc $language . q{/} . $self->{siteComicsPath};
             $base =~ s{/$}{};
         }
@@ -206,13 +191,6 @@ sub load {
     $self->_adjust_checks($self->{meta_data}->{$Comic::Settings::CHECKS});
 
     return;
-}
-
-
-sub _slashed {
-    my ($path) = @ARG;
-    $path .= q{/} unless ($path =~ m{/$}x);
-    return $path;
 }
 
 
@@ -481,11 +459,11 @@ sub outdir {
 
     my $outdir;
     if ($self->not_published_on_in('web', $language)) {
-        $outdir = _slashed(${$self->{settings}->{Paths}}{'unpublished'} || 'generated/backlog/');
+        $outdir = ${$self->{settings}->{Paths}}{'unpublished'};
     }
     else {
-        my $path = _slashed(${$self->{settings}->{Paths}}{'published'} || 'generated/web/');
-        $outdir = _slashed($path . lc $language);
+        my $path = ${$self->{settings}->{Paths}}{'published'};
+        $outdir = $path . lc $language . q{/};
     }
     return make_dir($outdir);
 }

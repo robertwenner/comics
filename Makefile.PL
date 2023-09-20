@@ -4,6 +4,7 @@ use ExtUtils::MakeMaker;
 
 my %dependencies = (
     'autodie' => 0,
+    'autovivification' => 0,
     'Clone' => 0,
     'DateTime' => 0,
     'DateTime::Format::ISO8601' => 0,

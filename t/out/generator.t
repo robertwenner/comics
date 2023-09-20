@@ -66,7 +66,8 @@ sub loads_generators : Tests {
 JSON
     $comics->load_settings('config.json');
     $comics->load_generators();
-    ok($comics->{settings}->get()->{Out});  # not empty
+    my $settings = $comics->{settings}->clone();
+    ok($settings->{Out});  # not empty
 }
 
 

@@ -525,6 +525,11 @@ sub check_upload_encodes_url : Tests {
                 'destination' => 'me@example.com/english',
             },
         ],
+        'Paths' => {
+            'siteComics' => 'comics/',
+            'published' => 'generated/web/',
+            'unpublished' => 'generated/backlog/',
+        },
         'check' => {},
     );
 
@@ -535,6 +540,11 @@ sub check_upload_encodes_url : Tests {
         $MockComic::SETTINGS => {
             $MockComic::DOMAINS => {
                 $MockComic::DEUTSCH => 'cömics.de',
+            },
+            'Paths' => {
+                'siteComics' => 'comics/',
+                'published' => 'generated/web/',
+                'unpublished' => 'generated/backlog/',
             },
         },
     );

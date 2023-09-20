@@ -54,6 +54,11 @@ sub language_code_unknown : Tests {
                 'Pimperanto' => 'wtf.com',
             },
             $Comic::Settings::CHECKS => [],
+            'Paths' => {
+                'siteComics' => 'comics/',
+                'published' => 'generated/web/',
+                'unpublished' => 'generated/backlog/',
+            },
         });
     eval {
         $comic->language_codes();

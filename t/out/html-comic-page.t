@@ -27,12 +27,6 @@ sub make_comic {
         $MockComic::TITLE => { $language => $title },
         $MockComic::PUBLISHED_WHEN => $published_when,
         $MockComic::PUBLISHED_WHERE => $published_where || "web",
-        $MockComic::SETTINGS => {
-            'Domains' => {
-                'English' => 'beercomics.com',
-                'Deutsch' => 'biercomics.de',
-            },
-        },
     );
     # clear out some dummy values MockComic sets; the code under tests needs to provide them
     $comic->{url} = {};

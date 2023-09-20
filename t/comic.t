@@ -145,11 +145,13 @@ XML
 }
 
 
-sub sets_comic_path_from_config_ok : Tests {
+sub gets_comic_path_from_config : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::SETTINGS => {
             'Paths' => {
-                'siteComics' => 'theComicPath/',
+                'siteComics' => 'comics-path/',
+                'published' => 'published-path/',
+                'unpublished' => 'unpublished-path/',
             },
             $MockComic::DOMAINS => {
                 $MockComic::ENGLISH => 'beercomics.com',
@@ -157,161 +159,9 @@ sub sets_comic_path_from_config_ok : Tests {
             },
         },
     );
-    is($comic->{siteComicsPath}, 'theComicPath/', 'wrong path');
-}
 
-
-sub sets_comic_path_from_config_ok_adds_trailing_slash : Tests {
-    my $comic = MockComic::make_comic(
-        $MockComic::SETTINGS => {
-            'Paths' => {
-                'siteComics' => 'theComicPath',
-            },
-            $MockComic::DOMAINS => {
-                $MockComic::ENGLISH => 'beercomics.com',
-                $MockComic::DEUTSCH => 'biercomics.de',
-            },
-        },
-    );
-    is($comic->{siteComicsPath}, 'theComicPath/', 'wrong path');
-}
-
-
-sub no_comics_path_in_config_defaults_to_comics : Tests {
-    my $comic = MockComic::make_comic(
-        $MockComic::SETTINGS => {
-            'Paths' => {},
-            $MockComic::DOMAINS => {
-                $MockComic::ENGLISH => 'beercomics.com',
-                $MockComic::DEUTSCH => 'biercomics.de',
-            },
-        },
-    );
-    is($comic->{siteComicsPath}, 'comics/', 'wrong path');
-
-    $comic = MockComic::make_comic(
-        $MockComic::SETTINGS => {
-            $MockComic::DOMAINS => {
-                $MockComic::ENGLISH => 'beercomics.com',
-                $MockComic::DEUTSCH => 'biercomics.de',
-            },
-        },
-    );
-    is($comic->{siteComicsPath}, 'comics/', 'wrong path');
-}
-
-
-sub complains_if_paths_is_not_a_hash : Tests {
-    eval {
-        MockComic::make_comic(
-            $MockComic::SETTINGS => {
-                'Paths' => [],
-                $MockComic::DOMAINS => {
-                    $MockComic::ENGLISH => 'beercomics.com',
-                    $MockComic::DEUTSCH => 'biercomics.de',
-                },
-            },
-        );
-    };
-    like($@, qr{\bPaths\b}, 'should mention the top level setting');
-    like($@, qr{\bhash\b}, 'should say what is wrong');
-}
-
-
-sub complains_if_comics_path_not_a_scalar : Tests {
-    eval {
-        MockComic::make_comic(
-            $MockComic::SETTINGS => {
-                'Paths' => {
-                    'siteComics' => {},
-                },
-                $MockComic::DOMAINS => {
-                    $MockComic::ENGLISH => 'beercomics.com',
-                    $MockComic::DEUTSCH => 'biercomics.de',
-                },
-            },
-        );
-    };
-    like($@, qr{\bPaths\b}, 'should mention the top level setting');
-    like($@, qr{\bsiteComics\b}, 'should mention the actual setting');
-    like($@, qr{\bsingle value\b}, 'should say what is wrong');
-
-    eval {
-        MockComic::make_comic(
-            $MockComic::SETTINGS => {
-                'Paths' => {
-                    'siteComics' => [],
-                },
-                $MockComic::DOMAINS => {
-                    $MockComic::ENGLISH => 'beercomics.com',
-                    $MockComic::DEUTSCH => 'biercomics.de',
-                },
-            },
-        );
-    };
-    like($@, qr{\bPaths\b}, 'should mention the top level setting');
-    like($@, qr{\bsiteComics\b}, 'should mention the actual setting');
-    like($@, qr{\bsingle value\b}, 'should say what is wrong');
-}
-
-
-sub published_path_from_config : Tests {
-    my $comic = MockComic::make_comic(
-        $MockComic::SETTINGS => {
-            'Paths' => {
-                'published' => '/path/for/published/comics',
-            },
-            $MockComic::DOMAINS => {
-                $MockComic::ENGLISH => 'beercomics.com',
-                $MockComic::DEUTSCH => 'beercomics.de',
-            },
-        },
-        $MockComic::PUBLISHED_WHEN => '2020-01-01',
-    );
-    is($comic->outdir('English'), '/path/for/published/comics/english/', 'wrong path');
-}
-
-
-sub published_path_not_given_falls_back_to_default : Tests {
-    my $comic = MockComic::make_comic(
-        $MockComic::SETTINGS => {
-            $MockComic::DOMAINS => {
-                $MockComic::ENGLISH => 'beercomics.com',
-                $MockComic::DEUTSCH => 'beercomics.de',
-            },
-        },
-        $MockComic::PUBLISHED_WHEN => '2020-01-01',
-    );
-    is($comic->outdir('English'), 'generated/web/english/', 'wrong path');
-}
-
-
-sub unpublished_path_from_config : Tests {
-    my $comic = MockComic::make_comic(
-        $MockComic::SETTINGS => {
-            'Paths' => {
-                'unpublished' => '/path/for/unpublished/comics',
-            },
-            $MockComic::DOMAINS => {
-                $MockComic::ENGLISH => 'beercomics.com',
-                $MockComic::DEUTSCH => 'beercomics.de',
-            },
-        },
-        $MockComic::PUBLISHED_WHEN => '3000-01-01',
-    );
-    is($comic->outdir('English'), '/path/for/unpublished/comics/', 'wrong path');
-}
-
-
-sub unpublished_path_not_given_falls_back_to_default : Tests {
-    my $comic = MockComic::make_comic(
-        $MockComic::SETTINGS => {
-            $MockComic::DOMAINS => {
-                $MockComic::ENGLISH => 'beercomics.com',
-                $MockComic::DEUTSCH => 'beercomics.de',
-            },
-        },
-        $MockComic::PUBLISHED_WHEN => '3000-01-01',
-    );
-    is($comic->outdir('English'), 'generated/backlog/', 'wrong path');
+    is($comic->{siteComicsPath}, 'comics-path/', 'wrong site comics path');
+    is(${$comic->{settings}{Paths}}{'siteComics'}, 'comics-path/', 'wrong site comics setting');
+    is(${$comic->{settings}{Paths}}{'published'}, 'published-path/', 'wrong backlog setting');
+    is(${$comic->{settings}{Paths}}{'unpublished'}, 'unpublished-path/', 'wrong backlog setting');
 }

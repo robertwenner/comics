@@ -54,7 +54,8 @@ sub loads_config_file : Tests {
     $faked_files{"config.json"} = '{"foo": "bar"}';
 
     $comics->load_settings("config.json");
-    is_deeply({"foo" => "bar"}, $comics->{settings}->get(), 'should have loaded settings');
+    my $cloned = $comics->{settings}->clone();
+    is("bar", $cloned->{'foo'}, 'should have loaded settings');
 }
 
 
