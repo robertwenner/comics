@@ -358,7 +358,7 @@ sub optional {
     $self->{valid_settings}->{$name} = 1;
 
     unless (exists $self->{settings}->{$name}) {
-        $self->{settings}->{$name} = $default_value if ($default_value);
+        $self->{settings}->{$name} = $default_value if (defined $default_value);
         return;
     }
 
