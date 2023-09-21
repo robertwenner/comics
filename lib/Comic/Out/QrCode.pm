@@ -5,6 +5,7 @@ use warnings;
 use utf8;
 use English '-no_match_vars';
 use Imager::QRCode;
+use File::Path;
 
 use Comic::Out::Generator;
 use base('Comic::Out::Generator');
@@ -128,7 +129,7 @@ sub generate {
 
             my $dir = $comic->outdir($language);
             my $qrdir = $dir . $self->{settings}->{outdir};
-            Comic::make_dir($qrdir);
+            File::Path::make_path($qrdir);
 
             my $png = "$comic->{baseName}{$language}.png";
             $qrcode->write(file => "$qrdir$png") or $comic->keel_over($qrcode->errstr());

@@ -5,6 +5,7 @@ use warnings;
 use utf8;
 use English '-no_match_vars';
 use Carp;
+use File::Path;
 
 use Comic::Out::Generator;
 use base('Comic::Out::Generator');
@@ -127,7 +128,8 @@ sub generate {
 
     foreach my $language ($comic->languages()) {
         my $dir = $self->{settings}->{outdir} . "$language/";
-        my $svg_file = Comic::make_dir($dir) . "$comic->{baseName}{$language}.svg";
+        File::Path::make_path($dir);
+        my $svg_file = $dir . "$comic->{baseName}{$language}.svg";
         $comic->{svgFile}{$language} = $svg_file;
 
         next if ($comic->up_to_date($svg_file));

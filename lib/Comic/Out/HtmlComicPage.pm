@@ -8,6 +8,7 @@ use English '-no_match_vars';
 use Carp;
 use Readonly;
 use Clone qw(clone);
+use File::Path;
 
 use Comic::Out::Template;
 use Comic::Out::Generator;
@@ -179,7 +180,7 @@ sub generate_all {
             $comic->{'last'}{$language} = $last_comic ? $last_comic->{htmlFile}{$language} : 0;
 
             # Create dir(s)
-            Comic::make_dir($self->{settings}->{outdir} . lc $language);
+            File::Path::make_path($self->{settings}->{outdir} . lc $language);
 
             # The actual export
             my $template = $self->per_language_setting('template', $language);

@@ -5,6 +5,7 @@ use warnings;
 use utf8;
 use English '-no_match_vars';
 use Carp;
+use File::Path;
 
 use version; our $VERSION = qv('0.0.3');
 
@@ -249,7 +250,7 @@ sub _write_tags_pages {
         my $base_dir = $comics[0]->{settings}->{Paths}{'published'};
         my $tags_dir = $self->_get_outdir($language);
         my $full_dir = $base_dir . lc($language) . "/$tags_dir";
-        Comic::make_dir($full_dir);
+        File::Path::make_path($full_dir);
 
         my $template = $self->_get_template($language);
 

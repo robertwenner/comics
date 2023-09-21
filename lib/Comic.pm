@@ -175,7 +175,8 @@ sub load {
             $base =~ s{/$}{};
         }
 
-        $self->{dirName}{$language} = make_dir($base);
+        File::Path::make_path($base);
+        $self->{dirName}{$language} = $base;
         $self->{baseName}{$language} = $self->_normalized_title($language);
 
         my $html_file = "$self->{baseName}{$language}.html";
@@ -465,7 +466,7 @@ sub outdir {
         my $path = ${$self->{settings}->{Paths}}{'published'};
         $outdir = $path . lc $language . q{/};
     }
-    return make_dir($outdir);
+    return $outdir;
 }
 
 
@@ -720,27 +721,6 @@ sub _build_xpath {
         $xpath .= "/$DEFAULT_NAMESPACE:$p";
     }
     return $xpath;
-}
-
-
-=head2 make_dir
-
-Create given directory if it doesn't exist yet.
-
-Parameters:
-
-=over 4
-
-=item * B<$dir> directory to create.
-
-=back
-
-=cut
-
-sub make_dir {
-    my $dir = shift;
-    File::Path::make_path($dir);
-    return $dir;
 }
 
 
