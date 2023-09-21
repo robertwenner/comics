@@ -906,6 +906,8 @@ template:
 * `last_modified`: last modification date of the pages that have the current
   tag, in ISO 8601 format.
 
+* `count`: How often that tag was used.
+
 A simple tags page could look like this:
 
 ```html
@@ -914,10 +916,10 @@ A simple tags page could look like this:
     <title>All comics tagged [% tag %]</title>
 </head>
 <body>
-<h1>All comics tagged [% tag %]</h1>
+<h1>All [% count %] comics tagged [% tag %]</h1>
 <ul>
 [% FOREACH c IN comics %]
-    <li><a href="../[% c.value %]">[% c.key %]</a></li>
+    <li><a href="[% root %][% c.value %]">[% c.key %]</a></li>
 [% END %]
 </ul>
 </body>

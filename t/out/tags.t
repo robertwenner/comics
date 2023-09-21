@@ -339,7 +339,7 @@ sub outdir_not_given_uses_default : Tests {
 
 sub creates_tags_page : Tests {
     my $content = << 'TEMPL';
-        <h1>[% tag %]</h1>
+        <h1>[% tag %] ([% count %])</h1>
         [% FOREACH c IN comics %]
             <a href="[% c.value %]">[% c.key %]</a>
         [% END %]
@@ -363,12 +363,12 @@ TEMPL
 
     MockComic::assert_made_some_dirs('generated/web/deutsch/tags', 'generated/web/english/tags');
     MockComic::assert_wrote_file('generated/web/deutsch/tags/brauen.html',
-        qr{<h1>brauen</h1>}m);
+        qr{<h1>brauen \(1\)</h1>}m);
     MockComic::assert_wrote_file('generated/web/deutsch/tags/brauen.html',
         qr{<a href="comics/bier\.html">Bier</a>}m);
 
     MockComic::assert_wrote_file('generated/web/english/tags/brewing.html',
-        qr{<h1>brewing</h1>}m);
+        qr{<h1>brewing \(1\)</h1>}m);
     MockComic::assert_wrote_file('generated/web/english/tags/brewing.html',
         qr{<a href="comics/beer\.html">beer</a>}m);
 }
@@ -380,6 +380,7 @@ sub defines_tags_page_template_variables : Tests {
         language: [% language %]
         root: [% root %]
         last_modified: [% last_modified %]
+        count: [% count %]
 TEMPL
     MockComic::fake_file('tags.templ', $content);
     my $tags = Comic::Out::Tags->new(template => 'tags.templ', outdir => 'tags');
@@ -392,6 +393,7 @@ TEMPL
     MockComic::assert_wrote_file('generated/web/english/tags/brewing.html', qr{language: english}m);
     MockComic::assert_wrote_file('generated/web/english/tags/brewing.html', qr{root: \.\./}m);
     MockComic::assert_wrote_file('generated/web/english/tags/brewing.html', qr{last_modified: \d{4}-\d{2}-\d{2}}m);
+    MockComic::assert_wrote_file('generated/web/english/tags/brewing.html', qr{count: \d+}m);
 }
 
 

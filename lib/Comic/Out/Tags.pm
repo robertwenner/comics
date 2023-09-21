@@ -229,6 +229,8 @@ Makes these variables available to the tag page template:
 
 =item * B<$last_modified> ISO 8601 date of the latest comic that uses a tag.
 
+=item * B>$count> How often this tag was used.
+
 =back
 
 =cut
@@ -304,6 +306,7 @@ sub _write_tags_pages {
                 'tag' => $tag,
                 'comics' => $self->{tags}{$language}{$tag},
                 'last_modified' => $self->{last_modified}{$language}{$tag},
+                'count' => $tag_count,
                 # Some template parts may need the root folder to reference
                 # CSS or images. Provide it here for consistency and
                 # compatibility with HtmlComicPage.
