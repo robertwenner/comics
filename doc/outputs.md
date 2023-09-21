@@ -874,11 +874,15 @@ page template:
   in B will only refer to A. That way you don't end up with links to the
   comic you just came from.
 
-* `tags_page`: A hash of language to URL. If there are too many comics
+* `tags_page`: A object of language to URL. If there are too many comics
   sharing a tag, a link list in each comic's page may get unwieldy. You can
   instead link to the tag page, a page that lists all comics with that tag.
   The key in `tags_page` is the tag (e.g., "beer") and the value is the
   comic's url relative to the server root, e.g., "/comics/beer.html".
+
+* `tag_count`: An object of language to tag to tag count, e.g., in English,
+  tag "beer" was seen 10 times. This can be used to show only the top x
+  tags, or to use different font sizes based on tag frequency.
 
 
 ### Tag pages

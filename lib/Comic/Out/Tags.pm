@@ -212,6 +212,8 @@ Defines these variables in each passed Comic:
     generated tags pages. The comic page template can use these to link to
     the tags pages.
 
+=item * B<%tag_count> A hash of tag to the number it was used, per language.
+
 =back
 
 Makes these variables available to the tag page template:
@@ -251,6 +253,7 @@ sub _put_tags_in_comics {
     foreach my $comic (@comics) {
         foreach my $language ($comic->languages()) {
             $comic->{tags}{$language} = {};
+            $comic->{tag_count}{$language} = {};
             # Unpublished comics could link to others, but then the code here
             # would need to know about backlog vs published paths. A comic that's
             # not (yet) published on the web must never be included in a published
@@ -264,12 +267,12 @@ sub _put_tags_in_comics {
                     foreach my $title (keys %{$self->{tags}{$language}{$collect}}) {
                         # Don't link-tag to self.
                         next if ($comic->{meta_data}->{title}{$language} eq $title);
-
                         # Honor minimum tags count.
                         my $tag_count = $self->{tag_count}{$language}{$collect};
                         next if ($tag_count < $self->{settings}->{'min-count'});
 
                         $comic->{tags}{$language}{$collect}{$title} = $self->{tags}{$language}{$collect}{$title};
+                        $comic->{tag_count}{$language}{$collect} = $self->{tag_count}{$language}{$collect};
                     }
                 }
             }

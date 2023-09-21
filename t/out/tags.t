@@ -519,8 +519,6 @@ sub no_tags_page_if_count_too_low : Tests {
 
 
 sub does_not_put_links_to_skipped_tag_page_in_comics : Tests {
-    MockComic::fake_file('tags.templ', '...');
-
     my $tags = Comic::Out::Tags->new('min-count' => '3', 'template' => 'tags.templ');
     $tags->generate($max_beer_brewing);
     $tags->generate($max_paul_beer_brewing);
@@ -556,4 +554,15 @@ sub tag_page_last_modified_date_is_latest_comic_date : Tests {
     $tags->generate_all(@comics);
 
     is_deeply($tags->{last_modified}, {'English' => {'beer' => '2023-03-01'}});
+}
+
+
+sub puts_tag_counts_in_comic : Tests {
+    my $tags = Comic::Out::Tags->new('template' => 'tags.templ');
+    $tags->generate($max_beer_brewing);
+    $tags->generate($max_paul_beer_brewing);
+    $tags->_put_tags_in_comics($max_beer_brewing, $max_paul_beer_brewing);
+
+    is_deeply($max_beer_brewing->{tag_count},
+        {'Deutsch' => {'Bier' => 2, 'Brauen' => 2}, 'English' => {'beer' => 2, 'brewing' => 2}});
 }
