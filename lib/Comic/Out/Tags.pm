@@ -160,11 +160,13 @@ sub generate {
         foreach my $tag (@{$self->{settings}{collect}}) {
             next unless $comic->{meta_data}{$tag};
             if (ref $comic->{meta_data}{$tag} ne 'HASH') {
-                $comic->keel_over("$tag meta data must be a hash of languages to arrays of values");
+                $comic->warning("$tag meta data must be a hash of languages to arrays of values");
+                next;
             }
             next if (keys %{$comic->{meta_data}{$tag}} == 0);
             if (ref $comic->{meta_data}{$tag}{$language} ne 'ARRAY') {
-                $comic->keel_over("$tag $language must be an array");
+                $comic->warning("$tag $language must be an array");
+                next;
             }
 
             foreach my $collect (@{$comic->{meta_data}{$tag}{$language}}) {

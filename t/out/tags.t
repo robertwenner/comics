@@ -169,12 +169,12 @@ sub nice_error_message_if_tags_meta_data_is_not_an_hash : Tests {
     );
 
     my $tags = Comic::Out::Tags->new(collect => ['tags']);
-    eval {
-        $tags->generate($oops);
-    };
-    like($@, qr{\bhash\b}i, 'should say what is wrong');
-    like($@, qr{\blanguages\b}i, 'should say what is wrong');
-    like($@, qr{\btags\b}i, 'should name the bad metadata');
+    $tags->generate($oops);
+
+    my $msg = $oops->{warnings}[0];
+    like($msg, qr{\bhash\b}i, 'should say what is wrong');
+    like($msg, qr{\blanguages\b}i, 'should say what is wrong');
+    like($msg, qr{\btags\b}i, 'should name the bad metadata');
 }
 
 
@@ -187,12 +187,12 @@ sub nice_error_message_if_tags_meta_data_per_language_is_not_an_array : Tests {
     );
 
     my $tags = Comic::Out::Tags->new(collect => ['tags']);
-    eval {
-        $tags->generate($oops);
-    };
-    like($@, qr{\barray\b}i, 'should say what is wrong');
-    like($@, qr{\btags\b}i, 'should name the bad metadata');
-    like($@, qr{\bEnglish\b}i, 'should include the language');
+    $tags->generate($oops);
+
+    my $msg = $oops->{warnings}[0];
+    like($msg, qr{\barray\b}i, 'should say what is wrong');
+    like($msg, qr{\btags\b}i, 'should name the bad metadata');
+    like($msg, qr{\bEnglish\b}i, 'should include the language');
 }
 
 
