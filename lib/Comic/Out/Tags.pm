@@ -132,6 +132,7 @@ sub new {
     %{$self->{tags}} = ();  # tag per language to comic href
     %{$self->{tags_page}} = ();  # tags page url
     %{$self->{tag_count}} = ();  # counts per tag per language
+    %{$self->{last_modified}} = ();  # last modified date for tag per language
 
     return $self;
 }
@@ -171,7 +172,10 @@ sub generate {
 
             foreach my $collect (@{$comic->{meta_data}{$tag}{$language}}) {
                 $self->{tags}{$language}{$collect}{$comic->{meta_data}{title}{$language}} = $comic->{href}{$language};
-                $self->{tagcount}{$language}{$collect}++;
+                $self->{tag_count}{$language}{$collect}++;
+                if (($self->{last_modified}{$language}{$collect} || q{0}) lt $comic->{modified}) {
+                    $self->{last_modified}{$language}{$collect} = $comic->{modified};
+                }
             }
         }
     }
@@ -210,6 +214,23 @@ Defines these variables in each passed Comic:
 
 =back
 
+Makes these variables available to the tag page template:
+
+=over 4
+
+=item * B<$language> Name of the language for which the tag is, e.g., English.
+
+=item * B<$url> URL of the tag page relative to the server root.
+
+=item * B<$root> Relative offset to the server root.
+
+=item * B<%comics> Hash of comic URL to comic title, of all comics that use
+    the current tag in the given language.
+
+=item * B<$last_modified> ISO 8601 date of the latest comic that uses a tag.
+
+=back
+
 =cut
 
 sub generate_all {
@@ -243,8 +264,8 @@ sub _put_tags_in_comics {
                         next if ($comic->{meta_data}->{title}{$language} eq $title);
 
                         # Honor minimum tags count.
-                        my $tagcount = $self->{tagcount}{$language}{$collect};
-                        next if ($tagcount < $self->{settings}->{'min-count'});
+                        my $tag_count = $self->{tag_count}{$language}{$collect};
+                        next if ($tag_count < $self->{settings}->{'min-count'});
 
                         $comic->{tags}{$language}{$collect}{$title} = $self->{tags}{$language}{$collect}{$title};
                     }
@@ -273,8 +294,8 @@ sub _write_tags_pages {
         my $template = $self->_get_template($language);
 
         foreach my $tag (keys %{$self->{tags}{$language}}) {
-            my $tagcount = $self->{tagcount}{$language}{$tag};
-            next if ($tagcount < $self->{settings}->{'min-count'});
+            my $tag_count = $self->{tag_count}{$language}{$tag};
+            next if ($tag_count < $self->{settings}->{'min-count'});
 
             my $tag_page = _sanitize($tag) . '.html';
             my %vars = (
@@ -282,6 +303,7 @@ sub _write_tags_pages {
                 'url' => "/$tags_dir/$tag_page",
                 'tag' => $tag,
                 'comics' => $self->{tags}{$language}{$tag},
+                'last_modified' => $self->{last_modified}{$language}{$tag},
                 # Some template parts may need the root folder to reference
                 # CSS or images. Provide it here for consistency and
                 # compatibility with HtmlComicPage.

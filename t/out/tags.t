@@ -35,6 +35,7 @@ sub set_up : Test(setup) {
     );
     $max_beer_brewing->{href}{'Deutsch'} = 'comics/max-bier-brauen.html';
     $max_beer_brewing->{href}{'English'} = 'comics/max-beer-brewing.html';
+    $max_beer_brewing->{modified} = '2023-01-01';
 
     $max_paul_beer_brewing = MockComic::make_comic(
         $MockComic::TITLE => {
@@ -52,6 +53,7 @@ sub set_up : Test(setup) {
     );
     $max_paul_beer_brewing->{href}{'Deutsch'} = 'comics/max-paul-bier-brauen.html';
     $max_paul_beer_brewing->{href}{'English'} = 'comics/max-paul-beer-brewing.html';
+    $max_paul_beer_brewing->{modified} = '2023-01-01';
 }
 
 
@@ -151,6 +153,7 @@ sub ignores_comic_with_empty_tags : Tests {
     my $no_tags = MockComic::make_comic(
         $MockComic::JSON => '"tags": {},',
     );
+    $max_paul_beer_brewing->{modified} = '2023-01-01';
 
     my $tags = Comic::Out::Tags->new(collect => ['tags']);
     $tags->generate($no_tags);
@@ -353,6 +356,7 @@ TEMPL
             $MockComic::DEUTSCH => ['brauen'],
         },
     );
+    $comic->{modified} = '2023-01-01';
 
     $tags->generate($comic);
     $tags->_write_tags_pages($comic);
@@ -375,6 +379,7 @@ sub defines_tags_page_template_variables : Tests {
         url: [% url %]
         language: [% language %]
         root: [% root %]
+        last_modified: [% last_modified %]
 TEMPL
     MockComic::fake_file('tags.templ', $content);
     my $tags = Comic::Out::Tags->new(template => 'tags.templ', outdir => 'tags');
@@ -386,6 +391,7 @@ TEMPL
     MockComic::assert_wrote_file('generated/web/english/tags/brewing.html', qr{url: /tags/brewing.html}m);
     MockComic::assert_wrote_file('generated/web/english/tags/brewing.html', qr{language: english}m);
     MockComic::assert_wrote_file('generated/web/english/tags/brewing.html', qr{root: \.\./}m);
+    MockComic::assert_wrote_file('generated/web/english/tags/brewing.html', qr{last_modified: \d{4}-\d{2}-\d{2}}m);
 }
 
 
@@ -423,6 +429,7 @@ sub sanitizes_tag_page_name : Tests {
             $MockComic::ENGLISH => ['*&lt;hops/malt&gt;...: &amp; so on , right!?'],
         },
     );
+    $comic->{modified} = '2023-01-01';
 
     $tags->generate($comic);
     $tags->_write_tags_pages($comic);
@@ -443,6 +450,7 @@ sub adds_empty_tags_for_unpublished_comic : Tests {
         $MockComic::PUBLISHED_WHEN => '',
         $MockComic::PUBLISHED_WHERE => 'web',
     );
+    $unpublished->{modified} = '2023-01-01';
     my $tags = Comic::Out::Tags->new(template => 'tags.templ', outdir => 'tags');
 
     $tags->generate($unpublished);
@@ -494,6 +502,7 @@ sub no_tags_page_if_count_too_low : Tests {
         },
     );
     $more_brewing->{href}{'English'} = 'comics/more-brewing.html';
+    $more_brewing->{modified} = '2023-01-01';
 
     my $tags = Comic::Out::Tags->new('min-count' => '2', 'template' => 'tags.templ');
     $tags->generate($more_brewing);
@@ -519,4 +528,30 @@ sub does_not_put_links_to_skipped_tag_page_in_comics : Tests {
     is_deeply($max_paul_beer_brewing->{tags}{'Deutsch'}, {});
     is_deeply($max_beer_brewing->{tags}{'English'}, {});
     is_deeply($max_paul_beer_brewing->{tags}{'English'}, {});
+}
+
+
+sub tag_page_last_modified_date_is_latest_comic_date : Tests {
+    my @comics;
+    for (my $i = 1; $i <= 3; $i++) {
+        my $comic = MockComic::make_comic(
+            $MockComic::TITLE => {
+                $MockComic::ENGLISH => "number $i",
+            },
+            $MockComic::TAGS => {
+                $MockComic::ENGLISH => ['beer'],
+            },
+        );
+        $comic->{href}{'English'} = 'comics/january.html';
+        $comic->{modified} = "2023-0$i-01";
+        push @comics, $comic;
+    }
+
+    my $tags = Comic::Out::Tags->new();
+    foreach my $c (@comics) {
+        $tags->generate($c);
+    }
+    $tags->generate_all(@comics);
+
+    is_deeply($tags->{last_modified}, {'English' => {'beer' => '2023-03-01'}});
 }

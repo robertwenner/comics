@@ -903,6 +903,9 @@ template:
   put a `/` for an absolute path in, which would work on a web server, but
   not when just looking at a local folder.
 
+* `last_modified`: last modification date of the pages that have the current
+  tag, in ISO 8601 format.
+
 A simple tags page could look like this:
 
 ```html
