@@ -768,6 +768,14 @@ tags so that readers can find all comics that feature a certain character,
 or all that deal with certain ideas (e.g., all comics where people drink
 ales).
 
+You can include the tags (and links to other comics using a tag) in the
+`HtmlComicPage` template, or you can use tag pages, or both.
+
+A tag page is a HTML page listing to all comics that use the tag page's tag.
+If a tag is used often, the comic's page could get too full trying to cram
+too many links in. In that case, link to the tag page instead, which in turn
+links to all comics using that tag.
+
 Tags are case-sensitive, i.e., a comic tagged "Beer" will not refer to one
 tagged "beer".
 
@@ -785,16 +793,36 @@ The `Comic::Out::Tags` module is configured like this:
 {
     "Out": {
         "Comic::Out::Tags": {
-            "collect": ["tags", "who"]
+            "collect": ["tags", "who"],
+            "template": {
+                "English": "path/to/english/template",
+                "Deutsch": "path/to/german/template"
+            },
+            "outdir: "tags"
         }
     }
 }
 ```
 
-The `collect` argument takes one or more names of tags in the comic's
-metadata. It defaults to just "tags" if not given.
+The `collect` argument takes one or more names to use for tags from the
+comic's metadata. It defaults to "tags" if not given.
 
-In the comics these tags to collect must be found as objects with languages
+The `template` is used for tag pages. It can either be a single file name,
+if you want to use the same template for all languages, or an object where
+each key is the language and points to the template file for that language.
+If you don't configure a template, you don't get any tag pages.
+
+The `outdir` is a folder relative to the server root where generated tag
+pages will be placed. It defaults to `tags`. The `outdir` can be either a
+single name or an object with language as keys and folder names as values,
+like the `template`. If it's a single value, all languages will use that,
+but since languages end up in different server roots, they will still have
+separate tag files.
+
+
+### Comic metadata
+
+In the comics, the tags to collect must be found as objects with languages
 referring to arrays of the actual tags, as top-level attributes in the
 comic's metadata.
 
@@ -802,7 +830,7 @@ For example:
 
 ```json
 "tags": {
-    "English": ["some value", "other value"]
+    "English": ["beer", "brewing"]
 },
 "who": {
     "English": ["Paul", "Max"]
@@ -813,24 +841,76 @@ Passing "tags" for the "collect" parameter will pick the example values
 above, but won't make the character names from `who` available as tags.
 
 
+### Tags in the comic's page
+
 `Comic::Out::Tags` defines these variables in each comic for use in a comic
 page template:
 
-* `%tags` A hash of languages to hashes of comic titles to relative
-  comic URLs (`href`). The comic having these tags can turn those into links
-  to the other comics that use the same tags.
+* `tags` A hash of languages to hashes of comic titles to comic URLs
+  (`href`) relative to the server root. Use this to add links from each
+  comic to other comics that use the same tags.
 
-For example, a comic may get these tags:
+  For example, a comic may get these tags:
 
-```perl
-"tags" => {
-    "English" => {
-        "my tag" => {
-            "some other comic" => "link to that other comic",
-            "yet another comic" => "lint to yet another comic",
-        }
-    }
-}
+  ```perl
+  "tags" => {
+      "English" => {
+          "my tag" => {
+              "some other comic" => "comics/other-comic.html",
+              "yet another comic" => "comics/yet-another-comic.html",
+          }
+      }
+  }
+  ```
+
+  A comic may include tags that appear in other comics, but no comic will
+  include a tag refering to itself. For example, if comics A and B have a
+  tag "beer", then the tags list in A will only refer to B and the tag list
+  in B will only refer to A. That way you don't end up with links to the
+  comic you just came from.
+
+* `tags_page`: A hash of language to URL. If there are too many comics
+  aharing a tag, a link list in each comic's page may get unwieldy. You can
+  instead link to the tag page, a page that lists all comics with that tag.
+  The key in `tags_page` is the tag (e.g., "beer") and the value is the
+  comic's url relative to the server root, e.g., "/comics/beer.html".
+
+
+### Tag pages
+
+When you define a template, `Comic::Out::Tags` creates a html page for each
+tag, using that template. These should be a list of links to comic pages
+using a given tag.
+
+`Comic::Out::Tags` defines these variables when processing the tag page
+template:
+
+* `tag`: The actual tag for which the page is.
+
+* `language`: For which language the tags page is (starting with a lower
+  case letter, e.g., "english").
+
+* `comics`: A hash of title to URL (relative to the server root) fo each
+  comic that uses the tag.
+
+* `root`: Relative path to the server root from the generated tag page,
+  e.g., `../`. Code can add that to links from `comics` to avoid having to
+  put a `/` for an absolute path in, which would work on a web server, but
+  not when just looking at a local folder.
+
+A simple tags page could look like this:
+
+```html
+<html>
+<head>
+    <title>All comics tagged [% tag %]</title>
+</head>
+<body>
+<h1>All comics tagged [% tag %]</h1>
+<ul>
+[% FOREACH c IN comics %]
+    <li><a href="../[% c.value %]">[% c.key %]</a></li>
+[% END %]
+</ul>
+</body>
 ```
-
-No comic will refer to itself.

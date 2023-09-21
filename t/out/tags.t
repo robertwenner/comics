@@ -233,7 +233,7 @@ sub does_not_refer_to_comic_that_is_not_yet_published : Tests {
     $tags->generate_all($unpublished, $max_beer_brewing);
 
     is_deeply($max_beer_brewing->{tags}{'English'}, {});
-    is($unpublished->{tags}{'English'}, undef);
+    is_deeply($unpublished->{tags}{'English'}, {});
 }
 
 
@@ -254,5 +254,202 @@ sub does_not_refer_to_comic_that_is_not_published_on_the_web : Tests {
     $tags->generate_all($elsewhere, $max_beer_brewing);
 
     is_deeply($max_beer_brewing->{tags}{'English'}, {});
-    is($elsewhere->{tags}{'English'}, undef);
+    is_deeply($elsewhere->{tags}{'English'}, {});
+}
+
+
+sub configure_one_template_for_all_languages : Tests {
+    MockComic::fake_file('tagcloud.templ', 'template goes here');
+    my $tags = Comic::Out::Tags->new(template => 'tagcloud.templ');
+    is($tags->_get_template('English'), 'tagcloud.templ');
+    is($tags->_get_template('Deutsch'), 'tagcloud.templ');
+    is($tags->_get_template('whatever, really'), 'tagcloud.templ');
+}
+
+
+sub configure_template_per_language : Tests {
+    MockComic::fake_file('tagcloud.en', 'template goes here');
+    my $tags = Comic::Out::Tags->new(template => { 'English' => 'tagcloud.en' });
+    is($tags->_get_template('English'), 'tagcloud.en');
+    eval {
+        $tags->_get_template('unknown language');
+    };
+    like($@, qr{template}i, 'should say what is wrong');
+    like($@, qr{unknown language}, 'should mention the language');
+}
+
+
+sub configure_template_rejects_array : Tests {
+    eval {
+        Comic::Out::Tags->new(template => []);
+    };
+    like($@, qr{\btemplate\b}i, 'should say what setting it complains about');
+    like($@, qr{\bscalar\b}i, 'should say what is wrong');
+}
+
+
+sub configure_outdir_single_name_for_all_languages : Tests {
+    my $tags = Comic::Out::Tags->new(
+        template => 'tagcloud.templ',
+        outdir => 'tagcloud',
+    );
+    is($tags->_get_outdir('English'), 'tagcloud');
+    is($tags->_get_outdir('Deutsch'), 'tagcloud');
+    is($tags->_get_outdir('whatever'), 'tagcloud');
+}
+
+
+sub configure_outdir_per_language : Tests {
+    my $tags = Comic::Out::Tags->new(
+        template => 'tagcloud.templ',
+        outdir => {
+            'English' => 'tagcloud',
+            'Deutsch' => 'schlagwortwolke',
+        },
+    );
+    is($tags->_get_outdir('English'), 'tagcloud');
+    is($tags->_get_outdir('Deutsch'), 'schlagwortwolke');
+    eval {
+        $tags->_get_outdir('whatever');
+    };
+    like($@, qr{outdir}, 'should mention setting');
+    like($@, qr{defined}, 'should say what is wrong');
+    like($@, qr{whatever}, 'should mention language');
+}
+
+
+sub configure_outdir_rejects_array : Tests {
+    eval {
+        Comic::Out::Tags->new(template => 'tags.templ', outdir => [1, 2, 3]);
+    };
+    like($@, qr{outdir}, 'should mention setting');
+    like($@, qr{array}, 'should say what is wrong');
+}
+
+
+sub outdir_not_given_uses_default : Tests {
+    my $tags = Comic::Out::Tags->new(template => 'tagcloud.templ');
+    is($tags->_get_outdir('English'), 'tags');
+    is($tags->_get_outdir('Deutsch'), 'tags');
+}
+
+
+sub creates_tags_page : Tests {
+    my $content = << 'TEMPL';
+        <h1>[% tag %]</h1>
+        [% FOREACH c IN comics %]
+            <a href="[% c.value %]">[% c.key %]</a>
+        [% END %]
+TEMPL
+    MockComic::fake_file('tags.templ', $content);
+    my $tags = Comic::Out::Tags->new(template => 'tags.templ', outdir => 'tags');
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => 'beer',
+            $MockComic::DEUTSCH => 'Bier',
+        },
+        $MockComic::TAGS => {
+            $MockComic::ENGLISH => ['brewing'],
+            $MockComic::DEUTSCH => ['brauen'],
+        },
+    );
+
+    $tags->generate($comic);
+    $tags->_write_tags_pages($comic);
+
+    MockComic::assert_made_some_dirs('generated/web/deutsch/tags', 'generated/web/english/tags');
+    MockComic::assert_wrote_file('generated/web/deutsch/tags/brauen.html',
+        qr{<h1>brauen</h1>}m);
+    MockComic::assert_wrote_file('generated/web/deutsch/tags/brauen.html',
+        qr{<a href="comics/bier\.html">Bier</a>}m);
+
+    MockComic::assert_wrote_file('generated/web/english/tags/brewing.html',
+        qr{<h1>brewing</h1>}m);
+    MockComic::assert_wrote_file('generated/web/english/tags/brewing.html',
+        qr{<a href="comics/beer\.html">beer</a>}m);
+}
+
+
+sub defines_tags_page_template_variables : Tests {
+    my $content = << 'TEMPL';
+        url: [% url %]
+        language: [% language %]
+        root: [% root %]
+TEMPL
+    MockComic::fake_file('tags.templ', $content);
+    my $tags = Comic::Out::Tags->new(template => 'tags.templ', outdir => 'tags');
+
+    $tags->generate($max_beer_brewing);
+    $tags->generate($max_paul_beer_brewing);
+    $tags->_write_tags_pages($max_beer_brewing, $max_paul_beer_brewing);
+
+    MockComic::assert_wrote_file('generated/web/english/tags/brewing.html', qr{url: /tags/brewing.html}m);
+    MockComic::assert_wrote_file('generated/web/english/tags/brewing.html', qr{language: english}m);
+    MockComic::assert_wrote_file('generated/web/english/tags/brewing.html', qr{root: \.\./}m);
+}
+
+
+sub adds_tag_page_links_to_comic : Tests {
+    MockComic::fake_file('tags.templ', '');
+    my $tags = Comic::Out::Tags->new(template => 'tags.templ', outdir => 'tags');
+
+    $tags->generate($max_beer_brewing);
+    $tags->generate($max_paul_beer_brewing);
+    $tags->generate_all($max_beer_brewing, $max_paul_beer_brewing);
+
+    my %expected = (
+        'Deutsch' => {
+            'Bier' => 'tags/Bier.html',
+            'Brauen' => 'tags/Brauen.html',
+        },
+        'English' => {
+            'beer' => 'tags/beer.html',
+            'brewing' => 'tags/brewing.html',
+        },
+    );
+    is_deeply($max_beer_brewing->{tags_page}, \%expected);
+    is_deeply($max_paul_beer_brewing->{tags_page}, \%expected);
+}
+
+
+sub sanitizes_tag_page_name : Tests {
+    MockComic::fake_file('tags.templ', '');
+    my $tags = Comic::Out::Tags->new(template => 'tags.templ', outdir => 'tags');
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => 'beer',
+        },
+        $MockComic::TAGS => {
+            $MockComic::ENGLISH => ['*&lt;hops/malt&gt;...: &amp; so on , right!?'],
+        },
+    );
+
+    $tags->generate($comic);
+    $tags->_write_tags_pages($comic);
+
+    MockComic::assert_wrote_file('generated/web/deutsch/tags/hopsmaltsoonright.html');
+}
+
+
+sub adds_empty_tags_for_unpublished_comic : Tests {
+    MockComic::fake_file('tags.templ', '');
+    my $unpublished = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => 'Publish me',
+        },
+        $MockComic::TAGS => {
+            $MockComic::ENGLISH => ['beer'],
+        },
+        $MockComic::PUBLISHED_WHEN => '',
+        $MockComic::PUBLISHED_WHERE => 'web',
+    );
+    my $tags = Comic::Out::Tags->new(template => 'tags.templ', outdir => 'tags');
+
+    $tags->generate($unpublished);
+    $tags->generate_all($unpublished);
+
+    is_deeply($unpublished->{tags}, { 'English' => {} });
+    is_deeply($unpublished->{tags_page}, { 'English' => {} });
+    is_deeply($tags->{tags}->{English}, {});
+    is_deeply($tags->{tag_page}, undef);
 }

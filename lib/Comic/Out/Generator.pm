@@ -378,6 +378,11 @@ sub optional {
             croak("$me.$name must be $expected_type, but is $actual_type");
         }
     }
+    elsif ($type eq 'hash-or-scalar') {
+        if ($actual_type ne 'hash' && $actual_type ne 'scalar') {
+            croak("$me.$name must be $expected_type but is $actual_type");
+        }
+    }
     else {
         croak("$me.$name must be $expected_type but is $actual_type") unless ($expected_type eq $actual_type);
     }
