@@ -453,3 +453,70 @@ sub adds_empty_tags_for_unpublished_comic : Tests {
     is_deeply($tags->{tags}->{English}, {});
     is_deeply($tags->{tag_page}, undef);
 }
+
+
+sub rejects_bad_min_count : Tests {
+   eval {
+        Comic::Out::Tags->new('min-count' => 'yes');
+    };
+    like($@, qr{min-count}, 'should mention the setting');
+    like($@, qr{\bnumber\b}i, 'should say what is wrong');
+
+    eval {
+        Comic::Out::Tags->new('min-count' => []);
+    };
+    like($@, qr{min-count}, 'should mention the setting');
+    like($@, qr{\barray\b}i, 'should say what is wrong');
+
+    eval {
+        Comic::Out::Tags->new('min-count' => {});
+    };
+    like($@, qr{min-count}, 'should mention the setting');
+    like($@, qr{\bhash\b}i, 'should say what is wrong');
+
+    eval {
+        Comic::Out::Tags->new('min-count' => '-1');
+    };
+    like($@, qr{min-count}, 'should mention the setting');
+    like($@, qr{\bpositive\b}i, 'should say what is wrong');
+}
+
+
+sub no_tags_page_if_count_too_low : Tests {
+    my $template = 'tag page [% FOREACH c IN comics %][% c.value %]: [% c.key %][% END %]';
+    MockComic::fake_file('tags.templ', $template);
+    my $more_brewing = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => 'More brewing',
+        },
+        $MockComic::TAGS => {
+            $MockComic::ENGLISH => ['skipped'],
+        },
+    );
+    $more_brewing->{href}{'English'} = 'comics/more-brewing.html';
+
+    my $tags = Comic::Out::Tags->new('min-count' => '2', 'template' => 'tags.templ');
+    $tags->generate($more_brewing);
+    $tags->generate($max_beer_brewing);
+    $tags->generate($max_paul_beer_brewing);
+    $tags->_write_tags_pages($more_brewing, $max_beer_brewing, $max_paul_beer_brewing);
+
+    MockComic::assert_wrote_file('generated/web/english/tags/beer.html', qr{.+});
+    MockComic::assert_wrote_file('generated/web/english/tags/brewing.html', qr{.+});
+    MockComic::assert_wrote_file('generated/web/english/tags/skipped.html', undef);
+}
+
+
+sub does_not_put_links_to_skipped_tag_page_in_comics : Tests {
+    MockComic::fake_file('tags.templ', '...');
+
+    my $tags = Comic::Out::Tags->new('min-count' => '3', 'template' => 'tags.templ');
+    $tags->generate($max_beer_brewing);
+    $tags->generate($max_paul_beer_brewing);
+    $tags->_put_tags_in_comics($max_beer_brewing, $max_paul_beer_brewing);
+
+    is_deeply($max_beer_brewing->{tags}{'Deutsch'}, {});
+    is_deeply($max_paul_beer_brewing->{tags}{'Deutsch'}, {});
+    is_deeply($max_beer_brewing->{tags}{'English'}, {});
+    is_deeply($max_paul_beer_brewing->{tags}{'English'}, {});
+}

@@ -96,6 +96,11 @@ Passing "tags" for the "collect" parameter will pick the example values above.
     tag with links to other comics with this tag into that folder.
     This must be a single folder name, not a path. Defaults to "tags".
 
+=item * B>$min-count> Specifies the minimum occurrences a tag must
+    have to be considered for pages and in-comic. Defaults to 0. If a tag
+    has less than the given number of uses, it doesn't get a tag page and
+    won't be placed into comics for linking.
+
 =back
 
 When writing tag pages, the template can use these variables:
@@ -119,9 +124,14 @@ sub new {
     $self->optional('collect', 'array-or-scalar', ['tags']);
     $self->optional('template', 'hash-or-scalar');
     $self->optional('outdir', 'hash-or-scalar', 'tags');
+    $self->optional('min-count', 'scalar', 0);
+    unless ($self->{settings}->{'min-count'} =~ m{^\d+$}x) {
+        croak('min-count must be a positive number');
+    }
     $self->flag_extra_settings();
-    %{$self->{tags}} = ();
-    %{$self->{tags_page}} = ();
+    %{$self->{tags}} = ();  # tag per language to comic href
+    %{$self->{tags_page}} = ();  # tags page url
+    %{$self->{tag_count}} = ();  # counts per tag per language
 
     return $self;
 }
@@ -159,6 +169,7 @@ sub generate {
 
             foreach my $collect (@{$comic->{meta_data}{$tag}{$language}}) {
                 $self->{tags}{$language}{$collect}{$comic->{meta_data}{title}{$language}} = $comic->{href}{$language};
+                $self->{tagcount}{$language}{$collect}++;
             }
         }
     }
@@ -228,6 +239,11 @@ sub _put_tags_in_comics {
                     foreach my $title (keys %{$self->{tags}{$language}{$collect}}) {
                         # Don't link-tag to self.
                         next if ($comic->{meta_data}->{title}{$language} eq $title);
+
+                        # Honor minimum tags count.
+                        my $tagcount = $self->{tagcount}{$language}{$collect};
+                        next if ($tagcount < $self->{settings}->{'min-count'});
+
                         $comic->{tags}{$language}{$collect}{$title} = $self->{tags}{$language}{$collect}{$title};
                     }
                 }
@@ -255,6 +271,9 @@ sub _write_tags_pages {
         my $template = $self->_get_template($language);
 
         foreach my $tag (keys %{$self->{tags}{$language}}) {
+            my $tagcount = $self->{tagcount}{$language}{$tag};
+            next if ($tagcount < $self->{settings}->{'min-count'});
+
             my $tag_page = _sanitize($tag) . '.html';
             my %vars = (
                 'language' => lc $language,
@@ -293,16 +312,9 @@ sub _get_outdir {
 sub _get {
     my ($self, $field, $language) = @_;
 
-    my $thing;
-    if (ref $self->{settings}->{$field} eq ref {}) {
-        $thing = $self->{settings}->{$field}{$language};
-    }
-    else {
-        $thing = $self->{settings}->{$field};
-    }
-
-    croak("no $field defined for $language") unless ($thing);
-    return $thing;
+    my $value = $self->per_language_setting($field, $language);
+    croak("no $field defined for $language") unless ($value);
+    return $value;
 }
 
 

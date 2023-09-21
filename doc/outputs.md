@@ -794,6 +794,7 @@ The `Comic::Out::Tags` module is configured like this:
     "Out": {
         "Comic::Out::Tags": {
             "collect": ["tags", "who"],
+            "min-count": 3,
             "template": {
                 "English": "path/to/english/template",
                 "Deutsch": "path/to/german/template"
@@ -806,6 +807,10 @@ The `Comic::Out::Tags` module is configured like this:
 
 The `collect` argument takes one or more names to use for tags from the
 comic's metadata. It defaults to "tags" if not given.
+
+'min-count' specifies how often a tag has to be used to be considered. That
+way you can suppress tags pages and links when only two or three comics use
+a tag. If not given, all tags are included.
 
 The `template` is used for tag pages. It can either be a single file name,
 if you want to use the same template for all languages, or an object where
@@ -864,13 +869,13 @@ page template:
   ```
 
   A comic may include tags that appear in other comics, but no comic will
-  include a tag refering to itself. For example, if comics A and B have a
+  include a tag referring to itself. For example, if comics A and B have a
   tag "beer", then the tags list in A will only refer to B and the tag list
   in B will only refer to A. That way you don't end up with links to the
   comic you just came from.
 
 * `tags_page`: A hash of language to URL. If there are too many comics
-  aharing a tag, a link list in each comic's page may get unwieldy. You can
+  sharing a tag, a link list in each comic's page may get unwieldy. You can
   instead link to the tag page, a page that lists all comics with that tag.
   The key in `tags_page` is the tag (e.g., "beer") and the value is the
   comic's url relative to the server root, e.g., "/comics/beer.html".
@@ -890,7 +895,7 @@ template:
 * `language`: For which language the tags page is (starting with a lower
   case letter, e.g., "english").
 
-* `comics`: A hash of title to URL (relative to the server root) fo each
+* `comics`: A hash of title to URL (relative to the server root) for each
   comic that uses the tag.
 
 * `root`: Relative path to the server root from the generated tag page,
