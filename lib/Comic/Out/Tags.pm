@@ -214,6 +214,10 @@ Defines these variables in each passed Comic:
 
 =item * B<%tag_count> A hash of tag to the number it was used, per language.
 
+=item * B<%min> lowest tag use, per language.
+
+=item * B<%max> highest tag use, per language.
+
 =back
 
 Makes these variables available to the tag page template:
@@ -240,9 +244,29 @@ Makes these variables available to the tag page template:
 sub generate_all {
     my ($self, @comics) = @ARG;
 
+    $self->_find_min_and_max(@comics);
     $self->_put_tags_in_comics(@comics);
     $self->_write_tags_pages(@comics);
     $self->_put_tags_pages_link_in_comics(@comics);
+    return;
+}
+
+
+sub _find_min_and_max {
+    my ($self, @comics) = @ARG;
+
+    foreach my $language (keys %{$self->{tags}}) {
+        my $min;
+        my $max;
+        foreach my $tag (keys %{$self->{tag_count}{$language}}) {
+            my $uses = $self->{tag_count}{$language}{$tag};
+            $min = $uses if (!defined $min || $uses < $min);
+            $max = $uses if (!defined $max || $uses > $max);
+        }
+        $self->{min}{$language} = $min;
+        $self->{max}{$language} = $max;
+    }
+
     return;
 }
 
@@ -273,6 +297,8 @@ sub _put_tags_in_comics {
 
                         $comic->{tags}{$language}{$collect}{$title} = $self->{tags}{$language}{$collect}{$title};
                         $comic->{tag_count}{$language}{$collect} = $self->{tag_count}{$language}{$collect};
+                        $comic->{tag_min}{$language} = $self->{min}{$language};
+                        $comic->{tag_max}{$language} = $self->{max}{$language};
                     }
                 }
             }
@@ -310,6 +336,8 @@ sub _write_tags_pages {
                 'comics' => $self->{tags}{$language}{$tag},
                 'last_modified' => $self->{last_modified}{$language}{$tag},
                 'count' => $tag_count,
+                'min' => $self->{min}{$language},
+                'max' => $self->{max}{$language},
                 # Some template parts may need the root folder to reference
                 # CSS or images. Provide it here for consistency and
                 # compatibility with HtmlComicPage.

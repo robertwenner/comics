@@ -49,10 +49,6 @@
 
 - feature: series: prev next first last buttons per series
 
-- feature: tag cloud (see
-  https://www.w3.org/TR/html5/common-idioms.html#tag-clouds) or comics by
-  tag pages
-
 - feature: export svg instead of png (for a truly fluent / responsive web
   design), but would also need to offer the font for download, I guess? or
   chop the svgs or pngs up per frame (ugly, relies on either table-based

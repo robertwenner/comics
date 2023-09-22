@@ -381,19 +381,23 @@ sub defines_tags_page_template_variables : Tests {
         root: [% root %]
         last_modified: [% last_modified %]
         count: [% count %]
+        min: [% min %]
+        max: [% max %]
 TEMPL
     MockComic::fake_file('tags.templ', $content);
     my $tags = Comic::Out::Tags->new(template => 'tags.templ', outdir => 'tags');
 
     $tags->generate($max_beer_brewing);
     $tags->generate($max_paul_beer_brewing);
-    $tags->_write_tags_pages($max_beer_brewing, $max_paul_beer_brewing);
+    $tags->generate_all($max_beer_brewing, $max_paul_beer_brewing);
 
     MockComic::assert_wrote_file('generated/web/english/tags/brewing.html', qr{url: /tags/brewing.html}m);
     MockComic::assert_wrote_file('generated/web/english/tags/brewing.html', qr{language: english}m);
     MockComic::assert_wrote_file('generated/web/english/tags/brewing.html', qr{root: \.\./}m);
     MockComic::assert_wrote_file('generated/web/english/tags/brewing.html', qr{last_modified: \d{4}-\d{2}-\d{2}}m);
-    MockComic::assert_wrote_file('generated/web/english/tags/brewing.html', qr{count: \d+}m);
+    MockComic::assert_wrote_file('generated/web/english/tags/brewing.html', qr{count: 2}m);
+    MockComic::assert_wrote_file('generated/web/english/tags/brewing.html', qr{min: 2}m);
+    MockComic::assert_wrote_file('generated/web/english/tags/brewing.html', qr{max: 2}m);
 }
 
 
@@ -542,7 +546,7 @@ sub tag_page_last_modified_date_is_latest_comic_date : Tests {
                 $MockComic::ENGLISH => ['beer'],
             },
         );
-        $comic->{href}{'English'} = 'comics/january.html';
+        $comic->{href}{'English'} = "comics/$i.html";
         $comic->{modified} = "2023-0$i-01";
         push @comics, $comic;
     }
@@ -565,4 +569,31 @@ sub puts_tag_counts_in_comic : Tests {
 
     is_deeply($max_beer_brewing->{tag_count},
         {'Deutsch' => {'Bier' => 2, 'Brauen' => 2}, 'English' => {'beer' => 2, 'brewing' => 2}});
+}
+
+
+sub puts_min_and_max_counts_in_comic : Tests {
+    my @comics;
+    foreach my $i (3, 1, 2, 1, 3) {
+        my $comic = MockComic::make_comic(
+            $MockComic::TITLE => {
+                $MockComic::ENGLISH => "number $i",
+            },
+            $MockComic::TAGS => {
+                $MockComic::ENGLISH => ['beer', "tag$i"],
+            },
+        );
+        $comic->{href}{'English'} = "comics/$i.html";
+        $comic->{modified} = "2023-0$i-01";
+        push @comics, $comic;
+    }
+
+    my $tags = Comic::Out::Tags->new();
+    foreach my $c (@comics) {
+        $tags->generate($c);
+    }
+    $tags->generate_all(@comics);
+
+    is_deeply($comics[0]->{tag_min}, {'English' => 1});
+    is_deeply($comics[0]->{tag_max}, {'English' => 5});
 }

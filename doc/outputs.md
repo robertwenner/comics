@@ -821,7 +821,7 @@ The `outdir` is a folder relative to the server root where generated tag
 pages will be placed. It defaults to `tags`. The `outdir` can be either a
 single name or an object with language as keys and folder names as values,
 like the `template`. If it's a single value, all languages will use that,
-but since languages end up in different server roots, they will still have
+and since languages end up in different server roots, they will still have
 separate tag files.
 
 
@@ -883,6 +883,11 @@ page template:
 * `tag_count`: An object of language to tag to tag count, e.g., in English,
   tag "beer" was seen 10 times. This can be used to show only the top x
   tags, or to use different font sizes based on tag frequency.
+
+* `tag_min` and `tag_max` (per language), how often the least often and how
+  often the most often tag were used, as an object with the language as the
+  key. In combination with `tag_count` this can be used to calculate the
+  font size of items in a tag cloud.
 
 
 ### Tag pages
