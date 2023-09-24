@@ -132,6 +132,7 @@ sub new {
     %{$self->{tags}} = ();  # tag per language to comic href
     %{$self->{tags_page}} = ();  # tags page url
     %{$self->{tag_count}} = ();  # counts per tag per language
+    %{$self->{tag_rank}} = ();  # tag name to CSS style indicating ranking (1 - 5)
     %{$self->{last_modified}} = ();  # last modified date for tag per language
 
     return $self;
@@ -218,6 +219,10 @@ Defines these variables in each passed Comic:
 
 =item * B<%max> highest tag use, per language.
 
+=item * B<%all_tags_pages> Hash of language to hash of tag to tag page. As
+    opposed to C<%tags> and C<%tags_pages> this includes all tags seen. It can
+    be used for a tag cloud, not only the ones the current comic uses.
+
 =back
 
 Makes these variables available to the tag page template:
@@ -237,6 +242,9 @@ Makes these variables available to the tag page template:
 
 =item * B>$count> How often this tag was used.
 
+=item * B<%all_tags_pages> Hash of language to hash of tag to tag page.
+    Intended for a tag cloud.
+
 =back
 
 =cut
@@ -246,6 +254,7 @@ sub generate_all {
 
     $self->_find_min_and_max(@comics);
     $self->_put_tags_in_comics(@comics);
+    $self->_put_tag_style_ranks_in_comics(@comics);
     $self->_write_tags_pages(@comics);
     $self->_put_tags_pages_link_in_comics(@comics);
     return;
@@ -297,15 +306,81 @@ sub _put_tags_in_comics {
 
                         $comic->{tags}{$language}{$collect}{$title} = $self->{tags}{$language}{$collect}{$title};
                         $comic->{tag_count}{$language}{$collect} = $self->{tag_count}{$language}{$collect};
-                        $comic->{tag_min}{$language} = $self->{min}{$language};
-                        $comic->{tag_max}{$language} = $self->{max}{$language};
                     }
                 }
             }
+
+            $comic->{tag_min}{$language} = $self->{min}{$language};
+            $comic->{tag_max}{$language} = $self->{max}{$language};
         }
     }
 
     return;
+}
+
+
+sub _put_tag_style_ranks_in_comics {
+    my ($self, @comics) = @ARG;
+
+    return unless (%{$self->{tags}});
+
+    # From https://en.wikipedia.org/wiki/Tag_cloud:
+    #       relevance = (current tag - tag min) / (tag max - tag min)
+    # Yields a div/0 error if there's only 1 tag, or a number between 0
+    # (least used token) and 1 (most used token).
+    #
+    # Examples:
+    # 1, 5 --> 0, 1
+    # 1, 3, 5 --> 0, 0.5, 1
+    # 1, 2, 3, 4, 5 --> 0, 0.2, 0.5, 0.75, 1
+    # 1, 5, 10, 20 --> 0, 0.21, 0.47, 1
+    # 1, 5, 7, 9, 13, 20 --> 0, 0.21, 0.31, 0.42, 0.63, 1
+    #
+    # Box this up in 5 categories / buckets as: <= 0.2, 0.4, 0.6, 0.8, 1
+
+    foreach my $language (Comic::Out::Generator::all_languages(@comics)) {
+        my $range = $self->{max}{$language} - $self->{min}{$language};
+
+        foreach my $tag (keys %{$self->{tags}{$language}}) {
+            my $tag_count = $self->{tag_count}{$language}{$tag};
+            next if ($tag_count < $self->{settings}->{'min-count'});
+
+            my $relevance;
+            if ($range == 0) {
+                # The only tag is certainly most important. And this avoids
+                # a division by zero.
+                $relevance = 1;
+            }
+            else {
+                $relevance = ($tag_count - $self->{min}{$language}) / $range;
+            }
+
+            $self->{tag_rank}{$language}{$tag} = 'taglevel' . _bucket($relevance);
+        }
+    }
+
+    foreach my $comic (@comics) {
+        foreach my $language ($comic->languages()) {
+            $comic->{tag_rank}{$language} = $self->{tag_rank}{$language};
+        }
+    }
+
+    return;
+}
+
+
+sub _bucket {
+    my $fraction = shift;
+
+    ## no critic(ValuesAndExpressions::ProhibitMagicNumbers)
+    my @bucket_max = (0.2, 0.4, 0.6, 0.8);
+    ## use critic
+    my $bucket = 0;
+    while ($bucket < @bucket_max) {
+        return $bucket + 1 if ($fraction < $bucket_max[$bucket]);
+        $bucket++;
+    }
+    return @bucket_max + 1;
 }
 
 
@@ -378,6 +453,7 @@ sub _get {
 
 sub _sanitize {
     # Remove non-alphanumeric characters to avoid problems in path names.
+
     my ($s) = @_;
 
     $s =~ s{\W+}{}g;
@@ -405,6 +481,8 @@ sub _put_tags_pages_link_in_comics {
                     }
                 }
             }
+
+            $comic->{all_tags_pages}{$language} = $self->{tags_page}{$language};
         }
     }
 

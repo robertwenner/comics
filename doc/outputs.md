@@ -933,3 +933,34 @@ A simple tags page could look like this:
 </ul>
 </body>
 ```
+
+
+### Tag clouds
+
+Both comic pages and tag pages can display tag clouds. `Comic::Out::Tags`
+generates a `tag_rank` for each language with tag names to a level
+indicator. The indicators will be `taglevel5` (most common tags) to
+`taglevel1` (least frequently used tags). The pages can define CSS rules for
+these names and then use the names when rendering the tags names.
+
+For example, with this style sheet
+
+```css
+.taglevel5 { font-size: 150%; }
+.taglevel4 { font-size: 125%; }
+.taglevel3 { font-size: 100%; }
+.taglevel2 { font-size: 80%; }
+.taglevel1 { font-size: 70%; }
+```
+
+and this HTML page
+
+```html
+<p>
+[% FOREACH t IN comic.tag_rank.$Language %]
+    <a class="[% t.value %]" href="[% root %][% comic.all_tags_pages.$Language.${t.key} %]">[% t.key %]</a>
+[% END %]
+</p>
+```
+
+you'll get a tag cloud with links in different font sizes.

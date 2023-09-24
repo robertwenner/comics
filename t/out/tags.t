@@ -597,3 +597,118 @@ sub puts_min_and_max_counts_in_comic : Tests {
     is_deeply($comics[0]->{tag_min}, {'English' => 1});
     is_deeply($comics[0]->{tag_max}, {'English' => 5});
 }
+
+
+sub calculates_style_ranks_no_comics : Tests {
+    my $tags = Comic::Out::Tags->new();
+
+    $tags->generate_all();
+
+    is_deeply($tags->{tag_rank}, {});
+}
+
+
+sub calculates_style_ranks_tag_only_used_once : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => "Funny comic",
+        },
+        $MockComic::TAGS => {
+            $MockComic::ENGLISH => ['beer'],
+        },
+    );
+
+    my $tags = Comic::Out::Tags->new();
+
+    $tags->generate($comic);
+    $tags->generate_all($comic);
+
+    is_deeply($tags->{tag_rank}, {'English' => { 'beer' => 'taglevel5' }});
+    is_deeply($comic->{tag_rank}, {'English' => { 'beer' => 'taglevel5' }});
+}
+
+
+sub calculates_style_ranks_wide_spread : Tests {
+    my $count = 0;
+    my @comics;
+    foreach my $i (qw{a a a a a a a   b b b b b   c c c   d d   e}) {
+        my $comic = MockComic::make_comic(
+            $MockComic::TITLE => {
+                $MockComic::ENGLISH => "number $count",
+            },
+            $MockComic::TAGS => {
+                $MockComic::ENGLISH => ["tag $i"],
+            },
+        );
+        push @comics, $comic;
+        $count++;
+    }
+
+    MockComic::fake_file('tagspage.templ', '...');
+    my $tags = Comic::Out::Tags->new(template => 'tagspage.templ');
+    foreach my $c (@comics) {
+        $tags->generate($c);
+    }
+    $tags->generate_all(@comics);
+
+    my %expected = (
+        'English' => {
+            'tag a' => 'taglevel5',  # 7 / 18 => (7 - 1) / (7 - 1) = 1
+            'tag b' => 'taglevel4',  # 5 / 18 => (5 - 1) / 5 = 4 / 5 = 0.8
+            'tag c' => 'taglevel2',  # 3 / 18 => (3 - 1) / 5 = 0.4
+            'tag d' => 'taglevel1',  # 2 / 18 => (2 - 1) / 5 = 1 / 5 = 0.20
+            'tag e' => 'taglevel1',  # 1 / 18 => (1 - 1) / 5 = 0
+        },
+    );
+    is_deeply($tags->{tag_rank}, \%expected);
+    is_deeply($comics[0]->{tag_rank}, \%expected);
+    is_deeply($comics[0]->{all_tags_pages}, {
+        'English' => {
+            'tag a' => 'tags/taga.html',
+            'tag b' => 'tags/tagb.html',
+            'tag c' => 'tags/tagc.html',
+            'tag d' => 'tags/tagd.html',
+            'tag e' => 'tags/tage.html',
+        },
+    });
+}
+
+
+sub calculates_style_ranks_honors_min_count : Tests {
+    my $count = 0;
+    my @comics;
+    foreach my $i (qw{a a a a a a a   b b b b b   c c c   d d   e}) {
+        my $comic = MockComic::make_comic(
+            $MockComic::TITLE => {
+                $MockComic::ENGLISH => "number $count",
+            },
+            $MockComic::TAGS => {
+                $MockComic::ENGLISH => ["tag $i"],
+            },
+        );
+        push @comics, $comic;
+        $count++;
+    }
+
+    MockComic::fake_file('tagspage.templ', '...');
+    my $tags = Comic::Out::Tags->new(template => 'tagspage.templ', 'min-count' => 4);
+    foreach my $c (@comics) {
+        $tags->generate($c);
+    }
+    $tags->generate_all(@comics);
+
+    my %expected = (
+        'English' => {
+            'tag a' => 'taglevel5',
+            'tag b' => 'taglevel4',
+        },
+    );
+    is_deeply($tags->{tag_rank}, \%expected);
+    is_deeply($comics[0]->{tag_rank}, \%expected);
+    is_deeply($comics[0]->{all_tags_pages}, {
+        'English' => {
+            'tag a' => 'tags/taga.html',
+            'tag b' => 'tags/tagb.html',
+        },
+    });
+}
