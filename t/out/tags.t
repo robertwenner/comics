@@ -738,3 +738,41 @@ sub calculates_style_ranks_honors_min_count : Tests {
         },
     });
 }
+
+
+sub warns_about_empty_tags : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => "Funny comic",
+        },
+        $MockComic::TAGS => {
+            $MockComic::ENGLISH => [''],
+        },
+    );
+
+    my $tags = Comic::Out::Tags->new();
+    $tags->generate($comic);
+
+    my $msg = $comic->{warnings}[0];
+    like($msg, qr{\bempty\b}i, 'should say what is wrong');
+    like($msg, qr{\btags\b}, 'should mention the tag type');
+}
+
+
+sub warns_about_whitespace_pnly_tags : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => "Funny comic",
+        },
+        $MockComic::TAGS => {
+            $MockComic::ENGLISH => ["   \t"],
+        },
+    );
+
+    my $tags = Comic::Out::Tags->new();
+    $tags->generate($comic);
+
+    my $msg = $comic->{warnings}[0];
+    like($msg, qr{\bempty\b}i, 'should say what is wrong');
+    like($msg, qr{\btags\b}, 'should mention the tag type');
+}

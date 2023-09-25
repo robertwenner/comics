@@ -173,6 +173,9 @@ sub generate {
             }
 
             foreach my $collect (@{$comic->{meta_data}{$tag}{$language}}) {
+                # warn about empty (e.g., "") tags, probably a typo or missed template
+                $comic->warning("Empty value in $tag found") if ($collect =~ m{^\s*$}x);
+
                 $self->{tags}{$language}{$collect}{$comic->{meta_data}{title}{$language}} = $comic->{href}{$language};
                 $self->{tag_count}{$language}{$collect}++;
                 if (($self->{last_modified}{$language}{$collect} || q{0}) lt $comic->{modified}) {
