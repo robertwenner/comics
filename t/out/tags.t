@@ -776,3 +776,17 @@ sub warns_about_whitespace_pnly_tags : Tests {
     like($msg, qr{\bempty\b}i, 'should say what is wrong');
     like($msg, qr{\btags\b}, 'should mention the tag type');
 }
+
+
+sub warns_if_comic_does_not_have_the_configured_meta_data : Tests {
+    # could be a typo: configure to pick up "tg" when ity should be "tag"
+    # but then again an Out module should not check, or should it?
+    # A check module does not know the Output module's configuration and purpose.
+    my $tags = Comic::Out::Tags->new(collect => ['whatever']);
+    $tags->generate($max_beer_brewing);
+    $tags->generate_all($max_beer_brewing);
+
+    my $msg = $max_beer_brewing->{warnings}[0];
+    like($msg, qr{doesn't have}i, 'should say what is wrong');
+    like($msg, qr{\bwhatever\b}, 'should mention the tag');
+}

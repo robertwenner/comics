@@ -161,7 +161,11 @@ sub generate {
 
     foreach my $language ($comic->languages()) {
         foreach my $tag (@{$self->{settings}{collect}}) {
-            next unless $comic->{meta_data}{$tag};
+            unless ($comic->{meta_data}{$tag}) {
+                $comic->warning("Doesn't have $tag");
+                next;
+            }
+
             if (ref $comic->{meta_data}{$tag} ne 'HASH') {
                 $comic->warning("$tag meta data must be a hash of languages to arrays of values");
                 next;
