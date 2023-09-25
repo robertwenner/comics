@@ -402,7 +402,7 @@ TEMPL
 
 
 sub adds_tag_page_links_to_comic : Tests {
-    MockComic::fake_file('tags.templ', '');
+    MockComic::fake_file('tags.templ', '...');
     my $tags = Comic::Out::Tags->new(template => 'tags.templ', outdir => 'tags');
 
     $tags->generate($max_beer_brewing);
@@ -425,7 +425,7 @@ sub adds_tag_page_links_to_comic : Tests {
 
 
 sub sanitizes_tag_page_name : Tests {
-    MockComic::fake_file('tags.templ', '');
+    MockComic::fake_file('tags.templ', '...');
     my $tags = Comic::Out::Tags->new(template => 'tags.templ', outdir => 'tags');
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
@@ -440,7 +440,33 @@ sub sanitizes_tag_page_name : Tests {
     $tags->generate($comic);
     $tags->_write_tags_pages($comic);
 
-    MockComic::assert_wrote_file('generated/web/deutsch/tags/hopsmaltsoonright.html');
+    MockComic::assert_wrote_file('generated/web/english/tags/_hops_malt_so_on_right_.html', qr{.+});
+}
+
+
+sub avoids_tag_page_file_name_collisions : Tests {
+    MockComic::fake_file('tags.templ', '[% FOREACH c IN comics %][% c.key %][% END %]');
+    my @comics;
+    foreach my $tag ('og/fg', 'og,fg') {
+        my $comic = MockComic::make_comic(
+            $MockComic::TITLE => {
+                $MockComic::ENGLISH => $tag,
+            },
+            $MockComic::TAGS => {
+                $MockComic::ENGLISH => [$tag],
+            },
+        );
+        push @comics, $comic;
+    }
+
+    my $tags = Comic::Out::Tags->new(template => 'tags.templ');
+    foreach my $comic (@comics) {
+        $tags->generate($comic);
+    }
+    $tags->generate_all(@comics);
+
+    MockComic::assert_wrote_file('generated/web/english/tags/og_fg.html', 'og,fg');
+    MockComic::assert_wrote_file('generated/web/english/tags/og_fg_0.html', 'og/fg');
 }
 
 
@@ -664,11 +690,11 @@ sub calculates_style_ranks_wide_spread : Tests {
     is_deeply($comics[0]->{tag_rank}, \%expected);
     is_deeply($comics[0]->{all_tags_pages}, {
         'English' => {
-            'tag a' => 'tags/taga.html',
-            'tag b' => 'tags/tagb.html',
-            'tag c' => 'tags/tagc.html',
-            'tag d' => 'tags/tagd.html',
-            'tag e' => 'tags/tage.html',
+            'tag a' => 'tags/tag_a.html',
+            'tag b' => 'tags/tag_b.html',
+            'tag c' => 'tags/tag_c.html',
+            'tag d' => 'tags/tag_d.html',
+            'tag e' => 'tags/tag_e.html',
         },
     });
 }
@@ -707,8 +733,8 @@ sub calculates_style_ranks_honors_min_count : Tests {
     is_deeply($comics[0]->{tag_rank}, \%expected);
     is_deeply($comics[0]->{all_tags_pages}, {
         'English' => {
-            'tag a' => 'tags/taga.html',
-            'tag b' => 'tags/tagb.html',
+            'tag a' => 'tags/tag_a.html',
+            'tag b' => 'tags/tag_b.html',
         },
     });
 }

@@ -131,6 +131,7 @@ sub new {
     $self->flag_extra_settings();
     %{$self->{tags}} = ();  # tag per language to comic href
     %{$self->{tags_page}} = ();  # tags page url
+    %{$self->{tag_page_names}} = ();  # used tag page names, to avoid collisions
     %{$self->{tag_count}} = ();  # counts per tag per language
     %{$self->{tag_rank}} = ();  # tag name to CSS style indicating ranking (1 - 5)
     %{$self->{last_modified}} = ();  # last modified date for tag per language
@@ -399,11 +400,14 @@ sub _write_tags_pages {
 
         my $template = $self->_get_template($language);
 
-        foreach my $tag (keys %{$self->{tags}{$language}}) {
+        # sort keys to have a stable order when non-unique tags are made unique.
+        # This helps with testing and doesn't break bookmarks to tags pages.
+        # (Bookmarks may point to different tags pages when min-count changes, though.)
+        foreach my $tag (sort keys %{$self->{tags}{$language}}) {
             my $tag_count = $self->{tag_count}{$language}{$tag};
             next if ($tag_count < $self->{settings}->{'min-count'});
 
-            my $tag_page = _sanitize($tag) . '.html';
+            my $tag_page = $self->_unique(_sanitize($tag)) . '.html';
             my %vars = (
                 'language' => lc $language,
                 'url' => "/$tags_dir/$tag_page",
@@ -453,12 +457,26 @@ sub _get {
 
 sub _sanitize {
     # Remove non-alphanumeric characters to avoid problems in path names.
-
     my ($s) = @_;
 
-    $s =~ s{\W+}{}g;
+    $s =~ s{\W+}{_}g;
 
     return $s;
+}
+
+
+sub _unique {
+    my ($self, $sanitized_tag) = @_;
+
+    my $name = $sanitized_tag;
+    my $count = 0;
+    while (defined $self->{tag_page_names}->{$name}) {
+        $name = "${sanitized_tag}_$count";
+        $count++;
+    }
+    $self->{tag_page_names}->{$name} = 1;
+
+    return $name;
 }
 
 
