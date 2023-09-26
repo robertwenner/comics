@@ -1,5 +1,16 @@
-- cleanup hard-coded names: "web", "backlog", "generated",
-  Comic::not_yet_published should not consider locations
+- cleanup hard-coded names: "web", "generated".
+
+- cleanup:  Comic::not_yet_published should not consider locations.
+
+- cleanup: always use lower case language names in templates; accept any
+  case in comic meta data for backwards compatibility?
+
+- feature: reject slashes and other funny characters (backslashes? colons?
+  dotdot?) in all folder names in settings (File::Path::makepath CAN handle
+  slashes and makes a tree, as expected), but certain characters may or may
+  not work if local OS and web server OS differ, and some code assumes only
+  one level of directories (e.g., all template processing that defines the
+  root variable).
 
 - cleanup: modules that need directories should create them, not Comic.pm;
   may need to make paths (defaults) available easily
