@@ -406,7 +406,7 @@ sub _write_tags_pages {
 
     foreach my $language (Comic::Out::Generator::all_languages(@comics)) {
         # Reserve index.html
-        $self->{tag_page_names}->{'index'} = 1;
+        $self->{tag_page_names}->{$language}->{'index'} = 1;
 
         # We only write tags pages for published comics, so don't worry about backlogs.
         my $base_dir = $comics[0]->{settings}->{Paths}{'published'};
@@ -423,7 +423,7 @@ sub _write_tags_pages {
             my $tag_count = $self->{tag_count}{$language}{$tag};
             next if ($tag_count < $self->{settings}->{'min-count'});
 
-            my $tag_page = $self->_unique(_sanitize($tag)) . '.html';
+            my $tag_page = $self->_unique($language, _sanitize($tag)) . '.html';
             my %vars = (
                 'Language' => $language,
                 'url' => "/$tags_dir/$tag_page",
@@ -532,15 +532,15 @@ sub _sanitize {
 
 
 sub _unique {
-    my ($self, $sanitized_tag) = @_;
+    my ($self, $language, $sanitized_tag) = @_;
 
     my $name = $sanitized_tag;
     my $count = 0;
-    while (defined $self->{tag_page_names}->{$name}) {
+    while (defined $self->{tag_page_names}->{$language}->{$name}) {
         $name = "${sanitized_tag}_$count";
         $count++;
     }
-    $self->{tag_page_names}->{$name} = 1;
+    $self->{tag_page_names}->{$language}->{$name} = 1;
 
     return $name;
 }

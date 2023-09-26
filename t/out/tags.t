@@ -470,6 +470,30 @@ sub avoids_tag_page_file_name_collisions : Tests {
 }
 
 
+sub avoids_tag_page_file_name_collisions_language_indepdently : Tests {
+    MockComic::fake_file('tags.templ', '[% FOREACH c IN comics %][% c.key %][% END %]');
+    my @comics;
+        my $comic = MockComic::make_comic(
+            $MockComic::TITLE => {
+                $MockComic::ENGLISH => 'beer',
+                $MockComic::DEUTSCH => 'Bier',
+            },
+            $MockComic::TAGS => {
+                $MockComic::ENGLISH => ['ipa'],
+                $MockComic::DEUTSCH => ['ipa'],
+            },
+        );
+        push @comics, $comic;
+
+    my $tags = Comic::Out::Tags->new(template => 'tags.templ');
+    $tags->generate($comic);
+    $tags->generate_all($comic);
+
+    MockComic::assert_wrote_file('generated/web/english/tags/ipa.html', 'beer');
+    MockComic::assert_wrote_file('generated/web/deutsch/tags/ipa.html', 'Bier');
+}
+
+
 sub adds_empty_tags_for_unpublished_comic : Tests {
     MockComic::fake_file('tags.templ', '');
     my $unpublished = MockComic::make_comic(
