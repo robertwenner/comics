@@ -128,7 +128,12 @@ sub new {
     unless ($self->{settings}->{'min-count'} =~ m{^\d+$}x) {
         croak('min-count must be a positive number');
     }
+    $self->optional('index', 'hash-or-scalar');
+    if ($self->{settings}->{index} && !exists $self->{settings}->{template}) {
+        croak('must specify Comic::Out::Tag.template when specifying index template');
+    }
     $self->flag_extra_settings();
+
     %{$self->{tags}} = ();  # tag per language to comic href
     %{$self->{tags_page}} = ();  # tags page url
     %{$self->{tag_page_names}} = ();  # used tag page names, to avoid collisions
@@ -264,6 +269,7 @@ sub generate_all {
     $self->_put_tags_in_comics(@comics);
     $self->_put_tag_style_ranks_in_comics(@comics);
     $self->_write_tags_pages(@comics);
+    $self->_write_index_tags_page(@comics);
     $self->_put_tags_pages_link_in_comics(@comics);
     return;
 }
@@ -399,13 +405,16 @@ sub _write_tags_pages {
     return unless (exists $self->{settings}->{template});
 
     foreach my $language (Comic::Out::Generator::all_languages(@comics)) {
+        # Reserve index.html
+        $self->{tag_page_names}->{'index'} = 1;
+
         # We only write tags pages for published comics, so don't worry about backlogs.
         my $base_dir = $comics[0]->{settings}->{Paths}{'published'};
         my $tags_dir = $self->_get_outdir($language);
         my $full_dir = $base_dir . lc($language) . "/$tags_dir";
         File::Path::make_path($full_dir);
 
-        my $template = $self->_get_template($language);
+        my $template = $self->_get_tag_page_template($language);
 
         # sort keys to have a stable order when non-unique tags are made unique.
         # This helps with testing and doesn't break bookmarks to tags pages.
@@ -416,7 +425,7 @@ sub _write_tags_pages {
 
             my $tag_page = $self->_unique(_sanitize($tag)) . '.html';
             my %vars = (
-                'language' => lc $language,
+                'Language' => $language,
                 'url' => "/$tags_dir/$tag_page",
                 'tag' => $tag,
                 'comics' => $self->{tags}{$language}{$tag},
@@ -441,7 +450,51 @@ sub _write_tags_pages {
 }
 
 
-sub _get_template {
+sub _write_index_tags_page() {
+    my ($self, @comics) = @_;
+
+    return unless (exists $self->{settings}->{index});
+
+    foreach my $language (Comic::Out::Generator::all_languages(@comics)) {
+        my $base_dir = $comics[0]->{settings}->{Paths}{'published'};
+        my $tags_dir = $self->_get_outdir($language);
+        my $full_dir = $base_dir . lc($language) . "/$tags_dir";
+        File::Path::make_path($full_dir);
+        my $tag_page = 'index.html';
+
+        my $last_modified = 0;
+        foreach my $tag (keys %{$self->{last_modified}{$language}}) {
+            if ($last_modified lt $self->{last_modified}{$language}{$tag}) {
+                $last_modified = $self->{last_modified}{$language}{$tag};
+            }
+        }
+
+        my $template = $self->_get_index_template($language);
+        my %vars = (
+            'language' => lc $language,
+            'url' => "/$tags_dir/$tag_page",
+            'min' => $self->{min}{$language},
+            'max' => $self->{max}{$language},
+            'last_modified' => $last_modified,
+            # Some template parts may need the root folder to reference
+            # CSS or images. Provide it here for consistency and
+            # compatibility with HtmlComicPage.
+            # It can only be one level to www root, or earlier code
+            # would have failed noisily trying to mkdir the path.
+            'root' => '../',
+            'tags_page' => $self->{tags_page},
+            'tag_rank' => $self->{tag_rank},
+            'tag_count' => $self->{tag_count},
+        );
+        my $page = Comic::Out::Template::templatize("$language $template", $template, $language, %vars);
+        Comic::write_file("$full_dir/$tag_page", $page);
+    }
+
+    return;
+}
+
+
+sub _get_tag_page_template {
     my ($self, $language) = @ARG;
     return $self->_get('template', $language);
 }
@@ -450,6 +503,12 @@ sub _get_template {
 sub _get_outdir {
     my ($self, $language) = @ARG;
     return $self->_get('outdir', $language);
+}
+
+
+sub _get_index_template {
+    my ($self, $language) = @ARG;
+    return $self->_get('index', $language);
 }
 
 

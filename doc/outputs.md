@@ -799,7 +799,11 @@ The `Comic::Out::Tags` module is configured like this:
                 "English": "path/to/english/template",
                 "Deutsch": "path/to/german/template"
             },
-            "outdir: "tags"
+            "outdir: "tags",
+            "index": {
+                "English": "path/to/english/index/template",
+                "Deutsch": "path/to/german/index/template",
+            }
         }
     }
 }
@@ -823,6 +827,14 @@ single name or an object with language as keys and folder names as values,
 like the `template`. If it's a single value, all languages will use that,
 and since languages end up in different server roots, they will still have
 separate tag files.
+
+The `index` works like `template`, but it specifies the template for the
+main tags overview page instead of the template for each tags page. That
+page will be `index.html` in the confiugured `tags` folder. You can use it
+for a tag cloud or just link to the individual tags pages. If no `index` is
+configured, `Comic::Out::Tags` won't write an index page. This doesn't
+disable the tags, you can still link from comics to tag pages, you just
+don't have a nice tag overview page.
 
 
 ### Comic metadata
@@ -937,11 +949,11 @@ A simple tags page could look like this:
 
 ### Tag clouds
 
-Both comic pages and tag pages can display tag clouds. `Comic::Out::Tags`
-generates a `tag_rank` for each language with tag names to a level
-indicator. The indicators will be `taglevel5` (most common tags) to
-`taglevel1` (least frequently used tags). The pages can define CSS rules for
-these names and then use the names when rendering the tags names.
+Both comic pages and tag pages (including the index page) can display tag
+clouds. `Comic::Out::Tags` generates a `tag_rank` for each language with tag
+names to a level indicator. The indicators will be `taglevel5` (most common
+tags) to `taglevel1` (least frequently used tags). The pages can define CSS
+rules for these names and then use the names when rendering the tags names.
 
 For example, with this style sheet
 

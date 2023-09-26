@@ -264,18 +264,18 @@ sub does_not_refer_to_comic_that_is_not_published_on_the_web : Tests {
 sub configure_one_template_for_all_languages : Tests {
     MockComic::fake_file('tagcloud.templ', 'template goes here');
     my $tags = Comic::Out::Tags->new(template => 'tagcloud.templ');
-    is($tags->_get_template('English'), 'tagcloud.templ');
-    is($tags->_get_template('Deutsch'), 'tagcloud.templ');
-    is($tags->_get_template('whatever, really'), 'tagcloud.templ');
+    is($tags->_get_tag_page_template('English'), 'tagcloud.templ');
+    is($tags->_get_tag_page_template('Deutsch'), 'tagcloud.templ');
+    is($tags->_get_tag_page_template('whatever, really'), 'tagcloud.templ');
 }
 
 
 sub configure_template_per_language : Tests {
     MockComic::fake_file('tagcloud.en', 'template goes here');
     my $tags = Comic::Out::Tags->new(template => { 'English' => 'tagcloud.en' });
-    is($tags->_get_template('English'), 'tagcloud.en');
+    is($tags->_get_tag_page_template('English'), 'tagcloud.en');
     eval {
-        $tags->_get_template('unknown language');
+        $tags->_get_tag_page_template('unknown language');
     };
     like($@, qr{template}i, 'should say what is wrong');
     like($@, qr{unknown language}, 'should mention the language');
@@ -789,4 +789,143 @@ sub warns_if_comic_does_not_have_the_configured_meta_data : Tests {
     my $msg = $max_beer_brewing->{warnings}[0];
     like($msg, qr{doesn't have}i, 'should say what is wrong');
     like($msg, qr{\bwhatever\b}, 'should mention the tag');
+}
+
+
+sub rejects_array_for_tags_page_index : Tests {
+    eval {
+        Comic::Out::Tags->new(index => []);
+    };
+    like($@, qr{\bindex\b}, 'should mention the setting');
+    like($@, qr{\barray\b}, 'should say what is wrong');
+}
+
+
+sub accepts_one_tags_page_index_template_for_all_languages : Tests {
+    my $tags = Comic::Out::Tags->new(template => 'page.templ', index => 'index.templ');
+    is($tags->_get_index_template('English'), 'index.templ');
+    is($tags->_get_index_template('Deutsch'), 'index.templ');
+    is($tags->_get_index_template('whatever, really'), 'index.templ');
+}
+
+
+sub accetps_per_language_tags_page_index_templates : Tests {
+    my $tags = Comic::Out::Tags->new(template => { 'English' => 'index.templ' });
+    is($tags->_get_tag_page_template('English'), 'index.templ');
+    eval {
+        $tags->_get_index_template('unknown language');
+    };
+    like($@, qr{index}i, 'should say what is wrong');
+    like($@, qr{unknown language}, 'should mention the language');
+}
+
+
+sub rejects_index_template_without_tag_pages_template : Tests {
+    eval {
+        Comic::Out::Tags->new(index => 'index.templ');
+    };
+    like($@, qr{\bComic::Out::Tag.template\b});
+}
+
+
+sub writes_index_tags_page_for_list : Tests {
+    MockComic::fake_file('page.templ', '...');
+    my $index = << 'TEMPL';
+        [% FOREACH c IN tags_page.$Language %]
+            plain link: [% c.key %] -> [% root %][% c.value %] ([% tag_count.$Language.${c.key} %])
+        [% END %]
+TEMPL
+    MockComic::fake_file('index.templ', $index);
+
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => 'beer',
+        },
+        $MockComic::TAGS => {
+            $MockComic::ENGLISH => ['brewing'],
+        },
+    );
+
+    my $tags = Comic::Out::Tags->new(template => 'page.templ', index => 'index.templ');
+    $tags->generate($comic);
+    $tags->generate_all($comic);
+
+    MockComic::assert_wrote_file('generated/web/english/tags/index.html',
+        qr{plain link: brewing -> \.\./tags/brewing\.html \(1\)}m);
+}
+
+
+sub writes_index_tags_page_for_cloud : Tests {
+    MockComic::fake_file('page.templ', '...');
+    my $index = << 'TEMPL';
+        [% FOREACH t IN tags_page.$Language %]
+            size: [% tag_rank.$Language.${t.key} %] for [% t.key %] -> [% root %][% t.value %]
+        [% END %]
+TEMPL
+    MockComic::fake_file('index.templ', $index);
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => 'beer',
+        },
+        $MockComic::TAGS => {
+            $MockComic::ENGLISH => ['brewing'],
+        },
+    );
+    $comic->{modified} = '2023-01-01';
+
+    my $tags = Comic::Out::Tags->new(template => 'page.templ', index => 'index.templ');
+    $tags->generate($comic);
+    $tags->generate_all($comic);
+
+    MockComic::assert_wrote_file('generated/web/english/tags/index.html',
+        qr{size: taglevel5 for brewing -> ../tags/brewing.html}m);
+}
+
+
+sub last_modified_date_in_tags_index_is_latest_tagged_comic_modification : Tests {
+    MockComic::fake_file('page.templ', '...');
+    MockComic::fake_file('index.templ', '[% last_modified %]');
+    my @comics;
+    foreach my $date (qw(2023-01-01 2023-02-02 2023-03-03 2023-02-22)) {
+       my $comic = MockComic::make_comic(
+            $MockComic::TITLE => {
+                $MockComic::ENGLISH => "beer on $date",
+            },
+            $MockComic::TAGS => {
+                $MockComic::ENGLISH => [ $date ],
+            },
+        );
+        $comic->{modified} = $date;
+        push @comics, $comic;
+    }
+
+    my $tags = Comic::Out::Tags->new(template => 'page.templ', index => 'index.templ');
+    foreach my $comic (@comics) {
+        $tags->generate($comic);
+    }
+    $tags->generate_all(@comics);
+
+    MockComic::assert_wrote_file('generated/web/english/tags/index.html', '2023-03-03');
+}
+
+
+sub reserves_index_html_for_index_page : Tests {
+    MockComic::fake_file('page.templ', 'page');
+    MockComic::fake_file('index.templ', 'index');
+
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => 'beer',
+        },
+        $MockComic::TAGS => {
+            $MockComic::ENGLISH => ['index'],
+        },
+    );
+
+    my $tags = Comic::Out::Tags->new(template => 'page.templ', index => 'index.templ');
+    $tags->generate($comic);
+    $tags->generate_all($comic);
+
+    MockComic::assert_wrote_file('generated/web/english/tags/index.html', 'index');
+    MockComic::assert_wrote_file('generated/web/english/tags/index_0.html', 'page');
 }

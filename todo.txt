@@ -139,6 +139,9 @@
 - feature: a rss / atom feed module that doesn't require the user to provide
   a template and hence know the feed format.
 
+- feature: add a simple tag cloud by default if the user doesn't provide a
+  tag cloud index template.
+
 - feature: sitemap should work without people having to define a template
 
 - feature: if we keep the sitemap via template, filter the list passed to
