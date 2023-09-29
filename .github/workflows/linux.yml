@@ -18,6 +18,6 @@ jobs:
       - name: Build, test, collect coverage on Perl ${{ matrix.perl-version }}
         uses: actions/checkout@v3
       - run: perl --version
-      - run: cpanm --installdeps --notest .
+      - run: cpanm --installdeps --notest --force .
       - run: perl Makefile.PL
       - run: make cover
