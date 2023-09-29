@@ -14,10 +14,9 @@ jobs:
     container:
       # https://hub.docker.com/r/perldocker/perl-tester
       image: perldocker/perl-tester:${{ matrix.perl-version }}
-    name: Perl ${{ matrix.perl-version }}
-    steps:
+      steps:
+      - name: Build and run tests with coverage on Perl ${{ matrix.perl-version }}
       - uses: actions/checkout@v3
-      - name: Build and run tests with coverage
       - run: perl --version
       - run: cpanm --installdeps --notest .
       - run: perl Makefile.PL
