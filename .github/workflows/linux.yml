@@ -1,0 +1,24 @@
+---
+on: [push]  # yamllint disable-line rule:truthy
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        perl-version:
+          - '5.22'
+          - '5.30'
+          - '5.36'
+          - 'latest'
+    container:
+      # https://hub.docker.com/r/perldocker/perl-tester
+      image: perldocker/perl-tester:${{ matrix.perl-version }}
+    name: Perl ${{ matrix.perl-version }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build and run tests with coverage
+      - run: perl --version
+      - run: cpanm --installdeps --notest .
+      - run: perl Makefile.PL
+      - run: make cover
