@@ -1,5 +1,5 @@
 [![License: Artistic-2.0](https://img.shields.io/badge/License-Perl-0298c3.svg)](https://opensource.org/licenses/Artistic-2.0)
-![Linux Build Status](https://github.com/robertwenner/comics/actions/workflows/linux/badge.svg)
+![Linux Build !Status](https://github.com/robertwenner/comics/actions/workflows/linux.yml/badge.svg)
 
 
 # Comics
