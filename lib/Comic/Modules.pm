@@ -84,6 +84,7 @@ sub find_modules {
                 }
             }
         },
+        no_chdir => 1,
         follow => 1,
         follow_skip => 2,
     }, @INC);
