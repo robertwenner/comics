@@ -18,7 +18,7 @@ jobs:
       - name: Build, test, collect coverage on Perl ${{ matrix.perl-version }}
         uses: actions/checkout@v3
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: apt-get install --yes aspell libaspell-dev aspell-en aspell-de
       - run: perl --version
       - run: cpanm --installdeps --notest .
