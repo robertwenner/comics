@@ -1,7 +1,6 @@
 [![License: Artistic-2.0](https://img.shields.io/badge/License-Perl-0298c3.svg)](https://opensource.org/licenses/Artistic-2.0)
-[![Build Status](https://github.com/robertwenner/comics/actions/workflows/build.yml/badge.svg)](https://github.com/robertwenner/comics/actions/runs/${{ github.run_id }})
+[![Build Status](https://github.com/robertwenner/comics/actions/workflows/build.yml/badge.svg)]
 [![Coverage Status](https://coveralls.io/repos/github/robertwenner/comics/badge.svg?branch=master)](https://coveralls.io/github/robertwenner/comics?branch=master)
-
 
 # Comics
 
