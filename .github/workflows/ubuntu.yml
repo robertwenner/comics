@@ -1,0 +1,26 @@
+---
+# Losely based on https://perlmaven.com/setup-github-actions
+on: [push]  # yamllint disable-line rule:truthy
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    container:
+      # https://hub.docker.com/r/perldocker/perl-tester
+      image: perldocker/perl-tester:latest
+    steps:
+      - name: Build and test with coverage with latest Perl on latest Ubuntu
+        uses: actions/checkout@v3
+
+      - name: Set up Perl
+        uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: latest
+
+      - run: perl --version
+      - run: apt-get install --yes aspell libaspell-dev aspell-en aspell-de
+      - run: cpanm --installdeps --notest .
+      - run: cpanm -n Devel::Cover::Report::Coveralls
+      - run: perl Makefile.PL
+      - run: cover -test -report Coveralls
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
