@@ -1,0 +1,15 @@
+---
+# Losely based on https://perlmaven.com/setup-github-actions
+on: [push]  # yamllint disable-line rule:truthy
+jobs:
+  build-and-test:
+    runs-on: macos-latest
+    steps:
+      - name: Build and test on latest MacOS
+        uses: actions/checkout@v3
+
+      - run: perl --version
+      - run: brew bundle
+      - run: cpanm --installdeps --notest .
+      - run: perl Makefile.PL
+      - run: make test
