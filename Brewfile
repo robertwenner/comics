@@ -5,6 +5,7 @@
 
 cask "inkscape"
 brew "perl"
+brew "cpanm"
 brew "rsync"
 brew "libpng"
 brew "optipng"
