@@ -19,10 +19,7 @@ jobs:
     steps:
       - name: Build and test on Perl ${{ matrix.perl-version }}
         uses: actions/checkout@v3
-      - name: Set up Perl
-        uses: shogo82148/actions-setup-perl@v1
-        with:
-          perl-version: ${{ matrix.perl-version }}
+
       - run: perl --version
       - run: apt-get install --yes aspell libaspell-dev aspell-en aspell-de
       - run: cpanm --installdeps --notest .
