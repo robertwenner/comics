@@ -11,11 +11,6 @@ jobs:
       - name: Build and test with coverage with latest Perl on latest Ubuntu
         uses: actions/checkout@v3
 
-      - name: Set up Perl
-        uses: shogo82148/actions-setup-perl@v1
-        with:
-          perl-version: latest
-
       - run: perl --version
       - run: apt-get install --yes aspell libaspell-dev aspell-en aspell-de
       - run: cpanm --installdeps --notest .
