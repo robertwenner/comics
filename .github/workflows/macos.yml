@@ -10,7 +10,7 @@ jobs:
 
       - run: perl --version
       - run: brew bundle
-      - run: export PATH="/usr/local/opt/libxml2/bin:$PATH"
+      - run: echo "::set-env name=PATH::/usr/local/opt/libxml2/bin:$PATH"
       - run: cpanm --installdeps --notest .
       - run: perl Makefile.PL
       - run: make test
