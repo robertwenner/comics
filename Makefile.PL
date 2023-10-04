@@ -35,6 +35,13 @@ my %dependencies = (
     'XML::LibXML::XPathContext' => 0,
     'version' => 0,
 );
+if ($^O =~ m{MSWin}i) {
+    # Cannot easily install aspell libraries on Windows, but Hunspell is available
+    # via vcpkg, so switch them out here.
+    delete $dependencies{'Text::Aspell'};
+    $dependencies{'Text::Hunspell'} = 0;
+}
+
 my %test_dependencies = (
     'Test::More' => 0,
     'Test::Class' => 0,
