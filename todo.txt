@@ -273,5 +273,3 @@
   published where: not empty? certain well-known locations ? (would only
   make sense it these locations are configured somewhere, but most don't
   need configuration)
-
-- build: switch to github actions

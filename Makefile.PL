@@ -35,6 +35,7 @@ my %dependencies = (
     'XML::LibXML::XPathContext' => 0,
     'version' => 0,
 );
+
 my %test_dependencies = (
     'Test::More' => 0,
     'Test::Class' => 0,

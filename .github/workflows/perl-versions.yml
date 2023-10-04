@@ -1,0 +1,26 @@
+---
+on: [push]  # yamllint disable-line rule:truthy
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        perl-version:
+          - '5.22'
+          - '5.30'
+          - '5.36'
+          - 'latest'
+    name: Perl ${{ matrix.perl-version }}
+    container:
+      # https://hub.docker.com/r/perldocker/perl-tester
+      image: perldocker/perl-tester:${{ matrix.perl-version }}
+    steps:
+      - name: Build and test on Perl ${{ matrix.perl-version }}
+        uses: actions/checkout@v3
+
+      - run: perl --version
+      - run: apt-get install --yes aspell libaspell-dev aspell-en aspell-de
+      - run: cpanm --installdeps --notest .
+      - run: perl Makefile.PL
+      - run: make test

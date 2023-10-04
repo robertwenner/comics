@@ -11,10 +11,9 @@
 .bak$
 .old$
 
-.travis-ci
 .relint.yml
 .pre-commit-config.yaml
-travis.yml
+.github
 todo
 
 pm_to_blib

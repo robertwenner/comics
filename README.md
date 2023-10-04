@@ -1,7 +1,6 @@
 [![License: Artistic-2.0](https://img.shields.io/badge/License-Perl-0298c3.svg)](https://opensource.org/licenses/Artistic-2.0)
-[![Build Status](https://app.travis-ci.com/robertwenner/comics.svg?branch=master)](https://app.travis-ci.com/robertwenner/comics)
+![Build Status](https://github.com/robertwenner/comics/actions/workflows/build.yml/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/robertwenner/comics/badge.svg?branch=master)](https://coveralls.io/github/robertwenner/comics?branch=master)
-
 
 # Comics
 
@@ -23,15 +22,15 @@ configuration file entries may change.
 
 ## Dependencies
 
-Use cpanminus and run `cpanm --installdeps --notest .` to install all
-dependencies, and hope that it works. Or see [the makefile](Makefile.PL).
+Install the libraries using the operating system's package manager (e.g.,
+`apt` on Ubuntu or `brew` on MacOS) before installing Perl modules; in
+particular `Text::Aspell` will bail out if the aspell libraries are not
+installed.
 
-You'll need [Inkscape](https://inkscape.org) in the `$PATH` to actually
-export your comics to `png`.
+### Operating system libraries
 
-You also need `Imager::File::PNG`, which in turn depends on `libpng-dev`.
-
-`optipng` is recommended to shrink exported png files.
+*MacOS users:*  if you are using [brew](https://brew.sh), just run `brew
+bundle` to install the dependencies.
 
 For spell checking, you need `ASpell` or `Hunspell` with the corresponding
 development libraries. I had a hard time with Hunspell and UTF8, so I prefer
@@ -40,11 +39,24 @@ you want to use (e.g., `aspell-de`, `aspell-en`, or `aspell-es`).
 
 For uploading via rsync, you need to install the `rsync` command.
 
-*MacOS users:*  if you are using [brew](https://brew.sh), just run `brew
-bundle` to install the dependencies.
+You also need `Imager::File::PNG`, which in turn depends on `libpng-dev`.
+
+`optipng` is recommended to shrink exported png files.
+
+You'll need [Inkscape](https://inkscape.org) in the `$PATH` to actually
+export your comics to `png`.
+
+
+### Perl modules
+
+Use e.g., cpanminus and run `cpanm --installdeps --notest .` to install
+all dependencies. Or see the list of dependencies in [the makefile](Makefile.PL)
+and install them manually with e.g., `cpan`.
 
 
 ## Installation
+
+This requires make, which most Perl modules need anyway.
 
 ```bash
 perl Makefile.PL
