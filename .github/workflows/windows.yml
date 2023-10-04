@@ -12,6 +12,6 @@ jobs:
           distribution: strawberry
 
       - run: perl --version
-      - run: cpanm --installdeps .
+      - run: cpanm --installdeps --force --notest .
       - run: perl Makefile.PL
-      - run: make test
+      - run: prove t
