@@ -29,6 +29,7 @@ my %dependencies = (
     'Template' => 0,
     'Template::Plugin::JSON' => 0,
     'Text::Aspell' => 0,
+    'Text::Hunspell' => 0,
     'Text::SpellChecker' => 0,
     'URI::Escape' => 0,
     'XML::LibXML' => 0,
