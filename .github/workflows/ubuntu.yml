@@ -1,5 +1,4 @@
 ---
-# Losely based on https://perlmaven.com/setup-github-actions
 on: [push]  # yamllint disable-line rule:truthy
 jobs:
   build-and-test:
