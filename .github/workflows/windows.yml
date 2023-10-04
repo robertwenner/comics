@@ -11,7 +11,12 @@ jobs:
           perl-version: latest
           distribution: strawberry
 
-      - run: vcpkg install aspell
+      # Needs a spell checker, either ASpell or Hunspell, and Hunspell seems to
+      # be easier for Windows.
+      # https://github.com/hunspell/hunspell#installing-hunspell-vcpkg
+      # As a side effect, this may show problems with Hunspell that Aspell may
+      # not have. :-/
+      - run: vcpkg install hunspell
 
       - run: perl --version
       - run: cpanm --installdeps --force --notest .
