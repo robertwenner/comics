@@ -14,10 +14,9 @@ jobs:
       # Needs a spell checker, either ASpell or Hunspell, and Hunspell seems to
       # be easier for Windows.
       # https://github.com/hunspell/hunspell#installing-hunspell-vcpkg
-      # As a side effect, this may show problems with Hunspell that Aspell may
-      # not have. :-/
       - run: vcpkg install hunspell
-
+      # Swap out Aspell for Hunspell before installing dependencies.
+      - run: perl -p -e 's/Text::Aspell/Text::Hunspell/mg' -i Makefile.PL
       - run: perl --version
       - run: cpanm --installdeps --force --notest .
       - run: perl Makefile.PL
