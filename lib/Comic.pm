@@ -163,7 +163,7 @@ sub load {
         $self->keel_over("No domain for $language") unless ($domain);
 
         my $backlog_path = ${$self->{settings}->{Paths}}{'unpublished'};
-        $self->{backlogPath}{$language} = $backlog_path . lc $language;
+        $self->{backlogPath}{$language} = $backlog_path . lc $language . q{/};
         my $base;
         if ($self->not_yet_published()) {
             $base = $self->{backlogPath}{$language};
@@ -171,7 +171,6 @@ sub load {
         else {
             my $dir = ${$self->{settings}->{Paths}}{'published'};
             $base = $dir . lc $language . q{/} . $self->{siteComicsPath};
-            $base =~ s{/$}{};
         }
 
         $self->{dirName}{$language} = $base;

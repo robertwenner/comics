@@ -94,7 +94,7 @@ See the  Generator method's documentation.
 sub up_to_date {
     my ($self, $comic, $language) = @ARG;
 
-    return $comic->up_to_date("$comic->{dirName}{$language}/$comic->{baseName}{$language}.png");
+    return $comic->up_to_date("$comic->{dirName}{$language}$comic->{baseName}{$language}.png");
 }
 
 
@@ -139,13 +139,13 @@ sub generate {
     my ($self, $comic) = @ARG;
 
     foreach my $language ($comic->languages()) {
-        my $published_png = "$comic->{dirName}{$language}/$comic->{baseName}{$language}.png";
+        my $published_png = "$comic->{dirName}{$language}$comic->{baseName}{$language}.png";
         # Need to pull backlogPath out of here, write only published pngs?
         # OR pass a published and a not published outdir
         # OR pass a hash of outdir to coderef to decide which png goes where --- yay for overengineering!
         # But then again using the backlog as a cache is kind of an implementation
         # detail of this module?
-        my $backlog_png = "$comic->{backlogPath}{$language}/$comic->{baseName}{$language}.png";
+        my $backlog_png = "$comic->{backlogPath}{$language}$comic->{baseName}{$language}.png";
 
         if ($comic->up_to_date($backlog_png)) {
             _move($backlog_png, $published_png) or $comic->keel_over("Comic::Out::PngInkscape: Cannot move $backlog_png to $published_png: $OS_ERROR");

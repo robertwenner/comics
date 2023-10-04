@@ -195,7 +195,7 @@ sub toot_png : Tests {
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
     );
     $comic->{pngFile}{'English'} = "latest-comic.png";
-    MockComic::fake_file("$comic->{dirName}{English}/$comic->{pngFile}{English}", 'png file contents');
+    MockComic::fake_file("generated/web/english/comics/latest-comic.png", 'png file contents');
 
     my $mastodon = Comic::Social::Mastodon->new(%settings, 'mode' => 'png');
     my $results = $mastodon->post($comic);
@@ -246,7 +246,7 @@ sub ignores_empty_media_attachments_array : Tests {
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
     );
     $comic->{pngFile}{'English'} = "latest-comic.png";
-    MockComic::fake_file("$comic->{dirName}{English}/$comic->{pngFile}{English}", 'png file contents');
+    MockComic::fake_file("generated/web/english/comics/latest-comic.png", 'png file contents');
 
     my $mastodon = Comic::Social::Mastodon->new(%settings, 'mode' => 'png');
     my $results = $mastodon->post($comic);
@@ -388,7 +388,7 @@ sub reports_missing_content_from_media_reply : Tests {
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
     );
     $comic->{pngFile}{'English'} = "latest-comic.png";
-    MockComic::fake_file("$comic->{dirName}{English}/$comic->{pngFile}{English}", 'png file contents');
+    MockComic::fake_file("generated/web/english/comics/latest-comic.png", 'png file contents');
 
     my $mastodon = Comic::Social::Mastodon->new(%settings, mode => 'png');
     my $results = $mastodon->post($comic);
@@ -411,7 +411,7 @@ sub reports_error_if_content_from_media_reply_is_unparsable : Tests {
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
     );
     $comic->{pngFile}{'English'} = "latest-comic.png";
-    MockComic::fake_file("$comic->{dirName}{English}/$comic->{pngFile}{English}", 'png file contents');
+    MockComic::fake_file("generated/web/english/comics/latest-comic.png", 'png file contents');
 
     my $mastodon = Comic::Social::Mastodon->new(%settings, mode => 'png');
     my $results = $mastodon->post($comic);
@@ -434,7 +434,7 @@ sub falls_back_to_posting_a_link_if_media_post_fails : Tests {
     );
     $comic->{url}{'English'} = "https://beercomics.com/comics/latest-comic.html";
     $comic->{pngFile}{'English'} = "latest-comic.png";
-    MockComic::fake_file("$comic->{dirName}{English}/$comic->{pngFile}{English}", 'png file contents');
+    MockComic::fake_file("generated/web/english/comics/latest-comic.png", 'png file contents');
 
     my $mastodon = Comic::Social::Mastodon->new(%settings, mode => 'png');
     my $results = $mastodon->post($comic);
@@ -461,7 +461,7 @@ sub reports_http_error_from_media_post : Tests {
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
     );
     $comic->{pngFile}{'English'} = "latest-comic.png";
-    MockComic::fake_file("$comic->{dirName}{English}/$comic->{pngFile}{English}", 'png file contents');
+    MockComic::fake_file("generated/web/english/comics/latest-comic.png", 'png file contents');
 
     my $mastodon = Comic::Social::Mastodon->new(%settings, mode => 'png');
     my $results = $mastodon->post($comic);
@@ -486,7 +486,7 @@ sub reports_http_error_from_status_post : Tests {
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
     );
     $comic->{pngFile}{'English'} = "latest-comic.png";
-    MockComic::fake_file("$comic->{dirName}{English}/$comic->{pngFile}{English}", 'png file contents');
+    MockComic::fake_file("generated/web/english/comics/latest-comic.png", 'png file contents');
 
     my $mastodon = Comic::Social::Mastodon->new(%settings, mode => 'html');
     my $results = $mastodon->post($comic);
@@ -544,7 +544,7 @@ sub encodes_instance_url : Tests {
     );
     $comic->{url}{'English'} = "https://beercomics.com/comics/latest-comic.html";
     $comic->{pngFile}{'English'} = "latest-comic.png";
-    MockComic::fake_file("$comic->{dirName}{English}/$comic->{pngFile}{English}", 'png file contents');
+    MockComic::fake_file("generated/web/english/comics/latest-comic.png", 'png file contents');
 
     my $mastodon = Comic::Social::Mastodon->new(%settings, 'mode' => 'png', instance => 'mästödön.de');
     my $results = $mastodon->post($comic);

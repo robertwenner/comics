@@ -182,7 +182,7 @@ sub post {
         if ($self->{settings}->{mode} eq 'png') {
             my @messages;
             ($media_id, @messages) = $self->_upload_media(
-                "$comic->{dirName}{$language}/$comic->{pngFile}{$language}",
+                "$comic->{dirName}{$language}$comic->{pngFile}{$language}",
                 $description,
             );
             push @result, @messages;

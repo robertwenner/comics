@@ -555,7 +555,7 @@ sub is_up_to_date_backlog : Tests {
     );
     $png->up_to_date($comic, 'English');
 
-    is_deeply(\@asked, ["$comic->{backlogPath}{English}/$comic->{baseName}{English}.png"]);
+    is_deeply(\@asked, ["generated/backlog/english/drinking-beer.png"]);
 }
 
 
@@ -575,5 +575,5 @@ sub is_up_to_date_published : Tests {
     );
     $png->up_to_date($comic, 'English');
 
-    is_deeply(\@asked, ["$comic->{dirName}{English}/$comic->{baseName}{English}.png"]);
+    is_deeply(\@asked, ["generated/web/english/comics/drinking-beer.png"]);
 }

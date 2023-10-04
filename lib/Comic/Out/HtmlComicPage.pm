@@ -99,7 +99,7 @@ See the  Generator method's documentation.
 sub up_to_date {
     my ($self, $comic, $language) = @ARG;
 
-    return $comic->up_to_date("$comic->{dirName}{$language}/$comic->{htmlFile}{$language}");
+    return $comic->up_to_date("$comic->{dirName}{$language}$comic->{htmlFile}{$language}");
 }
 
 
@@ -216,7 +216,7 @@ sub _export_language_html {
     my ($self, $comic, $language, $template) = @ARG;
 
     $comic->get_transcript($language);
-    Comic::write_file("$comic->{dirName}{$language}/$comic->{htmlFile}{$language}",
+    Comic::write_file("$comic->{dirName}{$language}$comic->{htmlFile}{$language}",
         $self->_do_export_html($comic, $language, $template));
     return 0;
 

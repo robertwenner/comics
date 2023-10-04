@@ -183,7 +183,7 @@ sub post {
             }
             else {
                 $status = $self->{twitter}->update_with_media($description, [
-                    "$comic->{dirName}{$language}/$comic->{pngFile}{$language}",
+                    "$comic->{dirName}{$language}$comic->{pngFile}{$language}",
                 ]);
             }
             push @result, $status->{text};

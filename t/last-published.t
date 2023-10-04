@@ -44,8 +44,8 @@ sub creates_dirs_only_for_languages_with_latest_comics : Tests {
     $hcp->generate($comic);
     $hcp->generate_all($comic);
     MockComic::assert_made_all_dirs(
-        'generated/web/deutsch/comics',
-        'generated/web/english/comics',
+        'generated/web/deutsch/comics/',
+        'generated/web/english/comics/',
     );
 }
 
