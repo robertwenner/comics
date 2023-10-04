@@ -10,11 +10,7 @@ jobs:
 
       - run: perl --version
       - run: brew bundle
-      - run: cpanm --installdeps --notest .
-        env:
-          PATH: "/usr/local/opt/libxml2/bin:$PATH"
+      - run: PATH="/usr/local/opt/libxml2/bin/:$PATH" cpanm --installdeps --notest .
 
       - run: perl Makefile.PL
       - run: make test
-        env:
-          PATH: "/usr/local/opt/libxml2/bin:$PATH"
