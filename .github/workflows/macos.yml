@@ -11,6 +11,7 @@ jobs:
       - run: perl --version
       - run: brew bundle
       - run: PATH="/usr/local/opt/libxml2/bin/:$PATH" cpanm --installdeps --notest .
+      - run: cpanm install Tie::IxHash
 
       - run: perl Makefile.PL
       - run: make test

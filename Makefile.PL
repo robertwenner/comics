@@ -30,7 +30,6 @@ my %dependencies = (
     'Template::Plugin::JSON' => 0,
     'Text::Aspell' => 0,
     'Text::SpellChecker' => 0,
-    'Tie::IxHash.pm' => 0,  # not installed by default on MacOS with brew
     'URI::Escape' => 0,
     'XML::LibXML' => 0,
     'XML::LibXML::XPathContext' => 0,
