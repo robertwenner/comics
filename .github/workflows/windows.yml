@@ -1,0 +1,17 @@
+---
+on: [push]  # yamllint disable-line rule:truthy
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+    steps:
+      - name: Build and test on latest Windows
+        uses: actions/checkout@v3
+      - uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: latest
+          distribution: strawberry
+
+      - run: perl --version
+      - run: cpanm --installdeps .
+      - run: perl Makefile.PL
+      - run: make test
