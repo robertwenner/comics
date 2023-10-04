@@ -17,7 +17,6 @@ use String::Util 'trim';
 use DateTime;
 use DateTime::Format::ISO8601;
 use DateTime::Format::RFC3339;
-use File::Path;
 use File::Basename;
 use File::Slurper;
 use open ':std', ':encoding(UTF-8)'; # to handle e.g., umlauts correctly
@@ -175,7 +174,6 @@ sub load {
             $base =~ s{/$}{};
         }
 
-        File::Path::make_path($base);
         $self->{dirName}{$language} = $base;
         $self->{baseName}{$language} = $self->_normalized_title($language);
 

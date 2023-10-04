@@ -179,8 +179,9 @@ sub generate_all {
             my $last_comic = _find_next($language, $i, \@sorted, [reverse $i + 1 .. @sorted - 1]);
             $comic->{'last'}{$language} = $last_comic ? $last_comic->{htmlFile}{$language} : 0;
 
-            # Create dir(s)
-            File::Path::make_path($self->{settings}->{outdir} . lc $language);
+            # Create dir(s). Must be here not outside the loop only once per langauage
+            # because of backlog vs published paths, and possibly other locations.
+            File::Path::make_path($comic->{dirName}{$language});
 
             # The actual export
             my $template = $self->per_language_setting('template', $language);

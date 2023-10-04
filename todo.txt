@@ -12,9 +12,6 @@
   one level of directories (e.g., all template processing that defines the
   root variable).
 
-- cleanup: modules that need directories should create them, not Comic.pm;
-  may need to make paths (defaults) available easily
-
 - defect: Mastodon 500 error when posting images
 
 - cleanup: rework variables available for templates: standardize names, pick

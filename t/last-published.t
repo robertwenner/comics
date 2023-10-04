@@ -42,7 +42,7 @@ sub make_comic {
 sub creates_dirs_only_for_languages_with_latest_comics : Tests {
     my $comic = MockComic::make_comic();
     $hcp->generate($comic);
-    $hcp->export_index($comic);
+    $hcp->generate_all($comic);
     MockComic::assert_made_all_dirs(
         'generated/web/deutsch/comics',
         'generated/web/english/comics',
