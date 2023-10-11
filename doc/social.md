@@ -18,6 +18,55 @@ The order in which these modules run is undefined, but they will only run
 after all [Upload](upload.md) modules have finished.
 
 
+## `Comic::Social::Email`
+
+Emails the current comic to a list of recipients, per language.
+
+This is a somewhat basic implementation (new connection per recipient), and
+probably not too efficient. It may work for a few emails, but your email
+provider may enforce sending limits. If you use want to email more than a
+handful of people, you should look into proper list management tools that
+cover subscribes and unsubscribes as well as sending bulk emails.
+
+To email the latest comic, configure it like this:
+
+```json
+    "Social": {
+        "Comic::Social::Email": {
+            "server": "smtp.gmail.com",
+            "sender_address": "Me <me@example.org>",
+            "password": "super secret",
+            "mode": "png",
+            "recipient_list": {
+                "English": "recipients.english"
+            }
+        }
+    }
+
+```
+
+The `server` is the sending email server. You can use your email provider's
+server and fill in the details as needed.
+
+`sender_address` is your own email address, like `me@example.org`.
+
+The `password` is the password you use to log in to your email account.
+
+The `mode` specifies whether to send a link to the comic (mode `html`) or
+the `png` image of the comic as an attachment to the email.
+
+The `recipient_list` specifies a file per language. That file must have each
+recipient email on a single line.
+
+When `Comic::Social::Email` sends an email, it will:
+
+* make an encrypted connection to your server
+
+* use the comic's title as the subject of the email
+
+* use the comic's description as the body of the email
+
+
 ## `Comic::Social::IndexNow`
 
 Asks search engines that support the [index now](https://indexnow.org)

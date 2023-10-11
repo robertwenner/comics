@@ -109,6 +109,12 @@ sub mock_methods {
         return $files_read{$name};
     };
 
+    *File::Slurper::read_lines = sub {
+        my ($name) = @_;
+        confess("Tried to read unmocked file '$name'") unless (defined($files_read{$name}));
+        return split '\n', $files_read{$name};
+    };
+
     *Comic::_mtime = sub {
         my ($file) = @_;
         return $mtime{$file} || 0;

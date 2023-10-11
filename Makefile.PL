@@ -3,12 +3,15 @@ use warnings;
 use ExtUtils::MakeMaker;
 
 my %dependencies = (
+    'Authen::SASL' => 0,
     'autodie' => 0,
     'autovivification' => 0,
     'Clone' => 0,
     'DateTime' => 0,
     'DateTime::Format::ISO8601' => 0,
     'DateTime::Format::RFC3339' => 0,
+    'Email::Sender::Transport::SMTP' => 0,
+    'Email::Stuffer' => 0,
     'ExtUtils::MakeMaker' => 0,
     'File::Rsync' => 0,
     'File::Slurper' => 0,
@@ -22,6 +25,7 @@ my %dependencies = (
     'Locales' => 0,
     'Net::Twitter' => 0,
     'Net::IDN::Encode' => 0,
+    'MIME::Base64' => 0,
     'Readonly' => 0,
     'Reddit::Client' => 0,
     'String::Util' => 0,
@@ -40,6 +44,7 @@ my %test_dependencies = (
     'Test::More' => 0,
     'Test::Class' => 0,
     'Test::Distribution' => 0,
+    'Test::MockFile' => 0,
     'Test::MockModule' => 0,
     'Test::NoWarnings' => 0,
     'Test::Output' => 0,
