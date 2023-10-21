@@ -270,3 +270,8 @@
   published where: not empty? certain well-known locations ? (would only
   make sense it these locations are configured somewhere, but most don't
   need configuration)
+
+- defect: building all comics twice loses warnings in the backlog cause
+  Checks run only on modified files, and the warnings are not stored
+  anywhere besides the backlog, and on re-run each comic starts with empty
+  warnings, and the backlog gets written again from those comics
