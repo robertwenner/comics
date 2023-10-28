@@ -33,7 +33,7 @@ sub set_up : Test(setup) {
         'recipient_list' => {
             'English' => 'recipients.english',
         },
-        'mode' => 'html',
+        'mode' => 'link',
     );
 
     $smtp = Test::MockModule->new('Email::Stuffer');
@@ -173,7 +173,7 @@ sub complains_about_bad_mode : Tests {
         );
     };
     like($@, qr{\bmode\b}, 'should say what argument had a problem');
-    like($@, qr{\bpng or html\b}, 'should say what is wrong');
+    like($@, qr{\bpng or link\b}, 'should say what is wrong');
 
     eval {
         Comic::Social::Email->new(
@@ -182,7 +182,7 @@ sub complains_about_bad_mode : Tests {
         );
     };
     like($@, qr{\bmode\b}, 'should say what argument had a problem');
-    like($@, qr{\bpng or html\b}, 'should say what is wrong');
+    like($@, qr{\bpng or link\b}, 'should say what is wrong');
 }
 
 
@@ -220,7 +220,7 @@ sub defaults_to_png_mode : Tests {
 
 
 sub builds_link_email : Tests {
-    my $mailer = Comic::Social::Email->new(%default_args, mode => 'html');
+    my $mailer = Comic::Social::Email->new(%default_args, mode => 'link');
     $mailer->post($comic);
 
     my @parts = $stuffer->email->subparts;
@@ -284,7 +284,7 @@ sub encodes_non_ascii_in_body : Tests {
     );
     $comic->{url}{English} = "https://beercomics.com/comics/latest-comic.html";
 
-    my $mailer = Comic::Social::Email->new(%default_args, mode => 'html');
+    my $mailer = Comic::Social::Email->new(%default_args, mode => 'link');
     $mailer->post($comic);
 
     like($stuffer->as_string(), qr{K=C3=B6lsch!}m, 'wrong subject');
@@ -308,7 +308,7 @@ sub works_on_all_passed_comics : Tests {
         );
     }
 
-    my $mailer = Comic::Social::Email->new(%default_args, mode => 'html');
+    my $mailer = Comic::Social::Email->new(%default_args, mode => 'link');
     $mailer->post(@comics);
 
     is_deeply(\@mailed, ['Comic 1', 'Comic 2', 'Comic 3']);

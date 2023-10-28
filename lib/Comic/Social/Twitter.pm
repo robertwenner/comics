@@ -23,7 +23,7 @@ Readonly my $MAX_LEN => 280;
 
 =encoding utf8
 
-=for stopwords Wenner merchantability perlartistic html png Ich braue mein eigenes Weil ich kann hashtags
+=for stopwords Wenner merchantability perlartistic png Ich braue mein eigenes Weil ich kann hashtags
 
 
 =head1 NAME
@@ -71,8 +71,8 @@ The settings hash needs to have these keys:
 
 =over 4
 
-=item * B<$mode> either 'html' or 'png' to tweet either a link to the comic or
-    the actual comic png. Defaults to 'png'. 'html' mode requires that the
+=item * B<$mode> either 'link' or 'png' to tweet either a link to the comic or
+    the actual comic png. Defaults to 'png'. 'link' mode requires that the
     comic is uploaded and the URL is available in the Comic. 'png' mode
     requires that a png has been generated and its file name is stored in
     the Comic.
@@ -100,7 +100,7 @@ sub new {
     my $self = bless{}, $class;
 
     $self->{mode} = $args{'mode'} || 'png';
-    unless ($self->{mode} eq 'png' || $self->{mode} eq 'html') {
+    unless ($self->{mode} eq 'png' || $self->{mode} eq 'link') {
         croak("Unknown twitter mode '$self->{mode}'");
     }
     delete $args{'mode'}; # to pass only the rest on to Net::Twitter->new
@@ -172,13 +172,13 @@ sub post {
             \&_textlen,
             $comic->{meta_data}->{title}->{$language},
             $comic->{meta_data}->{description}->{$language},
-            $self->{mode} eq 'html' ? $comic->{url}->{$language} : '',
+            $self->{mode} eq 'link' ? $comic->{url}->{$language} : '',
             @tags,
         );
 
         my $status;
         eval {
-            if ($self->{mode} eq 'html') {
+            if ($self->{mode} eq 'link') {
                 $status = $self->{twitter}->update($description);
             }
             else {

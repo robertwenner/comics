@@ -45,7 +45,7 @@ sub set_up : Test(setup) {
 
 sub accepts_good_modes : Tests {
     Comic::Social::Twitter->new(mode => 'png');
-    Comic::Social::Twitter->new(mode => 'html');
+    Comic::Social::Twitter->new(mode => 'link');
     Comic::Social::Twitter->new();
     ok(1);
 }
@@ -102,7 +102,7 @@ sub tweet_html : Tests {
         $MockComic::DESCRIPTION => { $MockComic::ENGLISH => 'This is the latest beercomic!' },
     );
     $comic->{url}{'English'} = "https://beercomics.com/comics/latest-comic.html";
-    my $cs_twitter = Comic::Social::Twitter->new(mode => 'html');
+    my $cs_twitter = Comic::Social::Twitter->new(mode => 'link');
     $cs_twitter->post($comic);
     my $expected =
         "Latest comic\n" .
@@ -150,7 +150,7 @@ sub handles_other_object_error : Tests {
     );
     $comic->{pngFile}{'English'} = "latest-comic.png";
     $twitter_error = bless {};
-    my $cs_twitter = Comic::Social::Twitter->new(mode => 'html');
+    my $cs_twitter = Comic::Social::Twitter->new(mode => 'link');
 
     my $message = $cs_twitter->post($comic);
     like($message, qr{\btwitter\b}i);
@@ -166,7 +166,7 @@ sub handles_non_twitter_error : Tests {
 
     $comic->{pngFile}{'English'} = "latest-comic.png";
     $twitter_error = "Oops";
-    my $cs_twitter = Comic::Social::Twitter->new(mode => 'html');
+    my $cs_twitter = Comic::Social::Twitter->new(mode => 'link');
 
     my $message = $cs_twitter->post($comic);
     like($message, qr{\btwitter\b}i);
@@ -182,7 +182,7 @@ sub handles_twitter_error : Tests {
     $comic->{pngFile}{'English'} = "latest-comic.png";
     my $response = HTTP::Response->new(500, 'go away');
     $twitter_error = Net::Twitter::Error->new(http_response => $response);
-    my $cs_twitter = Comic::Social::Twitter->new(mode => 'html');
+    my $cs_twitter = Comic::Social::Twitter->new(mode => 'link');
 
     my $message = $cs_twitter->post($comic);
 

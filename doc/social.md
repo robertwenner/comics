@@ -52,7 +52,7 @@ server and fill in the details as needed.
 
 The `password` is the password you use to log in to your email account.
 
-The `mode` specifies whether to send a link to the comic (mode `html`) or
+The `mode` specifies whether to send a link to the comic (mode `link`) or
 the `png` image of the comic as an attachment to the email.
 
 The `recipient_list` specifies a file per language. That file must have each
@@ -167,7 +167,7 @@ like mentions.
 
 If `mode` is png, the tooted message is the comic's title, its description,
 and the hashtags from the comic (separated by newlines); plus the actual
-comic `png` file. If the mode is `html`, the comic's page URL is added to
+comic `png` file. If the mode is `link`, the comic's page URL is added to
 the message as well, but the image is not included.
 
 All posts will use your account's default visibility, e.g., "public".
@@ -256,8 +256,8 @@ The configuration looks like this:
 
 The fields are:
 
-* `mode`: either `html` or `png` to tweet either a link to the comic or
-  the actual comic `png` file. Defaults to `png`. `html` mode requires that the
+* `mode`: either `link` or `png` to tweet either a link to the comic or
+  the actual comic `png` file. Defaults to `png`. `link` mode requires that the
   comic is uploaded and the URL is available in the Comic. `png` mode
   requires that the `.png` has been generated and its filename is stored in
   the Comic.

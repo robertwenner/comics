@@ -27,7 +27,7 @@ Readonly my $HTTP_TINY_ERROR => 599;
 
 =encoding utf8
 
-=for stopwords Wenner merchantability perlartistic html Prost auf mich png
+=for stopwords Wenner merchantability perlartistic Prost auf mich png
 
 
 =head1 NAME
@@ -41,7 +41,7 @@ Comic::Social::Mastodon - toot / post a Comic.
         'client-key' => '...',
         'client-secret' => '...',
         'access-token' => '...',
-        'mode' => 'html',
+        'mode' => 'link',
     });
     my $result = $mastodon->post($comic);
     print "$result\n";
@@ -79,7 +79,7 @@ The settings hash needs to have these keys:
 
 =item * B<instance> Name of the Mastodon instance to toot to.
 
-=item * B<mode> Either 'png' or 'html': whether to post the comic's image or
+=item * B<mode> Either 'png' or 'link': whether to post the comic's image or
     a link to the comic.
 
 =item * B<visibility> optional visibility (e.g., "public" or "private"),
@@ -100,8 +100,8 @@ sub new {
     croak("$self->{me}: instance missing") unless ($args{'instance'});
     croak("$self->{me}: instance name cannot contain slashes") if ($args{'instance'} =~ m{/});
     croak("$self->{me}: access_token missing") unless ($args{'access_token'});
-    croak("$self->{me}: mode missing, use png or html") unless ($args{'mode'});
-    unless ($args{'mode'} eq 'png' || $args{'mode'} eq 'html') {
+    croak("$self->{me}: mode missing, use png or link") unless ($args{'mode'});
+    unless ($args{'mode'} eq 'png' || $args{'mode'} eq 'link') {
         croak("$self->{me}: unknown posting mode '$args{'mode'}'");
     }
 
@@ -192,7 +192,7 @@ sub post {
                 # fail as well. Try if Mastodon just doesn't like that image
                 # for some reason but accepts a link.
                 push @result, "$self->{me}: posting comic link instead";
-                $description = _build_message($comic, $language, 'html');
+                $description = _build_message($comic, $language, 'link');
             }
         }
         push @result, $self->_post_status($description, $language_codes{$language}, $media_id);
@@ -211,7 +211,7 @@ sub _build_message {
         \&_textlen,
         $comic->{meta_data}->{title}->{$language},
         $comic->{meta_data}->{description}->{$language},
-        $mode eq 'html' ? $comic->{url}->{$language} : '',
+        $mode eq 'link' ? $comic->{url}->{$language} : '',
         @tags,
     );
 }

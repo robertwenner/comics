@@ -30,7 +30,7 @@ sub set_up : Test(setup) {
     %settings = (
         'instance' => 'mastodon.example.org',
         'access_token' => 'my-token',
-        'mode' => 'html',
+        'mode' => 'link',
     );
 
     %media_reply_payload = (
@@ -127,7 +127,7 @@ sub complains_about_bad_instance : Tests {
 
 sub accepts_good_modes : Tests {
     Comic::Social::Mastodon->new(%settings, mode => 'png');
-    Comic::Social::Mastodon->new(%settings, mode => 'html');
+    Comic::Social::Mastodon->new(%settings, mode => 'link');
     Comic::Social::Mastodon->new(%settings);
     ok(1);  # would have died if it failed
 }
@@ -143,7 +143,7 @@ sub complains_about_bad_mode : Tests {
 }
 
 
-sub toot_html : Tests {
+sub toot_link : Tests {
     my $client = Test::MockModule->new(ref(HTTP::Tiny->new()));
     $client->redefine('post_form', \&mocked_replies);
 
@@ -152,7 +152,7 @@ sub toot_html : Tests {
     );
     $comic->{url}{'English'} = "https://beercomics.com/comics/latest-comic.html";
 
-    my $mastodon = Comic::Social::Mastodon->new(%settings, 'mode' => 'html');
+    my $mastodon = Comic::Social::Mastodon->new(%settings, 'mode' => 'link');
     my $results = $mastodon->post($comic);
 
     is_deeply(\@posted, [
@@ -264,7 +264,7 @@ sub shortens_tooted_text : Tests {
         $MockComic::DESCRIPTION => { $MockComic::ENGLISH => 'x' x 1000 },
     );
 
-    my $mastodon = Comic::Social::Mastodon->new(%settings, 'mode' => 'html');
+    my $mastodon = Comic::Social::Mastodon->new(%settings, 'mode' => 'link');
     $mastodon->post($comic);
 
     my $text = $posted[0]->{form_data}->{status};
@@ -286,7 +286,7 @@ sub includes_hashtags_from_comic_meta_data : Tests {
         $MockComic::TWITTER => { $MockComic::ENGLISH => ['#ignore'] },
     );
 
-    my $mastodon = Comic::Social::Mastodon->new(%settings, mode => 'html');
+    my $mastodon = Comic::Social::Mastodon->new(%settings, mode => 'link');
     $mastodon->post($comic);
 
     my $text = $posted[0]->{form_data}->{status};
@@ -303,7 +303,7 @@ sub includes_visibility_if_configured : Tests {
     );
     $comic->{url}{'English'} = "https://beercomics.com/comics/latest-comic.html";
 
-    my $mastodon = Comic::Social::Mastodon->new(%settings, 'mode' => 'html', 'visibility' => 'private');
+    my $mastodon = Comic::Social::Mastodon->new(%settings, 'mode' => 'link', 'visibility' => 'private');
     my $results = $mastodon->post($comic);
 
     is_deeply(\@posted, [
@@ -328,7 +328,7 @@ sub reports_missing_content_from_status_reply : Tests {
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
     );
 
-    my $mastodon = Comic::Social::Mastodon->new(%settings, mode => 'html');
+    my $mastodon = Comic::Social::Mastodon->new(%settings, mode => 'link');
     my $results = $mastodon->post($comic);
 
     like($results, qr{\bComic::Social::Mastodon\b}, 'should contain module name');
@@ -348,7 +348,7 @@ sub reports_error_if_content_from_status_reply_is_unparsable : Tests {
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
     );
 
-    my $mastodon = Comic::Social::Mastodon->new(%settings, mode => 'html');
+    my $mastodon = Comic::Social::Mastodon->new(%settings, mode => 'link');
     my $results = $mastodon->post($comic);
 
     like($results, qr{\bComic::Social::Mastodon\b}, 'should contain module name');
@@ -368,7 +368,7 @@ sub uses_fallback_values_if_fields_from_status_reply_are_missing : Tests {
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
     );
 
-    my $mastodon = Comic::Social::Mastodon->new(%settings, mode => 'html');
+    my $mastodon = Comic::Social::Mastodon->new(%settings, mode => 'link');
     my $results = $mastodon->post($comic);
 
     like($results, qr{\bComic::Social::Mastodon\b}, 'should contain module name');
@@ -488,7 +488,7 @@ sub reports_http_error_from_status_post : Tests {
     $comic->{pngFile}{'English'} = "latest-comic.png";
     MockComic::fake_file("generated/web/english/comics/latest-comic.png", 'png file contents');
 
-    my $mastodon = Comic::Social::Mastodon->new(%settings, mode => 'html');
+    my $mastodon = Comic::Social::Mastodon->new(%settings, mode => 'link');
     my $results = $mastodon->post($comic);
 
     like($results, qr{\bComic::Social::Mastodon\b}, 'should contain module name');
@@ -512,7 +512,7 @@ sub reports_errors_unrelated_to_mastodon : Tests {
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
     );
 
-    my $mastodon = Comic::Social::Mastodon->new(%settings, mode => 'html');
+    my $mastodon = Comic::Social::Mastodon->new(%settings, mode => 'link');
     my $results = $mastodon->post($comic);
 
     like($results, qr{\bComic::Social::Mastodon\b}, 'should contain module name');
@@ -528,7 +528,7 @@ sub tells_http_tiny_to_verify_the_server_certificate : Tests {
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
     );
 
-    my $mastodon = Comic::Social::Mastodon->new(%settings, mode => 'html');
+    my $mastodon = Comic::Social::Mastodon->new(%settings, mode => 'link');
     $mastodon->post($comic);
 
     ok($mastodon->{http}->{verify_SSL}, 'should have passed the verify flag');

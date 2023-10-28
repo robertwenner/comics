@@ -100,8 +100,8 @@ sub new {
         unless (ref $self->{settings}{'recipient_list'} eq ref {});
 
     $self->{settings}{mode} ||= 'png';
-    $self->_croak('mode must be either png or html')
-        unless ($self->{settings}{'mode'} eq 'png' || $self->{settings}{'mode'} eq 'html');
+    $self->_croak('mode must be either png or link')
+        unless ($self->{settings}{'mode'} eq 'png' || $self->{settings}{'mode'} eq 'link');
 
     return $self;
 }
@@ -113,7 +113,7 @@ Emails everybody on the recipient list passed to the constructor.
 
 The email subject will be the comic's title, and the body of the email will
 contain the description. If mode is "png", the comic will be attached, if
-it's "html", the body will also contain a link to the comic.
+it's "link", the body will also contain a link to the comic.
 
 Parameters:
 
@@ -176,7 +176,7 @@ sub post {
                 my $plain_body = "$description\n\n";
                 my $html_body = "<p>$description</p>\n\n";
 
-                if ($self->{settings}{mode} eq 'html') {
+                if ($self->{settings}{mode} eq 'link') {
                     my $link = $comic->{url}{$language};
                     $plain_body .= "$link\n";
                     $html_body .= "<p><a href=\"$link\">$title</a></p>\n";
