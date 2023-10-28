@@ -252,10 +252,14 @@ sub builds_png_email : Tests {
 
     is($parts[1]->content_type(), 'text/html; charset=utf-8', 'wrong html content type');
     like($parts[1]->body_str(), qr{>blurb goes here<}m, 'should have html text description');
+    like($parts[1]->body_str(), qr{<img src="cid:\S+@\S+"}m, 'should have link to the image');
+    my ($cid) = $parts[1]->body_str() =~ m{src="cid:([^"]+)"};
 
     is($parts[2]->content_type(), 'image/png; name=latest-comic.png', 'wrong png content type');
     my $expected = 'cG5nIGdvZXMgaGVyZQ==';  #  echo -n "png goes here" | base64
     is($parts[2]->body_raw(), "$expected\r\n", 'should have base64-encoded image data');
+    my %header = $parts[2]->header_str_pairs();
+    like($header{'Content-ID'}, qr{<$cid+>}, 'invalid content id');
 }
 
 

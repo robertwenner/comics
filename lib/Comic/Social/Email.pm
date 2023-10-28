@@ -75,7 +75,7 @@ The C<recipient_list> is the path to a text file with an email address on
 each line.
 
 The C<mode> specifies whether to send the comic's PNG image ("png") as an
-attachment or just a link to the comic ("html"). Defaults to "png".
+attachment or just a link to the comic ("link"). Defaults to "png".
 
 =cut
 
@@ -172,6 +172,9 @@ sub post {
                 # Automatically encodes subjects with non-ascii characters
                 $stuffer->subject($title);
 
+                # Create the plain text part first, to establish a MIME structure,
+                # then create the attachment, grab its Content-ID, and use that in
+                # the HTML part.
                 my $description = $comic->{meta_data}->{description}->{$language};
                 my $plain_body = "$description\n\n";
                 my $html_body = "<p>$description</p>\n\n";
@@ -181,14 +184,30 @@ sub post {
                     $plain_body .= "$link\n";
                     $html_body .= "<p><a href=\"$link\">$title</a></p>\n";
                 }
-                $stuffer
-                    ->text_body($plain_body)
-                    ->html_body($html_body);
+
+                $stuffer->text_body($plain_body);
 
                 if ($self->{settings}{mode} eq 'png') {
                     my $path = $comic->{dirName}{$language} . $comic->{pngFile}{$language};
                     $stuffer->attach_file($path);
+                    # Cannot just hard-code an ID, https://datatracker.ietf.org/doc/html/rfc2045#section-7
+                    # says that CIDs must be world-unique. Even though this is just a
+                    # lowercase "must", let's go with what Email::MIME generates anyway.
+                    my @parts = $stuffer->email->subparts;
+                    my $attachment = $parts[1];
+                    my %headers = $attachment->header_str_pairs();
+                    my $cid = $headers{'Content-ID'};
+                    $cid =~ s{^<}{};
+                    $cid =~ s{>$}{};
+
+                    @parts = $stuffer->parts();
+                    $attachment = $parts[1];
+                    $attachment->header_set('Content-ID', "<$cid>");
+
+                    $html_body .= '<p><img src="cid:' . $cid . '"></p>';
                 }
+
+                $stuffer->html_body($html_body);
 
                 eval {
                     $stuffer->send_or_die();
