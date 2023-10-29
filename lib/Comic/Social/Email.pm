@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use utf8;
 use English '-no_match_vars';
+use HTML::Entities;
 
 use version; our $VERSION = qv('0.0.3');
 
@@ -131,6 +132,7 @@ sub post {
     my $me = ref $self;
     my @messages;
     foreach my $comic (@comics) {
+        my %lang_codes = $comic->language_codes;
         foreach my $language ($comic->languages()) {
             my $recipients_list = $self->{settings}{'recipient_list'}{$language};
             unless ($recipients_list) {
@@ -177,12 +179,21 @@ sub post {
                 # the HTML part.
                 my $description = $comic->{meta_data}->{description}->{$language};
                 my $plain_body = "$description\n\n";
-                my $html_body = "<p>$description</p>\n\n";
-
+                # <<~ only works in Perl >= 5.26, and CI builds on 5.20 as well
+                my $html_body = << "BODY";
+<!DOCTYPE html>
+<html lang="$lang_codes{$language}">
+<head>
+    <title>$title</title>
+    <meta charset="utf-8"/>
+</head>
+<body>
+    <p>$description</p>
+BODY
                 if ($self->{settings}{mode} eq 'link') {
                     my $link = $comic->{url}{$language};
                     $plain_body .= "$link\n";
-                    $html_body .= "<p><a href=\"$link\">$title</a></p>\n";
+                    $html_body .= "    <p><a href=\"$link\">$title</a></p>\n";
                 }
 
                 $stuffer->text_body($plain_body);
@@ -204,8 +215,11 @@ sub post {
                     $attachment = $parts[1];
                     $attachment->header_set('Content-ID', "<$cid>");
 
-                    $html_body .= '<p><img src="cid:' . $cid . '"></p>';
+                    my @transcript = $comic->get_transcript($language);
+                    my $transcript = encode_entities(join ' ', @transcript);
+                    $html_body .= '    <p><img src="cid:' . $cid . '" alt="'. $transcript . '"></p>';
                 }
+                $html_body .= "</body>\n</html>";
 
                 $stuffer->html_body($html_body);
 

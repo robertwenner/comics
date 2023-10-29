@@ -1,6 +1,7 @@
 use strict;
 use warnings;
 use utf8;
+use XML::LibXML;
 
 use base 'Test::Class';
 use Test::More;
@@ -230,15 +231,46 @@ sub builds_link_email : Tests {
     like($parts[0]->body_str(), qr{blurb goes here}m, 'should have plain text description');
     like($parts[0]->body_str(), qr{https://beercomics.com/comics/latest-comic\.html}m, 'should have plain text link');
 
-    is($parts[1]->content_type(), 'text/html; charset=utf-8', 'wrong html content type');
-    like($parts[1]->body_str(), qr{>blurb goes here<}m, 'should have html text description');
-    like($parts[1]->body_str(), qr{<a href="https://beercomics.com/comics/latest-comic\.html">Latest comic</a>}m, 'should have plain text link');
+    my $body = _html_body($parts[1]);
+    my @links = $body->getElementsByTagName('a');
+    is(@links, 1, 'should have 1 link');
+    my $link = $links[0];
+    my $attributes = $link->attributes()->{Nodes};
+    is_deeply(
+        $attributes,
+        [XML::LibXML::Attr->new('href', 'https://beercomics.com/comics/latest-comic.html')],
+        'Wrong href');
+}
+
+
+sub _html_body {
+    my $part = shift;
+
+    is($part->content_type(), 'text/html; charset=utf-8', 'wrong html content type');
+
+    my $parser = XML::LibXML->new();
+    my $dom = $parser->load_html(string => $part->body_str(), recover => 0);   # don't recover, fail nosily
+
+    my $root = $dom->documentElement();
+    is($root->nodeName(), 'html', 'root element should be <html>');
+    is_deeply($root->attributes()->{Nodes}, [XML::LibXML::Attr->new('lang', 'en')], '<html> should have lang attribute');
+
+    my @heads = $root->getElementsByTagName('head');
+    is(@heads, 1, 'should have exactly 1 head');
+    my $head = $heads[0];
+
+    my @bodies = $root->getElementsByTagName('body');
+    is(@bodies, 1, 'should have exactly 1 body');
+    my $body = $bodies[0];
+
+    return $body;
 }
 
 
 sub builds_png_email : Tests {
     $comic->{dirName}{English} = 'generated/web/english/comics/';
     $comic->{pngFile}{English} = 'latest-comic.png';
+    @{$comic->{transcript}->{English}} = ('"quoted"');
     my $png = Test::MockFile->file("generated/web/english/comics/latest-comic.png", "png goes here");
 
     my $mailer = Comic::Social::Email->new(%default_args, mode => 'png');
@@ -250,16 +282,26 @@ sub builds_png_email : Tests {
     is($parts[0]->content_type(), 'text/plain; charset=utf-8', 'wrong plain text content type');
     like($parts[0]->body_str(), qr{blurb goes here}m, 'should have plain text description');
 
-    is($parts[1]->content_type(), 'text/html; charset=utf-8', 'wrong html content type');
-    like($parts[1]->body_str(), qr{>blurb goes here<}m, 'should have html text description');
-    like($parts[1]->body_str(), qr{<img src="cid:\S+@\S+"}m, 'should have link to the image');
-    my ($cid) = $parts[1]->body_str() =~ m{src="cid:([^"]+)"};
+    my $body = _html_body($parts[1]);
+    my @paragraphs = $body->getElementsByTagName('p');
+    is('blurb goes here',  $paragraphs[0]->textContent(), 'wrong text');
 
     is($parts[2]->content_type(), 'image/png; name=latest-comic.png', 'wrong png content type');
     my $expected = 'cG5nIGdvZXMgaGVyZQ==';  #  echo -n "png goes here" | base64
     is($parts[2]->body_raw(), "$expected\r\n", 'should have base64-encoded image data');
     my %header = $parts[2]->header_str_pairs();
-    like($header{'Content-ID'}, qr{<$cid+>}, 'invalid content id');
+    my $cid = $header{'Content-ID'};
+    like($cid, qr{<[\w.-]+@[\w.-]+>}, 'CID should have local part and domain');
+    $cid =~ s{^<}{};
+    $cid =~ s{>$}{};
+
+    my @imgs = $body->getElementsByTagName('img');
+    is(@imgs, 1, 'should have 1 image link');
+    my @attributes = $imgs[0]->attributes()->{Nodes};
+    is_deeply(@attributes, [
+        XML::LibXML::Attr->new('src', "cid:$cid"),
+        XML::LibXML::Attr->new('alt', '"quoted"'),   # XML::LibXML::Attr->new encodes
+    ]);
 }
 
 
