@@ -3,6 +3,7 @@ package Comic::Social::Email;
 use strict;
 use warnings;
 use utf8;
+use Carp;
 use English '-no_match_vars';
 use HTML::Entities;
 
@@ -12,7 +13,9 @@ use Comic::Social::Social;
 use base('Comic::Social::Social');
 
 use File::Slurper;
-use Email::Stuffer;
+use Email::MIME;
+use Email::MessageID;
+use Email::Sender::Simple qw(sendmail);
 use Email::Sender::Transport::SMTP;
 
 
@@ -104,6 +107,14 @@ sub new {
     $self->_croak('mode must be either png or link')
         unless ($self->{settings}{'mode'} eq 'png' || $self->{settings}{'mode'} eq 'link');
 
+    $self->{transport} = Email::Sender::Transport::SMTP->new({
+        host => $self->{settings}{server},
+        port => 25,
+        ssl => 'starttls',
+        sasl_username => $self->{settings}{sender_address},
+        sasl_password => $self->{settings}{password},
+    });
+
     return $self;
 }
 
@@ -131,108 +142,171 @@ sub post {
 
     my $me = ref $self;
     my @messages;
+
     foreach my $comic (@comics) {
-        my %lang_codes = $comic->language_codes;
         foreach my $language ($comic->languages()) {
-            my $recipients_list = $self->{settings}{'recipient_list'}{$language};
-            unless ($recipients_list) {
-                push @messages, "$me: no $language recipient list configured";
-                next;
-            }
             my @recipients;
             eval {
-                @recipients = File::Slurper::read_lines($recipients_list);
-                1;  # so that an empty list is not treated as an error
+                @recipients = $self->_get_recipients($language);
             } or do {
-                push @messages, "$me: error reading $language recipient list $recipients_list: $EVAL_ERROR";
+                push @messages, "$me: $EVAL_ERROR";
                 next;
             };
-            unless (@recipients) {
-                push @messages, "$me: $language recipient list is empty";
-                next;
-            }
 
-            foreach my $recipient (@recipients) {
-                $recipient =~ s/^\s+//;
-                $recipient =~ s/\s+$//;
-                next unless ($recipient);
-
-                my $transport = Email::Sender::Transport::SMTP->new({
-                    host => $self->{settings}{server},
-                    port => 25,
-                    ssl => 'starttls',
-                    sasl_username => $self->{settings}{sender_address},
-                    sasl_password => $self->{settings}{password},
+            my $plain_text_part = $self->_build_plain_text_part($comic, $language);
+            my ($html_part, $cid) = $self->_build_html_part($comic, $language);
+            my $attachment = $self->_build_attachment($comic, $language, $cid);
+            my $subject = $comic->{meta_data}->{title}->{$language};
+            my $email = $self->_build_email($subject, $plain_text_part, $html_part, $attachment);
+            eval {
+                sendmail($email, {
+                    to => \@recipients,
+                    transport => $self->{transport},
                 });
-                my $stuffer = Email::Stuffer->transport($transport);
-
-                $stuffer
-                    ->from($self->{settings}{sender_address})
-                    ->to($recipient);
-
-                my $title = $comic->{meta_data}->{title}{$language};
-                # Automatically encodes subjects with non-ascii characters
-                $stuffer->subject($title);
-
-                # Create the plain text part first, to establish a MIME structure,
-                # then create the attachment, grab its Content-ID, and use that in
-                # the HTML part.
-                my $description = $comic->{meta_data}->{description}->{$language};
-                my $plain_body = "$description\n\n";
-                # <<~ only works in Perl >= 5.26, and CI builds on 5.20 as well
-                my $html_body = << "BODY";
-<!DOCTYPE html>
-<html lang="$lang_codes{$language}">
-<head>
-    <title>$title</title>
-    <meta charset="utf-8"/>
-</head>
-<body>
-    <p>$description</p>
-BODY
-                if ($self->{settings}{mode} eq 'link') {
-                    my $link = $comic->{url}{$language};
-                    $plain_body .= "$link\n";
-                    $html_body .= "    <p><a href=\"$link\">$title</a></p>\n";
-                }
-
-                $stuffer->text_body($plain_body);
-
-                if ($self->{settings}{mode} eq 'png') {
-                    my $path = $comic->{dirName}{$language} . $comic->{pngFile}{$language};
-                    $stuffer->attach_file($path);
-                    # Cannot just hard-code an ID, https://datatracker.ietf.org/doc/html/rfc2045#section-7
-                    # says that CIDs must be world-unique. Even though this is just a
-                    # lowercase "must", let's go with what Email::MIME generates anyway.
-                    my @parts = $stuffer->email->subparts;
-                    my $attachment = $parts[1];
-                    my %headers = $attachment->header_str_pairs();
-                    my $cid = $headers{'Content-ID'};
-                    $cid =~ s{^<}{};
-                    $cid =~ s{>$}{};
-
-                    @parts = $stuffer->parts();
-                    $attachment = $parts[1];
-                    $attachment->header_set('Content-ID', "<$cid>");
-
-                    my @transcript = $comic->get_transcript($language);
-                    my $transcript = encode_entities(join ' ', @transcript);
-                    $html_body .= '    <p><img src="cid:' . $cid . '" alt="'. $transcript . '"></p>';
-                }
-                $html_body .= "</body>\n</html>";
-
-                $stuffer->html_body($html_body);
-
-                eval {
-                    $stuffer->send_or_die();
-                } or do {
-                    push @messages, "$me: Error sending $language email to $recipient: $EVAL_ERROR";
-                };
-            }
+            } or do {
+                push @messages, "$me: Error sending $language email, code " .
+                    $EVAL_ERROR->code() . ': ' . $EVAL_ERROR->message() .
+                    ' for ' . join ', ', $EVAL_ERROR->recipients;
+            };
         }
     }
 
     return @messages;
+}
+
+
+sub _get_recipients {
+    my ($self, $language) = @ARG;
+
+    my $recipients_list = $self->{settings}{'recipient_list'}{$language};
+    unless ($recipients_list) {
+        croak("no $language recipient list configured");
+    }
+    my @recipients;
+    eval {
+        @recipients = File::Slurper::read_lines($recipients_list);
+        1;  # so that an empty list is not treated as a read error
+    } or do {
+        croak("error reading $language recipient list $recipients_list: $EVAL_ERROR");
+    };
+    @recipients = grep { !/^\s*$/ } @recipients;
+    unless (@recipients) {
+        croak("$language recipient list is empty");
+    }
+    s{^\s+|\s+$}{}g foreach @recipients;
+
+    return @recipients;
+}
+
+
+sub _build_plain_text_part {
+    my ($self, $comic, $language) = @ARG;
+
+    my $text = "$comic->{meta_data}->{description}->{$language}\n\n";
+    if ($self->{settings}->{mode} eq 'link') {
+        $text .= $comic->{url}{$language};
+    }
+
+    my $part = Email::MIME->create(
+        attributes => {
+            encoding => 'quoted-printable',
+            charset => 'utf-8',
+        },
+        body => $text,
+    );
+    $part->content_type_set('text/plain');
+
+    return $part;
+}
+
+
+sub _build_html_part {
+    my ($self, $comic, $language) = @ARG;
+
+    my $cid = Email::MessageID->new()->as_string();
+    my %lang_codes = $comic->language_codes;
+
+    my $html = <<"HTML";
+<!doctype html>
+<html lang="$lang_codes{$language}">
+<head>
+    <meta charset="utf-8"/>
+</head>
+<body>
+    <p>$comic->{meta_data}->{description}->{$language}</p>
+HTML
+
+    if ($self->{settings}->{mode} eq 'link') {
+        my $url = $comic->{url}{$language};
+        my $title = $comic->{meta_data}->{title}->{$language};
+        $html .= '    <p><a href="' . $url . '">' . $title . "</a></p>\n";
+    }
+    else {
+        my @transcript = $comic->get_transcript($language);
+        my $transcript = encode_entities(join ' ', @transcript);
+        $html .= "    <p><img src=\"cid:$cid\" alt=\"$transcript\"/></p>\n";
+    }
+    $html .= "</body>\n</html>\n";
+
+    my $part = Email::MIME->create(
+        attributes => {
+            encoding => 'quoted-printable', # makes Email::MIME insert soft linebreaks and encode e.g., the = sign
+            charset => 'utf-8',
+        },
+        body => $html,
+    );
+    $part->content_type_set('text/html');
+
+    return ($part, $cid);
+}
+
+
+sub _build_attachment {
+    my ($self, $comic, $language, $cid) = @ARG;
+
+    return if ($self->{settings}->{mode} eq 'link');
+
+    my $attachment = Email::MIME->create(
+        attributes => {
+            filename => $comic->{pngFile}{$language},
+            content_type => 'image/png',
+            encoding => 'base64',
+        },
+        body => File::Slurper::read_binary($comic->{dirName}{$language} . $comic->{pngFile}{$language}),
+    );
+    $attachment->header_str_set('Content-ID' => "<$cid>");
+
+    return $attachment;
+}
+
+
+sub _build_email {
+    my ($self, $subject, $plain_text_part, $html_part, $attachment) = @ARG;
+
+    # HTML is usually more preferred, so it goes last
+    my $text_parts = Email::MIME->create(parts => [$plain_text_part, $html_part]);
+    $text_parts->content_type_set('multipart/alternative');
+
+    my @parts = ($text_parts);
+    push @parts, $attachment if ($attachment);
+
+    my $email = Email::MIME->create(
+        header_str => [
+            'From' => $self->{settings}->{sender_address},
+            'To' => $self->{settings}->{sender_address},
+            'Subject' => $subject,
+            'Message-ID' => Email::MessageID->new()->in_brackets(),
+            # Conveniently Email::MIME adds a Date header with the current
+            # time stamp automatically.
+        ],
+        # If I set parts here (vs after create), I get a different MIME structure.
+        # Email::MIME does a bit too much magic under the covers.
+        # parts => \@parts,
+    );
+    $email->content_type_set('multipart/mixed');
+    $email->parts_set(\@parts);
+
+    return $email;
 }
 
 

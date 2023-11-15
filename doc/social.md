@@ -1,7 +1,8 @@
 # Social media network modules
 
 The `Comic::Social::...` modules post today's comic for each language on
-social networks.
+social networks (in the widest sense). They run after all `Comic::Upload::...`
+modules have finished.
 
 If you have multiple comics for today, for example, one only in English and
 one only in German, the social media code will post both.
@@ -22,11 +23,10 @@ after all [Upload](upload.md) modules have finished.
 
 Emails the current comic to a list of recipients, per language.
 
-This is a somewhat basic implementation (new connection per recipient), and
-probably not too efficient. It may work for a few emails, but your email
-provider may enforce sending limits. If you use want to email more than a
-handful of people, you should look into proper list management tools that
-cover subscribes and unsubscribes as well as sending bulk emails.
+This is a somewhat basic implementation. It may work for a few emails, but
+your email provider may enforce sending limits. If you want to email more
+than a handful of people, you should look into proper list management tools
+that cover subscribes and unsubscribes as well as sending bulk emails.
 
 To email the latest comic, configure it like this:
 
@@ -61,6 +61,9 @@ recipient email on a single line.
 When `Comic::Social::Email` sends an email, it will:
 
 * make an encrypted connection to your server
+
+* email the sender, and include  all other recipients as `bcc` (blind carbon
+  copy), for privacy
 
 * use the comic's title as the subject of the email
 

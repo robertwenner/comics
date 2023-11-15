@@ -13,7 +13,7 @@
   root variable).
 
 - feature: more email customization: templates (per language), subject
-  prefix, EHLO host name
+  prefix, EHLO host name, max recipients per message
 
 - defect: Mastodon 500 error when posting images
 
