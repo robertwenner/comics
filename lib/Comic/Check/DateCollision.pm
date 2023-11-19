@@ -97,7 +97,10 @@ sub check {
 
     my $created = trim($comic->{meta_data}->{date});
     if (!$created) {
-        $self->warning($comic, 'no creation date');
+        $self->warning($comic, 'No creation date');
+    }
+    elsif ($created !~ m{^\d{4}-\d{2}-\d{2}$}) {
+        $self->warning($comic, 'Creation date must be in yyyy-mm-dd format');
     }
     elsif ($created gt $published_when) {
         $self->warning($comic, "Published date ($published_when) is before creation date ($created)");

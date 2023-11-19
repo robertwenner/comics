@@ -153,7 +153,16 @@ sub warning_if_no_date : Tests {
 
     $check->check($comic);
 
-    is_deeply($comic->{warnings}, ['Comic::Check::DateCollision: no creation date']);
+    is_deeply($comic->{warnings}, ['Comic::Check::DateCollision: No creation date']);
+}
+
+
+sub warning_if_date_is_not_iso8601_format : Tests {
+    my $comic = MockComic::make_comic('date' => '2023-1121');
+
+    $check->check($comic);
+
+    is_deeply($comic->{warnings}, ['Comic::Check::DateCollision: Creation date must be in yyyy-mm-dd format']);
 }
 
 
