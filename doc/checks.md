@@ -69,7 +69,9 @@ list has less items than the others.
 
 ## `Comic::Check::DateCollision`
 
-Checks that comics are not published on the same day in the same location.
+Checks that comics are not published on the same day in the same location,
+and that the creation date is before the published date (to catch date
+typos).
 
 For regularly published comics you may want to avoid publishing more than
 one comics on the same date. However, it's probably fine to publish a comic

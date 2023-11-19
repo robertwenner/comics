@@ -46,6 +46,7 @@ our Readonly $HASH_TAGS = 'hashtags';
 our Readonly $MASTODON = 'mastodon';
 our Readonly $SETTINGS = "settings";
 our Readonly $CHECKS = 'checks';
+our Readonly $DATE = 'date';
 
 
 my %files_read;
@@ -79,6 +80,7 @@ my %defaultArgs = (
     $WIDTH => 600,
     $PUBLISHED_WHEN => '2016-08-01',
     $PUBLISHED_WHERE => 'web',
+    $DATE => '2016-01-01',
 );
 
 
@@ -229,7 +231,7 @@ sub _build_json {
 
     # Meta info: value, language independent
     my $wrote = 0;
-    foreach my $what ($CONTRIBUTORS) {
+    foreach my $what ($CONTRIBUTORS, $DATE) {
         if (defined($args{$what})) {
             $json .= ",\n" if ($json ne '');
             if (ref $args{$what} eq ref[]) {

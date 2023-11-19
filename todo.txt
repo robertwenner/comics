@@ -96,8 +96,6 @@
   [![MetaCPAN Release](https://badge.fury.io/pl/Minilla.svg)](https://metacpan.org/release/Minilla)
   https://badge.fury.io/for/pl
 
-- feature: check that published date is >= created date (typo?)
-
 - feature: check that speaker names all show up in the "who" meta data (but
   be careful about additional text, like "Paul, opening a beer:")
 

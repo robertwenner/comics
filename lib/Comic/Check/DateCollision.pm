@@ -94,6 +94,15 @@ sub check {
             }
         }
     }
+
+    my $created = trim($comic->{meta_data}->{date});
+    if (!$created) {
+        $self->warning($comic, 'no creation date');
+    }
+    elsif ($created gt $published_when) {
+        $self->warning($comic, "Published date ($published_when) is before creation date ($created)");
+    }
+
     return;
 }
 

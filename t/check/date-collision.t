@@ -146,3 +146,36 @@ sub no_collision_not_yet_published_not_given: Tests {
     is_deeply($comic1->{warnings}, []);
     is_deeply($comic2->{warnings}, []);
 }
+
+
+sub warning_if_no_date : Tests {
+    my $comic = MockComic::make_comic('date' => undef);
+
+    $check->check($comic);
+
+    is_deeply($comic->{warnings}, ['Comic::Check::DateCollision: no creation date']);
+}
+
+
+sub no_warning_if_created_and_published_on_the_same_day : Tests {
+    my $comic = MockComic::make_comic(
+        'date' => ' 2023-01-01',
+        $MockComic::PUBLISHED_WHEN => '2023-01-01 ',
+    );
+
+    $check->check($comic);
+
+    is_deeply($comic->{warnings}, [], 'should not have warnings');
+}
+
+
+sub warning_if_created_after_published : Tests {
+    my $comic = MockComic::make_comic(
+        $MockComic::DATE => '2023-01-01',
+        $MockComic::PUBLISHED_WHEN => '2022-01-01',
+    );
+
+    $check->check($comic);
+
+    like(${$comic->{warnings}}[0], qr{before}i, 'should give reason');
+}
