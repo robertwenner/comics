@@ -410,7 +410,7 @@ sub collect_scalar : Tests {
 }
 
 
-sub collect_scalar_ordering_case_insensirive : Tests {
+sub collect_scalar_ordering_case_insensitive : Tests {
     my @comics = (
         make_comic_with_series('AAA'),
         make_comic_with_series('AAA'),
