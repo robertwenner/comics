@@ -88,7 +88,7 @@ sub creates_output_directory : Tests {
         my ($self, $target) = @_;
         return $target =~ m/\.png$/;
     };
-    local *Comic::Out::PngInkscape::_move = sub {
+    local *File::Copy::move = sub {
         return 1;   # success according to perldoc File::Copy
     };
     use warnings;
@@ -414,7 +414,7 @@ sub moves_from_backlog : Tests {
         my ($self, $target) = @_;
         return $target =~ m/\.png$/;
     };
-    local *Comic::Out::PngInkscape::_move = sub {
+    local *File::Copy::move = sub {
         ($from, $to) = @_;
         return 1;   # success according to perldoc File::Copy
     };
@@ -439,7 +439,7 @@ sub moves_from_backlog_fails : Tests {
         my ($self, $target) = @_;
         return $target =~ m/\.png$/;
     };
-    local *Comic::Out::PngInkscape::_move = sub {
+    local *File::Copy::move = sub {
         return 0;
     };
     use warnings;

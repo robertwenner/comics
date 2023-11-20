@@ -152,7 +152,7 @@ sub generate {
         my $backlog_png = "$comic->{backlogPath}{$language}$comic->{baseName}{$language}.png";
 
         if ($comic->up_to_date($backlog_png)) {
-            _move($backlog_png, $published_png) or $comic->keel_over("Comic::Out::PngInkscape: Cannot move $backlog_png to $published_png: $OS_ERROR");
+            File::Copy::move($backlog_png, $published_png) or $comic->keel_over("Comic::Out::PngInkscape: Cannot move $backlog_png to $published_png: $OS_ERROR");
         }
 
         unless ($comic->up_to_date($published_png)) {
@@ -162,12 +162,6 @@ sub generate {
         _get_png_info($comic, $published_png, $language);
     }
     return;
-}
-
-
-sub _move {
-    # uncoverable subroutine
-    return File::Copy::move(@ARG); # uncoverable statement
 }
 
 
