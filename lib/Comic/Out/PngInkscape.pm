@@ -5,6 +5,7 @@ use warnings;
 use utf8;
 use English '-no_match_vars';
 use Carp;
+use File::Path;
 use File::Copy;
 use Readonly;
 
@@ -139,7 +140,10 @@ sub generate {
     my ($self, $comic) = @ARG;
 
     foreach my $language ($comic->languages()) {
-        my $published_png = "$comic->{dirName}{$language}$comic->{baseName}{$language}.png";
+        my $published_path = "$comic->{dirName}{$language}";
+        File::Path::make_path($published_path);
+
+        my $published_png = "$published_path$comic->{baseName}{$language}.png";
         # Need to pull backlogPath out of here, write only published pngs?
         # OR pass a published and a not published outdir
         # OR pass a hash of outdir to coderef to decide which png goes where --- yay for overengineering!

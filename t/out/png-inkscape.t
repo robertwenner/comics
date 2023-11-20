@@ -82,6 +82,27 @@ sub ctor_complains_if_no_outdir_configured : Tests {
 }
 
 
+sub creates_output_directory : Tests {
+    no warnings qw/redefine/;
+    local *Comic::up_to_date = sub {
+        my ($self, $target) = @_;
+        return $target =~ m/\.png$/;
+    };
+    local *Comic::Out::PngInkscape::_move = sub {
+        return 1;   # success according to perldoc File::Copy
+    };
+    use warnings;
+
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+    );
+
+    $png->generate($comic);
+
+    MockComic::assert_made_all_dirs('generated/web/english/comics/');
+}
+
+
 sub parses_inkscape_version : Tests {
     my $comic = MockComic::make_comic();
     is(Comic::Out::PngInkscape::_parse_inkscape_version($comic, "Inkscape 0.92.5 (2060ec1f9f, 2020-04-08)\n"), "0.9");
