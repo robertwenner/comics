@@ -79,7 +79,7 @@ The passed settings can have:
 For the `collect` argument, the this example comic metadata:
 
     'meta_data' => {
-        tags: {
+        'tags': {
             'English' => ['some value', 'other value'],
         },
     }
@@ -96,7 +96,7 @@ Passing "tags" for the "collect" parameter will pick the example values above.
     tag with links to other comics with this tag into that folder.
     This must be a single folder name, not a path. Defaults to "tags".
 
-=item * B>$min-count> Specifies the minimum occurrences a tag must
+=item * B<$min-count> Specifies the minimum occurrences a tag must
     have to be considered for pages and in-comic. Defaults to 0. If a tag
     has less than the given number of uses, it doesn't get a tag page and
     won't be placed into comics for linking.
