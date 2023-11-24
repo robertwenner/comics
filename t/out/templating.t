@@ -80,7 +80,8 @@ sub template_syntax_error : Tests {
     eval {
         Comic::Out::Template::templatize('comic.svg', 'file.templ', '', ("modified" => "today"));
     };
-    like($@, qr/Unresolved template marker/i);
+    like($@, qr/Unresolved template marker/i, 'should say what is wrong');
+    like($@, qr/\[% modified/i, 'should include the context');
 }
 
 

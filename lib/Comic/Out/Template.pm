@@ -91,8 +91,8 @@ sub templatize {
     $t->process(\$template, \%vars, \$output) ||
         croak "$template_file for $description: " . $t->error() . "\n";
 
-    if ($output =~ m/\[%/mg || $output =~ m/%\]/mg) {
-        croak "$template_file for $description: Unresolved template marker";
+    if ($output =~ m/(\[%\s*.+)/mg || $output =~ m/(.+\s*%\])/mg) {
+        croak "$template_file for $description: Unresolved template marker at $1";
     }
     if ($output =~ m/ARRAY[(]0x[[:xdigit:]]+[)]/mg) {
         croak "$template_file for $description: ARRAY ref found:\n$output";
