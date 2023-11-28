@@ -374,6 +374,45 @@ TEMPL
 }
 
 
+sub does_not_create_tags_page_if_there_are_no_comics : Tests {
+    MockComic::fake_file('tags.templ', '...');
+    my $tags = Comic::Out::Tags->new(template => 'tags.templ', 'index' => 'tags.templ');
+
+    $tags->generate();
+    $tags->generate_all();
+
+    MockComic::assert_didnt_write_in_file('generated/english/tags/index.html');
+}
+
+
+sub does_not_create_tags_page_if_not_enough_tags : Tests {
+    my $content = << 'TEMPL';
+[% FOREACH t IN tag_rank.$Language %]
+    [% t.value %] = [% t.key %]
+[% END %]
+TEMPL
+    MockComic::fake_file('index.templ', $content);
+    MockComic::fake_file('tags.templ', '...');
+    my $tags = Comic::Out::Tags->new(template => 'tags.templ', 'index' => 'index.templ', 'min-count' => 3);
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => 'beer',
+        },
+        $MockComic::TAGS => {
+            $MockComic::ENGLISH => ['beer', 'brewing'],
+        },
+    );
+    $comic->{modified} = '2023-01-01';
+
+    $tags->generate($comic);
+    $tags->generate_all($comic);
+
+    MockComic::assert_didnt_write_in_file('generated/english/tags/index.html');
+    MockComic::assert_didnt_write_in_file('generated/english/tags/beer.html');
+    MockComic::assert_didnt_write_in_file('generated/english/tags/brewing.html');
+}
+
+
 sub defines_tags_page_template_variables : Tests {
     my $content = << 'TEMPL';
         url: [% url %]
@@ -783,7 +822,7 @@ sub warns_about_empty_tags : Tests {
 }
 
 
-sub warns_about_whitespace_pnly_tags : Tests {
+sub warns_about_whitespace_only_tags : Tests {
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
             $MockComic::ENGLISH => "Funny comic",

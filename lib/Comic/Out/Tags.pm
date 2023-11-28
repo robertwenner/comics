@@ -162,6 +162,7 @@ Parameters:
 sub generate {
     my ($self, $comic) = @ARG;
 
+    return unless ($comic);
     return if ($comic->not_yet_published());
 
     foreach my $language ($comic->languages()) {
@@ -470,6 +471,7 @@ sub _write_index_tags_page() {
         }
 
         my $template = $self->_get_index_template($language);
+        $self->{tag_rank}->{$language} ||= {};
         my %vars = (
             'language' => lc $language,
             'url' => "/$tags_dir/$tag_page",
@@ -525,7 +527,7 @@ sub _sanitize {
     # Remove non-alphanumeric characters to avoid problems in path names.
     my ($s) = @_;
 
-    $s =~ s{\W+}{_}g;
+    $s =~ s{\W+}{_}gx;
 
     return $s;
 }
