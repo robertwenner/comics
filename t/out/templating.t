@@ -351,20 +351,24 @@ sub error_includes_template_file_name : Tests {
 
 
 sub catches_perl_array : Tests {
-    MockComic::fake_file('file.templ', '[% x %]');
+    MockComic::fake_file('file.templ', "before\nhere comes: [% x %] saw it?\nnext");
     eval {
         Comic::Out::Template::templatize('comic.svg', 'file.templ', '', ("x" => [1, 2, 3]));
     };
-    like($@, qr/ARRAY/i);
+    like($@, qr/: here comes: ARRAY\(0x[0-9a-f]+\) saw it\?/i);
+    unlike($@, qr{before}, 'should not have previous text');
+    unlike($@, qr{next}, 'should not have following text');
 }
 
 
 sub catches_perl_hash : Tests {
-    MockComic::fake_file('file.templ', '[% x %]');
+    MockComic::fake_file('file.templ', "previous line\nhash is [% x %] here\nnext line");
     eval {
         Comic::Out::Template::templatize('comic.svg', 'file.templ', '', ("x" => {a =>1, b => 2}));
     };
-    like($@, qr/HASH/i);
+    like($@, qr/: hash is HASH\(0x[0-9a-f]+\) here/i);
+    unlike($@, qr{previous line}, 'should not have previous text');
+    unlike($@, qr{next line}, 'should not have following text');
 }
 
 

@@ -94,11 +94,11 @@ sub templatize {
     if ($output =~ m/(\[%\s*.+)/mg || $output =~ m/(.+\s*%\])/mg) {
         croak "$template_file for $description: Unresolved template marker at $1";
     }
-    if ($output =~ m/ARRAY[(]0x[[:xdigit:]]+[)]/mg) {
-        croak "$template_file for $description: ARRAY ref found:\n$output";
+    if ($output =~ m/(^.*ARRAY[(]0x[[:xdigit:]]+[)].*$)/mg) {
+        croak "$template_file for $description: found arry ref: $1:";
     }
-    if ($output =~ m/HASH[(]0x[[:xdigit:]]+[)]/mg) {
-        croak "$template_file for $description: HASH ref found:\n$output";
+    if ($output =~ m/(^.*HASH[(]0x[[:xdigit:]]+[)].*$)/mg) {
+        croak "$template_file for $description: found hash ref: $1";
     }
 
     # Remove leading white space from lines. Template options don't work
