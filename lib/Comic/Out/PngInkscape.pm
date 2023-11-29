@@ -321,7 +321,7 @@ sub _build_inkscape_command {
             "--file=$svg_file --export-png=$png_file " .
             '--export-area-drawing --export-background=#ffffff';
     }
-    if ($version !~ m{^1.[012]$}x) {
+    if ($version !~ m{^1.[0123]$}x) {
         $comic->warning("Comic::Out::PngInkscape: Don't know Inkscape $version, hoping it's compatible to 1.1");
     }
 

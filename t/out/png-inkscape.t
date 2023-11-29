@@ -113,6 +113,7 @@ sub parses_inkscape_version : Tests {
     is(Comic::Out::PngInkscape::_parse_inkscape_version($comic, "Inkscape 1.2 (dc2aedaf03, 2022-05-15)\n"), "1.2");
     is(Comic::Out::PngInkscape::_parse_inkscape_version($comic, "Inkscape 1.2.1 (9c6d41e4, 2022-07-14)\n"), "1.2");
     is(Comic::Out::PngInkscape::_parse_inkscape_version($comic, "Inkscape 1.2.2 (b0a8486, 2022-12-01)\n"), "1.2");
+    is(Comic::Out::PngInkscape::_parse_inkscape_version($comic, "Inkscape 1.3.2 (091e20e, 2023-11-25)\n"), "1.3");
     is(Comic::Out::PngInkscape::_parse_inkscape_version($comic, "Inkscape 10.0.0 (abcdef, 2200-01-01)\n"), "10.0");
 
     eval {
