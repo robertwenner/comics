@@ -52,10 +52,9 @@
 - feature: handle more frame varieties, e.g., long frame over 2 rows on the
   side
 
-- feature: series: support a comics by series pages / links (can a comic be
-  in more than one series? (why not?))
+- feature: series: support a comics by series pages
 
-- feature: series: prev next first last buttons per series
+- feature: allow comic to be in more than one series
 
 - feature: export svg instead of png (for a truly fluent / responsive web
   design), but would also need to offer the font for download, I guess? or
@@ -273,3 +272,5 @@
   Checks run only on modified files, and the warnings are not stored
   anywhere besides the backlog, and on re-run each comic starts with empty
   warnings, and the backlog gets written again from those comics
+
+- DRY up root vs indexAdjust in templates

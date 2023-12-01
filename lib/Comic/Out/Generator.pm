@@ -241,6 +241,7 @@ sub order {
         # Set variables needed when generating the comic page.
         'Comic::Out::HtmlLink',
         'Comic::Out::Tags',
+        'Comic::Out::Series',
         # Once we have an output image, include / embed that somewhere.
         'Comic::Out::HtmlComicPage',
         # Work with whatever embedding output format we generated in the previous step.

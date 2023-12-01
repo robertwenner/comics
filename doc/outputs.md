@@ -629,6 +629,49 @@ respective languages. It will be stored in the comic in a `qrcode` hash with
 the languages as keys, for use in templates or other code.
 
 
+## `Comic::Out::Series`
+
+Provides navigation links for the comics in a series.
+
+A series is an ordered (by date) list of comics, where the story progresses
+from earlier to later comics. This is different from tags, where order of the
+comics does not matter; all comics with the same tag are somehow related.
+A comic can only be in one series.
+
+Configure `Comic::Out::Series` like this:
+
+```json
+{
+    "Out": {
+        "Comic::Out::Series": {
+            "collect": "series"
+        }
+    }
+}
+
+```
+
+This tells the `Comic::Out::Series` module to use the `series` metadata. This needs
+to be an object of languages to single values (the series names) in the comic like
+below:
+
+```json
+"meta_data": {
+    "series" {
+        "English": "my story arch"
+    }
+}
+```
+
+The `Comic::Out::Series` defines a `series` field in each comic that belongs to a
+series. It is a map of language to a map two or more of `first`, `prev`, `next`, `last`.
+These are the URLs (relative to the server root) of the first, previous, next, and
+last comic in the comic's series, respectively. `first` and `prev` will be undefined
+for the first comic in a series, `next` and `last` will be undefined for the last
+comic in a series. Note that the name of this variable is always `series`, this
+does not change based on the `collect` configuration parameter.
+
+
 ## `Comic::Out::Sitemap`
 
 Generates a [sitemap](https://en.wikipedia.org/wiki/Sitemaps) per language.
@@ -830,7 +873,7 @@ separate tag files.
 
 The `index` works like `template`, but it specifies the template for the
 main tags overview page instead of the template for each tags page. That
-page will be `index.html` in the confiugured `tags` folder. You can use it
+page will be `index.html` in the configured `tags` folder. You can use it
 for a tag cloud or just link to the individual tags pages. If no `index` is
 configured, `Comic::Out::Tags` won't write an index page. This doesn't
 disable the tags, you can still link from comics to tag pages, you just
