@@ -232,7 +232,7 @@ sub sets_email_headers : Tests {
     is($header{'From'}, 'me@example.org', 'wrong sender');
     is($header{'To'}, 'me@example.org', 'wrong recipient');
     is($header{'Subject'}, 'Latest comic', 'wrong subject');
-    like($header{'Date'}, qr{^\w{3}, \d{2} \w{3} \d{4} \d{2}:\d{2}:\d{2} [+-]\d{4}$}, 'bad date'); # Mon, 13 Nov 2023 11:33:56 -0600
+    like($header{'Date'}, qr{^\w{3}, \d{1,2} \w{3} \d{4} \d{2}:\d{2}:\d{2} [+-]\d{4}$}, 'bad date'); # Mon, 13 Nov 2023 11:33:56 -0600
     like($header{'Message-ID'}, qr{^\S+@\S+$}, 'bad message id');
 }
 
