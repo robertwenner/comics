@@ -37,6 +37,8 @@
 - feature: list comics (svg files) under series headings (hideable?) in
   backlog, to see which comics are in a series; extend to tags and who
 
+- feature: put unpublished comics in the right position in their series
+
 - feature: define comic order by refering the previous or next comic,
   instead of having a date, so that inserting one for current events doesn't
   ripple through the backlog (and still maintaining a regular / weekly

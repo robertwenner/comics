@@ -76,6 +76,25 @@ to series title:
         },
     }
 
+=item * B<collect> the name of the series tag you want to collect from each comic.
+    Defaults to "series". With that, each comic needs to have the metadata as shown
+    in the snippet above. The same C<collect> is used for all languages.
+
+=item * B<template> either a single file name or a hash of languages to file
+    names for the Toolkit template to use for a series page. No series page will
+    be generated if this is not given.
+
+=item * B<outdir> Either a scalar to use one folder name for all
+    languages (but in different per-languages directories) or hash of
+    language to output folder. This module will place a html file for each
+    series with links to the comics in that series in that folder.
+    This must be a single folder name, not a path. Defaults to "series".
+
+=item * B<min-count> Minimum number of times a series has to be seen to actually
+    generate anything for it. This can be used to suppress single comic series,
+    i.e., when there's only one comic (yet), it makes no sense to show series navigation
+    buttons or have a series page for it. Defaults to 2.
+
 =back
 
 =cut
@@ -85,9 +104,19 @@ sub new {
     my $self = $class->SUPER::new(%settings);
 
     $self->optional('collect', 'scalar', 'series');
+    $self->optional('template', 'hash-or-scalar');
+    $self->optional('outdir', 'hash-or-scalar', 'series');
+    $self->optional('min-count', 'scalar', 2);
+    unless ($self->{settings}->{'min-count'} =~ m{^\d+$}x) {
+        croak('Comic::Out::Series.min-count must be a positive number');
+    }
     $self->flag_extra_settings();
 
-    %{$self->{series}} = ();
+    %{$self->{titles_and_hrefs}} = ();  # language to array of anonymous hashes of title and href
+    %{$self->{last_modified}} = ();  # last modified date for series per language
+    %{$self->{series_page}} = ();  # lannguage to series to series page
+    %{$self->{series_page_names}} = ();     # for unique names
+    $self->{seen} = 0;      # count how often we've seen series meta data
 
     return $self;
 }
@@ -95,7 +124,7 @@ sub new {
 
 =head2 generate
 
-Collects the series tag from the given Comic.
+Collects the series from the given Comic.
 
 Parameters:
 
@@ -110,16 +139,13 @@ Parameters:
 sub generate {
     my ($self, $comic) = @ARG;
 
-    return if ($comic->not_yet_published());
-
     my $me = ref $self;
-
     my $collect = $self->{settings}->{collect};
     my $series_for_all_languages = $comic->{meta_data}->{$collect};
     return unless (defined $series_for_all_languages);
 
     if (ref $series_for_all_languages ne ref {}) {
-        $comic->warning("$me: $collect metadata must be a map of language to title");
+        $comic->warning("$me: $collect metadata must be a map of language to series title");
         return;
     }
 
@@ -133,8 +159,26 @@ sub generate {
             $comic->warning("$me: $language $collect metadata per language must be a single value");
             next;
         }
+        if ($series =~ m/^\s*$/) {
+            $comic->warning("$me: $language $collect is empty; ignored");
+            next;
+        }
 
-        push @{$self->{series}->{$language}->{$series}}, $comic->{href}->{$language};
+        $self->{seen}++;
+        next if ($comic->not_yet_published());
+
+        my $title_and_href = {
+            'title' => $comic->{meta_data}->{title}->{$language},
+            'href' => $comic->{href}->{$language},
+        };
+        push @{$self->{titles_and_hrefs}->{$language}->{$series}}, $title_and_href;
+
+        # Coverage tool does not see that $self->{last_modified} is undefined on the first time
+        # and thinks the `false` branch is not covered, but it clearly is.
+        # uncoverable branch false
+        if (($self->{last_modified}{$language}{$series} || q{0}) lt $comic->{modified}) {
+            $self->{last_modified}{$language}{$series} = $comic->{modified};
+        }
     }
 
     return;
@@ -170,13 +214,25 @@ Defines these variables in each passed Comic:
 
 sub generate_all {
     my ($self, @comics) = @ARG;
+    $self->_check_series_exists();
+    $self->_generate_nav_links(@comics);
+    $self->_generate_series_pages(@comics);
+    $self->_put_series_pages_link_in_comics(@comics);
+    return;
+}
+
+
+sub _check_series_exists {
+    my ($self) = @ARG;
 
     my $me = ref $self;
-    my $seen = 0;
-    foreach my $language (keys %{$self->{series}}) {
-        $seen += keys %{$self->{series}->{$language}};
-    }
-    croak("$me: no comics had the '$self->{settings}->{collect} metadata; typo?") unless ($seen);
+    croak("$me: no comics had the '$self->{settings}->{collect}' metadata; typo?") unless ($self->{seen});
+    return;
+}
+
+
+sub _generate_nav_links {
+    my ($self, @comics) = @ARG;
 
     my $collect = $self->{settings}->{collect};
     foreach my $comic (@comics) {
@@ -188,36 +244,151 @@ sub generate_all {
             next unless (defined $series_for_all_languages);
 
             my $series = $comic->{meta_data}->{$collect}->{$language};
+            # Ignore comics that aren't part of a series.
             next unless ($series);
-            next unless ($self->{series}->{$language}->{$series});
+            next unless ($self->{titles_and_hrefs}->{$language}->{$series});
 
-            my @series = @{$self->{series}->{$language}->{$series}};
-            my ($pos) = grep { $series[$_] eq $comic->{href}->{$language} } 0 .. $#series;
+            $self->{seen}++;
+
+            my @titles_and_hrefs = @{$self->{titles_and_hrefs}->{$language}->{$series}};
+            my ($pos) = grep {
+                $titles_and_hrefs[$_]->{href} eq $comic->{href}->{$language}
+            } 0 .. $#titles_and_hrefs;
             if (!defined $pos) {
                 # Comic not found in the list of its series: This happens when the
                 # current comic is not yet published, but others in the series are.
-                # Add series links as good as we can, for a realistc preview in the
+                # Add series links as good as we can, for a realistic preview in the
                 # backlog.
-                # First link is clear (first in series. Assume the current last will
+                # First link is easy (first in series). Assume the current last will
                 # be the previous for this comic. If there are multiple unpublished
                 # comics in the series, they are all considered the last ones.
-                $comic->{series}->{$language}->{'first'} = $series[0];
-                $comic->{series}->{$language}->{'prev'} = $series[-1];
+                $comic->{series}->{$language}->{'first'} = $titles_and_hrefs[0]->{href};
+                $comic->{series}->{$language}->{'prev'} = $titles_and_hrefs[-1]->{href};
             }
             else {
                 if ($pos > 0) {
-                    $comic->{series}->{$language}->{'first'} = $series[0];
-                    $comic->{series}->{$language}->{'prev'} = $series[$pos - 1];
+                    $comic->{series}->{$language}->{'first'} = $titles_and_hrefs[0]->{href};
+                    $comic->{series}->{$language}->{'prev'} = $titles_and_hrefs[$pos - 1]->{href};
                 }
-                if ($pos < $#series) {
-                    $comic->{series}->{$language}->{'next'} = $series[$pos + 1];
-                    $comic->{series}->{$language}->{'last'} = $series[-1];
+                if ($pos < $#titles_and_hrefs) {
+                    $comic->{series}->{$language}->{'next'} = $titles_and_hrefs[$pos + 1]->{href};
+                    $comic->{series}->{$language}->{'last'} = $titles_and_hrefs[-1]->{href};
                 }
             }
         }
     }
 
     return;
+}
+
+
+sub _generate_series_pages {
+    my ($self, @comics) = @ARG;
+
+    return unless ($self->{settings}->{template});
+
+    foreach my $language (Comic::Out::Generator::all_languages(@comics)) {
+        my $base_dir = $comics[0]->{settings}->{Paths}{'published'};
+        my $series_dir = $self->_get_outdir($language);
+        my $full_dir = $base_dir . lc($language) . "/$series_dir";
+        File::Path::make_path($full_dir);
+
+        my $template = $self->_get_page_template($language);
+
+        foreach my $series (sort keys %{$self->{titles_and_hrefs}->{$language}}) {
+            next if (@{$self->{titles_and_hrefs}->{$language}->{$series}} < $self->{settings}->{'min-count'});
+
+            my $series_page = $self->_unique($language, _sanitize($series)) . '.html';
+            my %vars = (
+                'Language' => $language,
+                'url' => "/$series_dir/$series_page",
+                'series' => $series,
+                'comics' => $self->{titles_and_hrefs}->{$language}->{$series},
+                'last_modified' => $self->{last_modified}{$language}{$series},
+                # Some template parts may need the root folder to reference
+                # CSS or images. Provide it here for consistency and
+                # compatibility with HtmlComicPage.
+                # It can only be one level to www root, or earlier code
+                # would have failed noisily trying to mkdir the path.
+                'root' => '../',
+            );
+            my $page = Comic::Out::Template::templatize("$language $template", $template, $language, %vars);
+            Comic::write_file("$full_dir/$series_page", $page);
+            $self->{series_page}->{$language}->{$series} = "$series_dir/$series_page";
+        }
+    }
+
+    return;
+}
+
+
+sub _put_series_pages_link_in_comics {
+    my ($self, @comics) = @ARG;
+
+    my $collect = $self->{settings}->{collect};
+    foreach my $comic (@comics) {
+        my $series_for_all_languages = $comic->{meta_data}->{$collect};
+
+        foreach my $language ($comic->languages()) {
+            $comic->{series_page}->{$language} = {};
+            next unless (defined $series_for_all_languages);
+
+            my $series = $comic->{meta_data}->{$collect}->{$language};
+            # Ignore comics that aren't part of a series.
+            next unless ($series);
+            next unless ($self->{series_page}->{$language}->{$series});
+
+            $comic->{series_page}->{$language}->{$series} = $self->{series_page}->{$language}->{$series};
+        }
+    }
+
+    return;
+}
+
+
+sub _get_page_template {
+    my ($self, $language) = @ARG;
+    return $self->_get('template', $language);
+}
+
+
+sub _get_outdir {
+    my ($self, $language) = @ARG;
+    return $self->_get('outdir', $language);
+}
+
+
+sub _get {
+    my ($self, $field, $language) = @_;
+
+    my $value = $self->per_language_setting($field, $language);
+    croak("no $field defined for $language") unless ($value);
+    return $value;
+}
+
+
+sub _sanitize {
+    # Remove non-alphanumeric characters to avoid problems in path names.
+    my ($s) = @_;
+
+    $s =~ s{\W+}{_}gx;
+
+    return $s;
+}
+
+
+sub _unique {
+    my ($self, $language, $sanitized_tag) = @_;
+
+    my $name = $sanitized_tag;
+    my $count = 0;
+    while (defined $self->{series_page_names}->{$language}->{$name}) {
+        $name = "${sanitized_tag}_$count";
+        $count++;
+    }
+    $self->{series_page_names}->{$language}->{$name} = 1;
+
+    return $name;
 }
 
 

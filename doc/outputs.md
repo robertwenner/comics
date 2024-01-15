@@ -631,7 +631,7 @@ the languages as keys, for use in templates or other code.
 
 ## `Comic::Out::Series`
 
-Provides navigation links for the comics in a series.
+Provides navigation links and series overview pages for the comics in a series.
 
 A series is an ordered (by date) list of comics, where the story progresses
 from earlier to later comics. This is different from tags, where order of the
@@ -644,16 +644,33 @@ Configure `Comic::Out::Series` like this:
 {
     "Out": {
         "Comic::Out::Series": {
-            "collect": "series"
+            "collect": "series",
+            "min-coint" 2,
+            "template": "path/to/series-page.template",
+            "outdir": "path/to/outdir"
         }
     }
 }
-
 ```
 
-This tells the `Comic::Out::Series` module to use the `series` metadata. This needs
-to be an object of languages to single values (the series names) in the comic like
-below:
+The settings are:
+
+* `collect`: What metadata from the comic to collect as the series indicator.
+  Defaults to "series".
+
+* `min-count`: Minimum count of comics a series must have to generate any output.
+  Defaults to 2. This prevents adding per-series navigation links and a series
+  page when there is only a single comic in that series.
+
+* `template`: path to a Perl Template Toolkit file to use as the template for the
+  series page. You can specify a single template to be used for all languages or
+  an object with languages pointing to individual template files.
+
+* `outdir`: name of the directory where to place the generated series pages. This
+  is relative to the web server's root and defaults to "series".
+
+In your comics, you need to be an object of languages to single values (the
+series names) in the comic like below:
 
 ```json
 "meta_data": {
@@ -670,6 +687,10 @@ last comic in the comic's series, respectively. `first` and `prev` will be undef
 for the first comic in a series, `next` and `last` will be undefined for the last
 comic in a series. Note that the name of this variable is always `series`, this
 does not change based on the `collect` configuration parameter.
+
+It also defines a `series_page` that has the URL of the overview page for the series.
+
+The series pages are generated using the configured `template`.
 
 
 ## `Comic::Out::Sitemap`
