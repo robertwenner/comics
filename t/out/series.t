@@ -310,7 +310,7 @@ sub ignores_languages_without_series : Tests {
 }
 
 
-sub warn_if_no_series_tag_seen : Tests {
+sub warn_if_no_series_series_seen : Tests {
     my $series = Comic::Out::Series->new('collect' => 'the_series');
 
     $series->generate($_) foreach (@comics);
@@ -518,7 +518,7 @@ sub avoids_series_page_file_name_collisions : Tests {
 }
 
 
-sub avoids_tag_page_file_name_collisions_language_indepdently : Tests {
+sub avoids_series_page_file_name_collisions_language_indepdently : Tests {
     MockComic::fake_file('series.templ', '[% series %]');
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
@@ -611,7 +611,7 @@ sub warns_about_empty_series : Tests {
 
     my $msg = $comic->{warnings}[0];
     like($msg, qr{\bempty\b}i, 'should say what is wrong');
-    like($msg, qr{\bseries\b}, 'should mention the tag type');
+    like($msg, qr{\bseries\b}, 'should mention the type');
     like($msg, qr{\bEnglish\b}, 'should include the language');
 }
 
@@ -645,4 +645,117 @@ sub croaks_if_comic_does_not_have_the_configured_meta_data : Tests {
     like($@, qr{\bno comic}i, 'should say what is wrong');
     like($@, qr{\bmetadata\b}i, 'should say what is wrong');
     like($@, qr{\bsries\b}, 'should mention the series name');
+}
+
+
+sub rejects_array_for_series_page_index : Tests {
+    eval {
+        Comic::Out::Series->new(index => []);
+    };
+    like($@, qr{\bindex\b}, 'should mention the setting');
+    like($@, qr{\barray\b}, 'should say what is wrong');
+}
+
+
+sub accepts_one_series_page_index_template_for_all_languages : Tests {
+    my $series = Comic::Out::Series->new(template => 'page.templ', index => 'index.templ');
+    is($series->_get_index_template('English'), 'index.templ');
+    is($series->_get_index_template('Deutsch'), 'index.templ');
+    is($series->_get_index_template('whatever, really'), 'index.templ');
+}
+
+
+sub accepts_per_language_series_page_index_templates : Tests {
+    my $series = Comic::Out::Series->new(template => 'page.templ', index => { 'English' => 'index.templ' });
+    is($series->_get_index_template('English'), 'index.templ');
+    eval {
+        $series->_get_index_template('unknown language');
+    };
+    like($@, qr{index}i, 'should say what is wrong');
+    like($@, qr{unknown language}, 'should mention the language');
+}
+
+
+sub rejects_index_template_without_series_pages_template : Tests {
+    eval {
+        Comic::Out::Series->new(index => 'index.templ');
+    };
+    like($@, qr{\bComic::Out::Series\b}, 'should have module name');
+    like($@, qr{\bindex\b}, 'should mention the setting');
+    like($@, qr{\btemplate\b}, 'should mention the missing setting');
+}
+
+
+sub writes_index_series_page : Tests {
+    MockComic::fake_file('page.templ', '...');
+    my $index = << 'TEMPL';
+        [% FOREACH c IN series_pages.$Language %]
+            [% c.key %] -> [% root %][% c.value %]
+        [% END %]
+TEMPL
+    MockComic::fake_file('index.templ', $index);
+
+    my $series = Comic::Out::Series->new(template => 'page.templ', index => 'index.templ');
+    $series->generate($_) foreach (@comics);
+    $series->generate_all(@comics);
+
+    MockComic::assert_wrote_file('generated/web/english/series/index.html',
+        qr{\s*brewing -> \.\./series/brewing\.html\s*}m);
+}
+
+
+sub last_modified_date_in_series_index_is_latest_comic_modification_one_series : Tests {
+    MockComic::fake_file('page.templ', '...');
+    MockComic::fake_file('index.templ', '[% last_modified %]');
+    $comics[1]->{modified} = '2023-11-11';
+
+    my $series = Comic::Out::Series->new(template => 'page.templ', index => 'index.templ');
+    $series->generate($_) foreach (@comics);
+    $series->generate_all(@comics);
+
+    MockComic::assert_wrote_file('generated/web/english/series/index.html', '2023-11-11');
+}
+
+
+sub index_page_has_last_modified_of_all_series : Tests {
+    MockComic::fake_file('series.templ', '...');
+    MockComic::fake_file('index.templ', '[% last_modified %]');
+    my $other= MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => 'Other',
+        },
+        $MockComic::SERIES => {
+            $MockComic::ENGLISH => 'other',
+        },
+    );
+    $other->{modified} = '2024-01-01';
+
+    my $series = Comic::Out::Series->new(template => 'series.templ', index => 'index.templ', 'min-count' => 0);
+
+    $series->generate($_) foreach ($other, @comics);
+    $series->generate_all($other, @comics);
+
+    MockComic::assert_wrote_file('generated/web/english/series/index.html', '2024-01-01');
+}
+
+
+sub reserves_index_html_for_index_page : Tests {
+    MockComic::fake_file('page.templ', 'page');
+    MockComic::fake_file('index.templ', 'index');
+
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => {
+            $MockComic::ENGLISH => 'beer',
+        },
+        $MockComic::SERIES => {
+            $MockComic::ENGLISH => 'index',
+        },
+    );
+
+    my $series = Comic::Out::Series->new(template => 'page.templ', index => 'index.templ', 'min-count' => 1);
+    $series->generate($comic);
+    $series->generate_all($comic);
+
+    MockComic::assert_wrote_file('generated/web/english/series/index.html', 'index');
+    MockComic::assert_wrote_file('generated/web/english/series/index_0.html', 'page');
 }

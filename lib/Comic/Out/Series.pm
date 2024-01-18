@@ -95,6 +95,9 @@ to series title:
     i.e., when there's only one comic (yet), it makes no sense to show series navigation
     buttons or have a series page for it. Defaults to 2.
 
+=item * B<index> Path to a Toolkit template file to use when generating the series
+    index page.
+
 =back
 
 =cut
@@ -110,11 +113,15 @@ sub new {
     unless ($self->{settings}->{'min-count'} =~ m{^\d+$}x) {
         croak('Comic::Out::Series.min-count must be a positive number');
     }
+    $self->optional('index', 'hash-or-scalar');
+    if ($self->{settings}->{index} && !exists $self->{settings}->{template}) {
+        croak('must specify Comic::Out::Series.template when specifying index template');
+    }
     $self->flag_extra_settings();
 
     %{$self->{titles_and_hrefs}} = ();  # language to array of anonymous hashes of title and href
     %{$self->{last_modified}} = ();  # last modified date for series per language
-    %{$self->{series_page}} = ();  # lannguage to series to series page
+    %{$self->{series_page}} = ();  # language to series to series page
     %{$self->{series_page_names}} = ();     # for unique names
     $self->{seen} = 0;      # count how often we've seen series meta data
 
@@ -173,9 +180,6 @@ sub generate {
         };
         push @{$self->{titles_and_hrefs}->{$language}->{$series}}, $title_and_href;
 
-        # Coverage tool does not see that $self->{last_modified} is undefined on the first time
-        # and thinks the `false` branch is not covered, but it clearly is.
-        # uncoverable branch false
         if (($self->{last_modified}{$language}{$series} || q{0}) lt $comic->{modified}) {
             $self->{last_modified}{$language}{$series} = $comic->{modified};
         }
@@ -217,6 +221,7 @@ sub generate_all {
     $self->_check_series_exists();
     $self->_generate_nav_links(@comics);
     $self->_generate_series_pages(@comics);
+    $self->_generate_index_page(@comics);
     $self->_put_series_pages_link_in_comics(@comics);
     return;
 }
@@ -288,6 +293,9 @@ sub _generate_series_pages {
     return unless ($self->{settings}->{template});
 
     foreach my $language (Comic::Out::Generator::all_languages(@comics)) {
+        # Reserve index.html
+        $self->{series_page_names}->{$language}->{'index'} = 1;
+
         my $base_dir = $comics[0]->{settings}->{Paths}{'published'};
         my $series_dir = $self->_get_outdir($language);
         my $full_dir = $base_dir . lc($language) . "/$series_dir";
@@ -346,9 +354,53 @@ sub _put_series_pages_link_in_comics {
 }
 
 
+sub _generate_index_page {
+    my ($self, @comics) = @ARG;
+
+    return unless (exists $self->{settings}->{index});
+
+    foreach my $language (Comic::Out::Generator::all_languages(@comics)) {
+        my $base_dir = $comics[0]->{settings}->{Paths}{'published'};
+        my $series_dir = $self->_get_outdir($language);
+        my $full_dir = $base_dir . lc($language) . "/$series_dir";
+        File::Path::make_path($full_dir);
+        my $index_page = 'index.html';
+
+        my $last_modified = 0;
+        foreach my $series(keys %{$self->{last_modified}{$language}}) {
+            if ($last_modified lt $self->{last_modified}{$language}{$series}) {
+                $last_modified = $self->{last_modified}{$language}{$series};
+            }
+        }
+
+        my $template = $self->_get_index_template($language);
+        my %vars = (
+            'language' => lc $language,
+            'url' => "/$series_dir/$index_page",
+            'last_modified' => $last_modified,
+            # Some template parts may need the root folder to reference CSS or
+            # images. Provide it here for consistency and compatibility with
+            # HtmlComicPage.
+            'root' => '../',
+            'series_pages' => $self->{series_page},
+        );
+        my $page = Comic::Out::Template::templatize("$language $template", $template, $language, %vars);
+        Comic::write_file("$full_dir/$index_page", $page);
+    }
+
+    return;
+}
+
+
 sub _get_page_template {
     my ($self, $language) = @ARG;
     return $self->_get('template', $language);
+}
+
+
+sub _get_index_template {
+    my ($self, $language) = @ARG;
+    return $self->_get('index', $language);
 }
 
 

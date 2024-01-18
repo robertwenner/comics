@@ -647,7 +647,8 @@ Configure `Comic::Out::Series` like this:
             "collect": "series",
             "min-coint" 2,
             "template": "path/to/series-page.template",
-            "outdir": "path/to/outdir"
+            "outdir": "path/to/outdir",
+            "index": "path/to/index.template"
         }
     }
 }
@@ -668,6 +669,8 @@ The settings are:
 
 * `outdir`: name of the directory where to place the generated series pages. This
   is relative to the web server's root and defaults to "series".
+
+* `index`: path to a Perl Template Toolkit file for the series index.
 
 In your comics, you need to be an object of languages to single values (the
 series names) in the comic like below:
@@ -690,7 +693,25 @@ does not change based on the `collect` configuration parameter.
 
 It also defines a `series_page` that has the URL of the overview page for the series.
 
-The series pages are generated using the configured `template`.
+The series pages are generated using the configured `template`. That template can
+access a `root` variable pointing to the server root, and a `last_modified` variable
+with the last modification time stamp of the latest comic in that series. The actual
+series are available in a `series_pages` object with languages as the keys. That in
+turn points to another object that has the series name as key and the series overview
+page as value. It can be used like this:
+
+```html
+<ul>
+[% FOREACH s IN series_pages.$Language %]
+    <li><a href="[% root %][% s.value %]">[% s.key %]</a></li>
+[% END %]
++</ul>
+```
+
+The index template is used to build an index page linking to each series, per language.
+The template can access a `root` variable, which has the path to the server root (for
+linking CSS templates, images, or Javascript) and a `last_modfied` time stamp, which is
+the last modification time of all comics in all series.
 
 
 ## `Comic::Out::Sitemap`
