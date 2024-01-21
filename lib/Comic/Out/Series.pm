@@ -177,6 +177,7 @@ sub generate {
         my $title_and_href = {
             'title' => $comic->{meta_data}->{title}->{$language},
             'href' => $comic->{href}->{$language},
+            'published' => $comic->_published_when(),
         };
         push @{$self->{titles_and_hrefs}->{$language}->{$series}}, $title_and_href;
 
@@ -255,7 +256,7 @@ sub _generate_nav_links {
 
             $self->{seen}++;
 
-            my @titles_and_hrefs = @{$self->{titles_and_hrefs}->{$language}->{$series}};
+            my @titles_and_hrefs = sort _by_published_date @{$self->{titles_and_hrefs}->{$language}->{$series}};
             my ($pos) = grep {
                 $titles_and_hrefs[$_]->{href} eq $comic->{href}->{$language}
             } 0 .. $#titles_and_hrefs;
@@ -287,6 +288,11 @@ sub _generate_nav_links {
 }
 
 
+sub _by_published_date {
+    return $a->{published} cmp $b->{published};
+}
+
+
 sub _generate_series_pages {
     my ($self, @comics) = @ARG;
 
@@ -304,14 +310,15 @@ sub _generate_series_pages {
         my $template = $self->_get_page_template($language);
 
         foreach my $series (sort keys %{$self->{titles_and_hrefs}->{$language}}) {
-            next if (@{$self->{titles_and_hrefs}->{$language}->{$series}} < $self->{settings}->{'min-count'});
+            my @titles_and_hrefs = sort _by_published_date @{$self->{titles_and_hrefs}->{$language}->{$series}};
+            next if (@titles_and_hrefs < $self->{settings}->{'min-count'});
 
             my $series_page = $self->_unique($language, _sanitize($series)) . '.html';
             my %vars = (
                 'Language' => $language,
                 'url' => "/$series_dir/$series_page",
                 'series' => $series,
-                'comics' => $self->{titles_and_hrefs}->{$language}->{$series},
+                'comics' => \@titles_and_hrefs,
                 'last_modified' => $self->{last_modified}{$language}{$series},
                 # Some template parts may need the root folder to reference
                 # CSS or images. Provide it here for consistency and
@@ -374,6 +381,16 @@ sub _generate_index_page {
         }
 
         my $template = $self->_get_index_template($language);
+        # $self->{series_pages}->{$language} is a hash of series name to series page
+        # and hashes are unordered per definition, so transform into an array of tuples.
+        my @series_pages;
+        my @titles = sort _case_insensitive keys %{$self->{series_page}->{$language}};
+        foreach my $title (@titles) {
+            push @series_pages, {
+                'title' => $title,
+                'href' => $self->{series_page}->{$language}->{$title},
+            };
+        }
         my %vars = (
             'language' => lc $language,
             'url' => "/$series_dir/$index_page",
@@ -382,13 +399,18 @@ sub _generate_index_page {
             # images. Provide it here for consistency and compatibility with
             # HtmlComicPage.
             'root' => '../',
-            'series_pages' => $self->{series_page},
+            'series_pages' => \@series_pages,
         );
         my $page = Comic::Out::Template::templatize("$language $template", $template, $language, %vars);
         Comic::write_file("$full_dir/$index_page", $page);
     }
 
     return;
+}
+
+
+sub _case_insensitive {
+    return lc $a cmp lc $b;
 }
 
 

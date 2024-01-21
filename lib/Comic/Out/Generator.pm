@@ -552,6 +552,9 @@ sub up_to_date {
 Generate whatever output this Generator wants to generate for a given Comic.
 This is called once for each comic to generate e.g., the comic's image or web page.
 
+This function will be called for all comics processed, but the order in which comics
+are passed, is undefined.
+
 Parameters:
 
 =over 4
@@ -579,7 +582,8 @@ Parameters:
 
 =over 4
 
-=item * B<@comics> Comics to generate output for.
+=item * B<@comics> Comics to generate output for. The order of the passed comics
+    is undefined.
 
 =back
 

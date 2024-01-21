@@ -29,6 +29,7 @@ sub set_up : Test(setup) {
                 $MockComic::DEUTSCH => 'brauen',
                 $MockComic::ENGLISH => 'brewing',
             },
+            $MockComic::PUBLISHED_WHEN => "2023-10-0$i",
         );
         $comic->{href}{'Deutsch'} = "comics/bier$i.html";
         $comic->{href}{'English'} = "comics/beer$i.html";
@@ -164,8 +165,8 @@ sub no_series_links_if_not_enough_comics : Tests {
 
 sub adds_first_prev_next_last_links_to_comic : Tests {
     my $series = Comic::Out::Series->new();
-    $series->generate($_) foreach (@comics);
-    $series->generate_all(@comics);
+    $series->generate($_) foreach (reverse @comics);
+    $series->generate_all(reverse @comics);
 
     is_deeply($comics[0]->{series}{'Deutsch'}, {
         'next' => 'comics/bier2.html',
@@ -310,7 +311,7 @@ sub ignores_languages_without_series : Tests {
 }
 
 
-sub warn_if_no_series_series_seen : Tests {
+sub complains_if_no_series_series_seen : Tests {
     my $series = Comic::Out::Series->new('collect' => 'the_series');
 
     $series->generate($_) foreach (@comics);
@@ -410,27 +411,23 @@ TEMPL
     MockComic::fake_file('series.templ', $content);
 
     my $series = Comic::Out::Series->new(template => 'series.templ', outdir => 'series');
-    $series->generate($_) foreach (@comics);
+    $series->generate($_) foreach (reverse @comics);
     $series->generate_all(@comics);
 
     MockComic::assert_made_some_dirs('generated/web/deutsch/series', 'generated/web/english/series');
-    MockComic::assert_wrote_file('generated/web/deutsch/series/brauen.html',
-        qr{<h1>brauen</h1>}m);
-    MockComic::assert_wrote_file('generated/web/deutsch/series/brauen.html',
-        qr{<a href="comics/bier1\.html">Bier 1</a>}m);
-    MockComic::assert_wrote_file('generated/web/deutsch/series/brauen.html',
-        qr{<a href="comics/bier2\.html">Bier 2</a>}m);
-    MockComic::assert_wrote_file('generated/web/deutsch/series/brauen.html',
-        qr{<a href="comics/bier3\.html">Bier 3</a>}m);
+    MockComic::assert_wrote_file('generated/web/deutsch/series/brauen.html', qr{
+        <h1>brauen</h1>\s+
+        <a\shref="comics/bier1\.html">Bier\s1</a>\s+
+        <a\shref="comics/bier2\.html">Bier\s2</a>\s+
+        <a\shref="comics/bier3\.html">Bier\s3</a>
+    }mx);
 
-    MockComic::assert_wrote_file('generated/web/english/series/brewing.html',
-        qr{<h1>brewing</h1>}m);
-    MockComic::assert_wrote_file('generated/web/english/series/brewing.html',
-        qr{<a href="comics/beer1\.html">beer 1</a>}m);
-    MockComic::assert_wrote_file('generated/web/english/series/brewing.html',
-        qr{<a href="comics/beer2\.html">beer 2</a>}m);
-    MockComic::assert_wrote_file('generated/web/english/series/brewing.html',
-        qr{<a href="comics/beer3\.html">beer 3</a>}m);
+    MockComic::assert_wrote_file('generated/web/english/series/brewing.html', qr{
+        <h1>brewing</h1>\s+
+        <a\shref="comics/beer1\.html">beer\s1</a>\s+
+        <a\shref="comics/beer2\.html">beer\s2</a>\s+
+        <a\shref="comics/beer3\.html">beer\s3</a>
+    }mx);
 }
 
 
@@ -689,8 +686,8 @@ sub rejects_index_template_without_series_pages_template : Tests {
 sub writes_index_series_page : Tests {
     MockComic::fake_file('page.templ', '...');
     my $index = << 'TEMPL';
-        [% FOREACH c IN series_pages.$Language %]
-            [% c.key %] -> [% root %][% c.value %]
+        [% FOREACH sp IN series_pages %]
+            [% sp.title %] -> [% root %][% sp.href %]
         [% END %]
 TEMPL
     MockComic::fake_file('index.templ', $index);
@@ -701,6 +698,27 @@ TEMPL
 
     MockComic::assert_wrote_file('generated/web/english/series/index.html',
         qr{\s*brewing -> \.\./series/brewing\.html\s*}m);
+}
+
+
+sub index_page_sorted_alphabetically : Tests {
+    MockComic::fake_file('page.templ', '...');
+    my $index = << 'TEMPL';
+        [% FOREACH sp IN series_pages %]
+            [% sp.title %]
+        [% END %]
+TEMPL
+    MockComic::fake_file('index.templ', $index);
+
+    my $series = Comic::Out::Series->new(template => 'page.templ', index => 'index.templ', 'min-count' => 0);
+    $comics[0]->{meta_data}->{series}->{English} = 'lager';
+    $comics[1]->{meta_data}->{series}->{English} = 'ale';
+    $comics[2]->{meta_data}->{series}->{English} = 'Amber';
+    $series->generate($_) foreach (@comics);
+    $series->generate_all(@comics);
+
+    MockComic::assert_wrote_file('generated/web/english/series/index.html',
+        qr{ale\s+Amber\s+lager});
 }
 
 

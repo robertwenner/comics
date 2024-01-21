@@ -696,14 +696,13 @@ It also defines a `series_page` that has the URL of the overview page for the se
 The series pages are generated using the configured `template`. That template can
 access a `root` variable pointing to the server root, and a `last_modified` variable
 with the last modification time stamp of the latest comic in that series. The actual
-series are available in a `series_pages` object with languages as the keys. That in
-turn points to another object that has the series name as key and the series overview
-page as value. It can be used like this:
+series are available in an alphabetically sorted i(by series title) `series_pages`
+list with tuples of series `title` and `href`. It can be used like this:
 
 ```html
 <ul>
 [% FOREACH s IN series_pages.$Language %]
-    <li><a href="[% root %][% s.value %]">[% s.key %]</a></li>
+    <li><a href="[% root %][% s.href %]">[% s.title %]</a></li>
 [% END %]
 +</ul>
 ```
@@ -711,7 +710,8 @@ page as value. It can be used like this:
 The index template is used to build an index page linking to each series, per language.
 The template can access a `root` variable, which has the path to the server root (for
 linking CSS templates, images, or Javascript) and a `last_modfied` time stamp, which is
-the last modification time of all comics in all series.
+the last modification time of all comics in all series. It gets a `series_pages` array
+of tuples with `title` and `href` to link from series title to series overview page.
 
 
 ## `Comic::Out::Sitemap`
