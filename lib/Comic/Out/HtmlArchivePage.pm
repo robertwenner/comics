@@ -5,6 +5,7 @@ use warnings;
 use utf8;
 use English '-no_match_vars';
 use Carp;
+use File::Slurper;
 
 use Comic::Out::Template;
 use Comic::Out::Generator;
@@ -146,7 +147,7 @@ sub generate_all {
         $vars{'modified'} = $published[-1]->{modified};
         $vars{'notFor'} = \&Comic::not_published_on_in;
         $vars{'root'} = '';
-        Comic::write_file($page, Comic::Out::Template::templatize('archive', $templ_file, $language, %vars));
+        File::Slurper::write_text($page, Comic::Out::Template::templatize('archive', $templ_file, $language, %vars));
     }
     return;
 }

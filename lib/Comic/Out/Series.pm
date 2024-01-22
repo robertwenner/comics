@@ -5,6 +5,7 @@ use warnings;
 use utf8;
 use English '-no_match_vars';
 use Carp;
+use File::Slurper;
 
 use version; our $VERSION = qv('0.0.3');
 
@@ -328,7 +329,7 @@ sub _generate_series_pages {
                 'root' => '../',
             );
             my $page = Comic::Out::Template::templatize("$language $template", $template, $language, %vars);
-            Comic::write_file("$full_dir/$series_page", $page);
+            File::Slurper::write_text("$full_dir/$series_page", $page);
             $self->{series_page}->{$language}->{$series} = "$series_dir/$series_page";
         }
     }
@@ -402,7 +403,7 @@ sub _generate_index_page {
             'series_pages' => \@series_pages,
         );
         my $page = Comic::Out::Template::templatize("$language $template", $template, $language, %vars);
-        Comic::write_file("$full_dir/$index_page", $page);
+        File::Slurper::write_text("$full_dir/$index_page", $page);
     }
 
     return;

@@ -9,6 +9,7 @@ use Carp;
 use Readonly;
 use Clone qw(clone);
 use File::Path;
+use File::Slurper;
 
 use Comic::Out::Template;
 use Comic::Out::Generator;
@@ -216,7 +217,7 @@ sub _export_language_html {
     my ($self, $comic, $language, $template) = @ARG;
 
     $comic->get_transcript($language);
-    Comic::write_file("$comic->{dirName}{$language}$comic->{htmlFile}{$language}",
+    File::Slurper::write_text("$comic->{dirName}{$language}$comic->{htmlFile}{$language}",
         $self->_do_export_html($comic, $language, $template));
     return 0;
 
@@ -330,7 +331,7 @@ sub export_index {
         my $last_pub = $latest_published{$language};
         my $template = $self->per_language_setting('template', $language);
         my $html = $self->_do_export_html($last_pub, $language, $template);
-        Comic::write_file($page, $html);
+        File::Slurper::write_text($page, $html);
     }
     return;
 }

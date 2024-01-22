@@ -7,6 +7,7 @@ use Locales unicode => 1;
 use English '-no_match_vars';
 use Scalar::Util qw(looks_like_number);
 use File::Basename;
+use File::Slurper;
 use Carp;
 use Readonly;
 use SVG;
@@ -158,7 +159,7 @@ sub generate_all {
     my $output = $self->{settings}->{outfile};
     my $template = $self->{settings}->{template};
     my %vars = $self->_aggregate(@comics);
-    Comic::write_file($output, Comic::Out::Template::templatize('size map', $template, '', %vars));
+    File::Slurper::write_text($output, Comic::Out::Template::templatize('size map', $template, '', %vars));
     return;
 }
 

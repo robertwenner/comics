@@ -5,6 +5,7 @@ use warnings;
 use utf8;
 use English '-no_match_vars';
 use Carp;
+use File::Slurper;
 
 use Comic::Out::Template;
 use Comic::Out::Generator;
@@ -149,7 +150,7 @@ sub generate_all {
     my $page = $self->{settings}->{outfile};
     my $templ_file = $self->{settings}->{template};
     my %vars = $self->_populate_vars(@comics);
-    Comic::write_file($page, Comic::Out::Template::templatize('Comic::Out::Backlog', $templ_file, '', %vars));
+    File::Slurper::write_text($page, Comic::Out::Template::templatize('Comic::Out::Backlog', $templ_file, '', %vars));
 
     return;
 }

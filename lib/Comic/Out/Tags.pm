@@ -6,6 +6,7 @@ use utf8;
 use English '-no_match_vars';
 use Carp;
 use File::Path;
+use File::Slurper;
 
 use version; our $VERSION = qv('0.0.3');
 
@@ -442,7 +443,7 @@ sub _write_tags_pages {
                 'root' => '../',
             );
             my $page = Comic::Out::Template::templatize("$language $template", $template, $language, %vars);
-            Comic::write_file("$full_dir/$tag_page", $page);
+            File::Slurper::write_text("$full_dir/$tag_page", $page);
             $self->{tags_page}{$language}{$tag} = "$tags_dir/$tag_page";
         }
     }
@@ -489,7 +490,7 @@ sub _write_index_tags_page() {
             'tag_count' => $self->{tag_count},
         );
         my $page = Comic::Out::Template::templatize("$language $template", $template, $language, %vars);
-        Comic::write_file("$full_dir/$tag_page", $page);
+        File::Slurper::write_text("$full_dir/$tag_page", $page);
     }
 
     return;

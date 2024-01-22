@@ -1231,37 +1231,6 @@ sub _pos_to_frame {
 }
 
 
-=head2 write_file
-
-Writes a file and croaks on errors. All in one place to easily mock file
-writing in tests.
-
-Parameters:
-
-=over 4
-
-=item * B<$file_name> path and name of the file to write.
-
-=item * B<contents> what to write.
-
-=back
-
-=cut
-
-sub write_file {
-    # uncoverable subroutine
-    my ($file_name, $contents) = @ARG; # uncoverable statement
-
-    open my $F, '>', $file_name; # uncoverable statement
-    # uncoverable statement
-    # uncoverable branch true
-    # uncoverable branch false
-    print {$F} $contents or croak("Cannot write to $file_name: $OS_ERROR");
-    close $F; # uncoverable statement
-    return; # uncoverable statement
-}
-
-
 =head2 from_oldest_to_latest
 
 Sorts the given comics chronologically from oldest to newest.

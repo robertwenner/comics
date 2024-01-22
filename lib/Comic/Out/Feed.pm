@@ -6,6 +6,7 @@ use utf8;
 use English '-no_match_vars';
 use Carp;
 
+use File::Slurper;
 use POSIX 'strftime';
 use DateTime;
 use DateTime::Format::RFC3339;
@@ -177,7 +178,7 @@ sub generate_all {
             );
 
             my $feed = Comic::Out::Template::templatize("$type feed", $template, $language, %vars);
-            Comic::write_file($self->{settings}->{outdir} . lc($language) . "/$outfile", $feed);
+            File::Slurper::write_text($self->{settings}->{outdir} . lc($language) . "/$outfile", $feed);
         }
     }
     return;

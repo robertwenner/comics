@@ -117,6 +117,11 @@ sub mock_methods {
         return split '\n', $files_read{$name};
     };
 
+    *File::Slurper::write_text = sub {
+        my ($name, $contents) = @_;
+        $file_written{$name} = $contents;
+    };
+
     *Comic::_mtime = sub {
         my ($file) = @_;
         return $mtime{$file} || 0;
@@ -125,11 +130,6 @@ sub mock_methods {
     *File::Path::make_path = sub {
         push @made_dirs, @_;
         return 1;
-    };
-
-    *Comic::write_file = sub {
-        my ($name, $contents) = @_;
-        $file_written{$name} = $contents;
     };
 
     *Comic::_now = sub {

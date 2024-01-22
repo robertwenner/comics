@@ -6,6 +6,7 @@ use utf8;
 use Locales unicode => 1;
 use English '-no_match_vars';
 use Carp;
+use File::Slurper;
 
 use Comic::Out::Template;
 use Comic::Out::Generator;
@@ -127,7 +128,7 @@ sub generate_all {
 
         my $outfile = $outfiles{$language};
         croak("Comic::Out::Sitemap: No $language output file configured") unless ($outfile);
-        Comic::write_file($outfile, $xml);
+        File::Slurper::write_text($outfile, $xml);
     }
 
     return;
