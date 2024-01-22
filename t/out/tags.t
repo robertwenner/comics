@@ -264,18 +264,18 @@ sub does_not_refer_to_comic_that_is_not_published_on_the_web : Tests {
 sub configure_one_template_for_all_languages : Tests {
     MockComic::fake_file('tagcloud.templ', 'template goes here');
     my $tags = Comic::Out::Tags->new(template => 'tagcloud.templ');
-    is($tags->_get_tag_page_template('English'), 'tagcloud.templ');
-    is($tags->_get_tag_page_template('Deutsch'), 'tagcloud.templ');
-    is($tags->_get_tag_page_template('whatever, really'), 'tagcloud.templ');
+    is($tags->get_setting('template', 'English'), 'tagcloud.templ');
+    is($tags->get_setting('template', 'Deutsch'), 'tagcloud.templ');
+    is($tags->get_setting('template', 'whatever, really'), 'tagcloud.templ');
 }
 
 
 sub configure_template_per_language : Tests {
     MockComic::fake_file('tagcloud.en', 'template goes here');
     my $tags = Comic::Out::Tags->new(template => { 'English' => 'tagcloud.en' });
-    is($tags->_get_tag_page_template('English'), 'tagcloud.en');
+    is($tags->get_setting('template', 'English'), 'tagcloud.en');
     eval {
-        $tags->_get_tag_page_template('unknown language');
+        $tags->get_setting('template', 'unknown language');
     };
     like($@, qr{template}i, 'should say what is wrong');
     like($@, qr{unknown language}, 'should mention the language');
@@ -296,9 +296,9 @@ sub configure_outdir_single_name_for_all_languages : Tests {
         template => 'tagcloud.templ',
         outdir => 'tagcloud',
     );
-    is($tags->_get_outdir('English'), 'tagcloud');
-    is($tags->_get_outdir('Deutsch'), 'tagcloud');
-    is($tags->_get_outdir('whatever'), 'tagcloud');
+    is($tags->get_setting('outdir', 'English'), 'tagcloud');
+    is($tags->get_setting('outdir', 'Deutsch'), 'tagcloud');
+    is($tags->get_setting('outdir', 'whatever'), 'tagcloud');
 }
 
 
@@ -310,10 +310,10 @@ sub configure_outdir_per_language : Tests {
             'Deutsch' => 'schlagwortwolke',
         },
     );
-    is($tags->_get_outdir('English'), 'tagcloud');
-    is($tags->_get_outdir('Deutsch'), 'schlagwortwolke');
+    is($tags->get_setting('outdir', 'English'), 'tagcloud');
+    is($tags->get_setting('outdir', 'Deutsch'), 'schlagwortwolke');
     eval {
-        $tags->_get_outdir('whatever');
+        $tags->get_setting('outdir', 'whatever');
     };
     like($@, qr{outdir}, 'should mention setting');
     like($@, qr{defined}, 'should say what is wrong');
@@ -332,8 +332,8 @@ sub configure_outdir_rejects_array : Tests {
 
 sub outdir_not_given_uses_default : Tests {
     my $tags = Comic::Out::Tags->new(template => 'tagcloud.templ');
-    is($tags->_get_outdir('English'), 'tags');
-    is($tags->_get_outdir('Deutsch'), 'tags');
+    is($tags->get_setting('outdir', 'English'), 'tags');
+    is($tags->get_setting('outdir', 'Deutsch'), 'tags');
 }
 
 
@@ -866,17 +866,17 @@ sub rejects_array_for_tags_page_index : Tests {
 
 sub accepts_one_tags_page_index_template_for_all_languages : Tests {
     my $tags = Comic::Out::Tags->new(template => 'page.templ', index => 'index.templ');
-    is($tags->_get_index_template('English'), 'index.templ');
-    is($tags->_get_index_template('Deutsch'), 'index.templ');
-    is($tags->_get_index_template('whatever, really'), 'index.templ');
+    is($tags->get_setting('index', 'English'), 'index.templ');
+    is($tags->get_setting('index', 'Deutsch'), 'index.templ');
+    is($tags->get_setting('index', 'whatever, really'), 'index.templ');
 }
 
 
 sub accetps_per_language_tags_page_index_templates : Tests {
     my $tags = Comic::Out::Tags->new(template => { 'English' => 'index.templ' });
-    is($tags->_get_tag_page_template('English'), 'index.templ');
+    is($tags->get_setting('template', 'English'), 'index.templ');
     eval {
-        $tags->_get_index_template('unknown language');
+        $tags->get_setting('index', 'unknown language');
     };
     like($@, qr{index}i, 'should say what is wrong');
     like($@, qr{unknown language}, 'should mention the language');

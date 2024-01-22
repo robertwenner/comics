@@ -411,11 +411,11 @@ sub _write_tags_pages {
 
         # We only write tags pages for published comics, so don't worry about backlogs.
         my $base_dir = $comics[0]->{settings}->{Paths}{'published'};
-        my $tags_dir = $self->_get_outdir($language);
+        my $tags_dir = $self->get_setting('outdir', $language);
         my $full_dir = $base_dir . lc($language) . "/$tags_dir";
         File::Path::make_path($full_dir);
 
-        my $template = $self->_get_tag_page_template($language);
+        my $template = $self->get_setting('template', $language);
 
         # sort keys to have a stable order when non-unique tags are made unique.
         # This helps with testing and doesn't break bookmarks to tags pages.
@@ -424,7 +424,7 @@ sub _write_tags_pages {
             my $tag_count = $self->{tag_count}{$language}{$tag};
             next if ($tag_count < $self->{settings}->{'min-count'});
 
-            my $tag_page = $self->_unique($language, _sanitize($tag)) . '.html';
+            my $tag_page = $self->_unique($language, Comic::Out::Generator::sanitize($tag)) . '.html';
             my %vars = (
                 'Language' => $language,
                 'url' => "/$tags_dir/$tag_page",
@@ -458,7 +458,7 @@ sub _write_index_tags_page() {
 
     foreach my $language (Comic::Out::Generator::all_languages(@comics)) {
         my $base_dir = $comics[0]->{settings}->{Paths}{'published'};
-        my $tags_dir = $self->_get_outdir($language);
+        my $tags_dir = $self->get_setting('outdir', $language);
         my $full_dir = $base_dir . lc($language) . "/$tags_dir";
         File::Path::make_path($full_dir);
         my $tag_page = 'index.html';
@@ -470,7 +470,7 @@ sub _write_index_tags_page() {
             }
         }
 
-        my $template = $self->_get_index_template($language);
+        my $template = $self->get_setting('index', $language);
         $self->{tag_rank}->{$language} ||= {};
         my %vars = (
             'language' => lc $language,
@@ -496,45 +496,8 @@ sub _write_index_tags_page() {
 }
 
 
-sub _get_tag_page_template {
-    my ($self, $language) = @ARG;
-    return $self->_get('template', $language);
-}
-
-
-sub _get_outdir {
-    my ($self, $language) = @ARG;
-    return $self->_get('outdir', $language);
-}
-
-
-sub _get_index_template {
-    my ($self, $language) = @ARG;
-    return $self->_get('index', $language);
-}
-
-
-sub _get {
-    my ($self, $field, $language) = @_;
-
-    my $value = $self->per_language_setting($field, $language);
-    croak("no $field defined for $language") unless ($value);
-    return $value;
-}
-
-
-sub _sanitize {
-    # Remove non-alphanumeric characters to avoid problems in path names.
-    my ($s) = @_;
-
-    $s =~ s{\W+}{_}gx;
-
-    return $s;
-}
-
-
 sub _unique {
-    my ($self, $language, $sanitized_tag) = @_;
+    my ($self, $language, $sanitized_tag) = @ARG;
 
     my $name = $sanitized_tag;
     my $count = 0;

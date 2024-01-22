@@ -303,17 +303,17 @@ sub _generate_series_pages {
         $self->{series_page_names}->{$language}->{'index'} = 1;
 
         my $base_dir = $comics[0]->{settings}->{Paths}{'published'};
-        my $series_dir = $self->_get_outdir($language);
+        my $series_dir = $self->get_setting('outdir', $language);
         my $full_dir = $base_dir . lc($language) . "/$series_dir";
         File::Path::make_path($full_dir);
 
-        my $template = $self->_get_page_template($language);
+        my $template = $self->get_setting('template', $language);
 
         foreach my $series (sort keys %{$self->{titles_and_hrefs}->{$language}}) {
             my @titles_and_hrefs = sort _by_published_date @{$self->{titles_and_hrefs}->{$language}->{$series}};
             next if (@titles_and_hrefs < $self->{settings}->{'min-count'});
 
-            my $series_page = $self->_unique($language, _sanitize($series)) . '.html';
+            my $series_page = $self->_unique($language, Comic::Out::Generator::sanitize($series)) . '.html';
             my %vars = (
                 'Language' => $language,
                 'url' => "/$series_dir/$series_page",
@@ -368,7 +368,7 @@ sub _generate_index_page {
 
     foreach my $language (Comic::Out::Generator::all_languages(@comics)) {
         my $base_dir = $comics[0]->{settings}->{Paths}{'published'};
-        my $series_dir = $self->_get_outdir($language);
+        my $series_dir = $self->get_setting('outdir', $language);
         my $full_dir = $base_dir . lc($language) . "/$series_dir";
         File::Path::make_path($full_dir);
         my $index_page = 'index.html';
@@ -380,7 +380,7 @@ sub _generate_index_page {
             }
         }
 
-        my $template = $self->_get_index_template($language);
+        my $template = $self->get_setting('index', $language);
         # $self->{series_pages}->{$language} is a hash of series name to series page
         # and hashes are unordered per definition, so transform into an array of tuples.
         my @series_pages;
@@ -414,45 +414,8 @@ sub _case_insensitive {
 }
 
 
-sub _get_page_template {
-    my ($self, $language) = @ARG;
-    return $self->_get('template', $language);
-}
-
-
-sub _get_index_template {
-    my ($self, $language) = @ARG;
-    return $self->_get('index', $language);
-}
-
-
-sub _get_outdir {
-    my ($self, $language) = @ARG;
-    return $self->_get('outdir', $language);
-}
-
-
-sub _get {
-    my ($self, $field, $language) = @_;
-
-    my $value = $self->per_language_setting($field, $language);
-    croak("no $field defined for $language") unless ($value);
-    return $value;
-}
-
-
-sub _sanitize {
-    # Remove non-alphanumeric characters to avoid problems in path names.
-    my ($s) = @_;
-
-    $s =~ s{\W+}{_}gx;
-
-    return $s;
-}
-
-
 sub _unique {
-    my ($self, $language, $sanitized_tag) = @_;
+    my ($self, $language, $sanitized_tag) = @ARG;
 
     my $name = $sanitized_tag;
     my $count = 0;

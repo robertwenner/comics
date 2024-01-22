@@ -328,18 +328,18 @@ sub complains_if_no_series_series_seen : Tests {
 sub configure_one_template_for_all_languages : Tests {
     MockComic::fake_file('series.templ', 'template goes here');
     my $series = Comic::Out::Series->new(template => 'series.templ');
-    is($series->_get_page_template('English'), 'series.templ');
-    is($series->_get_page_template('Deutsch'), 'series.templ');
-    is($series->_get_page_template('whatever, really'), 'series.templ');
+    is($series->get_setting('template', 'English'), 'series.templ');
+    is($series->get_setting('template', 'Deutsch'), 'series.templ');
+    is($series->get_setting('template', 'whatever, really'), 'series.templ');
 }
 
 
 sub configure_template_per_language : Tests {
     MockComic::fake_file('series.en', 'template goes here');
     my $series = Comic::Out::Series->new(template => { 'English' => 'series.en' });
-    is($series->_get_page_template('English'), 'series.en');
+    is($series->get_setting('template', 'English'), 'series.en');
     eval {
-        $series->_get_page_template('unknown language');
+        $series->get_setting('template', 'unknown language');
     };
     like($@, qr{template}i, 'should say what is wrong');
     like($@, qr{unknown language}, 'should mention the language');
@@ -360,9 +360,9 @@ sub configure_outdir_single_name_for_all_languages : Tests {
         template => 'series.templ',
         outdir => 'series',
     );
-    is($series->_get_outdir('English'), 'series');
-    is($series->_get_outdir('Deutsch'), 'series');
-    is($series->_get_outdir('whatever'), 'series');
+    is($series->get_setting('outdir', 'English'), 'series');
+    is($series->get_setting('outdir', 'Deutsch'), 'series');
+    is($series->get_setting('outdir', 'whatever'), 'series');
 }
 
 
@@ -374,10 +374,10 @@ sub configure_outdir_per_language : Tests {
             'Deutsch' => 'schlagwortwolke',
         },
     );
-    is($series->_get_outdir('English'), 'series');
-    is($series->_get_outdir('Deutsch'), 'schlagwortwolke');
+    is($series->get_setting('outdir', 'English'), 'series');
+    is($series->get_setting('outdir', 'Deutsch'), 'schlagwortwolke');
     eval {
-        $series->_get_outdir('whatever');
+        $series->get_setting('outdir', 'whatever');
     };
     like($@, qr{outdir}, 'should mention setting');
     like($@, qr{defined}, 'should say what is wrong');
@@ -396,8 +396,8 @@ sub configure_outdir_rejects_array : Tests {
 
 sub outdir_not_given_uses_default : Tests {
     my $series = Comic::Out::Series->new(template => 'series.templ');
-    is($series->_get_outdir('English'), 'series');
-    is($series->_get_outdir('Deutsch'), 'series');
+    is($series->get_setting('outdir', 'English'), 'series');
+    is($series->get_setting('outdir', 'Deutsch'), 'series');
 }
 
 
@@ -656,17 +656,17 @@ sub rejects_array_for_series_page_index : Tests {
 
 sub accepts_one_series_page_index_template_for_all_languages : Tests {
     my $series = Comic::Out::Series->new(template => 'page.templ', index => 'index.templ');
-    is($series->_get_index_template('English'), 'index.templ');
-    is($series->_get_index_template('Deutsch'), 'index.templ');
-    is($series->_get_index_template('whatever, really'), 'index.templ');
+    is($series->get_setting('index', 'English'), 'index.templ');
+    is($series->get_setting('index', 'Deutsch'), 'index.templ');
+    is($series->get_setting('index', 'whatever, really'), 'index.templ');
 }
 
 
 sub accepts_per_language_series_page_index_templates : Tests {
     my $series = Comic::Out::Series->new(template => 'page.templ', index => { 'English' => 'index.templ' });
-    is($series->_get_index_template('English'), 'index.templ');
+    is($series->get_setting('index', 'English'), 'index.templ');
     eval {
-        $series->_get_index_template('unknown language');
+        $series->get_setting('index', 'unknown language');
     };
     like($@, qr{index}i, 'should say what is wrong');
     like($@, qr{unknown language}, 'should mention the language');

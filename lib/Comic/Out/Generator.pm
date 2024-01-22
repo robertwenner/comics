@@ -454,6 +454,32 @@ sub per_language_setting {
 }
 
 
+=head2 get_setting
+
+Gets a setting from this Generator's configuration or croaks if the setting does
+not exist.
+
+Parameters:
+
+=over 4
+
+=item * B<$setting> name of the setting.
+
+=item * B<$language> for which language to get the setting.
+
+=back
+
+=cut
+
+sub get_setting {
+    my ($self, $field, $language) = @_;
+
+    my $value = $self->per_language_setting($field, $language);
+    croak("no $field defined for $language") unless ($value);
+    return $value;
+}
+
+
 =head2 all_languages
 
 Static method that gets all languages in the passed comics.
@@ -592,6 +618,29 @@ Parameters:
 sub generate_all {
     # Ignore.
     return;
+}
+
+
+=head2 sanitize
+
+Remove non-alphanumeric characters to avoid problems in path names.
+
+Parameters:
+
+=over 4
+
+=item * B<$name> what to sanitize
+
+=back
+
+=cut
+
+sub sanitize {
+    my ($s) = @_;
+
+    $s =~ s{\W+}{_}gx;
+
+    return $s;
 }
 
 
