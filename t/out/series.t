@@ -722,6 +722,25 @@ TEMPL
 }
 
 
+sub index_page_does_not_include_series_under_min_count : Tests {
+    MockComic::fake_file('page.templ', '...');
+    my $index = << 'TEMPL';
+        Series:
+        [% FOREACH sp IN series_pages %]
+            [% sp.title %]
+        [% END %]
+TEMPL
+    MockComic::fake_file('index.templ', $index);
+
+    my $series = Comic::Out::Series->new(template => 'page.templ', index => 'index.templ', 'min-count' => 10);
+    $series->generate($_) foreach (@comics);
+    $series->generate_all(@comics);
+
+    MockComic::assert_wrote_file('generated/web/deutsch/series/index.html', qr{^\s*Series:\s*$}m);
+    MockComic::assert_wrote_file('generated/web/english/series/index.html', qr{^\s*Series:\s*$}m);
+}
+
+
 sub last_modified_date_in_series_index_is_latest_comic_modification_one_series : Tests {
     MockComic::fake_file('page.templ', '...');
     MockComic::fake_file('index.templ', '[% last_modified %]');
