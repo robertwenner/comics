@@ -421,9 +421,11 @@ sub warns_if_no_recipient_list_for_language : Tests {
 
 
 sub warns_on_problems_reading_recipient_list : Tests {
+    no warnings qw/redefine/;
     local *File::Slurper::read_lines = sub {
         die "cannot read!";
     };
+    use warnings;
 
     my $mailer = Comic::Social::Email->new(%default_args);
     my @warnings = $mailer->post($comic);
