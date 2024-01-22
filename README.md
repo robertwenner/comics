@@ -73,7 +73,7 @@ See the [comic author / artist documentation](doc/index.md) or the Perl
 
 ## Copyright & License
 
-Copyright 2015 - 2023, Robert Wenner
+Copyright Robert Wenner
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

@@ -123,8 +123,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2015 - 2021, Robert Wenner C<< <rwenner@cpan.org> >>.
-All rights reserved.
+Copyright Robert Wenner. All rights reserved.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

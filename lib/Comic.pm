@@ -1378,7 +1378,7 @@ None known.
 
 =head1 BUGS AND LIMITATIONS
 
-Works only with Inkscape files.
+Works only with SVG files.
 
 Has only been tested / used on Linux.
 
@@ -1394,8 +1394,7 @@ Robert Wenner  C<< <rwenner@cpan.org> >>
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (c) 2015 - 2023, Robert Wenner C<< <rwenner@cpan.org> >>.
-All rights reserved.
+Copyright Robert Wenner. All rights reserved.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
