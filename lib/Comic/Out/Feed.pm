@@ -149,7 +149,7 @@ Makes these variables available in the template:
 sub generate_all {
     my ($self, @comics) = @ARG;
 
-    my $now = _now();
+    my $now = DateTime->now();
     $now->set_time_zone(_get_tz());
     my $now_formatted = DateTime::Format::RFC3339->new()->format_datetime($now);
     my @languages = Comic::Out::Generator::all_languages(@comics);
@@ -182,12 +182,6 @@ sub generate_all {
         }
     }
     return;
-}
-
-
-sub _now {
-    # uncoverable subroutine
-    return DateTime->now; # uncoverable statement
 }
 
 

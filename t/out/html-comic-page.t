@@ -70,12 +70,13 @@ sub is_up_to_date : Tests {
     };
     use warnings;
 
+    MockComic::fake_now(DateTime->new(year => 2000, month => 1, day => 1));
     my $comic = MockComic::make_comic();
     my $hcp = make_generator();
 
     $hcp->up_to_date($comic, 'English');
 
-    is_deeply(["generated/backlog/english/drinking-beer.html"], \@passed);
+    is_deeply(\@passed, ["generated/backlog/english/drinking-beer.html"]);
 }
 
 
@@ -327,6 +328,7 @@ sub language_links : Tests {
             'Deutsch' => 'Bier trinken',
         }
     );
+    MockComic::fake_now(DateTime->new(year => 2000, month => 1, day => 1));
     MockComic::fake_file('de-comic.templ', <<'XML');
 [% FOREACH l IN languages %]
     <a hreflang="[% languagecodes.$l %]" href="[% languageurls.$l %]" title="[% comic.meta_data.title.$l %]">[% l %]</a>
@@ -352,6 +354,7 @@ sub language_links_alternate : Tests {
             'Deutsch' => 'Bier trinken',
         }
     );
+    MockComic::fake_now(DateTime->new(year => 2000, month => 1, day => 1));
     MockComic::fake_file('de-comic.templ', <<'XML');
 [% FOREACH l IN languages %]
 <link rel="alternate" hreflang="[% languagecodes.$l %]" href="[% languageurls.$l %]"/>

@@ -85,6 +85,7 @@ my %defaultArgs = (
 
 
 sub set_up {
+    $now = DateTime->new(year => 2024, month => 1, day => 1);
     %file_written = ();
     @made_dirs = ();
     mock_methods();
@@ -132,8 +133,8 @@ sub mock_methods {
         return 1;
     };
 
-    *Comic::_now = sub {
-        return $now ? $now->clone() : DateTime->now;
+    *DateTime::now = sub {
+        return $now->clone();
     };
 
     *Comic::_get_tz = sub {
@@ -145,7 +146,7 @@ sub mock_methods {
 
 
 sub fake_now {
-    $now = shift;   # should this be a NOW => ... param to make_comic?
+    $now = shift;
 }
 
 

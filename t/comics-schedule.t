@@ -13,17 +13,9 @@ use MockComic;
 
 __PACKAGE__->runtests() unless caller;
 
-my $now;
-
 
 sub set_up : Test(setup) {
     MockComic::set_up();
-
-    no warnings qw/redefine/;
-    *Comics::_now = sub {
-        return $now;
-    };
-    use warnings;
 }
 
 
@@ -85,7 +77,7 @@ sub schedule_for_one_day : Tests {
     $comics->{settings}->load_str('{ "Checks": { "Comic::Check::Weekday": 5 } }'); # Fri
 
     foreach my $today (keys %today_to_next_friday) {
-        $now = DateTime::Format::ISO8601->parse_datetime("${today}T00:00:00");
+        MockComic::fake_now(DateTime::Format::ISO8601->parse_datetime("${today}T00:00:00"));
 
         my $scheduled_for = $comics->next_publish_day();
 
@@ -117,7 +109,7 @@ sub schedule_for_multiple_days : Tests {
     $comics->{settings}->load_str('{ "Checks": { "Comic::Check::Weekday": [1, 5] } }'); # Mon, Fri
 
     foreach my $today (keys %today_to_next_friday) {
-        $now = DateTime::Format::ISO8601->parse_datetime("${today}T00:00:00");
+        MockComic::fake_now(DateTime::Format::ISO8601->parse_datetime("${today}T00:00:00"));
 
         my $scheduled_for = $comics->next_publish_day();
 
@@ -134,7 +126,7 @@ sub schedule_skips_dates_taken : Tests {
     # 14 15 16 17 18 19 20
     # 21 22 23 24 25 26 27
     # 28 29 30 31
-    $now = DateTime::Format::ISO8601->parse_datetime("2022-08-03T00:00:00"); # Wed
+    MockComic::fake_now(DateTime::Format::ISO8601->parse_datetime("2022-08-03T00:00:00")); # Wed
     my $comics = Comics->new();
     push @{$comics->{comics}},
         MockComic::make_comic($MockComic::PUBLISHED_WHEN => '2022-08-05'),

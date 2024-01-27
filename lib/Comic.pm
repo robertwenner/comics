@@ -421,12 +421,6 @@ sub _mtime {
 }
 
 
-sub _now {
-    # uncoverable subroutine
-    return DateTime->now; # uncoverable statement
-}
-
-
 sub _get_tz {
     # uncoverable subroutine
     return strftime '%z', localtime; # uncoverable statement
@@ -767,7 +761,7 @@ sub not_yet_published {
 
     return 1 if (($self->{meta_data}->{published}->{where} || '') ne 'web');
 
-    my $till = _now();
+    my $till = DateTime->now();
     $till->set_time_zone(_get_tz());
     return ($self->_published_when() cmp $till->ymd) > 0;
 }
@@ -790,7 +784,7 @@ Checks if this Comic is published today.
 sub is_published_today {
     my ($self) = @ARG;
 
-    my $today = _now();
+    my $today = DateTime->now();
     $today->set_time_zone(_get_tz());
     return ($self->_published_when cmp $today->ymd) == 0;
 }

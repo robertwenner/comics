@@ -9,6 +9,7 @@ use Readonly;
 use English '-no_match_vars';
 use open ':std', ':encoding(UTF-8)'; # to handle e.g., umlauts correctly
 use Carp;
+use DateTime;
 use File::Slurper;
 use File::Find;
 
@@ -724,7 +725,7 @@ sub next_publish_day {
         croak('Comic::Check::Weekday must be scalar or array');
     }
 
-    my $now = _now();
+    my $now = DateTime->now();
     my @future_comics = grep {
         $_->{meta_data}->{published}->{when} || '1000-01-01' ge $now->format_cldr('yyyy-MM-dd')
     } @{$self->{comics}};
@@ -752,12 +753,6 @@ sub next_publish_day {
     }
 
     return $next_date;
-}
-
-
-sub _now {
-    # uncoverable subroutine
-    return DateTime->now; # uncoverable statement
 }
 
 

@@ -18,10 +18,8 @@ my $feed;
 sub setup : Test(setup) {
     MockComic::set_up();
 
+    MockComic::fake_now(DateTime->new(year => 2021, month => 2, day => 28, hour => 18, minute => 03, second => 10));
     no warnings qw/redefine/;
-    *Comic::Out::Feed::_now = sub {
-        return DateTime->new(year => 2021, month => 2, day => 28, hour => 18, minute => 03, second => 10);
-    };
     *Comic::Out::Feed::_get_tz = sub {
         return "-0400";
     };
