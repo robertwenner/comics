@@ -23,10 +23,9 @@ sub set_up : Test(setup) {
 sub load_settings : Tests {
     my @loaded;
 
-    no warnings qw/redefine/;
-    local *Comics::_exists = sub {
-        return 1;
-    };
+    MockComic::fake_file('one', '{}');
+    MockComic::fake_file('two', '{}');
+    MockComic::fake_file('three', '{}');
     local *File::Slurper::read_text = sub {
         push @loaded, @_;
         return "{}";
@@ -42,9 +41,6 @@ sub load_settings : Tests {
 
 sub config_does_not_exist : Tests {
     no warnings qw/redefine/;
-    local *Comics::_exists = sub {
-        return 0;
-    };
     local *Comics::_is_directory = sub {
         return 0;
     };
@@ -61,9 +57,6 @@ sub config_does_not_exist : Tests {
 
 sub config_is_directory : Tests {
     no warnings qw/redefine/;
-    local *Comics::_exists = sub {
-        return 1;
-    };
     local *Comics::_is_directory = sub {
         return 1;
     };
@@ -102,7 +95,7 @@ sub collect_files_recurses_in_directories : Tests {
         my ($wanted, @dirs) = @_;
         is_deeply([@dirs], ['dir'], 'passed wrong argument to find');
         foreach my $found (@to_be_found) {
-			$File::Find::name = $found;
+            $File::Find::name = $found;
             $wanted->();
         }
     };

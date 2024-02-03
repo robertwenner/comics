@@ -46,7 +46,6 @@ my %test_dependencies = (
     'Test::More' => 0,
     'Test::Class' => 0,
     'Test::Distribution' => 0,
-    'Test::MockFile' => 0,
     'Test::MockModule' => 0,
     'Test::NoWarnings' => 0,
     'Test::Output' => 0,
