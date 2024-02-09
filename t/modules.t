@@ -4,6 +4,8 @@ use warnings;
 use base 'Test::Class';
 use Test::More;
 use Test::Output;
+use lib 't';
+use MockComic;
 use lib 't/check';
 
 use Comics;
@@ -11,27 +13,11 @@ use Comic::Modules;
 
 __PACKAGE__->runtests() unless caller;
 
-my %faked_files;
 my $comics;
 
 
 sub set_up : Test(setup) {
-    %faked_files = ();
-
-    no warnings qw/redefine/;
-    *Comics::_exists = sub {
-        my ($file) = @_;
-        return defined $faked_files{$file};
-    };
-    *Comics::_is_directory = sub {
-        return 0;
-    };
-    *File::Slurper::read_text = sub {
-        my ($file) = @_;
-        return $faked_files{$file};
-    };
-    use warnings;
-
+    MockComic::set_up();
     $comics = Comics->new();
 }
 
@@ -51,7 +37,7 @@ sub module_path : Tests {
 
 
 sub loads_config_file : Tests {
-    $faked_files{"config.json"} = '{"foo": "bar"}';
+    MockComic::fake_file("config.json", '{"foo": "bar"}');
 
     $comics->load_settings("config.json");
     my $cloned = $comics->{settings}->clone();
@@ -60,7 +46,7 @@ sub loads_config_file : Tests {
 
 
 sub passes_args_to_configured_module_from_list : Tests {
-    $faked_files{"settings.json"} = '{ "Checks": { "DummyCheck.pm": [1, 2, 3] } }';
+    MockComic::fake_file("settings.json", '{ "Checks": { "DummyCheck.pm": [1, 2, 3] } }');
     $comics->load_settings("settings.json");
     $comics->load_checks();
 
@@ -71,7 +57,7 @@ sub passes_args_to_configured_module_from_list : Tests {
 
 
 sub passes_args_to_configured_module_from_object : Tests {
-    $faked_files{"settings.json"} = '{ "Checks": { "DummyCheck.pm": {"a": 1} } }';
+    MockComic::fake_file("settings.json", '{ "Checks": { "DummyCheck.pm": {"a": 1} } }');
     $comics->load_settings("settings.json");
     $comics->load_checks();
 
@@ -82,7 +68,7 @@ sub passes_args_to_configured_module_from_object : Tests {
 
 
 sub passes_args_to_configured_module_from_scalar_value : Tests {
-    $faked_files{"settings.json"} = '{ "Checks": { "DummyCheck.pm": "a" } }';
+    MockComic::fake_file("settings.json", '{ "Checks": { "DummyCheck.pm": "a" } }');
     $comics->load_settings("settings.json");
     $comics->load_checks();
 
@@ -93,7 +79,7 @@ sub passes_args_to_configured_module_from_scalar_value : Tests {
 
 
 sub passes_args_to_configured_module_null : Tests {
-    $faked_files{"settings.json"} = '{ "Checks": { "DummyCheck.pm": null } }';
+    MockComic::fake_file("settings.json", '{ "Checks": { "DummyCheck.pm": null } }');
     $comics->load_settings("settings.json");
     $comics->load_checks();
 
@@ -104,7 +90,7 @@ sub passes_args_to_configured_module_null : Tests {
 
 
 sub passes_args_to_configured_module_boolean : Tests {
-    $faked_files{"settings.json"} = '{ "Checks": { "DummyCheck.pm": true } }';
+    MockComic::fake_file("settings.json", '{ "Checks": { "DummyCheck.pm": true } }');
     $comics->load_settings("settings.json");
     eval {
         $comics->load_checks();
@@ -114,7 +100,7 @@ sub passes_args_to_configured_module_boolean : Tests {
 
 
 sub uses_configured_module_path : Tests {
-    $faked_files{"settings.json"} = '{ "Checks": { "Comic/Check/Actors.pm": [] } }';
+    MockComic::fake_file("settings.json", '{ "Checks": { "Comic/Check/Actors.pm": [] } }');
     $comics->load_settings("settings.json");
     $comics->load_checks();
 
@@ -124,7 +110,7 @@ sub uses_configured_module_path : Tests {
 
 
 sub uses_configured_module_name : Tests {
-    $faked_files{"settings.json"} = '{ "Checks": { "Comic::Check::Actors": [] } }';
+    MockComic::fake_file("settings.json", '{ "Checks": { "Comic::Check::Actors": [] } }');
     $comics->load_settings("settings.json");
     $comics->load_checks();
 
@@ -134,7 +120,7 @@ sub uses_configured_module_name : Tests {
 
 
 sub uses_configured_module_without_extension : Tests {
-    $faked_files{"settings.json"} = '{ "Checks": { "Comic/Check/Actors": [] } }';
+    MockComic::fake_file("settings.json", '{ "Checks": { "Comic/Check/Actors": [] } }');
     $comics->load_settings("settings.json");
     $comics->load_checks();
 
@@ -144,7 +130,7 @@ sub uses_configured_module_without_extension : Tests {
 
 
 sub croaks_on_unknown_configured_module : Tests {
-    $faked_files{"settings.json"} = '{ "Checks": { "NoSuchCheck": [] } }';
+    MockComic::fake_file("settings.json", '{ "Checks": { "NoSuchCheck": [] } }');
     $comics->load_settings("settings.json");
     eval {
         $comics->load_checks();
@@ -154,7 +140,7 @@ sub croaks_on_unknown_configured_module : Tests {
 
 
 sub croaks_on_wrong_config_syntax_modules_not_object : Tests {
-    $faked_files{"settings.json"} = '{ "Checks": "DummyCheck" }';
+    MockComic::fake_file("settings.json", '{ "Checks": "DummyCheck" }');
     $comics->load_settings("settings.json");
     eval {
         $comics->load_checks();
@@ -164,7 +150,7 @@ sub croaks_on_wrong_config_syntax_modules_not_object : Tests {
 
 
 sub logs_loaded_modules : Tests {
-    $faked_files{"settings.json"} = '{ "Checks": { "Comic::Check::Actors": [] } }';
+    MockComic::fake_file("settings.json", '{ "Checks": { "Comic::Check::Actors": [] } }');
     $comics->load_settings("settings.json");
     stdout_like { $comics->load_checks(); } qr/^Checks modules loaded:\s+Comic::Check::Actors\s*$/m;
 }

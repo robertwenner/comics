@@ -10,6 +10,7 @@ use Comic;
 use Comic::Settings;
 use JSON;
 use Carp;
+use File::Util;
 
 # Constants to catch typos when defining meta data.
 our Readonly $ENGLISH = 'English';
@@ -95,11 +96,6 @@ sub set_up {
 sub mock_methods {
     no warnings qw/redefine/;
 
-    *Comics::_exists = sub {
-        my ($name) = @_;
-        return exists $files_read{$name} && defined($files_read{$name});;
-    };
-
     *File::Slurper::read_text = sub {
         my ($name) = @_;
         confess("Tried to read unmocked file '$name'") unless (defined($files_read{$name}));
@@ -139,6 +135,12 @@ sub mock_methods {
 
     *Comic::_get_tz = sub {
         return '-0500';
+    };
+
+    *File::Util::file_type = sub {
+        my $name = shift;
+        return ('PLAIN', 'TEXT') if (exists $files_read{$name} && defined($files_read{$name}));
+        return undef;
     };
 
     use warnings;

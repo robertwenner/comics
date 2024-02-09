@@ -12,6 +12,7 @@ use Carp;
 use DateTime;
 use File::Slurper;
 use File::Find;
+use File::Util;
 
 use Comic;
 use Comic::Settings;
@@ -266,11 +267,12 @@ sub load_settings {
 
     foreach my $file (@files) {
         _print_all("loading settings from $file");
-        if (_is_directory($file)) {
-            croak("Cannot read directory $file");
-        }
-        if (!_exists($file)) {
+        my $type = File::Util::file_type($file);
+        if (!$type) {
             croak("$file not found");
+        }
+        elsif ($type eq 'DIRECTORY') {
+            croak("Cannot read settings from a directory ($file)");
         }
         $self->{settings}->load_str(File::Slurper::read_text($file));
     }
@@ -311,12 +313,6 @@ sub check_settings {
     }
 
     return;
-}
-
-
-sub _exists {
-    # uncoverable subroutine
-    return -r shift;    # uncoverable statement
 }
 
 
@@ -478,7 +474,8 @@ sub collect_files {
     my @collection;
     foreach my $fod (@files_or_dirs) {
         _print_all("loading comics from $fod");
-        if (_is_directory($fod)) {
+        my @types = File::Util::file_type($fod);
+        if (join(q{,}, @types) =~ m{DIRECTORY}) {
             File::Find::find(
                 sub {
                     my $name = $File::Find::name;
@@ -491,12 +488,6 @@ sub collect_files {
         }
     }
     return @collection;
-}
-
-
-sub _is_directory {
-    # uncoverable subroutine
-    return -d shift;    # uncoverable statement
 }
 
 

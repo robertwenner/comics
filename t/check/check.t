@@ -8,6 +8,8 @@ use File::Slurper;
 use Comic::Check::Check;
 use Comics;
 
+use lib 't';
+use MockComic;
 use lib 't/check';
 use BadCheck;
 
@@ -19,19 +21,7 @@ my $comics;
 
 
 sub set_up : Test(setup) {
-    %faked_files = ();
-
-    no warnings qw/redefine/;
-    *Comics::_exists = sub {
-        my ($file) = @_;
-        return defined $faked_files{$file};
-    };
-    *File::Slurper::read_text = sub {
-        my ($file) = @_;
-        return $faked_files{$file};
-    };
-    use warnings;
-
+    MockComic::set_up();
     $comics = Comics->new();
 }
 
@@ -43,7 +33,7 @@ sub uses_all_checks_if_nothing_configured : Tests {
 
 
 sub uses_all_checks_if_no_checks_config_section_exists : Tests {
-    $faked_files{"settings.json"} = '{}';
+    MockComic::fake_file("settings.json", '{}');
     $comics->load_settings("settings.json");
     $comics->load_checks();
     ok($comics->{checks} > 0, 'should have checks');
@@ -51,7 +41,7 @@ sub uses_all_checks_if_no_checks_config_section_exists : Tests {
 
 
 sub uses_no_checks_if_checks_config_section_is_empty : Tests {
-    $faked_files{"settings.json"} = '{ "Checks": {} }';
+    MockComic::fake_file("settings.json", '{ "Checks": {} }');
     $comics->load_settings("settings.json");
     $comics->load_checks();
     is_deeply($comics->{checks}, [], 'should not have checks');

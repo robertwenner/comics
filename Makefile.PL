@@ -17,6 +17,7 @@ my %dependencies = (
     'ExtUtils::MakeMaker' => 0,
     'File::Rsync' => 0,
     'File::Slurper' => 0,
+    'File::Util' => 0,
     'Hash::Merge' => 0,
     'HTML::Entities' => 0,
     'HTTP::Tiny' => 0,
