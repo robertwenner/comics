@@ -44,6 +44,7 @@ my %dependencies = (
 );
 
 my %test_dependencies = (
+    'Capture::Tiny' => 0,
     'Test::More' => 0,
     'Test::Class' => 0,
     'Test::Distribution' => 0,
