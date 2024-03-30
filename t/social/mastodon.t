@@ -5,7 +5,6 @@ use utf8;
 use base 'Test::Class';
 use Test::More;
 use Test::MockModule;
-use Capture::Tiny;
 use lib 't';
 use MockComic;
 
