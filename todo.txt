@@ -1,6 +1,6 @@
 - cleanup hard-coded names: "web", "generated".
 
-- cleanup:  Comic::not_yet_published should not consider locations.
+- cleanup: Comic::not_yet_published should not consider locations.
 
 - cleanup: always use lower case language names in templates; accept any
   case in comic meta data for backwards compatibility?
@@ -261,12 +261,18 @@
 
 - feature: Wordpress integration
 
+- feature: Lemmy integration
+
+- feature: Threads integration
+
+- feature: Bluesky integration
+
 - feature: github integration: host your comic on github? could commit to a
   (separate?) repository, push changes
 
 - feature: warn about missing or bad meta data
-  description: not empty
-  published where: not empty? certain well-known locations ? (would only
+  description: should not be empty
+  published where: not empty? certain well-known locations? (would only
   make sense it these locations are configured somewhere, but most don't
   need configuration)
 
@@ -275,4 +281,13 @@
   anywhere besides the backlog, and on re-run each comic starts with empty
   warnings, and the backlog gets written again from those comics
 
-- DRY up root vs indexAdjust in templates
+- DRY up root vs settings->Paths->siteComics vs indexAdjust in templates
+
+- DRY up backlogPath (has the language) vs Settings->Paths->backlog
+
+- in Comic.pm:
+        $self->{urlEncoded}{$language} = 'https://' .
+            Net::IDN::Encode::domain_to_ascii($domain) .
+            "/$self->{siteComicsPath}" .
+            uri_escape_utf8($html_file);
+  why not uri_escape siteComicsPath? Could be non-ascii.
