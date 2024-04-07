@@ -265,8 +265,6 @@
 
 - feature: Threads integration
 
-- feature: Bluesky integration
-
 - feature: github integration: host your comic on github? could commit to a
   (separate?) repository, push changes
 

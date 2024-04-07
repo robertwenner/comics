@@ -1,8 +1,7 @@
 # Social media network modules
 
 The `Comic::Social::...` modules post today's comic for each language on
-social networks (in the widest sense). They run after all `Comic::Upload::...`
-modules have finished.
+social networks (in the widest sense).
 
 If you have multiple comics for today, for example, one only in English and
 one only in German, the social media code will post both.
@@ -13,10 +12,66 @@ not help.) Because of that only easy social networks are supported. For
 everything else, create a [RSS Feed](outputs.md#Comic::Out::Feed) and hook
 it up to a free [Zapier](https://zapier.com) account to spread the joy.
 
-All `Comic::Social::...` configuration must be within the `Social` object.
+All `Comic::Social::...` configuration must be within the `Social` section.
 
 The order in which these modules run is undefined, but they will only run
 after all [Upload](upload.md) modules have finished.
+
+
+## `Comic::Social::Bluesky`
+
+Post the current comic to Bluesky.
+
+To set this up, you need an app password from Bluesky. Go to your [account
+settings](https://bsky.app/settings/app-passwords) to create one. Give it
+a name like "ComicSocialBluesky" so that you can easily see what it's for.
+Copy the password into your configuration file like this:
+
+```json
+    "Social": {
+        "Comic::Social::Bluesky": {
+            "username": "you@example.com",
+            "password": "that-long-pass-word",
+            "mode": "png"
+        }
+    }
+```
+
+The configuration values are:
+
+* server: the Bluesky instance to use (optional; defaults to `https://bsky.social`)
+
+* username: your email address for Bluesky.
+
+* password: the app password.
+
+* mode: either "link" to post a link to the comic, or "png" to post the comic png image.
+  If mode is "png" but posting the image somehow fails, falls back to posting the link.
+
+The text of the post is pulled from comic title and description. Any general
+and Bluesky hash tags are added. Bluesky hashtags must be specified in the comic
+metadata like this:
+
+The `Comic::Social::Bluesky` module adds any hashtags from `hashtags` and
+`mastodon` (in that order) from the Comic's metadata to the posted message.
+Use the `hashtags` for general hashtags and `mastodon` for Mastodon-specific ones
+like mentions.
+
+```json
+{
+    "hashtags": {
+        "English": ["#beer"],
+        "Deutsch": ["#Bier"]
+    },
+    "bluesky": {
+        "English": ["@you"],
+        "Deutsch": ["@other@instance"]
+    }
+}
+```
+
+Make sure to include the pound sign for hash tags and the at sign for mentions.
+If this is missing, the tags are considered hash tags.
 
 
 ## `Comic::Social::Email`
@@ -34,7 +89,7 @@ To email the latest comic, configure it like this:
     "Social": {
         "Comic::Social::Email": {
             "server": "smtp.gmail.com",
-            "sender_address": "Me <me@example.org>",
+            "sender_address": "me@example.org",
             "password": "super secret",
             "mode": "png",
             "recipient_list": {
@@ -150,7 +205,7 @@ The instance is the mastodon server where you have your account, e.g.,
 The `visibility` is optional. If not given, it defaults to the visibility in
 your account settings. You can override the visibility here for testing.
 
-The `Comic::Check::Mastodon` module adds any hashtags from `hashtags` and
+The `Comic::Social::Mastodon` module adds any hashtags from `hashtags` and
 `mastodon` (in that order) from the Comic's metadata to the posted message.
 Use the `hashtags` for general hashtags and `mastodon` for Mastodon-specific ones
 like mentions.
