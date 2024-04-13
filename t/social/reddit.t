@@ -178,8 +178,8 @@ sub subreddit_from_meta_data_override : Tests {
 JSON
     my $comic = MockComic::make_comic($MockComic::JSON => $json);
 
-	is_deeply(['heimbrauen'], [$reddit->_get_subreddits($comic, 'Deutsch')]);
-	is_deeply(['homebrewing'], [$reddit->_get_subreddits($comic, 'English')]);
+	is_deeply([$reddit->_get_subreddits($comic, 'Deutsch')], ['heimbrauen']);
+	is_deeply([$reddit->_get_subreddits($comic, 'English')], ['homebrewing']);
 }
 
 
@@ -229,8 +229,8 @@ sub subreddit_from_meta_data_array : Tests {
 JSON
     my $comic = MockComic::make_comic($MockComic::JSON => $json);
 
-	is_deeply([], [$reddit->_get_subreddits($comic, 'Deutsch')]);
-	is_deeply(['foo', 'bar', 'baz'], [$reddit->_get_subreddits($comic, 'English')]);
+	is_deeply([$reddit->_get_subreddits($comic, 'Deutsch')], []);
+	is_deeply([$reddit->_get_subreddits($comic, 'English')], ['foo', 'bar', 'baz']);
 }
 
 
@@ -245,7 +245,7 @@ sub ignores_empty_subreddits : Tests {
         'secret' => 'very secret',
     );
 
-	is_deeply([], [$reddit->_get_subreddits($comic, 'English')]);
+	is_deeply([$reddit->_get_subreddits($comic, 'English')], []);
 }
 
 
@@ -275,8 +275,9 @@ sub post : Tests {
     );
     $comic->{url}{$MockComic::ENGLISH} = 'https://beercomics.com/comics/make-beer.html';
     my $message = $reddit->post($comic);
-    is("Posted 'make beer' (https://beercomics.com/comics/make-beer.html) to comics (redditID1234) at https://...",
-        $message, "wrong message");
+    is($message,
+        "Comic::Social::Reddit: Posted 'make beer' (https://beercomics.com/comics/make-beer.html) to comics (redditID1234) at https://...",
+        "wrong message");
     is($subreddit, "comics", "wrong subreddit");
     is($title, "make beer", "wrong title");
     is($url, "https://beercomics.com/comics/make-beer.html", "wrong url");

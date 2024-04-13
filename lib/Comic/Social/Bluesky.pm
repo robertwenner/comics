@@ -7,7 +7,6 @@ use Encode;
 use Net::IDN::Encode;
 use English '-no_match_vars';
 use Carp;
-use String::Util 'trim';
 use Readonly;
 # As of March 2024, https://metacpan.org/pod/At did not support facets, needed for links and tags.
 # Hence do the few HTTP requests manually.
@@ -90,13 +89,12 @@ sub new {
     my ($class, %args) = @ARG;
     my $self = bless{}, $class;
 
-    $self->{me} = ref $self;
-    croak("$self->{me}: configuration missing") unless (%args);
-    croak("$self->{me}: username missing") unless ($args{'username'});
-    croak("$self->{me}: password missing") unless ($args{'password'});
-    croak("$self->{me}: mode missing, use png or link") unless ($args{'mode'});
+    croak($self->message('configuration missing')) unless (%args);
+    croak($self->message('username missing')) unless ($args{'username'});
+    croak($self->message('password missing')) unless ($args{'password'});
+    croak($self->message('mode missing, use png or link')) unless ($args{'mode'});
     unless ($args{'mode'} eq 'png' || $args{'mode'} eq 'link') {
-        croak("$self->{me}: unknown posting mode '$args{'mode'}', use png or link");
+        croak($self->message("unknown posting mode '$args{'mode'}', use png or link"));
     }
 
     $self->{settings} = \%args;
@@ -165,7 +163,7 @@ sub post {
         my $error = $self->_login();
         if ($error) {
             $self->{http} = undef;
-            return $error;
+            return $self->message($error);
         }
     }
 
@@ -174,10 +172,10 @@ sub post {
         if ($self->{settings}->{mode} eq 'png') {
             my $error = $self->_upload_png($comic, $language);
             if ($error) {
-                push @result, $error;
+                push @result, $self->message($error);
             }
         }
-        push @result, $self->_post($comic, $language);
+        push @result, $self->message($self->_post($comic, $language));
         # Clear the blob id, so that we don't post the same image again when uploading another
         # one fails for some reason; fall back to link posting instead.
         $self->{blob_id} = undef;
@@ -190,7 +188,7 @@ sub post {
 sub _login {
     my ($self) = @ARG;
 
-    my $error_prefix = "$self->{me}: Error logging in to $self->{settings}->{service}";
+    my $error_prefix = "Error logging in to $self->{settings}->{service}";
     my $url = "$self->{settings}->{service}/xrpc/com.atproto.server.createSession";
     my %credentials = (
         'identifier' => $self->{settings}->{username},
@@ -234,7 +232,7 @@ sub _handle {
 sub _upload_png {
     my ($self, $comic, $language) = @ARG;
 
-    my $error_prefix = "$self->{me}: error uploading png for $comic->{meta_data}->{title}->{$language}";
+    my $error_prefix = "error uploading png for $comic->{meta_data}->{title}->{$language}";
     my $url = "$self->{settings}->{service}/xrpc/com.atproto.repo.uploadBlob";
     my %headers = (
         'Authorization' => "Bearer $self->{access_token}",
@@ -275,7 +273,7 @@ sub _post {
         };
     }
 
-    my $error_prefix = "$self->{me}: error posting $comic->{meta_data}->{title}->{$language}";
+    my $error_prefix = "error posting $comic->{meta_data}->{title}->{$language}";
     my $url = "$self->{settings}->{service}/xrpc/com.atproto.repo.createRecord";
     my %headers = (
         'Authorization' => "Bearer $self->{access_token}",
@@ -298,7 +296,7 @@ sub _post {
 
     my ($error, $content) = _handle($error_prefix, $reply);
     return $error if ($error);
-    return "$self->{me}: posted $comic->{meta_data}->{title}->{$language} $mode";
+    return "posted $comic->{meta_data}->{title}->{$language} $mode";
 }
 
 

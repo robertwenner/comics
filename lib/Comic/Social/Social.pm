@@ -115,7 +115,7 @@ sub collect_hashtags {
 
 =head2 build_message
 
-Builds a message for social media for the given Comic.
+Builds a message to post on social media for the given Comic.
 
 Parameters:
 
@@ -174,6 +174,32 @@ sub build_message {
     $pre = substr $pre, 0, $available;
 
     return "$pre$post";
+}
+
+
+=head2 message
+
+Builds a message for the user by combining the module name with the given message(s).
+
+Parameters:
+
+=over 4
+
+=item * B<self> the module that wants to create a message.
+
+=item * B<@messages> the actual messages.
+
+=back
+
+Returns the module name and the messages, separated by spaces.
+
+=cut
+
+sub message {
+    my ($self, @messages) = @ARG;
+
+    my $me = ref $self;
+    return "$me: " . join ' ', @messages;
 }
 
 

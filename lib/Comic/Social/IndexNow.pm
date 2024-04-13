@@ -122,7 +122,6 @@ Parameters:
 sub post {
     my ($self, @comics) = @ARG;
 
-    my $me = ref $self;
     my $http = HTTP::Tiny->new();
     my @messages;
 
@@ -141,9 +140,9 @@ sub post {
                 },
                 'content' => $json,
             );
-            push @messages, "$me: submitting $comic->{url}->{$language}";
+            push @messages, $self->message("submitting $comic->{url}->{$language}");
             my $response = $http->post($self->{settings}{'url'}, \%options);
-            push @messages, "$me: $response->{status} $response->{reason}";
+            push @messages, $self->message("$response->{status} $response->{reason}");
         }
     }
 

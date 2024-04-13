@@ -101,7 +101,7 @@ sub new {
 
     $self->{mode} = $args{'mode'} || 'png';
     unless ($self->{mode} eq 'png' || $self->{mode} eq 'link') {
-        croak("Unknown twitter mode '$self->{mode}'");
+        croak($self->message("Unknown twitter mode '$self->{mode}'"));
     }
     delete $args{'mode'}; # to pass only the rest on to Net::Twitter->new
 
@@ -186,15 +186,15 @@ sub post {
                     "$comic->{dirName}{$language}$comic->{pngFile}{$language}",
                 ]);
             }
-            push @result, $status->{text};
+            push @result, $self->message($status->{text});
         }
         or do {
             my $err = $EVAL_ERROR;
             if (blessed $err && $err->isa('Net::Twitter::Error')) {
-                push @result, "Twitter error: $err->code $err->message ($err->error)";
+                push @result, $self->message("$err->code $err->message ($err->error)");
             }
             else {
-                push @result, "Twitter error: $err (" . ref($err) .')';
+                push @result, $self->message("$err (" . ref($err) .')');
             }
         };
     }

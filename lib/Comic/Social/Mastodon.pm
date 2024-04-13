@@ -95,14 +95,13 @@ sub new {
     my ($class, %args) = @ARG;
     my $self = bless{}, $class;
 
-    $self->{me} = ref $self;
-    croak("$self->{me}: configuration missing") unless (%args);
-    croak("$self->{me}: instance missing") unless ($args{'instance'});
-    croak("$self->{me}: instance name cannot contain slashes") if ($args{'instance'} =~ m{/});
-    croak("$self->{me}: access_token missing") unless ($args{'access_token'});
-    croak("$self->{me}: mode missing, use png or link") unless ($args{'mode'});
+    croak($self->message('configuration missing')) unless (%args);
+    croak($self->message('instance missing')) unless ($args{'instance'});
+    croak($self->message('instance name cannot contain slashes')) if ($args{'instance'} =~ m{/});
+    croak($self->message('access_token missing')) unless ($args{'access_token'});
+    croak($self->message('mode missing, use png or link')) unless ($args{'mode'});
     unless ($args{'mode'} eq 'png' || $args{'mode'} eq 'link') {
-        croak("$self->{me}: unknown posting mode '$args{'mode'}'");
+        croak($self->message("unknown posting mode '$args{'mode'}'"));
     }
 
     $self->{settings} = \%args;
@@ -191,7 +190,7 @@ sub post {
                 # down or premissions are not correct, the next call will
                 # fail as well. Try if Mastodon just doesn't like that image
                 # for some reason but accepts a link.
-                push @result, "$self->{me}: posting comic link instead";
+                push @result, $self->message('posting comic link instead');
                 $description = _build_message($comic, $language, 'link');
             }
         }
@@ -261,18 +260,18 @@ sub _upload_media {
 
     my $id;
     if ($reply->{success}) {
-        return ($id, "$self->{me}: error: no content in media reply") unless ($reply->{content});
+        return ($id, $self->message('error: no content in media reply')) unless ($reply->{content});
         my $parsed;
         eval {
             $parsed = decode_json($reply->{content});
         } or do {
-            return ($id, "$self->{me}: cannot parse media JSON reply: $EVAL_ERROR");
+            return ($id, $self->message("cannot parse media JSON reply: $EVAL_ERROR"));
         };
         $id = $parsed->{id};
         if ($id) {
-            return ($id, "$self->{me} uploaded $local_file, returned media id is $id");
+            return ($id, $self->message("uploaded $local_file, returned media id is $id"));
         }
-        return ($id, "$self->{me}: uploaded $local_file but got no media id");
+        return ($id, $self->message("uploaded $local_file but got no media id"));
     }
     return ($id, $self->_mastodon_error($reply));
 }
@@ -312,18 +311,18 @@ sub _post_status {
     my $reply = $self->{http}->post_form($url, \%form_data, \%options);
 
     if ($reply->{success}) {
-        return "$self->{me}: error: no content in status reply" unless ($reply->{content});
+        return $self->message('error: no content in status reply') unless ($reply->{content});
         my $parsed;
         eval {
             $parsed = decode_json($reply->{content});
         } or do {
-            return "$self->{me}: cannot parse status JSON reply: $EVAL_ERROR";
+            return $self->message("cannot parse status JSON reply: $EVAL_ERROR");
         };
         my $id = $parsed->{id} || '(no id)';
         my $timestamp = $parsed->{created_at} || '(no timestamp)';
         my $language = $parsed->{language} || '(no language)';
         my $content = $parsed->{content} || '(no content)';
-        my $result = "$self->{me} posted on $timestamp in $language with id $id: $content";
+        my $result = $self->message("posted on $timestamp in $language with id $id: $content");
         if ($parsed->{media_attachments}) {
             my $attachment = $parsed->{media_attachments}[0];
             if ($attachment) {
@@ -339,14 +338,10 @@ sub _post_status {
 sub _mastodon_error {
     my ($self, $reply) = @ARG;
 
-    my $http_details = "$self->{me}: ";
     if ($reply->{status} == $HTTP_TINY_ERROR) {
-        $http_details .= $reply->{content};
+        return $self->message($reply->{content});
     }
-    else {
-        $http_details .= "HTTP $reply->{status} $reply->{reason} -- $reply->{content}";
-    }
-    return $http_details;
+    return $self->message("HTTP $reply->{status} $reply->{reason} -- $reply->{content}");
 }
 
 

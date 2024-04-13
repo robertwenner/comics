@@ -140,7 +140,6 @@ Parameters:
 sub post {
     my ($self, @comics) = @ARG;
 
-    my $me = ref $self;
     my @messages;
 
     foreach my $comic (@comics) {
@@ -149,7 +148,7 @@ sub post {
             eval {
                 @recipients = $self->_get_recipients($language);
             } or do {
-                push @messages, "$me: $EVAL_ERROR";
+                push @messages, $self->message($EVAL_ERROR);
                 next;
             };
 
@@ -164,9 +163,9 @@ sub post {
                     transport => $self->{transport},
                 });
             } or do {
-                push @messages, "$me: Error sending $language email, code " .
-                    $EVAL_ERROR->code() . ': ' . $EVAL_ERROR->message() .
-                    ' for ' . join ', ', $EVAL_ERROR->recipients;
+                push @messages, $self->message("Error sending $language email, code ",
+                    $EVAL_ERROR->code(), q{:}, $EVAL_ERROR->message(), 'for', join q{, },
+                    $EVAL_ERROR->recipients);
             };
         }
     }

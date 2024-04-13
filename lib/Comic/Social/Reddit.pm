@@ -85,11 +85,11 @@ sub new {
     my ($class, %settings) = @ARG;
     my $self = $class->SUPER::new();
 
-    croak('Must pass Reddit configuration hash') unless (%settings);
-    croak('Must pass Reddit.username') unless ($settings{'username'});
-    croak('Must pass Reddit.password') unless ($settings{'password'});
-    croak('Must pass Reddit.secret') unless ($settings{'secret'});
-    croak('Must pass Reddit.client_id') unless ($settings{'client_id'});
+    croak($self->message('Must pass Reddit configuration hash')) unless (%settings);
+    croak($self->message('Must pass Reddit.username')) unless ($settings{'username'});
+    croak($self->message('Must pass Reddit.password')) unless ($settings{'password'});
+    croak($self->message('Must pass Reddit.secret')) unless ($settings{'secret'});
+    croak($self->message('Must pass Reddit.client_id')) unless ($settings{'client_id'});
 
     my %mandatory_settings = (
         user_agent => 'Comic::Social::Reddit by /u/beercomics',
@@ -107,7 +107,7 @@ sub new {
 
     @{$self->{settings}->{default_subreddit}} = ();
     my $def_srs = $settings{'default_subreddit'};
-    push @{$self->{settings}->{'default_subreddit'}}, _subreddits('Reddit.default_subreddit', $def_srs);
+    push @{$self->{settings}->{'default_subreddit'}}, $self->_subreddits('Reddit.default_subreddit', $def_srs);
 
     $self->{title_prefix} = $settings{'title_prefix'} || '';
     $self->{title_suffix} = $settings{'title_suffix'} || '';
@@ -117,7 +117,7 @@ sub new {
 
 
 sub _subreddits {
-    my ($what, $subreddits) = @ARG;
+    my ($self, $what, $subreddits) = @ARG;
 
     if ($subreddits) {
         if (ref $subreddits eq '') {
@@ -127,7 +127,7 @@ sub _subreddits {
             return @{$subreddits};
         }
         else {
-            croak("$what must be scalar or array");
+            croak($self->message("$what must be scalar or array"));
         }
     }
     return ();
@@ -213,7 +213,7 @@ sub _get_subreddits {
     }
 
     # Subreddits specified in the comic
-    push @subreddits, _subreddits_from_comic_meta_data($comic, $language);
+    push @subreddits, $self->_subreddits_from_comic_meta_data($comic, $language);
 
     # Filter out empty values in case someone leaves "" in the config.
     return grep { $_ } @subreddits;
@@ -221,11 +221,11 @@ sub _get_subreddits {
 
 
 sub _subreddits_from_comic_meta_data {
-    my ($comic, $language) = @ARG;
+    my ($self, $comic, $language) = @ARG;
 
     my @subreddits;
     my $json = $comic->{meta_data}->{reddit}->{$language}->{subreddit};
-    push @subreddits, _subreddits("$language Reddit meta data", $json);
+    push @subreddits, $self->_subreddits("$language Reddit meta data", $json);
     return @subreddits;
 }
 
@@ -248,13 +248,13 @@ sub _post {
         or do {
             my $error = _wait_for_reddit_limit($comic, $EVAL_ERROR);
             if ($error) {
-                return "$language: /r/$subreddit: $error";
+                return $self->message("$language: /r/$subreddit: $error");
             }
         };
     }
 
-    return "Posted '$title' ($comic->{url}{$language}) to $subreddit ($full_name) at "
-        . $self->{reddit}->get_link($full_name)->{permalink};
+    return $self->message("Posted '$title' ($comic->{url}{$language}) to $subreddit ($full_name) at "
+        . $self->{reddit}->get_link($full_name)->{permalink});
 }
 
 
