@@ -17,6 +17,8 @@ All `Comic::Social::...` configuration must be within the `Social` section.
 The order in which these modules run is undefined, but they will only run
 after all [Upload](upload.md) modules have finished.
 
+If one social media posting fails, they others still get run.
+
 
 ## `Comic::Social::Bluesky`
 
@@ -50,11 +52,11 @@ The configuration values are:
 
 The text of the post is pulled from comic title and description. Any general
 and Bluesky hash tags are added. Bluesky hashtags must be specified in the comic
-metadata like this:
+metadata like in the example below.
 
 The `Comic::Social::Bluesky` module adds any hashtags from `hashtags` and
 `mastodon` (in that order) from the Comic's metadata to the posted message.
-Use the `hashtags` for general hashtags and `mastodon` for Mastodon-specific ones
+Use the `hashtags` for general hashtags and `bluesky` for Bluesky-specific ones
 like mentions.
 
 ```json
@@ -65,13 +67,13 @@ like mentions.
     },
     "bluesky": {
         "English": ["@you"],
-        "Deutsch": ["@other@instance"]
+        "Deutsch": []
     }
 }
 ```
 
-Make sure to include the pound sign for hash tags and the at sign for mentions.
-If this is missing, the tags are considered hash tags.
+Make sure to include the at sign for mentions. If this is missing, the tags are
+considered hash tags.
 
 
 ## `Comic::Social::Email`
@@ -83,7 +85,7 @@ your email provider may enforce sending limits. If you want to email more
 than a handful of people, you should look into proper list management tools
 that cover subscribes and unsubscribes as well as sending bulk emails.
 
-To email the latest comic, configure it like this:
+To email the latest comic, configure it like this in your settings file:
 
 ```json
     "Social": {
@@ -132,7 +134,8 @@ standard to index the new comic page.
 
 To use this, you must first create a key, put that key into a file named
 like the key with a `.txt` extension, and put that file in your website's
-root directory.
+root directory. For example, if your key is "super-secret", you put
+"super-secret" in a file named `super-secret.txt`.
 
 On Linux, you can use the `uuidgen` tool to create a key:
 
@@ -142,8 +145,7 @@ echo $key > web/all/$key.txt
 ```
 
 If you don't have that tool, just come up with some random numbers and
-letters (at least 8 characters), for example "test1234". Put "test1234" in a
-file named `test1234.txt` in your server.
+letters (at least 8 characters).
 
 Then configure this module:
 
@@ -203,7 +205,7 @@ The instance is the mastodon server where you have your account, e.g.,
 `mstdn.io`. Don't include e.g., `https://` or a path after the name.
 
 The `visibility` is optional. If not given, it defaults to the visibility in
-your account settings. You can override the visibility here for testing.
+your account settings. You can override the visibility here, e.g., for testing.
 
 The `Comic::Social::Mastodon` module adds any hashtags from `hashtags` and
 `mastodon` (in that order) from the Comic's metadata to the posted message.

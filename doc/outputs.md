@@ -24,9 +24,6 @@ The code is smart enough to use the modules in the right order, but it
 cannot yet pull in missing modules. So to get `.png` output, you must
 configure the `Comic::Out::SvgPerLanguage` as well.
 
-The order in which these modules run is undefined, but they will only run
-after all [Check](checks.md) modules have finished.
-
 
 ## Output Organization
 
@@ -39,7 +36,7 @@ and regular backups.)
 Comics may have different ideas on where exactly they need to go, for example
 a German comic published on the web may go in `web/deutsch/comics/` while an
 English comic not yet published may go in `backlog/` (both directories being
-within the specified `out` directory, here `generated/`).
+within the specified `out` directory, like `generated/`).
 
 
 ## Caching
@@ -62,7 +59,7 @@ for search engines and people with screen readers.
 Each comic can define a variable named `Transcript` in its metadata. If that
 variable is not defined or has the value `left-to-right`, the comics texts
 (from left to right) make up the transcript. Each row of frames is taken
-separately . Anything above the first row of frames goes first (place an
+separately. Anything above the first row of frames goes first (place an
 introductory text there), then the first row from left to right, then the
 second, and so on. Any text under the last row of frames is considered to be
 its own row, so that captions always go after the comic's texts. Text
@@ -79,9 +76,9 @@ and enter a value. I recommend numbers, and leaving gaps: a group of texts
 get e.g., 1 to 4, then the next group gets 10 to 13. That way you can easily
 squeeze in more texts without having to renumber everything. For the same
 reason, do numbering only when you are done with the comic's texts. Ids
-*must* be unique per document; even across layers. If you try to use an id
-that's already in use, Inkscape will automatically change the id of the
-previous element to a generated id, so be careful. While you can pick
+*must* be unique per document; even across layers / languages. If you try
+to use an id that's already in use, Inkscape will silently change the
+id of the other element to a generated id, so be careful. While you can pick
 anything for ids, I recommend numbers. Inkscape generates ids like "text"
 plus a number. If you go with numeric ids, the Comic code will complain
 about a mix of numeric and alphanumeric ids, which probably indicates that
@@ -223,7 +220,7 @@ frame, the text will go in the bottom left corner of that frame.
 ## `Comic::Out::Feed`
 
 Generates website feeds (e.g., in [RSS](https://en.wikipedia.org/wiki/RSS)
-or [Atom](https://en.wikipedia.org/wiki/Atom_(Web_standard)) from
+or [Atom](https://en.wikipedia.org/wiki/Atom_(Web_standard))) from
 provided Perl [Template Toolkit](http://template-toolkit.org/) templates.
 
 While not many people use RSS readers these days, feeds can be used to
@@ -334,8 +331,8 @@ language name (lower cased).
 For example, for the configuration above, files for English and German
 comics will be copied from `web/english` and `web/german` to
 `generated/web/english/` and `generated/web/deutsch/` respectively. Files
-from `web/all` will be copied to both `generated/web/english` and
-`generated/web/deutsch`.
+from `web/all` and `misc/all` will be copied to both `generated/web/english`
+and `generated/web/deutsch`.
 
 This module does *not* support modifying copied files on the fly, e.g., to
 update a published date or copyright year in an otherwise static HTML pages.
@@ -645,7 +642,7 @@ Configure `Comic::Out::Series` like this:
     "Out": {
         "Comic::Out::Series": {
             "collect": "series",
-            "min-coint" 2,
+            "min-count" 2,
             "template": "path/to/series-page.template",
             "outdir": "path/to/outdir",
             "index": "path/to/index.template"
@@ -757,7 +754,8 @@ the configured `outdir`, named `sitemap.xml`.
 ## `Comic::Out::Sizemap`
 
 Generates a size map showing all different overall sizes used in the comics.
-This can help figuring out what size works nicely for one's style.
+This can help figuring out what size works nicely for your comic style. It's
+probably not useful once you've defined your comic size(s).
 
 The size map is configured like this:
 
@@ -884,10 +882,10 @@ The `Comic::Out::Tags` module is configured like this:
                 "English": "path/to/english/template",
                 "Deutsch": "path/to/german/template"
             },
-            "outdir: "tags",
+            "outdir": "tags",
             "index": {
                 "English": "path/to/english/index/template",
-                "Deutsch": "path/to/german/index/template",
+                "Deutsch": "path/to/german/index/template"
             }
         }
     }
@@ -897,7 +895,7 @@ The `Comic::Out::Tags` module is configured like this:
 The `collect` argument takes one or more names to use for tags from the
 comic's metadata. It defaults to "tags" if not given.
 
-'min-count' specifies how often a tag has to be used to be considered. That
+`min-count` specifies how often a tag has to be used to be considered. That
 way you can suppress tags pages and links when only two or three comics use
 a tag. If not given, all tags are included.
 
@@ -1060,4 +1058,5 @@ and this HTML page
 </p>
 ```
 
-you'll get a tag cloud with links in different font sizes.
+you'll get a tag cloud with more often used links in larger font and less often
+used tags in smaller font.

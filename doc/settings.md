@@ -67,8 +67,8 @@ Configures layer names to indicate which layer has which information. See
 the [checks](checks.md) chapter on how these are used.
 
 When the Comic modules process your comics, they run in this order: first,
-all checks run. (Checks may be skipped for comics that haven't changed, to
-speed up things.)
+all checks run, but the order of the checks is undefined. Checks may be
+skipped for comics that haven't changed, to speed up things.
 
 Then all output generators run. They run in a predefined order, as some
 output generators need data from previous ones, for example, the HTML
@@ -136,7 +136,7 @@ comics somewhere.
             "sites": [
                 {
                     "source": "generated/web/deutsch/",
-                    "destination": "you@youd-german-domain/comic-folder/"
+                    "destination": "you@your-german-domain/comic-folder/"
                 },
                 {
                     "source": "generated/web/english/",

@@ -44,12 +44,15 @@ Titles must be unique in their languages, i.e., you cannot have two comics
 with the same title in the same language. It's ok to have the same comic
 have the same title in different languages.
 
-The `published.where` field tells where the comic is published. You can use
+The `published.where` field tells where the comic is published. It allows
+keeping all your comics in one folder, but still excluding some from your
+web page, for example, if they were magazine contributions. "web" is a
+special location indicating your web site. Besides that, you can use
 any names you like. In particular, this should *not* be a domain name for a
 web comic, as you'd probably need a different one for each language. Just
 use something like "web" or "that cool magazine" or "my buddy's web page".
 Output generators and templates may ignore comics not published in the
-"right" location.
+"right" location, in particular checking for "web".
 
 The `published.when` date must be an [ISO
 8601](https://en.wikipedia.org/wiki/ISO_8601) formatted date (without time),
