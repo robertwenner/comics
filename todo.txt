@@ -1,4 +1,4 @@
-- cleanup hard-coded names: "web", "generated".
+- cleanup hard-coded names: "web"
 
 - cleanup: Comic::not_yet_published should not consider locations.
 
@@ -17,8 +17,8 @@
 
 - defect: Mastodon 500 error when posting images
 
-- cleanup: rework variables available for templates: standardize names, pick
-  decent names, DRY up them up, document them
+- cleanup: rework variables available for templates: standardize names and
+  case, pick decent names, DRY up them up, document them
 
 - feature: (output) modules dependency graph, to easily add new output
   modules, and to decide to skip output (and check) modules based on their
@@ -28,6 +28,13 @@
   be confusing when case actually matters, e.g., for Perl modules.
   If case matters, make sure it's used consistently. Language names are
   still used inconsistently.
+
+- feature: drop "Checks", "Out", "Uploader", and "Social" config sections,
+  since the module names already include that anyway, so there is no ambiguity.
+  But dropping the sections would mean that e.g., all Checks must start with
+  Comic::Check::...
+  Or allow settings for all modules in that group, like the default png/link
+  mode for social media posters.
 
 - refactor: Perl: use feature qw(signatures); no warnings
   qw(experimental::signatures); or Function::Parameters, Method::Signatures
@@ -53,8 +60,6 @@
 
 - feature: handle more frame varieties, e.g., long frame over 2 rows on the
   side
-
-- feature: series: support a comics by series pages
 
 - feature: allow comic to be in more than one series
 
@@ -101,8 +106,8 @@
   be careful about additional text, like "Paul, opening a beer:")
 
 - performance: write qr code file only when writing the pngs, i.e., when the
-  source has changed (only need this if the generated title / qr code file
-  name has changed, but this is harder to detect)
+  source has changed (really only need this if the generated title / qr code
+  file name has changed, but this is harder to detect)
 
 - performance: speed up with multiple threads for checking and converting
   svg files (1 thread per comic, then wait till all are done; reuse threads
@@ -111,7 +116,8 @@
 - feature: verbose and debug flags to print what's going on (helpful for
   configurable checks and actions)
 
-- refactor: switch Twitter module to Twitter::API
+- refactor: Twitter module uses outdated Twitter 1.0 API; switch to Twitter::API
+  or do the http calls manually; rename to X.
 
 - feature: check 2FA for Reddit and Twitter
 
@@ -153,8 +159,6 @@
 
 - feature: if we keep the sitemap via template, filter the list passed to
   each template instead of passing the filter notFor function for easier use
-
-- feature: allow comics to opt out of the feed. (use case?)
 
 - feature: post "classics" to social media if there is no new comic
 
@@ -203,6 +207,7 @@
 
 - feature: allow copying static files and pipe them through a Template to
   modify bits in mostly static files, like a copyright year in an index.html
+  Maybe this could be done in server-side includes.
 
 - feature: deduct output path from fragments, like outdir / base dir plus
   language placeholders, for less repetitive configuration files
@@ -219,7 +224,9 @@
   meta data and make available in templates
 
 - feature: pick up Contributors from Inkscape document properties, make
-  available in templates (merge with current contributors JSON meta data)
+  available in templates (merge with current contributors JSON meta data);
+  but then again this could be confusing if meta data is spread over Inkscape
+  regular properties and meta data JSON.
 
 - feature: use relative links for HtmlLink for easy offline use
 
@@ -238,7 +245,8 @@
   easier templates if the main page differs a lot from each comic's page
 
 - feature: on the publish day: warn (email, ...) if there is no comic
-  scheduled for today (maybe only if there are comics in the backlog)
+  scheduled for today (maybe only if there are comics in the backlog);
+  probably warn the day before already
 
 - feature: caldav support to show planned comics in a calendar
 
@@ -265,8 +273,9 @@
 
 - feature: Threads integration
 
-- feature: github integration: host your comic on github? could commit to a
-  (separate?) repository, push changes
+- feature: git integration: host your comic on github? Publishing module could
+  commit to a (separate?) repository, push changes, and the web server checks
+  out from git.
 
 - feature: warn about missing or bad meta data
   description: should not be empty
