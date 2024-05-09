@@ -29,13 +29,26 @@ installed.
 
 ### Operating system libraries
 
-*MacOS users:*  if you are using [brew](https://brew.sh), just run `brew
-bundle` to install the dependencies.
+#### MacOS
 
-For spell checking, you need `ASpell` or `Hunspell` with the corresponding
-development libraries. I had a hard time with Hunspell and UTF8, so I prefer
-ASpell and its libraries `libaspell-dev` plus dictionaries for the languages
-you want to use (e.g., `aspell-de`, `aspell-en`, or `aspell-es`).
+If you are using [brew](https://brew.sh), just run `brew bundle` to install
+the dependencies.
+
+`Text::Aspell` may not install on MacOS; use `Text::Hunspell` instead.
+
+To do that, switch the dependency in `Makefile.PL`:
+
+```sh
+perl -p -e 's/Text::Aspell/Text::Hunspell/mg' -i Makefile.PL
+```
+
+#### Linux
+
+For spell checking, you need `Text::ASpell` or `Text::Hunspell`
+with the corresponding development libraries. I had a hard time with
+Hunspell and UTF8, so I prefer ASpell and its libraries `libaspell-dev`
+plus dictionaries for the languages you want to use (e.g., `aspell-de`,
+`aspell-en`, or `aspell-es`).
 
 For uploading via rsync, you need to install the `rsync` command.
 
@@ -46,6 +59,12 @@ You also need `Imager::File::PNG`, which in turn depends on `libpng-dev`.
 You'll need [Inkscape](https://inkscape.org) in the `$PATH` to actually
 export your comics to `png`.
 
+Ubuntu example:
+
+```sh
+sudo apt-get install inkscape perl
+sudo apt-get install -y rsync optipng libpng-dev aspell libaspell-dev aspell-en aspell-de
+```
 
 ### Perl modules
 
@@ -61,7 +80,7 @@ This requires make, which most Perl modules need anyway.
 ```bash
 perl Makefile.PL
 make
-make test       # optional, may need Perl test modules
+make test       # optional, needs Perl test modules
 sudo make install   # optional, you can also refer to the lib/ folder here
 ```
 
