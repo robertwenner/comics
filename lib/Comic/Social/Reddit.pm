@@ -246,7 +246,7 @@ sub _post {
             );
         }
         or do {
-            my $error = _wait_for_reddit_limit($comic, $EVAL_ERROR);
+            my $error = _wait_for_reddit_limit($EVAL_ERROR);
             if ($error) {
                 return $self->message("$language: /r/$subreddit: $error");
             }
@@ -270,7 +270,7 @@ sub _normalize_subreddit {
 
 
 sub _wait_for_reddit_limit {
-    my ($comic, $error) = @ARG;
+    my ($error) = @ARG;
 
     if ($error =~ m{\btry again in (\d+) (minutes?|seconds?)}i) {
         my ($count, $unit) = ($1, $2);

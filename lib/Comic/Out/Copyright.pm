@@ -174,12 +174,10 @@ sub _where_to_place_the_text {
     if (@frames == 0) {
         # If the comic has no frames, place the text at the bottom.
         # Ask Inkscape about the drawing size.
-        my $width = _inkscape_query($comic, 'W');
-        my $height = _inkscape_query($comic, 'H');
         my $xpos = _inkscape_query($comic, 'X');
         my $ypos = _inkscape_query($comic, 'Y');
-        $x = $xpos;# - $width;
-        $y = $ypos;# + $height;
+        $x = $xpos;
+        $y = $ypos;
     }
     elsif (@frames == 1) {
         # If there is only one frame, place the text at the bottom left

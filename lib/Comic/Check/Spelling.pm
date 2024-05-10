@@ -157,7 +157,6 @@ Parameters:
 sub check {
     my ($self, $comic) = @ARG;
 
-    my %codes = $comic->language_codes();
     foreach my $language ($comic->languages()) {
         $self->{unknown_words} = {};
         $self->{complained_about} = {};

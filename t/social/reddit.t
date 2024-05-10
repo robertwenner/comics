@@ -358,21 +358,19 @@ sub wait_for_limit : Tests {
     };
     use warnings;
 
-    Comic::Social::Reddit::_wait_for_reddit_limit(undef, "try again in 10 minutes");
+    Comic::Social::Reddit::_wait_for_reddit_limit("try again in 10 minutes");
     is($slept, 10 * 60, "wrong 10 minutes sleep time");
-    Comic::Social::Reddit::_wait_for_reddit_limit(undef, "try again in 1 minute");
+    Comic::Social::Reddit::_wait_for_reddit_limit("try again in 1 minute");
     is($slept, 1 * 60, "wrong 1 minute sleep time");
-    Comic::Social::Reddit::_wait_for_reddit_limit(undef, "try again in 20 seconds");
+    Comic::Social::Reddit::_wait_for_reddit_limit("try again in 20 seconds");
     is($slept, 20, "wrong 20 seconds sleep time");
-    Comic::Social::Reddit::_wait_for_reddit_limit(undef, "try again in 1 second");
+    Comic::Social::Reddit::_wait_for_reddit_limit("try again in 1 second");
     is($slept, 1, "wrong 1 second sleep time");
 }
 
 
 sub wait_for_limit_already_submitted : Tests {
-    my $comic = MockComic::make_comic();
-
-    my $err = Comic::Social::Reddit::_wait_for_reddit_limit($comic, "That link has already been submitted\n");
+    my $err = Comic::Social::Reddit::_wait_for_reddit_limit("That link has already been submitted\n");
     is($err, "That link has already been submitted");
 }
 
@@ -380,7 +378,7 @@ sub wait_for_limit_already_submitted : Tests {
 sub wait_for_limit_unknown_error : Tests {
     my $comic = MockComic::make_comic();
 
-    my $message = Comic::Social::Reddit::_wait_for_reddit_limit($comic, "500 internal server error");
+    my $message = Comic::Social::Reddit::_wait_for_reddit_limit("500 internal server error");
 
     like($message, qr{\bdon't know\b}i, "Error message missing");
     like($message, qr{\b500 internal server error\b}, "original error message missing");
@@ -390,7 +388,7 @@ sub wait_for_limit_unknown_error : Tests {
 sub wait_for_limit_no_error : Tests {
     my $comic = MockComic::make_comic();
 
-    my $message = Comic::Social::Reddit::_wait_for_reddit_limit($comic, "");
+    my $message = Comic::Social::Reddit::_wait_for_reddit_limit("");
     is($message, "");
 }
 

@@ -294,14 +294,14 @@ sub _post {
         'headers' => \%headers,
     });
 
-    my ($error, $content) = _handle($error_prefix, $reply);
+    my ($error) = _handle($error_prefix, $reply);
     return $error if ($error);
     return "posted $comic->{meta_data}->{title}->{$language} $mode";
 }
 
 
 sub _build_message {
-    my ($comic, $language, $mode, $feature) = @ARG;
+    my ($comic, $language, $mode) = @ARG;
 
     # https://github.com/bluesky-social/atproto/blob/2f62faab6fd7ef7e37c4fe6b633664fce0a1e6cf/lexicons/app/bsky/feed/post.json#L50
     my @tags = Comic::Social::Social::collect_hashtags($comic, $language, 'bluesky');

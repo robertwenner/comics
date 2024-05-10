@@ -267,7 +267,7 @@ Makes these variables available to the tag page template:
 sub generate_all {
     my ($self, @comics) = @ARG;
 
-    $self->_find_min_and_max(@comics);
+    $self->_find_min_and_max();
     $self->_put_tags_in_comics(@comics);
     $self->_put_tag_style_ranks_in_comics(@comics);
     $self->_write_tags_pages(@comics);
@@ -278,7 +278,7 @@ sub generate_all {
 
 
 sub _find_min_and_max {
-    my ($self, @comics) = @ARG;
+    my ($self) = @ARG;
 
     foreach my $language (keys %{$self->{tags}}) {
         my $min;
