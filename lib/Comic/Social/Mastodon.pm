@@ -187,7 +187,7 @@ sub post {
             push @result, @messages;
             unless ($media_id) {
                 # Didn't get a media id for whatever reason. If the server is
-                # down or premissions are not correct, the next call will
+                # down or permissions are not correct, the next call will
                 # fail as well. Try if Mastodon just doesn't like that image
                 # for some reason but accepts a link.
                 push @result, $self->message('posting comic link instead');

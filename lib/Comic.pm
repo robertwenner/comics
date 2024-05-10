@@ -150,7 +150,7 @@ sub load {
         $published->set_time_zone(_get_tz());
         # DateTime::Format::Mail does RFC822 dates, but uses spaces instead of
         # zeros for single digit numbers. The W3C validator complains about
-        # these, saying they're not strictly illegal, but may be a compatibiliy
+        # these, saying they're not strictly illegal, but may be a compatibility
         # issue.
         $self->{rfc822pubDate} = $published->strftime('%a, %d %b %Y %H:%M:%S %z');
         $self->{rfc3339pubDate} = DateTime::Format::RFC3339->new()->format_datetime($published);
@@ -956,7 +956,7 @@ sub text_layers_for_language {
 
     my $ignore_prefix = $self->{settings}->{LayerNames}->{NoTranscriptPrefix};
 
-    # Collect needed layers in a hash, so that duplicted layer names are queried only once.
+    # Collect needed layers in a hash, so that duplicated layer names are queried only once.
     # The code that collects the nodes from layers will pick up all duplicates, but it should
     # just run once per name. (Inkscape doesn't care about duplicated layer names.)
     my %needed_layers;
@@ -1154,7 +1154,7 @@ sub _transformed {
     if (!defined $x || !defined $y) {
         # If a node doesn't have coordinates, it may be on a path which provides the coordinates.
         ($x, $y) = _text_from_path($self, $node);
-        # We ususally either habe both x and y, or neither. Anything else sounds like invalid SVG.
+        # We usually either have both x and y, or neither. Anything else sounds like invalid SVG.
         # Which could happen when people manually edit the XML.
     }
 

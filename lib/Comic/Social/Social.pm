@@ -63,7 +63,7 @@ Returns any messages from posting, separated by newlines.
 sub post {
     # uncoverable subroutine
     _croak('Comic::Social::Social::post should have been overridden'); # uncoverable statement
-    # PerlCritic doesn't know that this return is unreacchable:
+    # PerlCritic doesn't know that this return is unreachable:
     return; # uncoverable statement
 }
 

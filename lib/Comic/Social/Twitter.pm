@@ -81,7 +81,7 @@ The settings hash needs to have these keys:
 
 =item * B<$consumer_secret> passed to C<Net::Twitter>.
 
-=item * B<$access_tokeny> passed to C<Net::Twitter>.
+=item * B<$access_token> passed to C<Net::Twitter>.
 
 =item * B<$access_token_secret> passed to C<Net::Twitter>.
 

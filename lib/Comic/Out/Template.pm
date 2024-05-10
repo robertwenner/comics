@@ -95,7 +95,7 @@ sub templatize {
         croak "$template_file for $description: Unresolved template marker at $1";
     }
     if ($output =~ m/(^.*ARRAY[(]0x[[:xdigit:]]+[)].*$)/mg) {
-        croak "$template_file for $description: found arry ref: $1:";
+        croak "$template_file for $description: found array ref: $1:";
     }
     if ($output =~ m/(^.*HASH[(]0x[[:xdigit:]]+[)].*$)/mg) {
         croak "$template_file for $description: found hash ref: $1";

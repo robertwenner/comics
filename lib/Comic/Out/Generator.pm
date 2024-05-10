@@ -104,7 +104,7 @@ parse in the code.
 
 But it introduces an extra level in he configuration file, which may not be
 very intuitive to people not used to JSON. It would also be inconsistent
-compared to the C<Commic::Checks::Check> configuration (array vs object).
+compared to the C<Comic::Checks::Check> configuration (array vs object).
 
 
 =head3 Order implicitly defined
@@ -341,10 +341,10 @@ Parameters:
 =item B<$type> expected type. Pass '' or 'scalar' for scalars, 'ARRAY' for
     arrays, or 'HASH' for hashes.
 
-    Pass 'array-or-scalar' for a settig that can be either a scalar or an
-    array. It will be converted in an array. If the argument was not given,
-    that array will be empty. If the argument was a scalar, that will be the
-    one and only array element. If the argument was an array, it is
+    Pass 'array-or-scalar' for a setting that can be either an array or a
+    scalar array. It will be converted to an array. If the argument was not
+    given, that array will be empty. If the argument was a scalar, that will
+    be the one and only array element. If the argument was an array, it is
     preserved as is.
 
 =item B<$default_value> what to put in the settings if the key was not found.

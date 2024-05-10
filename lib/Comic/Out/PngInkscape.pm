@@ -190,7 +190,7 @@ sub _svg_to_png {
             _set_png_meta($comic, $tool, $key, $settings{$key});
         }
     }
-    # Add data explicitly overriden in comic meta data
+    # Add data explicitly overridden in comic meta data
     my $svg_meta = $comic->{meta_data}->{'png-meta-data'};
     if (ref($svg_meta) eq 'HASH') {
         foreach my $key (keys %{$svg_meta}) {

@@ -128,7 +128,7 @@ sub _check_against {
                     $self->warning($comic, "$location only differ in case");
                 }
 
-                # Uses string exptrapolation to copy the variables, so that the white space
+                # Uses string extrapolation to copy the variables, so that the white space
                 # removal does not modify the original comic values.
                 # I had no luck with Storable::dclone. :-/
                 my $trimmed_old = "$oldtag";

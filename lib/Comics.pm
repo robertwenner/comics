@@ -40,7 +40,7 @@ additional files like web pages.
 
     use Comics;
 
-    # Detailled:
+    # Detailed:
     my $comics = Comics->new();
     $comics->load_settings("my-settings.json");
     my @comics = $comics->collect_files(@comic_dirs)
@@ -63,8 +63,8 @@ additional files like web pages.
     # Simple command to sync local comics to a web server:
     Comics::upload("/path/to/config.json");
 
-    # Simple command (e.g., for a cronjob) to dpublish the latest comic,
-    # including generating everything, upoading, and posting to social media:
+    # Simple command (e.g., for a cronjob) to publish the latest comic,
+    # including generating everything, uploading, and posting to social media:
     Comics::publish_comic('/path/to/config.json', '/path/to/comics/svg/');
 
 
@@ -347,11 +347,11 @@ sub load_generators {
     #
     # Pushing it onto the user is certainly not terribly user-friendly. It
     # also makes for ugly and clumsy configuration files. For example,
-    # changing the confguration to an array would have added another layer
+    # changing the configuration to an array would have added another layer
     # in the configuration file, making it ugly to edit. Adding an "order"
     # member in each generator configuration makes it ahrd to insert modules
     # (have to adjust all later numbers) and also pushes the need to know
-    # the module dependecies onto the user. Adding an extra array of the
+    # the module dependencies onto the user. Adding an extra array of the
     # generator names just for ordering purposes separates order and actual
     # settings of generators far away from each other.
     #
@@ -504,7 +504,7 @@ sub run_all_checks {
         # Don't check comics if they are up to date, i.e., the input file
         # has not changed since last run. This works as all checks only look
         # at one comic at a time. The drawback is that errors and warnings in
-        # previous runs would disappear; since the comics won't get chicked
+        # previous runs would disappear; since the comics won't get checked
         # again.
         # For my 350 comics, this cuts comic processing time from ~95s to
         # ~46s when only has one comic has changed, and to ~41s if nothing

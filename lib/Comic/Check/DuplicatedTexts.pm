@@ -121,7 +121,7 @@ sub _normalize_text {
     # only been edited in one language. This also catches multi-line texts,
     # where the whole multi line text can be added as a single element in
     # allow-duplicated.
-    # Does not mess with case cause that shouln't be duplicated. For example,
+    # Does not mess with case cause that shouldn't be duplicated. For example,
     # a character may say "pale ale" in English and "Pale Ale" in German.
     my ($text) = @_;
     $text = trim($text);

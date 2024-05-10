@@ -37,7 +37,7 @@ different locations on the same day.
 
 Comic::Check::DateCollision does keeps track of all comics to detect whether
 comics are published on the same date. Hence you need to use one
-Comic::ChecK::DateCollision for all your comics.
+Comic::Check::DateCollision for all your comics.
 
 =cut
 

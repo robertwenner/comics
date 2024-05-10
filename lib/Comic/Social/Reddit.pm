@@ -261,7 +261,7 @@ sub _post {
 sub _normalize_subreddit {
     my ($subreddit) = @ARG;
 
-    # Remove leading /r/ and trailing / to make specifiying the subreddit more
+    # Remove leading /r/ and trailing / to make specifying the subreddit more
     # lenient / user friendly.
     $subreddit =~ s{^/r/}{};
     $subreddit =~ s{/$}{};

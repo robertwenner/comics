@@ -31,7 +31,7 @@ new content.
 =head1 SYNOPSIS
 
     my $index_now = Comic::Social::IndexNow->new({
-        'key' => 'my somehwat secret key',
+        'key' => 'my somewhat secret key',
     });
 
 =head1 DESCRIPTION

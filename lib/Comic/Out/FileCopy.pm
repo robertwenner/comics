@@ -69,7 +69,7 @@ For example:
     my $filecopy = Comic::Out::FileCopy->new(
         "outdir" => "generated/web",
         "from-all" => ["web/all"],
-        "from-lamguage" => ["web/"],
+        "from-language" => ["web/"],
     );
 
 Output files will be copied from the C<from-all> directory and the language

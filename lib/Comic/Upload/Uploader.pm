@@ -65,7 +65,7 @@ sub upload {
     # uncoverable subroutine
     my ($self, @comics) = @ARG; # uncoverable statement
     $self->_croak('Comic::Upload::Uploader::upload should have been overridden'); # uncoverable statement
-    # PerlCritic doesn't know that this return is unreacchable:
+    # PerlCritic doesn't know that this return is unreachable:
     return; # uncoverable statement
 }
 
