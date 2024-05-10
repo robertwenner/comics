@@ -11,7 +11,7 @@ jobs:
       - run: brew bundle
       # Swap out Aspell for Hunspell before installing dependencies.
       # Aspell needs some native libraries and header files.
-      - run cpanm install Text::Hunspell
+      - run: cpanm install Text::Hunspell
       - run: perl -p -e 's/Text::Aspell/Text::Hunspell/mg' -i Makefile.PL
       # Needs to set the PATH so that it finds the newer libxml installed with brew
       # instead of the older OS version.
