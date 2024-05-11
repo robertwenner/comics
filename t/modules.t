@@ -129,13 +129,23 @@ sub uses_configured_module_without_extension : Tests {
 }
 
 
-sub croaks_on_unknown_configured_module : Tests {
-    MockComic::fake_file("settings.json", '{ "Checks": { "NoSuchCheck": [] } }');
+sub croaks_on_unknown_configured_path : Tests {
+    MockComic::fake_file("settings.json", '{ "Checks": { "NoSuchCheck.pm": [] } }');
     $comics->load_settings("settings.json");
     eval {
         $comics->load_checks();
     };
-    like($@, qr{Can't locate NoSuchCheck});
+    like($@, qr{Can't locate NoSuchCheck\.pm});
+}
+
+
+sub croaks_on_unknown_configured_module : Tests {
+    MockComic::fake_file("settings.json", '{ "Checks": { "No::Such::Check": [] } }');
+    $comics->load_settings("settings.json");
+    eval {
+        $comics->load_checks();
+    };
+    like($@, qr{Error loading No::Such::Check});
 }
 
 
@@ -153,4 +163,15 @@ sub logs_loaded_modules : Tests {
     MockComic::fake_file("settings.json", '{ "Checks": { "Comic::Check::Actors": [] } }');
     $comics->load_settings("settings.json");
     stdout_like { $comics->load_checks(); } qr/^Checks modules loaded:\s+Comic::Check::Actors\s*$/m;
+}
+
+
+sub skips_non_module_settings : Tests {
+    MockComic::fake_file("settings.json", '{ "Checks": { "foo": "bar" } }');
+    $comics->load_settings("settings.json");
+
+    $comics->load_checks();
+
+    is(@{$comics->{checks}}, 0, 'should have no check modules');
+    is_deeply($comics->{settings}->{settings}->{Checks}, { 'foo' => 'bar'}, 'wrong settings');
 }

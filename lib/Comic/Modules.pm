@@ -111,7 +111,8 @@ Parameters:
 
 =back
 
-Returns an instance of the newly loaded module.
+Returns an instance of the newly loaded module, or C<undef> if the setting was not
+loadable as a module and didn't look like one.
 
 =cut
 
@@ -124,7 +125,14 @@ sub load_module {
         $filename->import();
         1;  # indicate success, or we may end up with an empty eval error
     }
-    or croak("Error loading $name ($filename): $EVAL_ERROR");
+    or do {
+        # If the setting does not look like a module (i.e., doesn't end in .pm and
+        # doesn't have the :: that separate package names, assume it's a setting.
+        if ($name=~ m{[.]pm$}x || $name =~ m{::}x) {
+            croak("Error loading $name ($filename): $EVAL_ERROR");
+        }
+        return;
+    };
 
     my @args;
     if (ref $args eq ref {}) {

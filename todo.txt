@@ -29,13 +29,6 @@
   If case matters, make sure it's used consistently. Language names are
   still used inconsistently.
 
-- feature: drop "Checks", "Out", "Uploader", and "Social" config sections,
-  since the module names already include that anyway, so there is no ambiguity.
-  But dropping the sections would mean that e.g., all Checks must start with
-  Comic::Check::...
-  Or allow settings for all modules in that group, like the default png/link
-  mode for social media posters.
-
 - refactor: Perl: use feature qw(signatures); no warnings
   qw(experimental::signatures); or Function::Parameters, Method::Signatures
 

@@ -421,7 +421,8 @@ sub _load_modules {
     my @loaded;
     foreach my $name (keys %{$wants_to_load}) {
         my $module_args = ${$wants_to_load}{$name} || [];
-        push @loaded, Comic::Modules::load_module($name, $module_args);
+        my $module = Comic::Modules::load_module($name, $module_args);
+        push @loaded, $module if ($module);
     }
 
     if (!@loaded && $error_if_no_modules) {
