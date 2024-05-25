@@ -13,6 +13,7 @@ use DateTime;
 use File::Slurper;
 use File::Find;
 use File::Util;
+use JSON;
 
 use Comic;
 use Comic::Settings;
@@ -501,21 +502,57 @@ Runs all configured checks for all loaded Comics that have been modified.
 sub run_all_checks {
     my ($self) = @ARG;
 
+    my $messages_file = $self->{settings}->{settings}->{$Comic::Settings::CHECKS}->{persistMessages};
+    my %messages = _load_messages($messages_file);
+
     foreach my $comic (@{$self->{comics}}) {
         # Don't check comics if they are up to date, i.e., the input file
         # has not changed since last run. This works as all checks only look
-        # at one comic at a time. The drawback is that errors and warnings in
-        # previous runs would disappear; since the comics won't get checked
-        # again.
+        # at one comic at a time.
         # For my 350 comics, this cuts comic processing time from ~95s to
-        # ~46s when only has one comic has changed, and to ~41s if nothing
-        # has changed.
-        next if ($self->_up_to_date($comic));
-        # Ask each comic to run its checks, which may be the ones configured
-        # globally or overridden in the comic.
-        $comic->check();
+        # ~46s when only one comic has changed, and to ~41s if nothing has
+        # changed.
+        if ($self->_up_to_date($comic)) {
+            # Restore cached messages to the comic.
+            my $messages = $messages{$comic->{srcFile}};
+            $comic->warning($_) foreach (@{$messages});
+        }
+        else {
+            # Ask each comic to run its checks, which may be the ones configured
+            # globally or overridden in the comic.
+            delete $messages{$comic->{srcFile}};
+            $comic->check();
+            if (@{$comic->{warnings}}) {
+                $messages{$comic->{srcFile}} = $comic->{warnings};
+            }
+        }
     }
 
+    _save_messages($messages_file, \%messages);
+
+    return;
+}
+
+
+sub _load_messages {
+    my ($filename) = @ARG;
+
+    my $json = {};
+    eval {
+        my $text = File::Slurper::read_text($filename);
+        $json = decode_json($text);
+    } or do {
+        # Ignore eval errors: File didn't exist or wasn't valid JSON; guess we don't have old messages.
+    };
+    return %{$json};
+}
+
+
+sub _save_messages {
+    my ($filename, $messages) = @ARG;
+
+    my $json = encode_json($messages);
+    File::Slurper::write_text($filename, $json);
     return;
 }
 

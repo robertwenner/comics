@@ -101,6 +101,9 @@ sub uses_defaults : Tests {
             "NoTranscriptPrefix" => "NoText",
             "Frames" => "Frames",
         },
+        'Checks' => {
+            'persistMessages' => 'generated/check-messages.json',
+        },
     });
 }
 

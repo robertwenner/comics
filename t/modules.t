@@ -173,5 +173,7 @@ sub skips_non_module_settings : Tests {
     $comics->load_checks();
 
     is(@{$comics->{checks}}, 0, 'should have no check modules');
-    is_deeply($comics->{settings}->{settings}->{Checks}, { 'foo' => 'bar'}, 'wrong settings');
+    is_deeply($comics->{settings}->{settings}->{Checks},
+        { 'foo' => 'bar', 'persistMessages' => 'generated/check-messages.json'},
+        'wrong settings');
 }

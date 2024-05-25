@@ -56,6 +56,8 @@ sub set_up : Test(setup) {
         return ("comic.svg");
     };
     *Comic::load = sub {
+        my ($self, $file) = @_;
+        $self->{srcFile} = $file;
         return;
     };
     use warnings;

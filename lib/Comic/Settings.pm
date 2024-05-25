@@ -33,6 +33,9 @@ Readonly::Hash my %DEFAULT_SETTINGS => (
         'NoTranscriptPrefix' => 'NoText',
         'Frames' => 'Frames',
     },
+    'Checks' => {
+        'persistMessages' => 'generated/check-messages.json',
+    },
 );
 
 

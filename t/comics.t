@@ -11,7 +11,8 @@ use lib 't';
 use MockComic;
 use lib 't/check';
 use DummyCheck;
-
+use lib 't/out';
+use DummyGenerator;
 
 __PACKAGE__->runtests() unless caller;
 
@@ -95,4 +96,130 @@ sub collect_files_recurses_in_directories : Tests {
 
     my $comics = Comics->new();
     is_deeply([$comics->collect_files('dir')], ['comic.svg']);
+}
+
+
+sub has_default_message_file_name : Tests {
+    MockComic::fake_file('settings.json', '{ "Checks": {"Comic::Check::DummyCheck": {} } }');
+
+    my $comics = Comics->new();
+    $comics->load_settings('settings.json');
+
+    is($comics->{settings}->{settings}->{Checks}->{persistMessages}, 'generated/check-messages.json');
+}
+
+
+sub restores_messages_does_nothing_if_nio_messages_for_that_comic_stored : Tests {
+    MockComic::fake_file('generated/check-messages.json', '{"not-some-comic.svg": ["some problem"]}');
+    my $comic = MockComic::make_comic();
+    my $generator = DummyGenerator->new();
+    $generator->{up_to_date} = 1;
+
+    my $comics = Comics->new();
+    push @{$comics->{generators}}, $generator;
+    push @{$comics->{comics}}, $comic;
+    $comics->run_all_checks();
+
+    is_deeply($comic->{warnings}, []);
+}
+
+
+sub restores_messages_in_up_to_date_comic_one_message : Tests {
+    MockComic::fake_file('generated/check-messages.json', '{"some_comic.svg": ["some problem"]}');
+    my $comic = MockComic::make_comic();
+    my $generator = DummyGenerator->new();
+    $generator->{up_to_date} = 1;
+
+    my $comics = Comics->new();
+    push @{$comics->{generators}}, $generator;
+    push @{$comics->{comics}}, $comic;
+    $comics->run_all_checks();
+
+    is_deeply($comic->{warnings}, ['some problem']);
+}
+
+
+sub ignores_restores_messages_in_modified_comic : Tests {
+    MockComic::fake_file('generated/check-messages.json', '{"some_comic.svg": ["old problem"]}');
+    my $comic = MockComic::make_comic();
+    my $generator = DummyGenerator->new();
+    $generator->{up_to_date} = 0;
+
+    my $comics = Comics->new();
+    push @{$comics->{generators}}, $generator;
+    push @{$comics->{comics}}, $comic;
+    $comics->run_all_checks();
+
+    is_deeply($comic->{warnings}, []);
+}
+
+
+sub persists_messages_to_file : Tests {
+    MockComic::fake_file('generated/check-messages.json', '{"old_comic.svg": ["old problem"]}');
+    my $old_comic = MockComic::make_comic($MockComic::IN_FILE => 'old_comic.svg');
+    my $new_comic = MockComic::make_comic($MockComic::IN_FILE => 'new_comic.svg');
+    my $generator = DummyGenerator->new();
+    no warnings qw/redefine/;
+    local *DummyGenerator::up_to_date = sub {
+        my ($self, $comic) = @_;
+        return $comic->{srcFile} eq 'old_comic.svg';
+    };
+    local *Comic::check = sub {
+        my ($self) = @_;
+        $self->warning('new problem');
+    };
+    use warnings;
+
+    my $comics = Comics->new();
+    push @{$comics->{generators}}, $generator;
+    push @{$comics->{comics}}, $old_comic, $new_comic;
+    $comics->run_all_checks();
+
+    MockComic::assert_wrote_file_json('generated/check-messages.json', {
+        "old_comic.svg" => ["old problem"],
+        "new_comic.svg" => ['new problem'],
+    });
+}
+
+
+sub clears_messages_file_if_comics_dont_have_messages : Tests {
+    MockComic::fake_file('generated/check-messages.json', '{"some_comic.svg": ["some problem"]}');
+    my $comic = MockComic::make_comic();
+    my $generator = DummyGenerator->new();
+    $generator->{up_to_date} = 0;
+
+    my $comics = Comics->new();
+    push @{$comics->{generators}}, $generator;
+    push @{$comics->{comics}}, $comic;
+    $comics->run_all_checks();
+
+    MockComic::assert_wrote_file('generated/check-messages.json', '{}');
+}
+
+
+sub restores_messages_no_message_file : Tests {
+    my $comics = Comics->new();
+    $comics->run_all_checks();
+
+    ok(1); # Would have died if it failed
+}
+
+
+sub restore_messages_ignores_bad_json : Tests {
+    MockComic::fake_file('generated/check-messages.json', 'whatever');
+
+    my $comics = Comics->new();
+    $comics->run_all_checks();
+
+    ok(1); # Would have died if it failed
+}
+
+
+sub restores_messages_empty_file : Tests {
+    MockComic::fake_file('generated/check-messages.json', '');
+
+    my $comics = Comics->new();
+    $comics->run_all_checks();
+
+    ok(1); # Would have died if it failed
 }
