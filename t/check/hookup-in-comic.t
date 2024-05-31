@@ -3,7 +3,6 @@ use warnings;
 
 use base 'Test::Class';
 use Test::More;
-use Test::Output;
 use lib 't';
 use MockComic;
 use Comic::Settings;
@@ -280,26 +279,12 @@ sub run_all_checks_skips_up_to_date_comic : Tests {
 }
 
 
-sub prints_warnings_from_unpublished_comic : Tests {
-    my $comic = MockComic::make_comic(
-        $MockComic::PUBLISHED_WHEN => undef,
-    );
-    $comic->{checks}->{dummy} = DummyCheck->new("problem from check");
-
-    stdout_like {
-        $comic->check();
-    } qr{1 problem}i;
-}
-
-
 sub collect_warnings_from_one_check_published : Tests {
     my $comic = MockComic::make_comic();
     $comic->{checks}->{'dummy'} = DummyCheck->new("problem from check");
 
-    eval {
-        $comic->check();
-    };
-    like($@, qr{1 problem}i);
+    $comic->check();
+
     is_deeply($comic->{warnings}, ["problem from check"]);
 }
 
@@ -310,10 +295,7 @@ sub collect_warnings_from_all_checks : Tests {
         $comic->{checks}->{"check $i"} = DummyCheck->new("problem from check $i");
     }
 
-    eval {
-        $comic->check();
-    };
-    like($@, qr{3 problems}i);
+    $comic->check();
     my @actual = sort @{$comic->{warnings}};
     is_deeply(\@actual, ["problem from check 0", "problem from check 1", "problem from check 2"]);
 }

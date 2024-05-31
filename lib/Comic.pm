@@ -518,22 +518,6 @@ sub check {
         $self->{checks}->{$name}->check($self);
     }
 
-    my $warnings_count = scalar @{$self->{warnings}};
-    if ($warnings_count > 0) {
-        my $problems = 'problem';
-        $problems .= 's' if ($warnings_count > 1);
-
-        my $msg = "$warnings_count $problems in $self->{srcFile}";
-        if ($self->not_yet_published()) {
-            # PerlCritic wants me to check that I/O to the console worked.
-            ## no critic(InputOutput::RequireCheckedSyscalls)
-            print "$msg\n";
-            ## use critic
-        }
-        else {
-            croak($msg);
-        }
-    }
     return;
 }
 
@@ -1279,11 +1263,6 @@ warnings in the C<@warnings}> member variable. This is the reason to not use
 Perl's built in C<warn>: capture warnings per comic to show in a backlog or
 summary.
 
-If this Comic is already published, a warning is treated as error, and the
-Comic keels over. The intention is that most warnings should be addressed
-(or the Check that causes them should be disabled), and it's okay only for
-comics in progress to have pending warnings.
-
 Parameters:
 
 =over 4
@@ -1304,11 +1283,6 @@ sub warning {
     ## use critic
 
     push @{$self->{warnings}}, $msg;
-
-    # PerlCritic wants me to check that I/O to the console worked.
-    ## no critic(InputOutput::RequireCheckedSyscalls)
-    print {*STDOUT} "$self->{srcFile} : $msg\n";
-    ## use critic
 
     return;
 }

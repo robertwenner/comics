@@ -123,18 +123,50 @@ sub generate {
     # and pass them to each Comic so that the Comic can copy and adjust them
     # based on its meta data.
     $comics->load_checks();
-    $comics->load_generators();
 
     foreach my $file (@files) {
         my $comic = Comic->new($comics->{settings}->clone(), $comics->{checks});
         $comic->load($file);
         push @{$comics->{comics}}, $comic;
     }
+
+    # Must load the generators before running checks cause we ask the generators
+    # if they're up to date to decide whether to run checks.
+    $comics->load_generators();
+
     $comics->run_all_checks();
+    foreach my $comic (@{$comics->{comics}}) {
+        _print_warnings($comic);
+    }
 
     $comics->generate_all();
 
     return $comics;
+}
+
+
+sub _print_warnings {
+    my ($comic) = @ARG;
+
+    my $count = scalar @{$comic->{warnings}};
+    if ($count > 0) {
+        _print_all($comic->{srcFile}, @{$comic->{warnings}});
+        my $problems = 'problem';
+        $problems .= 's' if ($count > 1);
+        my $summary = "$count $problems in $comic->{srcFile}";
+        if ($comic->not_yet_published()) {
+            croak($summary);
+        }
+        else {
+            # If this Comic is already published, treat any warning as an error,
+            # and keel over. The intention is that most warnings should be addressed
+            # (or the Check that causes them should be disabled), and it's okay only
+            # for comics in progress to have pending warnings.
+            _print_all($summary);
+        }
+    }
+
+    return;
 }
 
 
@@ -497,6 +529,8 @@ sub collect_files {
 
 Runs all configured checks for all loaded Comics that have been modified.
 
+Returns a hash of comic source file name to any warnings and messages from checking the comics.
+
 =cut
 
 sub run_all_checks {
@@ -529,8 +563,7 @@ sub run_all_checks {
     }
 
     _save_messages($messages_file, \%messages);
-
-    return;
+    return %messages;
 }
 
 
