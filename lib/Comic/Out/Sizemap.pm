@@ -247,7 +247,7 @@ sub _aggregate_comic_sizes {
 }
 
 
-## no critic(Subroutines::ProhibitSubroutinePrototypes, Subroutines::RequireArgUnpacking)
+## no critic(Subroutines::ProhibitSubroutinePrototypes, Subroutines::RequireArgUnpacking, ValuesAndExpressions::RequireInterpolationOfMetachars)
 sub _by_width($$) {
 ## use critic
     my ($a, $b) = @ARG;
@@ -255,7 +255,7 @@ sub _by_width($$) {
 }
 
 
-## no critic(Subroutines::ProhibitSubroutinePrototypes, Subroutines::RequireArgUnpacking)
+## no critic(Subroutines::ProhibitSubroutinePrototypes, Subroutines::RequireArgUnpacking, ValuesAndExpressions::RequireInterpolationOfMetachars)
 sub _by_height($$) {
 ## use critic
     my ($a, $b) = @ARG;

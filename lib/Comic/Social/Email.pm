@@ -21,7 +21,7 @@ use Email::Sender::Transport::SMTP;
 
 =encoding utf8
 
-=for stopwords Wenner merchantability perlartistic Uploader Uploaders
+=for stopwords Wenner merchantability perlartistic Uploader Uploaders SMTP png
 
 
 =head1 NAME
@@ -78,7 +78,7 @@ The C<password> is used to log in to the given C<server>.
 The C<recipient_list> is the path to a text file with an email address on
 each line.
 
-The C<mode> specifies whether to send the comic's PNG image ("png") as an
+The C<mode> specifies whether to send the comic's png image ("png") as an
 attachment or just a link to the comic ("link"). Defaults to "png".
 
 =cut

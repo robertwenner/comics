@@ -1228,6 +1228,9 @@ For use with Perl's C<sort> function.
 #   package main;
 #   @new = sort other::backwards @old;
 #
+# Perl::Critic in Perl 5.38.2 thinks there would be an interpolation of metachars on the
+# prototype.
+## no critic(ValuesAndExpressions::RequireInterpolationOfMetachars)
 sub from_oldest_to_latest($$) {
 ## use critic
     my $pub_a = $_[0]->_published_when();
