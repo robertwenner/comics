@@ -215,7 +215,7 @@ Adjusts the checks on a per-comic basis. Each comic will normally use the
 default checks passed in the constructor. Comics can modify these defaults
 by defining a C<Checks> entry in their metadata.
 
-That C<Checks> meta data needs to be a JSON array containing any of these
+That C<Checks> metadata needs to be a JSON array containing any of these
 keywords as objects (case-sensitive):
 
 =over 4
@@ -715,7 +715,7 @@ sub _normalized_title {
 
 Gets an alphabetically sorted array of all languages used in this Comic.
 
-This is determined by the title meta data; a comic exists in a language if
+This is determined by the title metadata; a comic exists in a language if
 it has a non-empty title in that language.
 
 =cut
@@ -777,14 +777,14 @@ sub is_published_today {
 =head2 not_for
 
 Checks whether this Comic is not for the given language. A Comic is considered
-for a language if it has a title for that language in its meta data.
+for a language if it has a title for that language in its metadata.
 
 Parameters:
 
 =over 4
 
 =item * B<$language> name of language to to check, as spelled in the Comic
-    meta data.
+    metadata.
 
 =back
 

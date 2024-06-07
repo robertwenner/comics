@@ -3,7 +3,7 @@
 - cleanup: Comic::not_yet_published should not consider locations.
 
 - cleanup: always use lower case language names in templates; accept any
-  case in comic meta data for backwards compatibility?
+  case in comic metadata for backwards compatibility?
 
 - feature: reject slashes and other funny characters (backslashes? colons?
   dotdot?) in all folder names in settings (File::Path::makepath CAN handle
@@ -95,7 +95,7 @@
   [![MetaCPAN Release](https://badge.fury.io/pl/Minilla.svg)](https://metacpan.org/release/Minilla)
   https://badge.fury.io/for/pl
 
-- feature: check that speaker names all show up in the "who" meta data (but
+- feature: check that speaker names all show up in the "who" metadata (but
   be careful about additional text, like "Paul, opening a beer:")
 
 - performance: write qr code file only when writing the pngs, i.e., when the
@@ -179,13 +179,13 @@
   it's cleaner and would allow to show / hide tags or series per language
 
 - refactor: break up Comic::Out::Backlog into the actual backlog part and
-  meta data (e.g., tags) aggregation overview
+  metadata (e.g., tags) aggregation overview
 
-- feature: support aggregating meta data that's not per-language in the
+- feature: support aggregating metadata that's not per-language in the
   backlog (author, contrib, published when / where)
 
 - feature: default subreddits should be per language hash, both in config
-  and in comic meta data (support meta data single value for backward
+  and in comic metadata (support meta data single value for backward
   compatibility)
 
 - feature: Comic::Social::Twitter needs a svg mode
@@ -195,7 +195,7 @@
   need to scan all comics again (may be tricky with generating pages for
   archive, tags, etc)
 
-- feature: see meta data should try to resolve path relative to current
+- feature: see metadata should try to resolve path relative to current
   comic
 
 - feature: allow copying static files and pipe them through a Template to
@@ -214,12 +214,12 @@
 
 - feature: allow picking up Dublin core entities from Inkscape's document
   properties: Creator = Author and Artist, Rights = Copyright; use for PNG
-  meta data and make available in templates
+  metadata and make available in templates
 
 - feature: pick up Contributors from Inkscape document properties, make
-  available in templates (merge with current contributors JSON meta data);
-  but then again this could be confusing if meta data is spread over Inkscape
-  regular properties and meta data JSON.
+  available in templates (merge with current contributors JSON metadata);
+  but then again this could be confusing if metadata is spread over Inkscape
+  regular properties and metadata JSON.
 
 - feature: use relative links for HtmlLink for easy offline use
 
@@ -247,12 +247,12 @@
   scheduled and where holes are
 
 - feature: cli tool to add a new language to an existing comic: language
-  layers as in another language, empty JSON attributes for meta data
+  layers as in another language, empty JSON attributes for metadata
 
 - feature: multiple pages comics (for print or ebooks)
 
 - feature: patreon integration: designate patreon only-comics, or upload to
-  patreon earlier than to web site
+  patreon earlier than to website
 
 - feature: substack integration
 
@@ -270,7 +270,7 @@
   commit to a (separate?) repository, push changes, and the web server checks
   out from git.
 
-- feature: warn about missing or bad meta data
+- feature: warn about missing or bad metadata
   description: should not be empty
   published where: not empty? certain well-known locations? (would only
   make sense it these locations are configured somewhere, but most don't

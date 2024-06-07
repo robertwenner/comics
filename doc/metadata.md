@@ -47,7 +47,7 @@ have the same title in different languages.
 The `published.where` field tells where the comic is published. It allows
 keeping all your comics in one folder, but still excluding some from your
 web page, for example, if they were magazine contributions. "web" is a
-special location indicating your web site. Besides that, you can use
+special location indicating your website. Besides that, you can use
 any names you like. In particular, this should *not* be a domain name for a
 web comic, as you'd probably need a different one for each language. Just
 use something like "web" or "that cool magazine" or "my buddy's web page".
@@ -56,12 +56,12 @@ Output generators and templates may ignore comics not published in the
 
 The `published.when` date must be an [ISO
 8601](https://en.wikipedia.org/wiki/ISO_8601) formatted date (without time),
-that is a four digit year, a dash, a two digit month, another dash, and the
-two digit day. For example, 2023-10-01 is October 1st in 2023. This date is
+that is a four-digit year, a dash, a two-digit month, another dash, and the
+two-digit day. For example, 2023-10-01 is October 1st in 2023. This date is
 used to check if the comic is already published. Many output generators that
 build your website will ignore a comic that is not yet published.
 
-The example above shows the minimum meta data needed. Different
+The example above shows the minimum metadata needed. Different
 [check](checks.md) and [output](outputs.md) modules will use different
 metadata fields; see the respective documentation on what they expect.
 

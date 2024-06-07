@@ -39,7 +39,7 @@ Comic::Check::Spelling - Checks spelling in the given comic.
 =head1 DESCRIPTION
 
 This flags comics that contain spelling errors. Inkscape has a built-in
-spell check, but that does not check meta data. As opposed to this Check,
+spell check, but that does not check metadata. As opposed to this Check,
 Inkscape also doesn't know the language of the text, making it hard to use
 on anything but the system language. Inkscape's spell check doesn't check
 automatically.
@@ -184,7 +184,7 @@ sub _check_metadata {
     my ($self, $comic, $language) = @ARG;
 
     foreach my $key (sort keys %{$comic->{meta_data}}) {
-        # Look at the comic's meta data top level keys, and if they are
+        # Look at the comic's metadata top level keys, and if they are
         # hashes (e.g., date and author are not), look for language keys
         # right underneath. This assumes that languages always appear at
         # that level. If this is is not the case, ignore the key as we

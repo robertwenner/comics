@@ -132,8 +132,8 @@ sub pass_configured_names_of_layers_to_drop : Tests {
 
     no warnings qw/redefine/;
     local *Comic::Out::SvgPerLanguage::_drop_top_level_layers = sub {
-        my ($svg, @layers) = @_;
-        push @dropped, @layers;
+        shift;
+        push @dropped, @_;
     };
     local *Comic::Out::SvgPerLanguage::_write = sub {
         # ignore

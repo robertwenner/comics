@@ -12,13 +12,12 @@ use JSON;
 use Carp;
 use File::Util;
 
-# Constants to catch typos when defining meta data.
+# Constants to catch typos when defining metadata.
 our Readonly $ENGLISH = 'English';
 our Readonly $META_ENGLISH = 'MetaEnglish';
 our Readonly $DEUTSCH = 'Deutsch';
 our Readonly $META_DEUTSCH = 'MetaDeutsch';
 our Readonly $ESPAÑOL = 'Español';
-our Readonly $META_ESPAÑOL = 'MetaEspañol';
 our Readonly $FRAMEWIDTH = 'framewidth';
 our Readonly $FIGUREN = 'Figuren';
 our Readonly $HINTERGRUND = 'Hintergrund';

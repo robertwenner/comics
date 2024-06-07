@@ -181,7 +181,7 @@ sub sorts_numerically_floats : Tests {
 
 
 sub uses_default_frame_layer_name_if_not_configured : Tests {
-    my $comic = MockComic::make_comic($MockComic::XML => <<XML);
+    $comic = MockComic::make_comic($MockComic::XML => <<XML);
         <g inkscape:groupmode="layer" inkscape:label="Frames">
             <rect width="100" height="100" x="0" y="0"/>
         </g>
@@ -195,7 +195,7 @@ XML
 
 
 sub configure_frame_layer_name : Tests {
-    my $comic = MockComic::make_comic($MockComic::XML => <<XML);
+    $comic = MockComic::make_comic($MockComic::XML => <<XML);
         <g inkscape:groupmode="layer" inkscape:label="Panels">
             <rect width="100" height="100" x="0" y="0"/>
         </g>
@@ -209,7 +209,7 @@ XML
 
 
 sub rejects_empty_frame_layer_name : Tests {
-    my $comic = MockComic::make_comic();
+    $comic = MockComic::make_comic();
     $comic->{settings}->{LayerNames}->{Frames} = '';
 
     eval {
@@ -221,7 +221,7 @@ sub rejects_empty_frame_layer_name : Tests {
 
 
 sub complains_if_no_frame_layer_found : Tests {
-    my $comic = MockComic::make_comic();
+    $comic = MockComic::make_comic();
     $comic->{settings}->{LayerNames}->{Frames} = 'Panels';
 
     my @frames = $comic->all_frames_sorted();

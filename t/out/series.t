@@ -41,7 +41,7 @@ sub set_up : Test(setup) {
 
 sub default_configuration : Tests {
     my $series = Comic::Out::Series->new();
-    is($series->{settings}->{collect}, 'series', 'wrong meta data');
+    is($series->{settings}->{collect}, 'series', 'wrong metadata');
 }
 
 
@@ -493,7 +493,6 @@ sub sanitizes_series_page_name : Tests {
 
 sub avoids_series_page_file_name_collisions : Tests {
     MockComic::fake_file('series.templ', '[% series %]');
-    my @comics;
     foreach my $series ('og/fg', 'og,fg') {
         my $comic = MockComic::make_comic(
             $MockComic::TITLE => {
@@ -515,7 +514,7 @@ sub avoids_series_page_file_name_collisions : Tests {
 }
 
 
-sub avoids_series_page_file_name_collisions_language_indepdently : Tests {
+sub avoids_series_page_file_name_collisions_language_independently : Tests {
     MockComic::fake_file('series.templ', '[% series %]');
     my $comic = MockComic::make_comic(
         $MockComic::TITLE => {
@@ -634,14 +633,14 @@ sub warns_about_whitespace_only_series : Tests {
 
 
 sub croaks_if_comic_does_not_have_the_configured_meta_data : Tests {
-    my $series = Comic::Out::Series->new(collect => 'sries');
+    my $series = Comic::Out::Series->new(collect => 'not-series');
     $series->generate($_) foreach (@comics);
     eval {
         $series->generate_all(@comics);
     };
     like($@, qr{\bno comic}i, 'should say what is wrong');
     like($@, qr{\bmetadata\b}i, 'should say what is wrong');
-    like($@, qr{\bsries\b}, 'should mention the series name');
+    like($@, qr{\bnot-series\b}, 'should mention the series name');
 }
 
 

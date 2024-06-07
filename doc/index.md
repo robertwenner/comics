@@ -6,7 +6,7 @@ When I started my beer and brewing themed web comic, I wanted to publish my
 comics in both English (at [beercomics.com](https://beercomics.com)) and
 German (at [biercomics.de](https://biercomics.de)). I used Inkscape for the
 drawings because I wanted vector graphics for easy scaling (my first web
-comic back in the day was in `.gif` format and it looked like that in
+comic back in the day was in `.gif` format,, and it looked like that in
 print). Most comics work in both English and German, they can be translated.
 So I put the languages in their respective layers, and show or hide one or
 the other when exporting. This works manually, but gets tedious when you
@@ -31,7 +31,7 @@ That said, there are still a few basic assumptions on how things work:
 - Everything is in the comic. The Inkscape `.svg` file is the "single source
   of truth". Everything needed for a comic is in that file, not in any other
   files, not in version control, not in a database of some sort, not in a
-  micro service, and not in the block chain. Most settings that are not
+  microservice, and not in the blockchain. Most settings that are not
   specific to a particular comic are configured in global
   [settings](settings.md) and in the templates used to generate outputs (see
   below).

@@ -43,7 +43,7 @@ sub make_copy {
 }
 
 
-sub consructor_complains_about_missing_configuration : Tests {
+sub constructor_complains_about_missing_configuration : Tests {
     eval {
         Comic::Out::FileCopy->new();
     };

@@ -26,7 +26,7 @@ sub set_up : Test(setup) {
 
 
 sub assert_check_count {
-    # Perl before 5.26 returns used and allocacted buckets; strip off the latter.
+    # Perl before 5.26 returns used and allocated buckets; strip off the latter.
     my ($comic, $expected, $message) = @_;
     my $actual = scalar %{$comic->{checks}};
     $actual =~ s{/\d+$}{}x;

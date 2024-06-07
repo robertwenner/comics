@@ -7,7 +7,7 @@ title for each language.
 
 These file names are stripped of certain characters that could cause
 problems in URLs and file names: any characters that are not letters,
-numbers, or hyphens will be removed; blanks will be replaces with hyphens.
+numbers, or hyphens will be removed; blanks will be replaced with hyphens.
 For example, a title "Let's drink!" will use "lets-drink" as the (base) file
 name.
 
@@ -73,7 +73,7 @@ classic left to right, top to bottom order. To set the id on a text element,
 open the XML editor in Inkscape (Edit menu), then show attributes (if they
 aren't visible by default). Select each text, click `id` in the attributes,
 and enter a value. I recommend numbers, and leaving gaps: a group of texts
-get e.g., 1 to 4, then the next group gets 10 to 13. That way you can easily
+gets e.g., 1 to 4, then the next group gets 10 to 13. That way you can easily
 squeeze in more texts without having to renumber everything. For the same
 reason, do numbering only when you are done with the comic's texts. Ids
 *must* be unique per document; even across layers / languages. If you try
@@ -112,7 +112,7 @@ used.
 * The `outfile` specifies where the output (the finished backlog) should go.
 
 * The generated backlog can be sorted by the location where the comics are
-  published (`published.where` in the comic's meta data). The backlog
+  published (`published.where` in the comic's metadata). The backlog
   template can iterate over the locations and print the backlog comics per
   location. However, if your main publishing location is e.g., "web",
   chances are you have other less important locations that would get sorted
@@ -121,16 +121,14 @@ used.
   `toplocation`. This will be the first item in the locations array,
   followed by all other locations in alphabetical order.
 
-* The optional `collect` array specifies which per-language meta data from
+* The optional `collect` array specifies which per-language metadata from
   the comics to collect and make available. These need to be given in the
   comics like this:
 
 ```json
 {
     "series": {
-        "English": {
-            "making beer"
-        }
+        "English": "making beer"
     },
     "who": {
         "English": [ "Max", "Paul" ]
@@ -151,7 +149,7 @@ When the template is processed, these variables are available:
   available. Sorted from next to be published to later scheduled comics.
   Comics not yet scheduled go last.
 
-* `published_comics` array of all published comics, with any meta data or
+* `published_comics` array of all published comics, with any metadata or
   information from other output generators that already ran available.
   Sorted from latest to earliest.
 
@@ -159,16 +157,16 @@ When the template is processed, these variables are available:
    not).
 
 * `publishers`: array of locations where comics are scheduled to be
-   published (from the comic's `published.where` meta data). The template
+   published (from the comic's `published.where` metadata). The template
    can use this to group backlog comics by location, e.g., one list for
    online and one for a magazine.
 
 * `x`, where x is each element in the configured `collect` parameter: a hash
-   of that comic meta data to the count it occurred.
+   of that comic metadata to the count it occurred.
 
-* `xOrder`, ordered by how often that x meta data has been seen in all
+* `xOrder`, ordered by how often that x metadata has been seen in all
    comics. The template can iterate over these arrays and use the values as
-   keys to the respective `x` hashes to print the them in order.
+   keys to the respective `x` hashes to print them in order.
 
 Only `comics` is useful for showing how many comics are in the queue /
 backlog. The other variables are meant to show what tags, series, or
@@ -318,7 +316,7 @@ The configuration looks like this:
         "Comic::Out::FileCopy": {
             "outdir": "generated/web",
             "from-all": ["web/all", "misc/all"],
-            "from-lanuage": "web/"
+            "from-language": "web/"
         }
     }
 }
@@ -352,7 +350,7 @@ always per-language.
 
 ```json
 {
-    "Out":
+    "Out": {
         "Comic::Out::HtmlArchivePage": {
             "template": {
                 "English": "templates/archive-en.templ"
@@ -383,14 +381,14 @@ While processing the templates, these variables are available:
 ## `Comic::Out::HtmlLink`
 
 Generates a HTML reference ("see that other comic") from comic metadata.
-This assume you use the `Comic::Out::HtmlComicPage` module as well.
+This assumes you use the `Comic::Out::HtmlComicPage` module as well.
 
 This is only for linking to another of your comics; see below to  include a
-hyperlink to any other web site.
+hyperlink to any other website.
 
 This module does not take any configuration.
 
-Actual linking is triggered by comic meta data within a `see` object. This
+Actual linking is triggered by comic metadata within a `see` object. This
 is language specific (link texts vary by language), so it needs a nested
 language object with a link text as key and a `.svg` file as value.
 
@@ -433,7 +431,7 @@ allow relative paths like `../../other/directory/comic.svg`.
 
 
 `Comic::Out::HtmlLink` is only for linking to another of your comics. To
-include a hyperlink to any other web site just add it to your comic's
+include a hyperlink to any other website just add it to your comic's
 metadata and have the template do whatever it needs to do. For example, add
 this in your comic:
 
@@ -458,7 +456,7 @@ Then use something like this in the comic page template:
 
 ## `Comic::Out::HtmlComicPage`
 
-This is the main output generator for web comics. It generates a HTML page
+This is the main output generator for web comics. It generates an HTML page
 for each comic, plus an `index.html` overview page.
 
 The configuration needs to be like this:
@@ -528,7 +526,7 @@ When the template is processed, these variables are also available:
   trailing slash, e.g., `comics/`.
 
 * `indexAdjust`: prefix for paths / URLs to other comics, so that navigation linking
-  works in published an non-published comics.
+  works in published a non-published comics.
 
 * `root`: points to the server root, to be used to include CSS, static
   images, or JavaScript code.
@@ -542,7 +540,7 @@ Generates a Portable Network Graphics (`.png`) file for from a Scalable
 Vector Graphics (`.svg`) file by calling Inkscape.
 
 You need to install png libraries on the operating system level, e.g., `brew
-install libpng` on MacOS, or `sudo apt-get install libpng` on Ubuntu.
+install libpng` on macOS, or `sudo apt-get install libpng` on Ubuntu.
 
 The configuration looks like this:
 
@@ -563,9 +561,9 @@ given `outdir`. Its name is derived from the comic's title in that language.
 The file name will be saved in the comic as `pngFile` so that templates
 like `Comic::Out::HtmlComicPage` can access it.
 
-The following meta data will be set on the `.png` file:
+The following metadata will be set on the `.png` file:
 
-* Title, taken from the Comic's meta data
+* Title, taken from the Comic's metadata
 
 * Description (as the transcript)
 
@@ -642,7 +640,7 @@ Configure `Comic::Out::Series` like this:
     "Out": {
         "Comic::Out::Series": {
             "collect": "series",
-            "min-count" 2,
+            "min-count": 2,
             "template": "path/to/series-page.template",
             "outdir": "path/to/outdir",
             "index": "path/to/index.template"
@@ -727,6 +725,7 @@ Sitemaps can tell search engines which pages they should crawl.
             "outfile": {
                 "Deutsch": "web/deutsch/sitemap.xml",
                 "English": "web/english/sitemap.xml"
+            }
         }
     }
 }
@@ -792,7 +791,7 @@ The configuration parameters are:
 
 The template can access these variables:
 
-* `svg`: a SVG drawing of frames for the comic sizes, can be embedded in
+* `svg`: an SVG drawing of frames for the comic sizes, can be embedded in
   HTML.
 
 * `min`, `max`, and `avg` for `width` and `height`, i.e., `minwidth` and
@@ -811,7 +810,7 @@ only the layers that are common for all languages and the layers for the
 respective language.
 
 To determine which layers are for a language, the code looks at the comic's
-meta data in the "Description" field in Inkscape; see
+metadata in the "Description" field in Inkscape; see
 [metadata](metadata.md) for details.
 
 The `.svg` file names will be saved in the comic as `svgFile` so that later
@@ -975,9 +974,9 @@ page template:
   The key in `tags_page` is the tag (e.g., "beer") and the value is the
   comic's url relative to the server root, e.g., "/comics/beer.html".
 
-* `tag_count`: An object of language to tag to tag count, e.g., in English,
-  tag "beer" was seen 10 times. This can be used to show only the top x
-  tags, or to use different font sizes based on tag frequency.
+* `tag_count`: An object of language to tag and then to tag count, e.g.,
+  in English, tag "beer" was seen 10 times. This can be used to show only
+  the top x tags, or to use different font sizes based on tag frequency.
 
 * `tag_min` and `tag_max` (per language), how often the least often and how
   often the most often tag were used, as an object with the language as the
@@ -1015,7 +1014,7 @@ template:
 A simple tags page could look like this:
 
 ```html
-<html>
+<html lang="en">
 <head>
     <title>All comics tagged [% tag %]</title>
 </head>

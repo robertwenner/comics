@@ -52,7 +52,7 @@ Test::Perl::Critic->import(
         # Too finicky; a long message does not get shorter by splitting it over
         # multiple lines.
         'ValuesAndExpressions::RestrictLongStrings',
-        # We're not on punchcards anymore...
+        # We're not on punch cards anymore...
         'Tics::ProhibitLongLines',
         # Tidy style is ugly, way too much white space, e.g., aligning assignment
         # operators on consecutive lines of assignments, or after an opening and

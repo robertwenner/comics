@@ -137,9 +137,9 @@ sub _subreddits {
 =head2 post
 
 Posts the given Comic to the configured default subreddit(s) and any
-subreddits mentioned in the comic's meta data.
+subreddits mentioned in the comic's metadata.
 
-For example, if the given Comic has this meta data:
+For example, if the given Comic has this metadata:
 
     "reddit": {
         "subreddit": {
@@ -169,7 +169,7 @@ When this is not given or C<true>, the comic will be posted to the default
 subreddits from the main configuration and any subreddits defined in the
 comic. If C<use-default> is false, the comic won't be posted to the default
 subreddits. If the comic sets C<use-defaults> to false and doesn't define
-subreddits in its meta data, it won't be posted at all.
+subreddits in its metadata, it won't be posted at all.
 
 Parameters:
 
@@ -225,7 +225,7 @@ sub _subreddits_from_comic_meta_data {
 
     my @subreddits;
     my $json = $comic->{meta_data}->{reddit}->{$language}->{subreddit};
-    push @subreddits, $self->_subreddits("$language Reddit meta data", $json);
+    push @subreddits, $self->_subreddits("$language Reddit metadata", $json);
     return @subreddits;
 }
 

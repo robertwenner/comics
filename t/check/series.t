@@ -30,7 +30,7 @@ sub happy_with_no_series : Tests {
 
 sub happy_with_repeated_series_per_language : Tests {
     my @comics;
-    foreach my $i (1..3) {
+    foreach (1..3) {
         my $comic = MockComic::make_comic(
             $MockComic::TITLE => {
                 $MockComic::DEUTSCH => 'Comic',

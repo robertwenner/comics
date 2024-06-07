@@ -143,13 +143,13 @@ sub post {
     my @messages;
 
     foreach my $comic (@comics) {
-        foreach my $language ($comic->languages()) {
+        LANG: foreach my $language ($comic->languages()) {
             my @recipients;
             eval {
                 @recipients = $self->_get_recipients($language);
             } or do {
                 push @messages, $self->message($EVAL_ERROR);
-                next;
+                next LANG;
             };
 
             my $plain_text_part = $self->_build_plain_text_part($comic, $language);
@@ -249,7 +249,7 @@ HTML
 
     my $part = Email::MIME->create(
         attributes => {
-            encoding => 'quoted-printable', # makes Email::MIME insert soft linebreaks and encode e.g., the = sign
+            encoding => 'quoted-printable', # makes Email::MIME insert soft line breaks and encode e.g., the = sign
             charset => 'utf-8',
         },
         body => $html,

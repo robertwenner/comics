@@ -17,14 +17,14 @@ use version; our $VERSION = qv('0.0.3');
 
 =encoding utf8
 
-=for stopwords Wenner merchantability perlartistic html
+=for stopwords Wenner merchantability perlartistic html Autovivification
 
 
 =head1 NAME
 
 Comic::Out::Backlog - Generates a single html page with all unpublished
 comics plus possibly lists of used tags, series and other per-language
-comic meta data.
+comic metadata.
 
 
 =head1 SYNOPSIS
@@ -84,7 +84,7 @@ The C<toplocation> will be the first element in the C<publishers> array made
 available to the template, to move one publisher to the beginning of the
 list, as a preferred one in ordering.
 
-The C<collect> array says which per-language meta data to add to the backlog
+The C<collect> array says which per-language metadata to add to the backlog
 overview.
 
 =cut
@@ -169,7 +169,7 @@ sub _populate_vars {
     my @to_collect = @{$self->{settings}->{collect}};
     my %collected;
     # Manually set to empty hashes for easier use in the template.
-    # Auto-vivification doesn't happen if we never enter the per-comic loop below.
+    # Autovivification doesn't happen if we never enter the per-comic loop below.
     foreach my $want (@to_collect) {
         $collected{$want} = {};
     }
@@ -179,7 +179,7 @@ sub _populate_vars {
             my $found = $comic->{meta_data}->{$want};
             next unless ($found);
 
-            # Tag exists in meta data.
+            # Tag exists in metadata.
             foreach my $language ($comic->languages()) {
                 my $per_language = $found->{$language};
                 # Silently ignore empty tags. If a Check is configured, it may

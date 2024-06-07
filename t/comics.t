@@ -70,8 +70,7 @@ sub config_is_directory : Tests {
 sub collect_files_adds_files_right_away : Tests {
     MockComic::fake_file($_, '...') foreach (qw(a.svg foo bar.txt));
 
-    my $comics = Comics->new();
-    my @collection = $comics->collect_files('a.svg', 'foo', 'bar.txt');
+    my @collection = Comics::collect_files('a.svg', 'foo', 'bar.txt');
     is_deeply([@collection], ['a.svg', 'foo', 'bar.txt']);
 }
 
@@ -94,8 +93,7 @@ sub collect_files_recurses_in_directories : Tests {
     };
     use warnings;
 
-    my $comics = Comics->new();
-    is_deeply([$comics->collect_files('dir')], ['comic.svg']);
+    is_deeply([Comics::collect_files('dir')], ['comic.svg']);
 }
 
 

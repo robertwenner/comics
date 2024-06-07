@@ -44,9 +44,9 @@ use the same instance for checking all your comics.
 
 =head2 new
 
-Creates a new Comic::Check::Tag that works on meta data in each Comic.
+Creates a new Comic::Check::Tag that works on metadata in each Comic.
 
-For example, for a tag named "tags", the meta data would be expected as:
+For example, for a tag named "tags", the metadata would be expected as:
 
     {
         "tags": {

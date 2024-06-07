@@ -17,7 +17,7 @@ sub set_up : Test(setup) {
 
 sub make_big_png {
     my $png = '';
-    foreach my $i (0 .. 132000) {
+    foreach (0 .. 132000) {
         $png .= 'x' x 76 . "\n";
     }
     return '<image href="' . $png . '"/>';

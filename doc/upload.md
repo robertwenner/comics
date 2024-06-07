@@ -6,7 +6,7 @@ uploading the comics --- all in one place, when used from Comics'
 convenience functions, without extra scripting.
 
 The order in which these modules run is undefined, but they will only run
-after all [Output](output.md) modules have finished.
+after all [Output](outputs.md) modules have finished.
 
 
 ## `Comic::Upload::Rsync`
@@ -18,6 +18,7 @@ server. You will also need to have your server configured to accept either
 This needs to be configured for any site to which you want to `rsync`:
 
 ```json
+{
     "Upload": {
         "Comic::Upload::Rsync": {
             "sites": {
@@ -37,6 +38,7 @@ This needs to be configured for any site to which you want to `rsync`:
             ]
         }
     }
+}
 ```
 
 * `sites` is a list of sites to which you want to copy files. Each item in
@@ -51,7 +53,7 @@ This needs to be configured for any site to which you want to `rsync`:
 * `options` is an optional list of `rsync` options that take no arguments.
 
   Note that you can only use options that don't take any arguments.
-  `--update` is fine, but `--exclude` is not, as the later expects a file
+  `--update` is fine, but `--exclude` is not, as the latter expects a file
   pattern. (If you place all output in a directory tree per language you
   shouldn't need to exclude anything anyway.)
 
@@ -89,6 +91,7 @@ as `you` with the `ssh` key in `.ssh/mykey.id_rsa`) to the `deutsch/` and
 Consider the following example for retrying:
 
 ```json
+{
     "Upload": {
         "Comic::Upload::Rsync": {
             "check": [
@@ -97,7 +100,7 @@ Consider the following example for retrying:
             ]
         }
     }
-
+}
 ```
 
 The above example will try to load the Comic's URLs up to 30 times, with a

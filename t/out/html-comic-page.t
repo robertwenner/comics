@@ -65,7 +65,7 @@ sub is_up_to_date : Tests {
 
     no warnings qw/redefine/;
     local *Comic::up_to_date = sub {
-        my $self = shift;
+        shift;
         push @passed, @_;
     };
     use warnings;
@@ -517,8 +517,7 @@ sub includes_references: Tests {
     my $comic = make_comic('English', 'Beer', '2016-01-01');
     $comic->{htmllink} = { 'English' => 'see.html' };
 
-    my $hcp = make_generator();
-    my %vars = $hcp->_set_vars($comic, 'English');
+    my %vars = Comic::Out::HtmlComicPage::_set_vars($comic, 'English');
 
     is_deeply($vars{'see'}, { 'English' => 'see.html' }, 'wrong see reference');
 }
@@ -527,8 +526,7 @@ sub includes_references: Tests {
 sub provides_empty_references_hash_if_no_real_references : Tests {
     my $comic = make_comic('English', 'Beer', '2016-01-01');
 
-    my $hcp = make_generator();
-    my %vars = $hcp->_set_vars($comic, 'English');
+    my %vars = Comic::Out::HtmlComicPage::_set_vars($comic, 'English');
 
     is_deeply($vars{'see'}, {}, 'should set see to an empty hash');
 }

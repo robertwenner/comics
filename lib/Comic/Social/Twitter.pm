@@ -128,7 +128,7 @@ data (i.e., hashtags). Twitter hashtags can be passed in the Comic's
 C<twitter -> language> array. If the combined text is too long, it will be
 truncated.
 
-For example, if the given Comic has this meta data:
+For example, if the given Comic has this metadata:
 
     {
         "title": {

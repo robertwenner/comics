@@ -4,7 +4,7 @@
 
 The Comic modules use Perl's [Toolkit](http://template-toolkit.org/). A
 template is a text where the variable parts are represented by special
-markers. In Toolkit they are enclosed by `[%` and `%]`. You can access
+markers. In Toolkit, they are enclosed by `[%` and `%]`. You can access
 your comic metadata directly, and output modules will add more data for use
 in templates.
 
@@ -18,7 +18,7 @@ Toolkit also supports
 - converting  data to [HTML](http://www.template-toolkit.org/docs/manual/Filters.html#section_html)
 
 
-For example, you could use a simple template to generate a HTML page for
+For example, you could use a simple template to generate an HTML page for
 each comic:
 
 ```html
@@ -28,7 +28,7 @@ each comic:
 <head>
 <body>
     <h1>[% comic.meta_data.title.$Language %]</h1>
-    <img src="[% comic.pngFile.$language %]"/>
+    <img src="[% comic.pngFile.$language %]" alt="[% comic.meta_data.description.$Language %]"/>
 </body>
 ```
 
@@ -103,7 +103,7 @@ save it in the comic's metadata like this:
     "previouslyIn": {
         "English": [
             "some.blog.com",
-            "The big book on my comics",
+            "The big book on my comics"
         ]
     }
 }

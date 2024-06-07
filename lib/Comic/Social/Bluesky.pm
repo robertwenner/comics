@@ -118,10 +118,10 @@ if the given Comic is the latest or whether it has already been posted. The
 caller needs to make sure to pass the right Comic at the right time.
 
 The text for the message will be made from the comic's title, description, and Bluesky
-hash tags meta data. Hashtags can be passed in the Comic's C<bluesky.language>
+hash tags metadata. Hashtags can be passed in the Comic's C<bluesky.language>
 array.
 
-For example, if the given Comic has this meta data:
+For example, if the given Comic has this metadata:
 
     {
         "title": {

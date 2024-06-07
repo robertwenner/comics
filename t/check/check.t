@@ -16,7 +16,6 @@ use BadCheck;
 
 __PACKAGE__->runtests() unless caller;
 
-my %faked_files;
 my $comics;
 
 

@@ -54,7 +54,7 @@ also have the same number of actors in each language).
 Actors metadata is expected to be an array at `who` -> `language`.
 
 In the following example you'll get an error because the English character
-list has less items than the others.
+list has fewer items than the others.
 
 ```json
 {
@@ -74,7 +74,7 @@ and that the creation date is before the published date (to catch date
 typos).
 
 For regularly published comics you may want to avoid publishing more than
-one comics on the same date. However, it's probably fine to publish a comic
+one comic on the same date. However, it's probably fine to publish a comic
 in different locations on the same day, or different comics in different
 languages on the same day.
 
@@ -320,8 +320,8 @@ If you don't install a needed language, all words will be flagged as typos
 when trying to spellcheck that language.
 
 The `Comic::Check::Spelling` only *reports* unknown words. It's not
-interactive: you cannot add unknown words to the dictionary on he fly and
-you cannot enter corrections.
+interactive: you can neither add unknown words to the dictionary on the fly,
+nor can you enter corrections.
 
 You have three ways to deal with unknown words that are not typos:
 
@@ -331,7 +331,7 @@ You have three ways to deal with unknown words that are not typos:
 
 * Add them to the comic's ignore list.
 
-Adding the to your general dictionary means to add the words to a plain text
+Adding the word to your general dictionary means to add the words to a plain text
 file and run the spellchecker interactively on that file, accepting all
 unknown words. Here is an example for `aspell`:
 
@@ -431,7 +431,7 @@ The title is expected in the comic metadata like this:
 ## `Comic::Check::Transcript`
 
 Checks a comic's transcript for meta information and real comic text order.
-In particular, this checks that the a comic's transcript always has a
+In particular, this checks that the comic's transcript always has a
 speaker indicator before regular text. This helps to generate a transcript
 where the meta layer has an indicator of what's happening and who says
 something, and the real language layer has the text that the actors actually

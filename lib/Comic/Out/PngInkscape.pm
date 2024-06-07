@@ -8,6 +8,7 @@ use Carp;
 use File::Path;
 use File::Copy;
 use Readonly;
+use Image::ExifTool;
 
 use Comic::Out::Generator;
 use base('Comic::Out::Generator');
@@ -18,7 +19,7 @@ use version; our $VERSION = qv('0.0.3');
 
 =encoding utf8
 
-=for stopwords Wenner merchantability perlartistic png optipng Inkscape MacOS
+=for stopwords Wenner merchantability perlartistic png optipng Inkscape macOS
 
 
 =head1 NAME
@@ -88,7 +89,7 @@ sub new {
 
 =head2 up_to_date
 
-See the  Generator method's documentation.
+See the Generator method's documentation.
 
 =cut
 
@@ -190,17 +191,17 @@ sub _svg_to_png {
             _set_png_meta($comic, $tool, $key, $settings{$key});
         }
     }
-    # Add data explicitly overridden in comic meta data
+    # Add data explicitly overridden in comic metadata
     my $svg_meta = $comic->{meta_data}->{'png-meta-data'};
     if (ref($svg_meta) eq 'HASH') {
         foreach my $key (keys %{$svg_meta}) {
             _set_png_meta($comic, $tool, $key, ${${svg_meta}}{$key});
         }
     }
-    # Finally write png meta data
+    # Finally write png metadata
     my $rc = $tool->WriteInfo($png_file);
     if ($rc != 1) {
-        $comic->keel_over('Comic::Out::PngInkscape: Cannot write PNG meta data: ' . $tool->GetValue('Error'));
+        $comic->keel_over('Comic::Out::PngInkscape: Cannot write PNG metadata: ' . $tool->GetValue('Error'));
     }
     return;
 }
@@ -253,7 +254,7 @@ sub _file_size {
 sub _set_png_meta {
     my ($comic, $tool, $name, $value) = @ARG;
 
-    my ($count_set, $error) = $tool->SetNewValue($name, $value);
+    my ($success, $error) = $tool->SetNewValue($name, $value);
     $comic->keel_over("Cannot set $name: $error") if ($error);
     return;
 }
@@ -338,7 +339,7 @@ sub _build_inkscape_command {
 
 =head1 DEPENDENCIES
 
-The Comic module. Inkscape. C<libpng> (MacOS) or C<libpng-dev> on Ubuntu.
+The Comic module. Inkscape. C<libpng> (macOS) or C<libpng-dev> on Ubuntu.
 Optionally optipng.
 
 

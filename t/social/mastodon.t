@@ -118,7 +118,7 @@ sub complains_about_bad_instance : Tests {
     eval {
         Comic::Social::Mastodon->new('instance' => 'https://mstd.example.org/my/account');
     };
-    like($@, qr{Comic::Social::Mastodon}, 'should say the modulename');
+    like($@, qr{Comic::Social::Mastodon}, 'should say the module name');
     like($@, qr{\binstance\b}, 'should say the bad setting');
     like($@, qr{\bslash}i, 'should say what is wrong');
 }
@@ -136,7 +136,7 @@ sub complains_about_bad_mode : Tests {
     eval {
         Comic::Social::Mastodon->new(%settings, 'mode' => 'whatever');
     };
-    like($@, qr{Comic::Social::Mastodon}, 'should say the modulename');
+    like($@, qr{Comic::Social::Mastodon}, 'should say the module name');
     like($@, qr{\bmode\b}, 'should say the bad setting');
     like($@, qr{\bwhatever\b}, 'should say the bad value');
 }
@@ -303,7 +303,7 @@ sub includes_visibility_if_configured : Tests {
     $comic->{url}{'English'} = "https://beercomics.com/comics/latest-comic.html";
 
     my $mastodon = Comic::Social::Mastodon->new(%settings, 'mode' => 'link', 'visibility' => 'private');
-    my $results = $mastodon->post($comic);
+    $mastodon->post($comic);
 
     is_deeply(\@posted, [
         {
@@ -546,7 +546,7 @@ sub encodes_instance_url : Tests {
     MockComic::fake_file("generated/web/english/comics/latest-comic.png", 'png file contents');
 
     my $mastodon = Comic::Social::Mastodon->new(%settings, 'mode' => 'png', instance => 'mästödön.de');
-    my $results = $mastodon->post($comic);
+    $mastodon->post($comic);
 
     my @urls = map { $_->{url} } @posted;
     is_deeply(\@urls, [

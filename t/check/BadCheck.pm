@@ -7,7 +7,7 @@ use base('Comic::Check::Check');
 
 
 sub new {
-    my ($class, @args) = @_;
+    my ($class) = @_;
     my $self = $class->SUPER::new();
     return $self;
 }

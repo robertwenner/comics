@@ -119,10 +119,10 @@ to make sure to pass the right Comic at the right time.
 
 Tooting the comic means to toot / post it in each of its languages. The text
 for the toot will be made from the comic's title, description, and Twitter
-hash tags meta data. Hashtags can be passed in the Comic's C<mastodon ->
+hash tags metadata. Hashtags can be passed in the Comic's C<mastodon ->
 language> array.
 
-For example, if the given Comic has this meta data:
+For example, if the given Comic has this metadata:
 
     {
         "title": {

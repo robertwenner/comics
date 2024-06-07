@@ -14,7 +14,7 @@ sub new {
 }
 
 sub up_to_date {
-    my ($self, $file) = @_;
+    my ($self) = @_;
     return $self->{up_to_date};
 }
 

@@ -174,7 +174,7 @@ sub generate {
             }
 
             if (ref $comic->{meta_data}{$tag} ne 'HASH') {
-                $comic->warning("$tag meta data must be a hash of languages to arrays of values");
+                $comic->warning("$tag metadata must be a hash of languages to arrays of values");
                 next;
             }
             next if (keys %{$comic->{meta_data}{$tag}} == 0);

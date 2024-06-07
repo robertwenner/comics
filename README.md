@@ -23,18 +23,18 @@ configuration file entries may change.
 ## Dependencies
 
 Install the libraries using the operating system's package manager (e.g.,
-`apt` on Ubuntu or `brew` on MacOS) before installing Perl modules; in
+`apt` on Ubuntu or `brew` on macOS) before installing Perl modules; in
 particular `Text::Aspell` will bail out if the aspell libraries are not
 installed.
 
 ### Operating system libraries
 
-#### MacOS
+#### macOS
 
 If you are using [brew](https://brew.sh), just run `brew bundle` to install
 the dependencies.
 
-`Text::Aspell` may not install on MacOS; use `Text::Hunspell` instead.
+`Text::Aspell` may not install on macOS; use `Text::Hunspell` instead.
 
 To do that, switch the dependency in `Makefile.PL`:
 

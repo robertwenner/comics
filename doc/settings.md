@@ -44,7 +44,7 @@ For example:
 }
 ```
 
-* `siteComics` gives the folder (relative to the web site root) where
+* `siteComics` gives the folder (relative to the website root) where
   generated comics should be saved, in the example above in the `ccc`
   folder. The default value is "comics".
 * `published` is the folder where published comics should be placed, in the
@@ -106,7 +106,7 @@ to generate some output files.
 {
     "Out": {
        "Comic::Out::SvgPerLanguage": {
-            "outdir": "generated/svg",
+            "outdir": "generated/svg"
         },
         "Comic::Out::HtmlLink": {
         },
@@ -142,7 +142,7 @@ comics somewhere.
                     "source": "generated/web/english/",
                     "destination": "you@your-english-domain/comic-folder"
                 }
-            ],
+            ]
         }
     }
 }

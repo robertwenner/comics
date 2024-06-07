@@ -493,7 +493,6 @@ sub user_dictionary_not_found : Tests {
 sub ignores_user_dictionary_words_per_language : Tests {
     no warnings qw/redefine/;
     *File::Slurper::read_lines = sub {
-        my ($name) = @_;
         return ('dict');
     };
     use warnings;
@@ -515,7 +514,6 @@ sub ignores_user_dictionary_words_per_language : Tests {
 sub user_dictionary_plus_ignore_words : Tests {
     no warnings qw/redefine/;
     *File::Slurper::read_lines = sub {
-        my ($name) = @_;
         return ('one', 'two', 'three');
     };
     use warnings;
@@ -532,7 +530,6 @@ sub user_dictionary_plus_ignore_words : Tests {
 sub trims_whitespace_from_user_dictionary_words : Tests {
     no warnings qw/redefine/;
     *File::Slurper::read_lines = sub {
-        my ($name) = @_;
         return (' one', '  two ', "\n", "\r\n", '', "\tthree  ", 'and four');
     };
     use warnings;

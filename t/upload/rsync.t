@@ -424,7 +424,7 @@ sub check_upload_hits_url_ok : Tests {
 }
 
 
-sub check_upload_sleeps_and_retries_eventually_succeds : Tests {
+sub check_upload_sleeps_and_retries_eventually_succeeds : Tests {
     my $tries = 3;
     my $client = Test::MockModule->new(ref(HTTP::Tiny->new()));
     $client->redefine('get', sub {
@@ -459,7 +459,7 @@ sub check_upload_sleeps_and_retries_eventually_succeds : Tests {
     );
     $rsync->_check_urls($comic);
 
-    is(0, $tries, 'wromg number or retries');
+    is(0, $tries, 'wrong number or retries');
     is_deeply([10, 10], \@slept, 'wrong sleep times');
 }
 

@@ -93,7 +93,7 @@ sub new {
 
 =head2 up_to_date
 
-See the  Generator method's documentation.
+See the Generator method's documentation.
 
 =cut
 
@@ -133,7 +133,6 @@ Defines these variables in the passed Comic:
 sub generate {
     my ($self, $comic) = @ARG;
 
-    my %uri_encoding_options = (encode_reserved => 1);
     foreach my $language ($comic->languages()) {
         my $html_file = "$comic->{baseName}{$language}.html";
         $comic->{htmlFile}{$language} = $html_file;
@@ -232,18 +231,18 @@ sub _do_export_html {
     # This should probably be configurable, so that the template can check whether
     # tags or who exists, and print a header and footer only if this is the case.
     foreach my $what (qw(tags who)) {
-        if (!defined $comic->{meta_data}->{who}->{$language}) {
-            @{$comic->{meta_data}->{who}->{$language}} = ();
+        if (!defined $comic->{meta_data}->{$what}->{$language}) {
+            @{$comic->{meta_data}->{$what}->{$language}} = ();
         }
     }
 
-    my %vars = $self->_set_vars($comic, $language);
+    my %vars = _set_vars($comic, $language);
     return Comic::Out::Template::templatize($comic->{srcFile}, $template, $language, %vars);
 }
 
 
 sub _set_vars {
-    my ($self, $comic, $language) = @ARG;
+    my ($comic, $language) = @ARG;
 
     my %vars;
     $vars{'comic'} = $comic;

@@ -124,7 +124,7 @@ sub new {
     %{$self->{last_modified}} = ();  # last modified date for series per language
     %{$self->{series_page}} = ();  # language to series to series page
     %{$self->{series_page_names}} = ();     # for unique names
-    $self->{seen} = 0;      # count how often we've seen series meta data
+    $self->{seen} = 0;      # count how often we've seen series metadata
 
     return $self;
 }

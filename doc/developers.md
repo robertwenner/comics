@@ -34,7 +34,7 @@ name must start with `Comic::Check::...`
 
 ## Output generators
 
-Output generating modules take each `Comic` and produce output like a HTML
+Output generating modules take each `Comic` and produce output like an HTML
 page or an archive overview page. To add a new output generator, derive from
 the [Generator](../lib/Comic/Out/Generator.pm) base module and implement the
 `generate` or `generate_all` methods as needed. See the POD for details.

@@ -23,7 +23,7 @@ use version; our $VERSION = qv('0.0.3');
 
 =head1 NAME
 
-Comic::Out::Sitemap - Generates a sitemap for web sites.
+Comic::Out::Sitemap - Generates a sitemap for websites.
 
 
 =head1 SYNOPSIS

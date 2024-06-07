@@ -16,28 +16,24 @@ use lib 't/upload';
 use lib 't/social';
 
 
-my $NO_CHECKS = "\"$Comic::Settings::CHECKS\": {}";
 my $DUMMY_CHECK = <<"CHECK";
     "$Comic::Settings::CHECKS": {
         "DummyCheck": []
     }
 CHECK
 
-my $NO_GENERATORS = "\"$Comic::Settings::GENERATORS\": {}";
 my $DUMMY_GENERATOR = <<"GENERATORS";
     "$Comic::Settings::GENERATORS": {
         "DummyGenerator": []
     }
 GENERATORS
 
-my $NO_UPLOADERS = "\"$Comic::Settings::UPLOADERS\": {}";
 my $DUMMY_UPLOADER = <<"UPLOADERS";
     "$Comic::Settings::UPLOADERS": {
         "DummyUploader": []
     }
 UPLOADERS
 
-my $NO_SOCIAL_MEDIA = "\"$Comic::Settings::SOCIAL_MEDIA_POSTERS\": {}";
 my $DUMMY_POSTER = <<"POSTERS";
     "$Comic::Settings::SOCIAL_MEDIA_POSTERS": {
         "DummySocialMedia": []

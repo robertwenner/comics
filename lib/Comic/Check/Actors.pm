@@ -55,7 +55,7 @@ sub new {
 Checks that the given Comic's actors don't have empty names and that each
 language has the same number of actors.
 
-Actors meta data is expected to be an array at C<who> -E<gt> C<$language>.
+Actors metadata is expected to be an array at C<who> -E<gt> C<$language>.
 For example:
 
     {

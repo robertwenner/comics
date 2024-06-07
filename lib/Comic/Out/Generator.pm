@@ -224,7 +224,7 @@ Could be hard to insert new groups. Sounds like reinventing Gradle.
 Throw out JSON... it's ugly anyway. But then again, YAML (white space based
 format is hard to enter in Inkscape's proportional font input dialog) and TOML
 (fancy C<.ini> files) are not much better. It would also be inconsistent to use
-JSON in the Inkscape meta data and something else for the main configuration
+:SON in the Inkscape metadata and something else for the main configuration
 file.
 
 =cut

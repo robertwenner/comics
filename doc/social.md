@@ -1,7 +1,7 @@
 # Social media network modules
 
 The `Comic::Social::...` modules post today's comic for each language on
-social networks (in the widest sense).
+social networks (in the widest sense, i.e., everything related to advertising).
 
 If you have multiple comics for today, for example, one only in English and
 one only in German, the social media code will post both.
@@ -9,7 +9,7 @@ one only in German, the social media code will post both.
 Some social networks are more painful to automate than others, in particular
 Facebook. (I hate Facebook, for various reasons, and their finicky API did
 not help.) Because of that only easy social networks are supported. For
-everything else, create a [RSS Feed](outputs.md#Comic::Out::Feed) and hook
+everything else, create an [RSS Feed](outputs.md#Comic::Out::Feed) and hook
 it up to a free [Zapier](https://zapier.com) account to spread the joy.
 
 All `Comic::Social::...` configuration must be within the `Social` section.
@@ -30,6 +30,7 @@ a name like "ComicSocialBluesky" so that you can easily see what it's for.
 Copy the password into your configuration file like this:
 
 ```json
+{
     "Social": {
         "Comic::Social::Bluesky": {
             "username": "you@example.com",
@@ -37,6 +38,7 @@ Copy the password into your configuration file like this:
             "mode": "png"
         }
     }
+}
 ```
 
 The configuration values are:
@@ -51,7 +53,7 @@ The configuration values are:
   If mode is "png" but posting the image somehow fails, falls back to posting the link.
 
 The text of the post is pulled from comic title and description. Any general
-and Bluesky hash tags are added. Bluesky hashtags must be specified in the comic
+and Bluesky hashtags are added. Bluesky hashtags must be specified in the comic
 metadata like in the example below.
 
 The `Comic::Social::Bluesky` module adds any hashtags from `hashtags` and
@@ -73,7 +75,7 @@ like mentions.
 ```
 
 Make sure to include the at sign for mentions. If this is missing, the tags are
-considered hash tags.
+considered hashtags.
 
 
 ## `Comic::Social::Email`
@@ -88,6 +90,7 @@ that cover subscribes and unsubscribes as well as sending bulk emails.
 To email the latest comic, configure it like this in your settings file:
 
 ```json
+{
     "Social": {
         "Comic::Social::Email": {
             "server": "smtp.gmail.com",
@@ -99,7 +102,7 @@ To email the latest comic, configure it like this in your settings file:
             }
         }
     }
-
+}
 ```
 
 The `server` is the sending email server. You can use your email provider's
@@ -150,12 +153,14 @@ letters (at least 8 characters).
 Then configure this module:
 
 ```json
+{
     "Social": {
         "Comic::Social::IndexNow": {
             "key": "your key from above",
             "url": "https://indexnow.org/indexnow"
         }
     }
+}
 ```
 
 The `key` is your somewhat secret made up key. You must use the same key for
@@ -244,7 +249,7 @@ Before this module can post for you to Reddit, you need to go to your [Reddit
 apps settings](https://www.reddit.com/prefs/apps), then create an app
 (script). This will get you the secret needed to configure this module.
 
-Unfortunately you cannot use Reddit's two factor authentication or the
+Unfortunately you cannot use Reddit's two-factor authentication or the
 script won't be able to log in.
 
 The configuration looks like this:
@@ -259,7 +264,7 @@ The configuration looks like this:
             "secret": "...",
             "default_subreddit": "comics",
             "title_prefix": "[OC] ",
-            "title_suffix": " [OC]",
+            "title_suffix": " [OC]"
         }
     }
 }
@@ -332,7 +337,7 @@ The fields are:
 
 Tweeting the comic means to tweet it in each of its languages. The text for
 the tweet will be made from the comic's title, description, and the hashtags
-and twitter meta data (i.e., hashtags). Twitter hashtags can be passed in
+and twitter metadata (i.e., hashtags). Twitter hashtags can be passed in
 the Comic's `hashtags -> language` and `twitter -> language` arrays, where
 `hashtags` will be used for other social media networks that use hashtags
 (like Mastodon) as well and `twitter` hashtags are only used for Twitter.
@@ -341,7 +346,7 @@ specific ones like mentions.
 
 If the combined text is too long, it will be truncated.
 
-For example, if the given Comic has this meta data:
+For example, if the given Comic has this metadata:
 
 ```json
 {
@@ -354,7 +359,7 @@ For example, if the given Comic has this meta data:
         "deutsch": "Weil ich's kann!"
     },
     "hashtags": {
-        "#homebrewing"
+        "english": [ "#homebrewing" ]
     },
     "twitter": {
         "english": [ "@brewery" ],

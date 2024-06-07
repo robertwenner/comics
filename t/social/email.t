@@ -41,7 +41,6 @@ sub _html_body {
 
     my @heads = $root->getElementsByTagName('head');
     is(@heads, 1, 'should have exactly 1 head');
-    my $head = $heads[0];
 
     my @bodies = $root->getElementsByTagName('body');
     is(@bodies, 1, 'should have exactly 1 body');
@@ -329,7 +328,7 @@ sub builds_png_email : Tests {
 
 
 sub encodes_non_ascii_subject : Tests {
-    my $comic = MockComic::make_comic(
+    $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Kölsch!' },
         $MockComic::DESCRIPTION => { $MockComic::ENGLISH => '...' },
     );
@@ -350,7 +349,7 @@ sub encodes_non_ascii_subject : Tests {
 
 
 sub encodes_non_ascii_in_body : Tests {
-    my $comic = MockComic::make_comic(
+    $comic = MockComic::make_comic(
         $MockComic::TITLE => { $MockComic::ENGLISH => 'Beer?' },
         $MockComic::DESCRIPTION => { $MockComic::ENGLISH => 'Kölsch!' },
     );

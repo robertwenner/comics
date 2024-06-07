@@ -469,7 +469,7 @@ sub collect_unsupported_stuff : Tests {
 }
 
 
-sub no_published_comics_initalizes_per_language_counts : Tests {
+sub no_published_comics_initializes_per_language_counts : Tests {
     MockComic::fake_file("backlog.templ", <<'TEMPL');
 [% FOREACH l IN languages %]
     [% l %] ([% published_counts.$publishers.0.$l %])

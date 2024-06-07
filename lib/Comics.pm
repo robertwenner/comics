@@ -43,12 +43,28 @@ additional files like web pages.
 
     # Detailed:
     my $comics = Comics->new();
-    $comics->load_settings("my-settings.json");
-    my @comics = $comics->collect_files(@comic_dirs)
+    $comics->load_settings('/path/to/config.json');
+    check_settings(%{$comics->{settings}});
+
     $comics->load_checks();
-    $comics->run_all_checks();
+    my @files = Comics::collect_files('/path/to/comics/dir');
+    foreach my $file (@files) {
+        my $comic = Comic->new($comics->{settings}->clone(), $comics->{checks});
+        $comic->load($file);
+        push @{$comics->{comics}}, $comic;
+    }
+
     $comics->load_generators();
+
+    $comics->run_all_checks();
+    foreach my $comic (@{$comics->{comics}}) {
+        foreach my $warning(@{$comic->{warnings}}) {
+            print "$comic->{srcFile}: $warning\n";
+        }
+    }
+
     $comics->generate_all();
+
     if ($want_to_upload) {
         $comics->load_uploaders();
         $comics->upload_all_comics();
@@ -58,11 +74,14 @@ additional files like web pages.
         }
     }
 
+
     # Simple command to check comics and generate output:
     Comics::generate("config.json", "comics/");
 
+
     # Simple command to sync local comics to a web server:
     Comics::upload("/path/to/config.json");
+
 
     # Simple command (e.g., for a cronjob) to publish the latest comic,
     # including generating everything, uploading, and posting to social media:
@@ -112,7 +131,7 @@ sub generate {
     $comics->load_settings($config);
     check_settings(%{$comics->{settings}});
 
-    my @files = $comics->collect_files(@dirs);
+    my @files = collect_files(@dirs);
     unless (@files) {
         croak('No comics found; looked in ' . join ', ', @dirs);
     }
@@ -121,7 +140,7 @@ sub generate {
     # check modules it should eventually load with which parameters, but it
     # hasn't even tried loading them yet. Now load the actual check modules
     # and pass them to each Comic so that the Comic can copy and adjust them
-    # based on its meta data.
+    # based on its metadata.
     $comics->load_checks();
 
     foreach my $file (@files) {
@@ -382,7 +401,7 @@ sub load_generators {
     # also makes for ugly and clumsy configuration files. For example,
     # changing the configuration to an array would have added another layer
     # in the configuration file, making it ugly to edit. Adding an "order"
-    # member in each generator configuration makes it ahrd to insert modules
+    # member in each generator configuration makes it hard to insert modules
     # (have to adjust all later numbers) and also pushes the need to know
     # the module dependencies onto the user. Adding an extra array of the
     # generator names just for ordering purposes separates order and actual
@@ -494,7 +513,7 @@ Arguments:
     regardless of their extension, where any directories will only be
     scanned for supported files.
     Pass a relative path for directories if you usually use relative paths,
-    e.g., in the C<see> comic meta data to refer to another comic. Later
+    e.g., in the C<see> comic metadata to refer to another comic. Later
     code checking paths may or may not be aware of the current directory and
     hence not find referenced files.
 
@@ -503,7 +522,7 @@ Arguments:
 =cut
 
 sub collect_files {
-    my ($self, @files_or_dirs) = @ARG;
+    my (@files_or_dirs) = @ARG;
 
     my @collection;
     foreach my $fod (@files_or_dirs) {

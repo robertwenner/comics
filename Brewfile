@@ -1,4 +1,4 @@
-# Installs dependencies for MacOS brew users.
+# Installs dependencies for macOS brew users.
 # Run with
 #   brew bundle
 # To install brew and for more information, see https://brew.sh/

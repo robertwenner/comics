@@ -42,7 +42,7 @@ Comic::Out::Feed - Generates feeds. Meant for RSS or Atom feeds.
 Generates feeds (like Atom or RSS) for web the sites.
 
 This approach relies on the used templates for the feed structure, which
-means the web site author needs to know how to write feeds using Perl's
+means the website author needs to know how to write feeds using Perl's
 Template module, and the Feed package just populates them.
 
 See L<Template> as well as L<RSS|https://en.wikipedia.org/wiki/RSS> and

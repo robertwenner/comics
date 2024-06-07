@@ -291,7 +291,7 @@ sub slows_down_posting : Tests {
 
     no warnings qw/redefine/;
     local *Reddit::Client::submit_link = sub {
-        my ($self, %args) = @_;
+        my ($self) = @_;
         if (!$slowed) {
             $slowed = 1;
             die("you are posting too fast, try again in 1 second");
@@ -299,7 +299,6 @@ sub slows_down_posting : Tests {
         return "redditID1234";
     };
     local *Reddit::Client::get_link = sub {
-        my ($self, $link) = @_;
         return {"permalink" => "https://..."};
     };
     local *Comic::Social::Reddit::_sleep = sub {
@@ -312,7 +311,7 @@ sub slows_down_posting : Tests {
         $MockComic::TITLE => { $MockComic::ENGLISH => "make beer" }
     );
     $comic->{url}{$MockComic::ENGLISH} = 'https://beercomics.com/comics/make-beer.html';
-    my $message = $reddit->post($comic);
+    $reddit->post($comic);
 
     is($slowed, 1, "should have slowed down");
     is($slept, 1, "should have slept for 1 second");
@@ -376,8 +375,6 @@ sub wait_for_limit_already_submitted : Tests {
 
 
 sub wait_for_limit_unknown_error : Tests {
-    my $comic = MockComic::make_comic();
-
     my $message = Comic::Social::Reddit::_wait_for_reddit_limit("500 internal server error");
 
     like($message, qr{\bdon't know\b}i, "Error message missing");
@@ -386,8 +383,6 @@ sub wait_for_limit_unknown_error : Tests {
 
 
 sub wait_for_limit_no_error : Tests {
-    my $comic = MockComic::make_comic();
-
     my $message = Comic::Social::Reddit::_wait_for_reddit_limit("");
     is($message, "");
 }
@@ -403,7 +398,6 @@ sub title_prefix  : Tests {
         return "redditID1234";
     };
     local *Reddit::Client::get_link = sub {
-        my ($self, $link) = @_;
         return {"permalink" => "https://..."};
     };
     use warnings;
@@ -425,6 +419,7 @@ sub title_prefix  : Tests {
     is($title, "PREFIX make beer", "wrong title");
 }
 
+
 sub title_suffix  : Tests {
     my $title;
 
@@ -435,7 +430,6 @@ sub title_suffix  : Tests {
         return "redditID1234";
     };
     local *Reddit::Client::get_link = sub {
-        my ($self, $link) = @_;
         return {"permalink" => "https://..."};
     };
     use warnings;

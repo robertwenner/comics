@@ -46,7 +46,7 @@ Creates a new Comic::Out::HtmlLink.
 
 The constructor takes no arguments.
 
-Actual linking is triggered by comic meta data within a C<see> object. This
+Actual linking is triggered by comic metadata within a C<see> object. This
 is language specific, so it needs a nested language object with a link text
 as key and a svg file as value.
 
@@ -59,7 +59,7 @@ as key and a svg file as value.
 Link targets are given as svg source file names so that a referrer does not
 depend on the actual title (and hence URL) of the linked comic.
 Also, other forms of linking (e.g., to a page in a book) may not even have
-meta data like an html output file, but all comics do have a title.
+metadata like an html output file, but all comics do have a title.
 
 Links are per-language cause the link text varies by language.
 
