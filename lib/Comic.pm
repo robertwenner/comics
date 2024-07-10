@@ -71,8 +71,6 @@ Reads a comic as an Inkscape SVG file and serves as a value object for the comic
 # XPath default namespace name.
 Readonly my $DEFAULT_NAMESPACE => 'defNs';
 
-my %language_code_cache;
-
 
 =head1 SUBROUTINES/METHODS
 
@@ -823,6 +821,8 @@ used in this Comic.
 
 sub language_codes {
     my ($self) = @_;
+
+    CORE::state %language_code_cache;
 
     my %codes;
     LANG: foreach my $lang ($self->languages()) {
