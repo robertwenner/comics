@@ -746,9 +746,6 @@ The module makes these variables available in the template:
 * `notFor`: code reference to a function to check whether a given comic
   should be included in the sitemap.
 
-The generated file will always be placed in a per-language directory under
-the configured `outdir`, named `sitemap.xml`.
-
 
 ## `Comic::Out::Sizemap`
 
