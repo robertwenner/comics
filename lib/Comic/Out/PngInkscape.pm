@@ -172,6 +172,8 @@ sub _svg_to_png {
     my $version = $self->_get_inkscape_version($comic);
     my $export_cmd = _build_inkscape_command($comic, $svg_file, $png_file, $version);
     _system($export_cmd) && $comic->keel_over("Comic::Out::PngInkscape: Could not export: $export_cmd: $OS_ERROR");
+    # Inkscape 1.3.1 on Ubuntu (snap) has a bug that assumes all paths are relative
+    # to $HOME; see https://gitlab.com/inkscape/inbox/-/issues/9998
 
     my $tool = Image::ExifTool->new();
     # Add data inferred from comic
@@ -201,7 +203,7 @@ sub _svg_to_png {
     # Finally write png metadata
     my $rc = $tool->WriteInfo($png_file);
     if ($rc != 1) {
-        $comic->keel_over('Comic::Out::PngInkscape: Cannot write PNG metadata: ' . $tool->GetValue('Error'));
+        $comic->keel_over("Comic::Out::PngInkscape: Cannot write PNG metadata to $png_file: " . $tool->GetValue('Error'));
     }
     return;
 }
@@ -267,6 +269,8 @@ sub _query_inkscape_version {
 
     # Inkscape seems to print its plugins information to stderr, e.g.:
     #    Pango version: 1.46.0
+    # Or some modules missing:
+    #    Gtk-Message: 18:26:00.302: Failed to load module "appmenu-gtk-module"
     # Hence redirect stderr to /dev/null.
 
     ## no critic(InputOutput::ProhibitBacktickOperators)
