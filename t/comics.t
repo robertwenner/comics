@@ -107,7 +107,7 @@ sub has_default_message_file_name : Tests {
 }
 
 
-sub restores_messages_does_nothing_if_nio_messages_for_that_comic_stored : Tests {
+sub restores_messages_does_nothing_if_no_messages_for_that_comic_stored : Tests {
     MockComic::fake_file('generated/check-messages.json', '{"not-some-comic.svg": ["some problem"]}');
     my $comic = MockComic::make_comic();
     my $generator = DummyGenerator->new();
@@ -162,6 +162,10 @@ sub persists_messages_to_file : Tests {
         my ($self, $comic) = @_;
         return $comic->{srcFile} eq 'old_comic.svg';
     };
+    my @mkdirs;
+    local *File::Path::make_path = sub {
+        push @mkdirs, @_;
+    };
     local *Comic::check = sub {
         my ($self) = @_;
         $self->warning('new problem');
@@ -173,6 +177,7 @@ sub persists_messages_to_file : Tests {
     push @{$comics->{comics}}, $old_comic, $new_comic;
     $comics->run_all_checks();
 
+    is_deeply(\@mkdirs, ['generated/'], 'should have created directory');
     MockComic::assert_wrote_file_json('generated/check-messages.json', {
         "old_comic.svg" => ["old problem"],
         "new_comic.svg" => ['new problem'],

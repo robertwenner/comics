@@ -13,6 +13,8 @@ use DateTime;
 use File::Slurper;
 use File::Find;
 use File::Util;
+use File::Basename;
+use File::Path;
 use JSON;
 
 use Comic;
@@ -604,6 +606,8 @@ sub _save_messages {
     my ($filename, $messages) = @ARG;
 
     my $json = encode_json($messages);
+    my ($file, $dirs) = fileparse($filename);
+    File::Path::make_path($dirs);
     File::Slurper::write_text($filename, $json);
     return;
 }
