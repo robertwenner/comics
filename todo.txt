@@ -286,3 +286,5 @@
             "/$self->{siteComicsPath}" .
             uri_escape_utf8($html_file);
   why not uri_escape siteComicsPath? Could be non-ascii.
+
+- feature: support a single domain setup with top-level language directories
