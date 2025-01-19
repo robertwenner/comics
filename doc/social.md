@@ -17,7 +17,7 @@ All `Comic::Social::...` configuration must be within the `Social` section.
 The order in which these modules run is undefined, but they will only run
 after all [Upload](upload.md) modules have finished.
 
-If one social media posting fails, they others still get run.
+If one social media posting fails, the others still get run.
 
 
 ## `Comic::Social::Bluesky`
@@ -52,12 +52,8 @@ The configuration values are:
 * mode: either "link" to post a link to the comic, or "png" to post the comic png image.
   If mode is "png" but posting the image somehow fails, falls back to posting the link.
 
-The text of the post is pulled from comic title and description. Any general
-and Bluesky hashtags are added. Bluesky hashtags must be specified in the comic
-metadata like in the example below.
-
 The `Comic::Social::Bluesky` module adds any hashtags from `hashtags` and
-`mastodon` (in that order) from the Comic's metadata to the posted message.
+`bluesky` (in that order) from the Comic's metadata to the posted message.
 Use the `hashtags` for general hashtags and `bluesky` for Bluesky-specific ones
 like mentions.
 

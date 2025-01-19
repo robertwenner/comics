@@ -345,19 +345,21 @@ rm en.txt
 Repeat for other languages using the language's code.
 
 All words so added are always known in that spell checker. Do this for
-common words.
+common words. Hwoever, when moving computers, the word list needs to be
+in your backup / copied over, or you'll lose all those added words.
+For aspell, there are files like `~/.aspell.en.prepl` and `~/.aspell.en.pws`.
 
 Adding words to a user-defined dictionary means to place the words to ignore
 in a plain text file, each on a line on its own. Pass that file in the
 `user_dictionary` option. If you put that option in your main configuration
-file, all comics will us it, but any other spell checking on your system
+file, all comics will use it, but any other spell checking on your system
 will not.
 
 To add  words to the comic's ignore list edit your comic in Inkscape
 (or in an XML editor if you're brave or hate the tiny input dialog in
 Inkscape; `.svg` is XML after all) and add a `Check` section with the
 words to ignore to the comic's metadata. The syntax is as above for the
-configuration file. Use this option for words that are specific to open
+configuration file. Use this option for words that are specific to
 particular comics. These words will still be flagged as typos in other
 comics.
 
