@@ -18,50 +18,53 @@ sub set_up : Test(setup) {
 
 
 sub relaxed_json : Tests {
-    $settings->load_str('{"arr": [1, 2, 3,],}');
+    $settings->load_str('{"Out": [1, 2, 3,],}');
     my $cloned = $settings->clone();
-    is_deeply($cloned->{"arr"}, [1, 2, 3]);
+    is_deeply($cloned->{"Out"}, [1, 2, 3]);
 }
 
 
 sub duplicate_keys_in_json_takes_last : Tests {
-    $settings->load_str('{"key": 1, "key": 2}');
+    $settings->load_str('{"Out": 1, "Out": 2}');
     my $cloned = $settings->clone();
-    is($cloned->{"key"}, 2);
+    is($cloned->{"Out"}, 2);
 }
 
 
 sub handles_utf8_in_json : Tests {
-    $settings->load_str('{"ä": "ö"}');
+    $settings->load_str('{"Out": {"ä": "ö"}}');
     my $cloned = $settings->clone();
-    is($cloned->{"ä"}, "ö");
+    is($cloned->{"Out"}->{"ä"}, "ö");
 }
 
 
 sub merge_json_values : Tests {
-    $settings->load_str('{"a": 1}');
-    $settings->load_str('{"b": 2}');
+    $settings->load_str('{"Out": {"a": 1}}');
+    $settings->load_str('{"Out": {"b": 2}}');
     my $cloned = $settings->clone();
-    is($cloned->{"a"}, "1");
-    is($cloned->{"b"}, 2);
+    is($cloned->{'Out'}->{"a"}, "1");
+    is($cloned->{'Out'}->{"b"}, 2);
 }
 
 
 sub merge_json_trees : Tests {
-    $settings->load_str('{"obj": {"one": 1, "both": "old"}, "arr": [1, 2]}');
-    $settings->load_str('{"obj": {"two": 2, "both": "new"}, "arr": [3]}');
+    $settings->load_str('{"Checks": 1, "Out": "old", "Uploader": [1, 2]}');
+    $settings->load_str('{"Social": 2, "Out": "new", "Uploader": [3]}');
     my $cloned = $settings->clone();
-    is_deeply($cloned->{"obj"}, {"one" => 1, "two" => 2, "both" => "new"});
-    is_deeply($cloned->{"arr"}, [1, 2, 3]);
+    is_deeply($cloned->{"Checks"}, 1);
+    is_deeply($cloned->{"Social"}, 2);
+    is_deeply($cloned->{"Out"}, "new");
+    is_deeply($cloned->{"Uploader"}, [1, 2, 3]);
 }
 
 
 sub cloned_settings : Tests {
-    $settings->load_str('{"obj": {"one": 1, "both": "old"}}');
+    $settings->load_str('{"Checks": 1, "Out": "old"}');
     my $cloned = $settings->clone();
-    $cloned->{"obj"} = {"two" => 2, "both" => "new"};
-    is_deeply($cloned->{"obj"}, {"two" => 2, "both" => "new"});
-    is_deeply(${$settings->{settings}}{"obj"}, {"one" => 1, "both" => "old"});
+    $cloned->{"Out"} = {"two" => 2, "both" => "new"};
+    is_deeply($cloned->{"Out"}, {"two" => 2, "both" => "new"});
+    is_deeply($settings->{settings}->{"Checks"}, 1);
+    is_deeply($settings->{settings}->{"Out"}, "old");
 }
 
 
@@ -133,4 +136,13 @@ sub complains_if_comics_path_not_a_scalar : Tests {
     like($@, qr{\bPaths\b}, 'should mention the top level setting');
     like($@, qr{\bsiteComics\b}, 'should mention the actual setting');
     like($@, qr{\bsingle value\b}, 'should say what is wrong');
+}
+
+
+sub complains_about_unknown_top_level_objects : Tests {
+    eval {
+        $settings->load_str('{ "Whatever": {} }');
+    };
+    like($@, qr{\bWhatever\b}, 'should mention the top level setting');
+    like($@, qr{\bunknown\b}i, 'should say what is wrong');
 }

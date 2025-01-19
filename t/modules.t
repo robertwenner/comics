@@ -37,11 +37,11 @@ sub module_path : Tests {
 
 
 sub loads_config_file : Tests {
-    MockComic::fake_file("config.json", '{"foo": "bar"}');
+    MockComic::fake_file("config.json", '{"Author": "me"}');
 
     $comics->load_settings("config.json");
     my $cloned = $comics->{settings}->clone();
-    is("bar", $cloned->{'foo'}, 'should have loaded settings');
+    is("me", $cloned->{'Author'}, 'should have loaded settings');
 }
 
 

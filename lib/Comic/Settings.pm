@@ -137,7 +137,19 @@ sub load_str {
 
     # Validate
 
-    # Paths, if given
+    # Check for unknown top-level objects. (Well, within the real unnamed
+    # top-level object.)
+    my %allowed = map
+        { $_ => 1 }
+        (keys %DEFAULT_SETTINGS, 'Author', 'Artist', 'Copyright', 'Domains', 'LayerNames',
+            $CHECKS, $GENERATORS, $UPLOADERS, $SOCIAL_MEDIA_POSTERS);
+    foreach my $key (keys %{$new}) {
+        unless ($allowed{$key}) {
+            croak("Unknown configuration element '$key'");
+        }
+    }
+
+    # Validate paths, if given
     if (exists $new->{Paths}) {
         # is a hash
         if (ref $new->{Paths} ne ref {}) {

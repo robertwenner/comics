@@ -156,8 +156,7 @@
 - feature: post "classics" to social media if there is no new comic
 
 - feature: complain about unknown settings to catch typos (done for Generators,
-  missing in Checks), also catch unknown top level configuration objects
-  like "Check" vs "Checks"
+  missing in Checks)
 
 - clean out backlog: when a comic goes from backlog to published, remove its
   html file and qr code image from the backlog directory
