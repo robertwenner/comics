@@ -220,8 +220,6 @@
   but then again this could be confusing if metadata is spread over Inkscape
   regular properties and metadata JSON.
 
-- feature: use relative links for HtmlLink for easy offline use
-
 - doc: add example comic project with comics, templates, cron script,
   settings.json
 

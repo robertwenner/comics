@@ -383,7 +383,7 @@ While processing the templates, these variables are available:
 Generates a HTML reference ("see that other comic") from comic metadata.
 This assumes you use the `Comic::Out::HtmlComicPage` module as well.
 
-This is only for linking to another of your comics; see below to  include a
+This is only for linking to another of your comics; see below to include a
 hyperlink to any other website.
 
 This module does not take any configuration.
@@ -409,7 +409,7 @@ data like an `.html` output file, but all comics do have a title.
 
 This module adds a `htmllink` hash to each comic. The keys in that hash are
 languages (with initial upper case letter), pointing to yet another hash.
-That hash has a list of link text to (absolute) URL of the referred comic's
+That hash has a list of link text to (relative) URL of the referred comic's
 HTML page.
 
 Link target `.svg` files can be given as (full or partial) paths or just

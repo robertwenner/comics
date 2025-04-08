@@ -65,7 +65,6 @@ sub link_exact_match : Tests {
         },
         $MockComic::IN_FILE => 'comics/web/original.svg',
     );
-    $referenced->{url}{$MockComic::ENGLISH} = 'https://beercomics.com/comics/the-original.html';
     my $referrer = MockComic::make_comic(
         $MockComic::SEE => {
             $MockComic::ENGLISH => {
@@ -74,7 +73,7 @@ sub link_exact_match : Tests {
         },
     );
     $htmllink->generate_all($referenced, $referrer);
-    is_deeply($referrer->{htmllink}->{'English'}, {'the original comic' => 'https://beercomics.com/comics/the-original.html'});
+    is_deeply($referrer->{htmllink}->{'English'}, {'the original comic' => 'the-original.html'});
 }
 
 
@@ -85,7 +84,6 @@ sub link_file_name_only : Tests {
         },
         $MockComic::IN_FILE => 'comics/web/original.svg',
     );
-    $referenced->{url}{$MockComic::ENGLISH} = 'https://beercomics.com/comics/the-original.html';
     my $referrer = MockComic::make_comic(
         $MockComic::SEE => {
             $MockComic::ENGLISH => {
@@ -94,7 +92,7 @@ sub link_file_name_only : Tests {
         },
     );
     $htmllink->generate_all($referenced, $referrer);
-    is_deeply($referrer->{htmllink}->{'English'}, {'the original comic' => 'https://beercomics.com/comics/the-original.html'});
+    is_deeply($referrer->{htmllink}->{'English'}, {'the original comic' => 'the-original.html'});
 }
 
 
@@ -149,5 +147,5 @@ sub test_picks_more_specific_over_more_generic : Tests {
         },
     );
     $htmllink->generate_all($candidate_one, $candidate_two, $referrer);
-    is_deeply($referrer->{htmllink}->{'English'}, {'the original comic' => 'https://beercomics.com/comics/candidate-2.html'});
+    is_deeply($referrer->{htmllink}->{'English'}, {'the original comic' => 'candidate-2.html'});
 }

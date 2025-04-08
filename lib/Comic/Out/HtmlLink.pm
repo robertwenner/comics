@@ -136,7 +136,7 @@ sub generate_all {
                 # Try exact match.
                 foreach my $c (@comics) {
                     if ($c->{srcFile} eq $want) {
-                        $comic->{'htmllink'}{$language}{$ref} = $c->{url}{$language};
+                        $comic->{'htmllink'}{$language}{$ref} = $c->{htmlFile}{$language};
                         next REF;
                     }
                 }
@@ -145,7 +145,7 @@ sub generate_all {
                 my @found;
                 foreach my $c (@comics) {
                     if ($c->{srcFile} =~ m{$want$}) {
-                        $comic->{'htmllink'}{$language}{$ref} = $c->{url}{$language};
+                        $comic->{'htmllink'}{$language}{$ref} = $c->{htmlFile}{$language};
                         push @found, $c->{srcFile};
                     }
                 }
