@@ -1,5 +1,4 @@
 package Comic::Social::Reddit;
-
 use strict;
 use warnings;
 use utf8;
@@ -38,8 +37,7 @@ Comic::Social::Reddit - post a Comic on L<https://reddit.com>.
 
 Before this module can post for you to Reddit, you need to go to
 L<https://www.reddit.com/prefs/apps> then create an app (script). This will
-get you the secret needed to configure this module. See also
-L<https://redditclient.readthedocs.io/en/latest/oauth/>.
+get you the secret needed to configure this module. See also L<Reddit::Client>.
 
 Unfortunately you cannot use Reddit's two factor authentication or the
 script won't be able to log in.
