@@ -298,6 +298,7 @@ sub _parse_inkscape_version {
     # Inkscape 1.1 (ce6663b3b7, 2021-05-25)
     # Inkscape 1.1.2 (0a00cf5339, 2022-02-04)
     # Inkscape 1.2 (dc2aedaf03, 2022-05-15)
+    # Inkscape 1.4.2 (ebf0e940, 2025-05-08)
     if ($inkscape_output =~ m/^Inkscape\s+(\d+[.]\d)/) {
         return $1;
     }
