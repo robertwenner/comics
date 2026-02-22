@@ -117,6 +117,8 @@ sub parses_inkscape_version : Tests {
     is(Comic::Out::PngInkscape::_parse_inkscape_version($comic, "Inkscape 1.3.2 (091e20e, 2023-11-25)\n"), "1.3");
     is(Comic::Out::PngInkscape::_parse_inkscape_version($comic, "Inkscape 1.4 (e7c3feb1, 2024-10-09)\n"), "1.4");
     is(Comic::Out::PngInkscape::_parse_inkscape_version($comic, "Inkscape 1.4.2 (ebf0e940, 2025-05-08)\n"), "1.4");
+    is(Comic::Out::PngInkscape::_parse_inkscape_version($comic, "Inkscape 1.4.3 (0d15f75, 2025-12-25)\n"), "1.4");
+    is(Comic::Out::PngInkscape::_parse_inkscape_version($comic, "Inkscape 1.4.3 (fcd0343856, 2026-01-01)\n"), "1.4");
     is(Comic::Out::PngInkscape::_parse_inkscape_version($comic, "Inkscape 10.0.0 (abcdef, 2200-01-01)\n"), "10.0");
 
     eval {
@@ -257,6 +259,24 @@ sub export_command_line_future_inkscape : Tests {
 
     $png->_svg_to_png($comic, $MockComic::ENGLISH, 'some-comic.svg', 'latest-comic.png');
     like($comic->{warnings}[0], qr{\bInkscape 11\.0\b});
+}
+
+
+sub export_command_line_uses_absolute_paths: Tests {
+    no warnings qw/redefine/;
+    local *Comic::Out::PngInkscape::_get_inkscape_version = sub {
+        return "1.2";
+    };
+    use warnings;
+
+    my $comic = MockComic::make_comic(
+        $MockComic::TITLE => { $MockComic::ENGLISH => 'Latest comic' },
+    );
+
+    $png->_svg_to_png($comic, $MockComic::ENGLISH, 'latest-comic.svg', 'latest-comic.png');
+
+    like($command_lines[0], qr{--export-filename=/.+/latest-comic.png\b}, 'png file name');
+    like($command_lines[0], qr{/.+/latest-comic.svg$}, 'input svg file');
 }
 
 

@@ -5,6 +5,7 @@ use warnings;
 use utf8;
 use English '-no_match_vars';
 use Carp;
+use Cwd;
 use File::Path;
 use File::Copy;
 use Readonly;
@@ -172,8 +173,6 @@ sub _svg_to_png {
     my $version = $self->_get_inkscape_version($comic);
     my $export_cmd = _build_inkscape_command($comic, $svg_file, $png_file, $version);
     _system($export_cmd) && $comic->keel_over("Comic::Out::PngInkscape: Could not export: $export_cmd: $OS_ERROR");
-    # Inkscape 1.3.1 on Ubuntu (snap) has a bug that assumes all paths are relative
-    # to $HOME; see https://gitlab.com/inkscape/inbox/-/issues/9998
 
     my $tool = Image::ExifTool->new();
     # Add data inferred from comic
@@ -322,18 +321,23 @@ sub _get_inkscape_version {
 sub _build_inkscape_command {
     my ($comic, $svg_file, $png_file, $version) = @ARG;
 
+    # Inkscape 1.3.1 on Ubuntu (snap) has a bug that assumes all relative paths are relative
+    # to $HOME; see https://gitlab.com/inkscape/inbox/-/issues/9998
+    # Looks like 1.4.3 still has the same bug, so work around that by using an absolute path.
+    my $cwd = Cwd::cwd();
+
     if ($version eq '0.9') {
         return 'inkscape --without-gui ' .
             "--file=$svg_file --export-png=$png_file " .
             '--export-area-drawing --export-background=#ffffff';
     }
-    if ($version !~ m{^1.[0123]$}x) {
+    if ($version !~ m{^1.[01234]$}x) {
         $comic->warning("Comic::Out::PngInkscape: Don't know Inkscape $version, hoping it's compatible to 1.1");
     }
 
     return 'inkscape ' .
-        "--export-type=png --export-filename=$png_file " .
-        "--export-area-drawing --export-background=#ffffff $svg_file";
+        "--export-type=png --export-filename=$cwd/$png_file " .
+        "--export-area-drawing --export-background=#ffffff $cwd/$svg_file";
 }
 
 
