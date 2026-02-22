@@ -28,6 +28,7 @@ sub load_settings : Tests {
     MockComic::fake_file('one', '{}');
     MockComic::fake_file('two', '{}');
     MockComic::fake_file('three', '{}');
+    no warnings qw/redefine/;
     local *File::Slurper::read_text = sub {
         push @loaded, @_;
         return "{}";
@@ -78,6 +79,7 @@ sub collect_files_adds_files_right_away : Tests {
 sub collect_files_recurses_in_directories : Tests {
     my @to_be_found = ('comic.svg', 'other file', 'file.svg~');
 
+    no warnings qw/redefine/;
     local *File::Util::file_type = sub {
         my ($file) = @_;
         return $file eq 'dir' ? ('BINARY', 'DIRECTORY') : ('PLAIN', 'TEXT');
